@@ -27,17 +27,17 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LogService {
+public class ResultService {
 
   public interface Iface {
 
-    public void log(Identifier id, String message) throws org.apache.thrift.TException;
+    public void writeResults(Identifier id, File file) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void log(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.log_call> resultHandler) throws org.apache.thrift.TException;
+    public void writeResults(Identifier id, File file, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.writeResults_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -61,24 +61,24 @@ public class LogService {
       super(iprot, oprot);
     }
 
-    public void log(Identifier id, String message) throws org.apache.thrift.TException
+    public void writeResults(Identifier id, File file) throws org.apache.thrift.TException
     {
-      send_log(id, message);
-      recv_log();
+      send_writeResults(id, file);
+      recv_writeResults();
     }
 
-    public void send_log(Identifier id, String message) throws org.apache.thrift.TException
+    public void send_writeResults(Identifier id, File file) throws org.apache.thrift.TException
     {
-      log_args args = new log_args();
+      writeResults_args args = new writeResults_args();
       args.setId(id);
-      args.setMessage(message);
-      sendBase("log", args);
+      args.setFile(file);
+      sendBase("writeResults", args);
     }
 
-    public void recv_log() throws org.apache.thrift.TException
+    public void recv_writeResults() throws org.apache.thrift.TException
     {
-      log_result result = new log_result();
-      receiveBase(result, "log");
+      writeResults_result result = new writeResults_result();
+      receiveBase(result, "writeResults");
       return;
     }
 
@@ -100,27 +100,27 @@ public class LogService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void log(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<log_call> resultHandler) throws org.apache.thrift.TException {
+    public void writeResults(Identifier id, File file, org.apache.thrift.async.AsyncMethodCallback<writeResults_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      log_call method_call = new log_call(id, message, resultHandler, this, ___protocolFactory, ___transport);
+      writeResults_call method_call = new writeResults_call(id, file, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class log_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class writeResults_call extends org.apache.thrift.async.TAsyncMethodCall {
       private Identifier id;
-      private String message;
-      public log_call(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<log_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private File file;
+      public writeResults_call(Identifier id, File file, org.apache.thrift.async.AsyncMethodCallback<writeResults_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.id = id;
-        this.message = message;
+        this.file = file;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("log", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        log_args args = new log_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("writeResults", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        writeResults_args args = new writeResults_args();
         args.setId(id);
-        args.setMessage(message);
+        args.setFile(file);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -131,7 +131,7 @@ public class LogService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_log();
+        (new Client(prot)).recv_writeResults();
       }
     }
 
@@ -148,47 +148,47 @@ public class LogService {
     }
 
     private static <I extends Iface> Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> getProcessMap(Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
-      processMap.put("log", new log());
+      processMap.put("writeResults", new writeResults());
       return processMap;
     }
 
-    private static class log<I extends Iface> extends org.apache.thrift.ProcessFunction<I, log_args> {
-      public log() {
-        super("log");
+    private static class writeResults<I extends Iface> extends org.apache.thrift.ProcessFunction<I, writeResults_args> {
+      public writeResults() {
+        super("writeResults");
       }
 
-      protected log_args getEmptyArgsInstance() {
-        return new log_args();
+      protected writeResults_args getEmptyArgsInstance() {
+        return new writeResults_args();
       }
 
-      protected log_result getResult(I iface, log_args args) throws org.apache.thrift.TException {
-        log_result result = new log_result();
-        iface.log(args.id, args.message);
+      protected writeResults_result getResult(I iface, writeResults_args args) throws org.apache.thrift.TException {
+        writeResults_result result = new writeResults_result();
+        iface.writeResults(args.id, args.file);
         return result;
       }
     }
 
   }
 
-  public static class log_args implements org.apache.thrift.TBase<log_args, log_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("log_args");
+  public static class writeResults_args implements org.apache.thrift.TBase<writeResults_args, writeResults_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("writeResults_args");
 
     private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-    private static final org.apache.thrift.protocol.TField MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("message", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField FILE_FIELD_DESC = new org.apache.thrift.protocol.TField("file", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new log_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new log_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new writeResults_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new writeResults_argsTupleSchemeFactory());
     }
 
     public Identifier id; // required
-    public String message; // required
+    public File file; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       ID((short)1, "id"),
-      MESSAGE((short)2, "message");
+      FILE((short)2, "file");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -205,8 +205,8 @@ public class LogService {
         switch(fieldId) {
           case 1: // ID
             return ID;
-          case 2: // MESSAGE
-            return MESSAGE;
+          case 2: // FILE
+            return FILE;
           default:
             return null;
         }
@@ -252,51 +252,51 @@ public class LogService {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Identifier.class)));
-      tmpMap.put(_Fields.MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("message", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.FILE, new org.apache.thrift.meta_data.FieldMetaData("file", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, File.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(log_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(writeResults_args.class, metaDataMap);
     }
 
-    public log_args() {
+    public writeResults_args() {
     }
 
-    public log_args(
+    public writeResults_args(
       Identifier id,
-      String message)
+      File file)
     {
       this();
       this.id = id;
-      this.message = message;
+      this.file = file;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public log_args(log_args other) {
+    public writeResults_args(writeResults_args other) {
       if (other.isSetId()) {
         this.id = new Identifier(other.id);
       }
-      if (other.isSetMessage()) {
-        this.message = other.message;
+      if (other.isSetFile()) {
+        this.file = new File(other.file);
       }
     }
 
-    public log_args deepCopy() {
-      return new log_args(this);
+    public writeResults_args deepCopy() {
+      return new writeResults_args(this);
     }
 
     @Override
     public void clear() {
       this.id = null;
-      this.message = null;
+      this.file = null;
     }
 
     public Identifier getId() {
       return this.id;
     }
 
-    public log_args setId(Identifier id) {
+    public writeResults_args setId(Identifier id) {
       this.id = id;
       return this;
     }
@@ -316,27 +316,27 @@ public class LogService {
       }
     }
 
-    public String getMessage() {
-      return this.message;
+    public File getFile() {
+      return this.file;
     }
 
-    public log_args setMessage(String message) {
-      this.message = message;
+    public writeResults_args setFile(File file) {
+      this.file = file;
       return this;
     }
 
-    public void unsetMessage() {
-      this.message = null;
+    public void unsetFile() {
+      this.file = null;
     }
 
-    /** Returns true if field message is set (has been assigned a value) and false otherwise */
-    public boolean isSetMessage() {
-      return this.message != null;
+    /** Returns true if field file is set (has been assigned a value) and false otherwise */
+    public boolean isSetFile() {
+      return this.file != null;
     }
 
-    public void setMessageIsSet(boolean value) {
+    public void setFileIsSet(boolean value) {
       if (!value) {
-        this.message = null;
+        this.file = null;
       }
     }
 
@@ -350,11 +350,11 @@ public class LogService {
         }
         break;
 
-      case MESSAGE:
+      case FILE:
         if (value == null) {
-          unsetMessage();
+          unsetFile();
         } else {
-          setMessage((String)value);
+          setFile((File)value);
         }
         break;
 
@@ -366,8 +366,8 @@ public class LogService {
       case ID:
         return getId();
 
-      case MESSAGE:
-        return getMessage();
+      case FILE:
+        return getFile();
 
       }
       throw new IllegalStateException();
@@ -382,8 +382,8 @@ public class LogService {
       switch (field) {
       case ID:
         return isSetId();
-      case MESSAGE:
-        return isSetMessage();
+      case FILE:
+        return isSetFile();
       }
       throw new IllegalStateException();
     }
@@ -392,12 +392,12 @@ public class LogService {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof log_args)
-        return this.equals((log_args)that);
+      if (that instanceof writeResults_args)
+        return this.equals((writeResults_args)that);
       return false;
     }
 
-    public boolean equals(log_args that) {
+    public boolean equals(writeResults_args that) {
       if (that == null)
         return false;
 
@@ -410,12 +410,12 @@ public class LogService {
           return false;
       }
 
-      boolean this_present_message = true && this.isSetMessage();
-      boolean that_present_message = true && that.isSetMessage();
-      if (this_present_message || that_present_message) {
-        if (!(this_present_message && that_present_message))
+      boolean this_present_file = true && this.isSetFile();
+      boolean that_present_file = true && that.isSetFile();
+      if (this_present_file || that_present_file) {
+        if (!(this_present_file && that_present_file))
           return false;
-        if (!this.message.equals(that.message))
+        if (!this.file.equals(that.file))
           return false;
       }
 
@@ -427,13 +427,13 @@ public class LogService {
       return 0;
     }
 
-    public int compareTo(log_args other) {
+    public int compareTo(writeResults_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      log_args typedOther = (log_args)other;
+      writeResults_args typedOther = (writeResults_args)other;
 
       lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
       if (lastComparison != 0) {
@@ -445,12 +445,12 @@ public class LogService {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetMessage()).compareTo(typedOther.isSetMessage());
+      lastComparison = Boolean.valueOf(isSetFile()).compareTo(typedOther.isSetFile());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetMessage()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.message, typedOther.message);
+      if (isSetFile()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.file, typedOther.file);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -472,7 +472,7 @@ public class LogService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("log_args(");
+      StringBuilder sb = new StringBuilder("writeResults_args(");
       boolean first = true;
 
       sb.append("id:");
@@ -483,11 +483,11 @@ public class LogService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("message:");
-      if (this.message == null) {
+      sb.append("file:");
+      if (this.file == null) {
         sb.append("null");
       } else {
-        sb.append(this.message);
+        sb.append(this.file);
       }
       first = false;
       sb.append(")");
@@ -514,15 +514,15 @@ public class LogService {
       }
     }
 
-    private static class log_argsStandardSchemeFactory implements SchemeFactory {
-      public log_argsStandardScheme getScheme() {
-        return new log_argsStandardScheme();
+    private static class writeResults_argsStandardSchemeFactory implements SchemeFactory {
+      public writeResults_argsStandardScheme getScheme() {
+        return new writeResults_argsStandardScheme();
       }
     }
 
-    private static class log_argsStandardScheme extends StandardScheme<log_args> {
+    private static class writeResults_argsStandardScheme extends StandardScheme<writeResults_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, log_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, writeResults_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -541,10 +541,11 @@ public class LogService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // MESSAGE
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.message = iprot.readString();
-                struct.setMessageIsSet(true);
+            case 2: // FILE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.file = new File();
+                struct.file.read(iprot);
+                struct.setFileIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -560,7 +561,7 @@ public class LogService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, log_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, writeResults_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -569,9 +570,9 @@ public class LogService {
           struct.id.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.message != null) {
-          oprot.writeFieldBegin(MESSAGE_FIELD_DESC);
-          oprot.writeString(struct.message);
+        if (struct.file != null) {
+          oprot.writeFieldBegin(FILE_FIELD_DESC);
+          struct.file.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -580,35 +581,35 @@ public class LogService {
 
     }
 
-    private static class log_argsTupleSchemeFactory implements SchemeFactory {
-      public log_argsTupleScheme getScheme() {
-        return new log_argsTupleScheme();
+    private static class writeResults_argsTupleSchemeFactory implements SchemeFactory {
+      public writeResults_argsTupleScheme getScheme() {
+        return new writeResults_argsTupleScheme();
       }
     }
 
-    private static class log_argsTupleScheme extends TupleScheme<log_args> {
+    private static class writeResults_argsTupleScheme extends TupleScheme<writeResults_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, log_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, writeResults_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetId()) {
           optionals.set(0);
         }
-        if (struct.isSetMessage()) {
+        if (struct.isSetFile()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
         if (struct.isSetId()) {
           struct.id.write(oprot);
         }
-        if (struct.isSetMessage()) {
-          oprot.writeString(struct.message);
+        if (struct.isSetFile()) {
+          struct.file.write(oprot);
         }
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, log_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, writeResults_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
@@ -617,22 +618,23 @@ public class LogService {
           struct.setIdIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.message = iprot.readString();
-          struct.setMessageIsSet(true);
+          struct.file = new File();
+          struct.file.read(iprot);
+          struct.setFileIsSet(true);
         }
       }
     }
 
   }
 
-  public static class log_result implements org.apache.thrift.TBase<log_result, log_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("log_result");
+  public static class writeResults_result implements org.apache.thrift.TBase<writeResults_result, writeResults_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("writeResults_result");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new log_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new log_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new writeResults_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new writeResults_resultTupleSchemeFactory());
     }
 
 
@@ -695,20 +697,20 @@ public class LogService {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(log_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(writeResults_result.class, metaDataMap);
     }
 
-    public log_result() {
+    public writeResults_result() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public log_result(log_result other) {
+    public writeResults_result(writeResults_result other) {
     }
 
-    public log_result deepCopy() {
-      return new log_result(this);
+    public writeResults_result deepCopy() {
+      return new writeResults_result(this);
     }
 
     @Override
@@ -741,12 +743,12 @@ public class LogService {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof log_result)
-        return this.equals((log_result)that);
+      if (that instanceof writeResults_result)
+        return this.equals((writeResults_result)that);
       return false;
     }
 
-    public boolean equals(log_result that) {
+    public boolean equals(writeResults_result that) {
       if (that == null)
         return false;
 
@@ -758,13 +760,13 @@ public class LogService {
       return 0;
     }
 
-    public int compareTo(log_result other) {
+    public int compareTo(writeResults_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      log_result typedOther = (log_result)other;
+      writeResults_result typedOther = (writeResults_result)other;
 
       return 0;
     }
@@ -783,7 +785,7 @@ public class LogService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("log_result(");
+      StringBuilder sb = new StringBuilder("writeResults_result(");
       boolean first = true;
 
       sb.append(")");
@@ -810,15 +812,15 @@ public class LogService {
       }
     }
 
-    private static class log_resultStandardSchemeFactory implements SchemeFactory {
-      public log_resultStandardScheme getScheme() {
-        return new log_resultStandardScheme();
+    private static class writeResults_resultStandardSchemeFactory implements SchemeFactory {
+      public writeResults_resultStandardScheme getScheme() {
+        return new writeResults_resultStandardScheme();
       }
     }
 
-    private static class log_resultStandardScheme extends StandardScheme<log_result> {
+    private static class writeResults_resultStandardScheme extends StandardScheme<writeResults_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, log_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, writeResults_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -839,7 +841,7 @@ public class LogService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, log_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, writeResults_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -849,21 +851,21 @@ public class LogService {
 
     }
 
-    private static class log_resultTupleSchemeFactory implements SchemeFactory {
-      public log_resultTupleScheme getScheme() {
-        return new log_resultTupleScheme();
+    private static class writeResults_resultTupleSchemeFactory implements SchemeFactory {
+      public writeResults_resultTupleScheme getScheme() {
+        return new writeResults_resultTupleScheme();
       }
     }
 
-    private static class log_resultTupleScheme extends TupleScheme<log_result> {
+    private static class writeResults_resultTupleScheme extends TupleScheme<writeResults_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, log_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, writeResults_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, log_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, writeResults_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }

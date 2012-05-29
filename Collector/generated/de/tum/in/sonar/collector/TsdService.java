@@ -31,13 +31,13 @@ public class TsdService {
 
   public interface Iface {
 
-    public void log(long timestamp, long value) throws org.apache.thrift.TException;
+    public void log(Identifier id, TimeSeriesPoint value) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void log(long timestamp, long value, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.log_call> resultHandler) throws org.apache.thrift.TException;
+    public void log(Identifier id, TimeSeriesPoint value, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.log_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -61,16 +61,16 @@ public class TsdService {
       super(iprot, oprot);
     }
 
-    public void log(long timestamp, long value) throws org.apache.thrift.TException
+    public void log(Identifier id, TimeSeriesPoint value) throws org.apache.thrift.TException
     {
-      send_log(timestamp, value);
+      send_log(id, value);
       recv_log();
     }
 
-    public void send_log(long timestamp, long value) throws org.apache.thrift.TException
+    public void send_log(Identifier id, TimeSeriesPoint value) throws org.apache.thrift.TException
     {
       log_args args = new log_args();
-      args.setTimestamp(timestamp);
+      args.setId(id);
       args.setValue(value);
       sendBase("log", args);
     }
@@ -100,26 +100,26 @@ public class TsdService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void log(long timestamp, long value, org.apache.thrift.async.AsyncMethodCallback<log_call> resultHandler) throws org.apache.thrift.TException {
+    public void log(Identifier id, TimeSeriesPoint value, org.apache.thrift.async.AsyncMethodCallback<log_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      log_call method_call = new log_call(timestamp, value, resultHandler, this, ___protocolFactory, ___transport);
+      log_call method_call = new log_call(id, value, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class log_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private long timestamp;
-      private long value;
-      public log_call(long timestamp, long value, org.apache.thrift.async.AsyncMethodCallback<log_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private Identifier id;
+      private TimeSeriesPoint value;
+      public log_call(Identifier id, TimeSeriesPoint value, org.apache.thrift.async.AsyncMethodCallback<log_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.timestamp = timestamp;
+        this.id = id;
         this.value = value;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("log", org.apache.thrift.protocol.TMessageType.CALL, 0));
         log_args args = new log_args();
-        args.setTimestamp(timestamp);
+        args.setId(id);
         args.setValue(value);
         args.write(prot);
         prot.writeMessageEnd();
@@ -163,7 +163,7 @@ public class TsdService {
 
       protected log_result getResult(I iface, log_args args) throws org.apache.thrift.TException {
         log_result result = new log_result();
-        iface.log(args.timestamp, args.value);
+        iface.log(args.id, args.value);
         return result;
       }
     }
@@ -173,8 +173,8 @@ public class TsdService {
   public static class log_args implements org.apache.thrift.TBase<log_args, log_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("log_args");
 
-    private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)1);
-    private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)2);
+    private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -182,12 +182,12 @@ public class TsdService {
       schemes.put(TupleScheme.class, new log_argsTupleSchemeFactory());
     }
 
-    public long timestamp; // required
-    public long value; // required
+    public Identifier id; // required
+    public TimeSeriesPoint value; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TIMESTAMP((short)1, "timestamp"),
+      ID((short)1, "id"),
       VALUE((short)2, "value");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -203,8 +203,8 @@ public class TsdService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TIMESTAMP
-            return TIMESTAMP;
+          case 1: // ID
+            return ID;
           case 2: // VALUE
             return VALUE;
           default:
@@ -247,16 +247,13 @@ public class TsdService {
     }
 
     // isset id assignments
-    private static final int __TIMESTAMP_ISSET_ID = 0;
-    private static final int __VALUE_ISSET_ID = 1;
-    private BitSet __isset_bit_vector = new BitSet(2);
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64          , "long")));
+      tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Identifier.class)));
       tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64          , "long")));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TimeSeriesPoint.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(log_args.class, metaDataMap);
     }
@@ -265,24 +262,24 @@ public class TsdService {
     }
 
     public log_args(
-      long timestamp,
-      long value)
+      Identifier id,
+      TimeSeriesPoint value)
     {
       this();
-      this.timestamp = timestamp;
-      setTimestampIsSet(true);
+      this.id = id;
       this.value = value;
-      setValueIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public log_args(log_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.timestamp = other.timestamp;
-      this.value = other.value;
+      if (other.isSetId()) {
+        this.id = new Identifier(other.id);
+      }
+      if (other.isSetValue()) {
+        this.value = new TimeSeriesPoint(other.value);
+      }
     }
 
     public log_args deepCopy() {
@@ -291,65 +288,65 @@ public class TsdService {
 
     @Override
     public void clear() {
-      setTimestampIsSet(false);
-      this.timestamp = 0;
-      setValueIsSet(false);
-      this.value = 0;
+      this.id = null;
+      this.value = null;
     }
 
-    public long getTimestamp() {
-      return this.timestamp;
+    public Identifier getId() {
+      return this.id;
     }
 
-    public log_args setTimestamp(long timestamp) {
-      this.timestamp = timestamp;
-      setTimestampIsSet(true);
+    public log_args setId(Identifier id) {
+      this.id = id;
       return this;
     }
 
-    public void unsetTimestamp() {
-      __isset_bit_vector.clear(__TIMESTAMP_ISSET_ID);
+    public void unsetId() {
+      this.id = null;
     }
 
-    /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
-    public boolean isSetTimestamp() {
-      return __isset_bit_vector.get(__TIMESTAMP_ISSET_ID);
+    /** Returns true if field id is set (has been assigned a value) and false otherwise */
+    public boolean isSetId() {
+      return this.id != null;
     }
 
-    public void setTimestampIsSet(boolean value) {
-      __isset_bit_vector.set(__TIMESTAMP_ISSET_ID, value);
+    public void setIdIsSet(boolean value) {
+      if (!value) {
+        this.id = null;
+      }
     }
 
-    public long getValue() {
+    public TimeSeriesPoint getValue() {
       return this.value;
     }
 
-    public log_args setValue(long value) {
+    public log_args setValue(TimeSeriesPoint value) {
       this.value = value;
-      setValueIsSet(true);
       return this;
     }
 
     public void unsetValue() {
-      __isset_bit_vector.clear(__VALUE_ISSET_ID);
+      this.value = null;
     }
 
     /** Returns true if field value is set (has been assigned a value) and false otherwise */
     public boolean isSetValue() {
-      return __isset_bit_vector.get(__VALUE_ISSET_ID);
+      return this.value != null;
     }
 
     public void setValueIsSet(boolean value) {
-      __isset_bit_vector.set(__VALUE_ISSET_ID, value);
+      if (!value) {
+        this.value = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TIMESTAMP:
+      case ID:
         if (value == null) {
-          unsetTimestamp();
+          unsetId();
         } else {
-          setTimestamp((Long)value);
+          setId((Identifier)value);
         }
         break;
 
@@ -357,7 +354,7 @@ public class TsdService {
         if (value == null) {
           unsetValue();
         } else {
-          setValue((Long)value);
+          setValue((TimeSeriesPoint)value);
         }
         break;
 
@@ -366,11 +363,11 @@ public class TsdService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TIMESTAMP:
-        return Long.valueOf(getTimestamp());
+      case ID:
+        return getId();
 
       case VALUE:
-        return Long.valueOf(getValue());
+        return getValue();
 
       }
       throw new IllegalStateException();
@@ -383,8 +380,8 @@ public class TsdService {
       }
 
       switch (field) {
-      case TIMESTAMP:
-        return isSetTimestamp();
+      case ID:
+        return isSetId();
       case VALUE:
         return isSetValue();
       }
@@ -404,21 +401,21 @@ public class TsdService {
       if (that == null)
         return false;
 
-      boolean this_present_timestamp = true;
-      boolean that_present_timestamp = true;
-      if (this_present_timestamp || that_present_timestamp) {
-        if (!(this_present_timestamp && that_present_timestamp))
+      boolean this_present_id = true && this.isSetId();
+      boolean that_present_id = true && that.isSetId();
+      if (this_present_id || that_present_id) {
+        if (!(this_present_id && that_present_id))
           return false;
-        if (this.timestamp != that.timestamp)
+        if (!this.id.equals(that.id))
           return false;
       }
 
-      boolean this_present_value = true;
-      boolean that_present_value = true;
+      boolean this_present_value = true && this.isSetValue();
+      boolean that_present_value = true && that.isSetValue();
       if (this_present_value || that_present_value) {
         if (!(this_present_value && that_present_value))
           return false;
-        if (this.value != that.value)
+        if (!this.value.equals(that.value))
           return false;
       }
 
@@ -438,12 +435,12 @@ public class TsdService {
       int lastComparison = 0;
       log_args typedOther = (log_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTimestamp()).compareTo(typedOther.isSetTimestamp());
+      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTimestamp()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, typedOther.timestamp);
+      if (isSetId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, typedOther.id);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -478,12 +475,20 @@ public class TsdService {
       StringBuilder sb = new StringBuilder("log_args(");
       boolean first = true;
 
-      sb.append("timestamp:");
-      sb.append(this.timestamp);
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
       first = false;
       if (!first) sb.append(", ");
       sb.append("value:");
-      sb.append(this.value);
+      if (this.value == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.value);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -503,8 +508,6 @@ public class TsdService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -529,17 +532,19 @@ public class TsdService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TIMESTAMP
-              if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-                struct.timestamp = iprot.readI64();
-                struct.setTimestampIsSet(true);
+            case 1: // ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.id = new Identifier();
+                struct.id.read(iprot);
+                struct.setIdIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
             case 2: // VALUE
-              if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-                struct.value = iprot.readI64();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.value = new TimeSeriesPoint();
+                struct.value.read(iprot);
                 struct.setValueIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -560,12 +565,16 @@ public class TsdService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
-        oprot.writeI64(struct.timestamp);
-        oprot.writeFieldEnd();
-        oprot.writeFieldBegin(VALUE_FIELD_DESC);
-        oprot.writeI64(struct.value);
-        oprot.writeFieldEnd();
+        if (struct.id != null) {
+          oprot.writeFieldBegin(ID_FIELD_DESC);
+          struct.id.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.value != null) {
+          oprot.writeFieldBegin(VALUE_FIELD_DESC);
+          struct.value.write(oprot);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -584,18 +593,18 @@ public class TsdService {
       public void write(org.apache.thrift.protocol.TProtocol prot, log_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTimestamp()) {
+        if (struct.isSetId()) {
           optionals.set(0);
         }
         if (struct.isSetValue()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
-        if (struct.isSetTimestamp()) {
-          oprot.writeI64(struct.timestamp);
+        if (struct.isSetId()) {
+          struct.id.write(oprot);
         }
         if (struct.isSetValue()) {
-          oprot.writeI64(struct.value);
+          struct.value.write(oprot);
         }
       }
 
@@ -604,11 +613,13 @@ public class TsdService {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.timestamp = iprot.readI64();
-          struct.setTimestampIsSet(true);
+          struct.id = new Identifier();
+          struct.id.read(iprot);
+          struct.setIdIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.value = iprot.readI64();
+          struct.value = new TimeSeriesPoint();
+          struct.value.read(iprot);
           struct.setValueIsSet(true);
         }
       }
