@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.tum.in.sonar.collector.server.DataSinkServer;
+import de.tum.in.sonar.collector.server.ServerBootstrap;
 import de.tum.in.sonar.collector.tsdb.Tsdb;
 
 public class Collector {
@@ -20,9 +20,14 @@ public class Collector {
 		tsdb.setHbaseUtil(hbase);
 		tsdb.setupTables();
 
-		DataSinkServer dataSinkServer = new DataSinkServer();
-		logger.info("Starting DataSink sever...");
-		dataSinkServer.start();
+		ServerBootstrap dataSinkServer = new ServerBootstrap();
+		
+		logger.info("Starting severs...");
+		Thread[] threads = dataSinkServer.start();
+		logger.info("Sever started");
+
+		dataSinkServer.wait(threads);
+
 	}
 
 	public static void main(String[] args) {

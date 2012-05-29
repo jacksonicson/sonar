@@ -102,6 +102,11 @@ public class Tsdb {
 
 	}
 
+	public void writeData() 
+	{
+		
+	}
+	
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {
 		this.hbaseUtil = hbaseUtil;
 	}
