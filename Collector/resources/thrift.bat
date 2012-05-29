@@ -1,0 +1,1 @@
+thrift -out ../generated --gen java collector.thrift

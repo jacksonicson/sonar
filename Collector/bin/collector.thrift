@@ -1,4 +1,4 @@
-namespace de.tum.in.sonar.collector 
+namespace java de.tum.in.sonar.collector 
 
 typedef i64 long
 typedef i32 int
