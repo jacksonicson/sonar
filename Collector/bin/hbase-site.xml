@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+	<configuration>
+		<property>
+			<name>hbase.zookeeper.quorum</name>
+			<value>192.168.110.108</value>
+			<description>The directory shared by region servers.
+			</description>
+		</property>
+	</configuration>
+
+
+</configuration>
