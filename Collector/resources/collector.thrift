@@ -11,7 +11,8 @@ struct Identifier {
 
 struct TimeSeriesPoint {
 	1:long value,
-	2:set<string> labels,
+	2:string metric,
+	3:set<string> labels,
 }
 
 struct File {

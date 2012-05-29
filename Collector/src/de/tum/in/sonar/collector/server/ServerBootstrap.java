@@ -1,10 +1,7 @@
 package de.tum.in.sonar.collector.server;
 
-import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
-import org.apache.thrift.transport.TNonblockingServerSocket;
-import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -31,9 +28,10 @@ public class ServerBootstrap {
 				// Transport
 				TServerTransport serverTransport = new TServerSocket(7911);
 
-				// Server (connects stransport and processor)
+				// Server (connects transport and processor)
 				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
 
+				logger.info("Starting CollectionService ...");
 				server.serve();
 
 			} catch (TTransportException e) {
@@ -45,16 +43,24 @@ public class ServerBootstrap {
 	class ManagementServiceThread extends Thread {
 		public void run() {
 			try {
-				TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(7912);
-
+				// Service implementation
 				ManagementServiceImpl impl = new ManagementServiceImpl();
+
+				// Service Processor
 				ManagementService.Processor processor = new ManagementService.Processor(impl);
 
-				TNonblockingServer.Args args = new TNonblockingServer.Args(serverTransport);
+				// Nonblocking transport
+				TServerTransport serverTransport = new TServerSocket(7912);
+
+				// Parameters for the server
+				TSimpleServer.Args args = new TSimpleServer.Args(serverTransport);
 				args.processor(processor);
 
-				TServer server = new TNonblockingServer(args);
-//				server.serve();
+				// Server
+				TServer server = new TSimpleServer(args);
+
+				logger.info("Starting ManagementService ...");
+				server.serve();
 
 			} catch (TTransportException e) {
 				e.printStackTrace();
@@ -76,8 +82,9 @@ public class ServerBootstrap {
 		for (Thread thread : threads) {
 			try {
 				thread.join();
+				logger.warn("Service thread joinged");
 			} catch (InterruptedException e) {
-				logger.debug("server thread crashed", e);
+				logger.error("server thread crashed", e);
 			}
 		}
 	}

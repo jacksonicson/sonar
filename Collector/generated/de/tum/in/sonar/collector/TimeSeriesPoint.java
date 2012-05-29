@@ -31,7 +31,8 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TimeSeriesPoint");
 
   private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField LABELS_FIELD_DESC = new org.apache.thrift.protocol.TField("labels", org.apache.thrift.protocol.TType.SET, (short)2);
+  private static final org.apache.thrift.protocol.TField METRIC_FIELD_DESC = new org.apache.thrift.protocol.TField("metric", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField LABELS_FIELD_DESC = new org.apache.thrift.protocol.TField("labels", org.apache.thrift.protocol.TType.SET, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -40,12 +41,14 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   }
 
   public long value; // required
+  public String metric; // required
   public Set<String> labels; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     VALUE((short)1, "value"),
-    LABELS((short)2, "labels");
+    METRIC((short)2, "metric"),
+    LABELS((short)3, "labels");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -62,7 +65,9 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       switch(fieldId) {
         case 1: // VALUE
           return VALUE;
-        case 2: // LABELS
+        case 2: // METRIC
+          return METRIC;
+        case 3: // LABELS
           return LABELS;
         default:
           return null;
@@ -111,6 +116,8 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
+    tmpMap.put(_Fields.METRIC, new org.apache.thrift.meta_data.FieldMetaData("metric", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LABELS, new org.apache.thrift.meta_data.FieldMetaData("labels", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -123,11 +130,13 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   public TimeSeriesPoint(
     long value,
+    String metric,
     Set<String> labels)
   {
     this();
     this.value = value;
     setValueIsSet(true);
+    this.metric = metric;
     this.labels = labels;
   }
 
@@ -138,6 +147,9 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.value = other.value;
+    if (other.isSetMetric()) {
+      this.metric = other.metric;
+    }
     if (other.isSetLabels()) {
       Set<String> __this__labels = new HashSet<String>();
       for (String other_element : other.labels) {
@@ -155,6 +167,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   public void clear() {
     setValueIsSet(false);
     this.value = 0;
+    this.metric = null;
     this.labels = null;
   }
 
@@ -179,6 +192,30 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   public void setValueIsSet(boolean value) {
     __isset_bit_vector.set(__VALUE_ISSET_ID, value);
+  }
+
+  public String getMetric() {
+    return this.metric;
+  }
+
+  public TimeSeriesPoint setMetric(String metric) {
+    this.metric = metric;
+    return this;
+  }
+
+  public void unsetMetric() {
+    this.metric = null;
+  }
+
+  /** Returns true if field metric is set (has been assigned a value) and false otherwise */
+  public boolean isSetMetric() {
+    return this.metric != null;
+  }
+
+  public void setMetricIsSet(boolean value) {
+    if (!value) {
+      this.metric = null;
+    }
   }
 
   public int getLabelsSize() {
@@ -230,6 +267,14 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       }
       break;
 
+    case METRIC:
+      if (value == null) {
+        unsetMetric();
+      } else {
+        setMetric((String)value);
+      }
+      break;
+
     case LABELS:
       if (value == null) {
         unsetLabels();
@@ -245,6 +290,9 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     switch (field) {
     case VALUE:
       return Long.valueOf(getValue());
+
+    case METRIC:
+      return getMetric();
 
     case LABELS:
       return getLabels();
@@ -262,6 +310,8 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     switch (field) {
     case VALUE:
       return isSetValue();
+    case METRIC:
+      return isSetMetric();
     case LABELS:
       return isSetLabels();
     }
@@ -287,6 +337,15 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       if (!(this_present_value && that_present_value))
         return false;
       if (this.value != that.value)
+        return false;
+    }
+
+    boolean this_present_metric = true && this.isSetMetric();
+    boolean that_present_metric = true && that.isSetMetric();
+    if (this_present_metric || that_present_metric) {
+      if (!(this_present_metric && that_present_metric))
+        return false;
+      if (!this.metric.equals(that.metric))
         return false;
     }
 
@@ -325,6 +384,16 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetMetric()).compareTo(typedOther.isSetMetric());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMetric()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.metric, typedOther.metric);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetLabels()).compareTo(typedOther.isSetLabels());
     if (lastComparison != 0) {
       return lastComparison;
@@ -357,6 +426,14 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
     sb.append("value:");
     sb.append(this.value);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("metric:");
+    if (this.metric == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.metric);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("labels:");
@@ -418,7 +495,15 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // LABELS
+          case 2: // METRIC
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.metric = iprot.readString();
+              struct.setMetricIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // LABELS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
                 org.apache.thrift.protocol.TSet _set0 = iprot.readSetBegin();
@@ -454,6 +539,11 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       oprot.writeFieldBegin(VALUE_FIELD_DESC);
       oprot.writeI64(struct.value);
       oprot.writeFieldEnd();
+      if (struct.metric != null) {
+        oprot.writeFieldBegin(METRIC_FIELD_DESC);
+        oprot.writeString(struct.metric);
+        oprot.writeFieldEnd();
+      }
       if (struct.labels != null) {
         oprot.writeFieldBegin(LABELS_FIELD_DESC);
         {
@@ -487,12 +577,18 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       if (struct.isSetValue()) {
         optionals.set(0);
       }
-      if (struct.isSetLabels()) {
+      if (struct.isSetMetric()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetLabels()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetValue()) {
         oprot.writeI64(struct.value);
+      }
+      if (struct.isSetMetric()) {
+        oprot.writeString(struct.metric);
       }
       if (struct.isSetLabels()) {
         {
@@ -508,12 +604,16 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.value = iprot.readI64();
         struct.setValueIsSet(true);
       }
       if (incoming.get(1)) {
+        struct.metric = iprot.readString();
+        struct.setMetricIsSet(true);
+      }
+      if (incoming.get(2)) {
         {
           org.apache.thrift.protocol.TSet _set5 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.labels = new HashSet<String>(2*_set5.size);
