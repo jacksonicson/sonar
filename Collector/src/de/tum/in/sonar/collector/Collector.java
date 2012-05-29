@@ -2,69 +2,27 @@ package de.tum.in.sonar.collector;
 
 import java.io.IOException;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.tum.in.sonar.collector.server.DataSinkServer;
+import de.tum.in.sonar.collector.tsdb.Tsdb;
 
 public class Collector {
 
+	private static Logger logger = LoggerFactory.getLogger(Collector.class);
+
 	public Collector() throws IOException {
 
-		// Test some HBase stuff
+		HBaseUtil hbase = new HBaseUtil();
 
-		// Server: 192.168.110.108
+		Tsdb tsdb = new Tsdb();
+		tsdb.setHbaseUtil(hbase);
+		tsdb.setupTables();
 
-		Configuration config = HBaseConfiguration.create();
-
-		/*
-		 * HBaseAdmin hbase = new HBaseAdmin(config); HTableDescriptor desc =
-		 * new HTableDescriptor("TEST");
-		 * 
-		 * HColumnDescriptor meta = new
-		 * HColumnDescriptor("personal".getBytes());
-		 * 
-		 * HColumnDescriptor prefix = new
-		 * HColumnDescriptor("account".getBytes());
-		 * 
-		 * desc.addFamily(meta); desc.addFamily(prefix);
-		 * 
-		 * hbase.createTable(desc);
-		 */
-
-		System.out.println("New table statement");
-
-		HTable testTable = new HTable(config, "TEST");
-
-		System.out.println("New table statement done ");
-
-		for (int i = 0; i < 100; i++) {
-			byte[] family = Bytes.toBytes("personal");
-			byte[] qual = Bytes.toBytes("account");
-
-			Scan scan = new Scan();
-			scan.addColumn(family, qual);
-
-			ResultScanner rs = testTable.getScanner(scan);
-
-			for (Result r = rs.next(); r != null; r = rs.next()) {
-				byte[] valueObj = r.getValue(family, qual);
-				int value = Bytes.toInt(valueObj);
-				System.out.println("value: " + value);
-			}
-
-			// Put put = new Put(Bytes.toBytes(i));
-			// put.add(family, qual, Bytes.toBytes(i));
-			// testTable.put(put);
-		}
-
-		testTable.close();
-
-		Server server = new Server();
-		server.start(); 
+		DataSinkServer dataSinkServer = new DataSinkServer();
+		logger.info("Starting DataSink sever...");
+		dataSinkServer.start();
 	}
 
 	public static void main(String[] args) {
