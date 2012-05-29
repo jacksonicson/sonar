@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -53,21 +52,23 @@ public class Collector {
 
 			for (Result r = rs.next(); r != null; r = rs.next()) {
 				byte[] valueObj = r.getValue(family, qual);
-				int value = Bytes.toInt(valueObj); 
+				int value = Bytes.toInt(valueObj);
 				System.out.println("value: " + value);
 			}
 
-//			Put put = new Put(Bytes.toBytes(i));
-//			put.add(family, qual, Bytes.toBytes(i));
-//			testTable.put(put);
+			// Put put = new Put(Bytes.toBytes(i));
+			// put.add(family, qual, Bytes.toBytes(i));
+			// testTable.put(put);
 		}
 
 		testTable.close();
 
+		Server server = new Server();
+		server.start(); 
 	}
 
 	public static void main(String[] args) {
-		
+
 		try {
 			new Collector();
 		} catch (IOException e) {
