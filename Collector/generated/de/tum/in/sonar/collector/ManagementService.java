@@ -27,7 +27,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigurationService {
+public class ManagementService {
 
   public interface Iface {
 

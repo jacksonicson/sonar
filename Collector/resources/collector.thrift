@@ -21,23 +21,15 @@ struct File {
 	4:set<string> labels,
 }
 
-service LogService {
-	void log(1:Identifier id, 2:string message), 	
+
+service CollectService {
+	void logMessage(1:Identifier id, 2:string message),
+	 	
+	void logMetric(1:Identifier id, 2:TimeSeriesPoint value),
+	 
+	void logResults(1:Identifier id, 2:File file),
 }
 
-
-service TsdService {
-	void log(1:Identifier id, 2:TimeSeriesPoint value), 
-}
-
-service ResultService {
-	void writeResults(1:Identifier id, 2:File file),
-}
-
-service QueryService {
-	// TODO
-}
-
-service ConfigurationService {
+service ManagementService {
 	// TODO
 }
