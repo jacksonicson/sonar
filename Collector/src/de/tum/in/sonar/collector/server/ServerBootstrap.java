@@ -15,15 +15,14 @@ public class ServerBootstrap {
 
 	private static final Logger logger = LoggerFactory.getLogger(ServerBootstrap.class);
 
+	private CollectServiceImpl collectServiceImpl;
+	private ManagementServiceImpl managementServiceImpl;
+
 	class CollectServiceThread extends Thread {
 		public void run() {
 			try {
-
-				// Service Implementationt
-				CollectServiceImpl impl = new CollectServiceImpl();
-
 				// Service Processor
-				CollectService.Processor processor = new CollectService.Processor(impl);
+				CollectService.Processor processor = new CollectService.Processor(collectServiceImpl);
 
 				// Transport
 				TServerTransport serverTransport = new TServerSocket(7911);
@@ -43,11 +42,8 @@ public class ServerBootstrap {
 	class ManagementServiceThread extends Thread {
 		public void run() {
 			try {
-				// Service implementation
-				ManagementServiceImpl impl = new ManagementServiceImpl();
-
 				// Service Processor
-				ManagementService.Processor processor = new ManagementService.Processor(impl);
+				ManagementService.Processor processor = new ManagementService.Processor(managementServiceImpl);
 
 				// Nonblocking transport
 				TServerTransport serverTransport = new TServerSocket(7912);
@@ -88,4 +84,13 @@ public class ServerBootstrap {
 			}
 		}
 	}
+
+	public void setCollectServiceImpl(CollectServiceImpl collectServiceImpl) {
+		this.collectServiceImpl = collectServiceImpl;
+	}
+
+	public void setManagementServiceImpl(ManagementServiceImpl managementServiceImpl) {
+		this.managementServiceImpl = managementServiceImpl;
+	}
+	
 }

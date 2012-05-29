@@ -102,11 +102,10 @@ public class Tsdb {
 
 	}
 
-	public void writeData() 
-	{
-		
+	public void writeData(DataPoint dataPoint) {
+		logger.info("writing data ");
 	}
-	
+
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {
 		this.hbaseUtil = hbaseUtil;
 	}
