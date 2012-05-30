@@ -105,9 +105,9 @@ public class Tsdb {
 	}
 
 	public void writeData(DataPoint dataPoint) {
-		byte[] key = dataPoint.buildKey();
 
 		try {
+			byte[] key = dataPoint.buildKey(hbaseUtil);
 			HTable table = new HTable(hbaseUtil.getConfig(), "tsdb");
 
 			// Create a new row in this case!
@@ -118,6 +118,8 @@ public class Tsdb {
 
 		} catch (IOException e) {
 			logger.error("could not write tsdb to hbase", e);
+		} catch (UnresolvableException e) {
+			logger.error("could not create key for datapoint", e);
 		}
 
 		logger.info("writing data ");

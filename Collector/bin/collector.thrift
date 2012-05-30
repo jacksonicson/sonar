@@ -5,7 +5,7 @@ typedef i32 int
 
 struct Identifier {
 	1:long timestamp,
-	3:int sensor,
+	3:string sensor,
 	2:string hostname,
 }
 

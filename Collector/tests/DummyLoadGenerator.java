@@ -27,7 +27,7 @@ public class DummyLoadGenerator {
 
 			Identifier id = new Identifier();
 			id.setTimestamp(System.currentTimeMillis());
-			id.setSensor(1234);
+			id.setSensor("cpu");
 			id.setHostname("jack");
 
 			client.logMessage(id, "hello world");

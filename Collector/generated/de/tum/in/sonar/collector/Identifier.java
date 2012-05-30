@@ -31,7 +31,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Identifier");
 
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField SENSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("sensor", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.thrift.protocol.TField SENSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("sensor", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -41,7 +41,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
   }
 
   public long timestamp; // required
-  public int sensor; // required
+  public String sensor; // required
   public String hostname; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -110,15 +110,14 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
 
   // isset id assignments
   private static final int __TIMESTAMP_ISSET_ID = 0;
-  private static final int __SENSOR_ISSET_ID = 1;
-  private BitSet __isset_bit_vector = new BitSet(2);
+  private BitSet __isset_bit_vector = new BitSet(1);
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
     tmpMap.put(_Fields.SENSOR, new org.apache.thrift.meta_data.FieldMetaData("sensor", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32        , "int")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -130,14 +129,13 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
 
   public Identifier(
     long timestamp,
-    int sensor,
+    String sensor,
     String hostname)
   {
     this();
     this.timestamp = timestamp;
     setTimestampIsSet(true);
     this.sensor = sensor;
-    setSensorIsSet(true);
     this.hostname = hostname;
   }
 
@@ -148,7 +146,9 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.timestamp = other.timestamp;
-    this.sensor = other.sensor;
+    if (other.isSetSensor()) {
+      this.sensor = other.sensor;
+    }
     if (other.isSetHostname()) {
       this.hostname = other.hostname;
     }
@@ -162,8 +162,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
   public void clear() {
     setTimestampIsSet(false);
     this.timestamp = 0;
-    setSensorIsSet(false);
-    this.sensor = 0;
+    this.sensor = null;
     this.hostname = null;
   }
 
@@ -190,27 +189,28 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
     __isset_bit_vector.set(__TIMESTAMP_ISSET_ID, value);
   }
 
-  public int getSensor() {
+  public String getSensor() {
     return this.sensor;
   }
 
-  public Identifier setSensor(int sensor) {
+  public Identifier setSensor(String sensor) {
     this.sensor = sensor;
-    setSensorIsSet(true);
     return this;
   }
 
   public void unsetSensor() {
-    __isset_bit_vector.clear(__SENSOR_ISSET_ID);
+    this.sensor = null;
   }
 
   /** Returns true if field sensor is set (has been assigned a value) and false otherwise */
   public boolean isSetSensor() {
-    return __isset_bit_vector.get(__SENSOR_ISSET_ID);
+    return this.sensor != null;
   }
 
   public void setSensorIsSet(boolean value) {
-    __isset_bit_vector.set(__SENSOR_ISSET_ID, value);
+    if (!value) {
+      this.sensor = null;
+    }
   }
 
   public String getHostname() {
@@ -251,7 +251,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       if (value == null) {
         unsetSensor();
       } else {
-        setSensor((Integer)value);
+        setSensor((String)value);
       }
       break;
 
@@ -272,7 +272,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
       return Long.valueOf(getTimestamp());
 
     case SENSOR:
-      return Integer.valueOf(getSensor());
+      return getSensor();
 
     case HOSTNAME:
       return getHostname();
@@ -320,12 +320,12 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
         return false;
     }
 
-    boolean this_present_sensor = true;
-    boolean that_present_sensor = true;
+    boolean this_present_sensor = true && this.isSetSensor();
+    boolean that_present_sensor = true && that.isSetSensor();
     if (this_present_sensor || that_present_sensor) {
       if (!(this_present_sensor && that_present_sensor))
         return false;
-      if (this.sensor != that.sensor)
+      if (!this.sensor.equals(that.sensor))
         return false;
     }
 
@@ -409,7 +409,11 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
     first = false;
     if (!first) sb.append(", ");
     sb.append("sensor:");
-    sb.append(this.sensor);
+    if (this.sensor == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.sensor);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("hostname:");
@@ -472,8 +476,8 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
             }
             break;
           case 3: // SENSOR
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.sensor = iprot.readI32();
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.sensor = iprot.readString();
               struct.setSensorIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -510,9 +514,11 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
         oprot.writeString(struct.hostname);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(SENSOR_FIELD_DESC);
-      oprot.writeI32(struct.sensor);
-      oprot.writeFieldEnd();
+      if (struct.sensor != null) {
+        oprot.writeFieldBegin(SENSOR_FIELD_DESC);
+        oprot.writeString(struct.sensor);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -545,7 +551,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
         oprot.writeI64(struct.timestamp);
       }
       if (struct.isSetSensor()) {
-        oprot.writeI32(struct.sensor);
+        oprot.writeString(struct.sensor);
       }
       if (struct.isSetHostname()) {
         oprot.writeString(struct.hostname);
@@ -561,7 +567,7 @@ public class Identifier implements org.apache.thrift.TBase<Identifier, Identifie
         struct.setTimestampIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.sensor = iprot.readI32();
+        struct.sensor = iprot.readString();
         struct.setSensorIsSet(true);
       }
       if (incoming.get(2)) {
