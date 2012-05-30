@@ -27,22 +27,22 @@ public class ReadCompleteTsdb {
 
 			byte[] key = res.getRow();
 
-			int sensorId = Bytes.toInt(key, 0);
+			long sensorId = Bytes.toLong(key, 0);
 			System.out.println("Sensor: " + sensorId);
 
-			long timestamp = Bytes.toLong(key, 4);
+			long timestamp = Bytes.toLong(key, 8);
 			System.out.println("Timestamp: " + timestamp);
 
-			int hostnameId = Bytes.toInt(key, 12);
+			long hostnameId = Bytes.toLong(key, 16);
 			System.out.println("Hostname: " + hostnameId);
 
 			// All the tags
 			System.out.println("Reading tags: ");
-			int offset = 16;
+			int offset = 24;
 			while (offset < key.length) {
-				int tagId = Bytes.toInt(key, offset);
+				long tagId = Bytes.toLong(key, offset);
 				System.out.println("Tag id: " + tagId);
-				offset += 4;
+				offset += 8;
 			}
 		}
 

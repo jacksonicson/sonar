@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -76,7 +77,8 @@ public class IdResolver {
 		try {
 			HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
 
-			logger.info("checking for name: " + name);
+			logger.info("checking for name: " + name + " of type " + type);
+
 			Get get = new Get(Bytes.toBytes(name));
 			Result result = uidTable.get(get);
 
@@ -88,10 +90,14 @@ public class IdResolver {
 				return value;
 			}
 
-			byte[] value = result.getValue(Bytes.toBytes("forward"), Bytes.toBytes(type));
-			logger.info("Bytes read: " + value); 
-			
-			return 111; 
+			KeyValue kvalue = result.getColumnLatest(Bytes.toBytes("forward"), Bytes.toBytes(type));
+			if (kvalue == null) {
+				long value = createMapping(name);
+				return value;
+			}
+
+			byte[] value = kvalue.getValue();
+			return Bytes.toLong(value);
 
 		} catch (IOException e) {
 			e.printStackTrace();
