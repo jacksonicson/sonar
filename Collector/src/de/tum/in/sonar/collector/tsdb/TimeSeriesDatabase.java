@@ -2,6 +2,7 @@ package de.tum.in.sonar.collector.tsdb;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.NavigableMap;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -191,7 +192,7 @@ public class TimeSeriesDatabase {
 
 			index = 0;
 			index += appendToKey(stopRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
-			index += appendToKey(stopRow, index, getHourSinceEpoch(query.getStartTime()));
+			index += appendToKey(stopRow, index, getHourSinceEpoch(query.getStopTime()));
 
 			if (query.getHostname() != null)
 				index += appendToKey(stopRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
@@ -207,9 +208,14 @@ public class TimeSeriesDatabase {
 
 			Result next;
 			while ((next = scanner.next()) != null) {
-				next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
+				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 
-				System.out.println("Result found ...");
+				for (byte[] key : familyMap.keySet()) {
+					long value = Bytes.toLong(key);
+					long data = Bytes.toLong(familyMap.get(key));
+					
+					logger.info("qualifier: " + value + " data: " + data);
+				}
 			}
 
 		} catch (IOException e) {
