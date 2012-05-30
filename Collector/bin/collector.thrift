@@ -39,5 +39,5 @@ service CollectService {
 
 service ManagementService {
 	
-	void query(1:TimeSeriesQuery query),
+	list<TimeSeriesPoint> query(1:TimeSeriesQuery query),
 }

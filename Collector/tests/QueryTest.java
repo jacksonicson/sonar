@@ -1,3 +1,5 @@
+import java.util.List;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -6,6 +8,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.TimeSeriesPoint;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 
 public class QueryTest {
@@ -26,7 +29,10 @@ public class QueryTest {
 			query.setSensor("cpu");
 			query.setStartTime(0);
 			query.setStopTime(Long.MAX_VALUE);
-			client.query(query);
+			List<TimeSeriesPoint> tsPoints = client.query(query);
+			for (TimeSeriesPoint p : tsPoints) {
+				System.out.println("VALUE: " + p.getValue());
+			}
 
 			transport.close();
 

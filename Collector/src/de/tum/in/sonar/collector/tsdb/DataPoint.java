@@ -17,30 +17,30 @@ public class DataPoint {
 
 	private long value;
 
-	long getValue() {
+	public long getValue() {
 		return value;
 	}
 
-	long getHourSinceEpoch() {
+	public long getHourSinceEpoch() {
 		long hourSinceEpoch = timestamp - (timestamp % 3600);
 		return hourSinceEpoch;
 	}
 
-	long getSecondsInHour() {
+	public long getSecondsInHour() {
 		long hourSinceEpoch = getHourSinceEpoch();
 		long offset = (timestamp - hourSinceEpoch);
 		return offset;
 	}
 
-	String getSensor() {
+	public String getSensor() {
 		return sensor;
 	}
 
-	String getHostname() {
+	public String getHostname() {
 		return hostname;
 	}
 
-	Set<String> getLabels() {
+	public Set<String> getLabels() {
 		return labels;
 	}
 

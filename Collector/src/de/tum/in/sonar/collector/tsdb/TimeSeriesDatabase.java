@@ -1,7 +1,9 @@
 package de.tum.in.sonar.collector.tsdb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
 
@@ -168,7 +170,7 @@ public class TimeSeriesDatabase {
 		return offset;
 	}
 
-	public void run(Query query) throws QueryException, UnresolvableException {
+	public List<DataPoint> run(Query query) throws QueryException, UnresolvableException {
 
 		try {
 			HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
@@ -206,17 +208,32 @@ public class TimeSeriesDatabase {
 			logger.debug("Starting table scanner on query");
 			ResultScanner scanner = table.getScanner(scan);
 
+			List<DataPoint> dataPoints = new ArrayList<DataPoint>(50);
+
 			Result next;
 			while ((next = scanner.next()) != null) {
+
+				byte[] rowKey = next.getRow();
+				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH);
+
 				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 
 				for (byte[] key : familyMap.keySet()) {
 					long value = Bytes.toLong(key);
 					long data = Bytes.toLong(familyMap.get(key));
-					
+
+					DataPoint p = new DataPoint();
+					p.setHostname(query.getHostname());
+					p.setSensor(query.getSensor());
+					p.setTimestamp(timestampHours + value);
+					p.setValue(data);
+					dataPoints.add(p);
+
 					logger.info("qualifier: " + value + " data: " + data);
 				}
 			}
+
+			return dataPoints;
 
 		} catch (IOException e) {
 			throw new QueryException(e);

@@ -6,4 +6,7 @@ public class QueryException extends Exception {
 		super(e);
 	}
 
+	public QueryException() {
+	}
+
 }

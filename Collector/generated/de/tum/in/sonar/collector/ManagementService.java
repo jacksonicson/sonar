@@ -31,7 +31,7 @@ public class ManagementService {
 
   public interface Iface {
 
-    public void query(TimeSeriesQuery query) throws org.apache.thrift.TException;
+    public List<TimeSeriesPoint> query(TimeSeriesQuery query) throws org.apache.thrift.TException;
 
   }
 
@@ -61,10 +61,10 @@ public class ManagementService {
       super(iprot, oprot);
     }
 
-    public void query(TimeSeriesQuery query) throws org.apache.thrift.TException
+    public List<TimeSeriesPoint> query(TimeSeriesQuery query) throws org.apache.thrift.TException
     {
       send_query(query);
-      recv_query();
+      return recv_query();
     }
 
     public void send_query(TimeSeriesQuery query) throws org.apache.thrift.TException
@@ -74,11 +74,14 @@ public class ManagementService {
       sendBase("query", args);
     }
 
-    public void recv_query() throws org.apache.thrift.TException
+    public List<TimeSeriesPoint> recv_query() throws org.apache.thrift.TException
     {
       query_result result = new query_result();
       receiveBase(result, "query");
-      return;
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "query failed: unknown result");
     }
 
   }
@@ -121,13 +124,13 @@ public class ManagementService {
         prot.writeMessageEnd();
       }
 
-      public void getResult() throws org.apache.thrift.TException {
+      public List<TimeSeriesPoint> getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_query();
+        return (new Client(prot)).recv_query();
       }
     }
 
@@ -159,7 +162,7 @@ public class ManagementService {
 
       protected query_result getResult(I iface, query_args args) throws org.apache.thrift.TException {
         query_result result = new query_result();
-        iface.query(args.query);
+        result.success = iface.query(args.query);
         return result;
       }
     }
@@ -524,6 +527,7 @@ public class ManagementService {
   public static class query_result implements org.apache.thrift.TBase<query_result, query_result._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("query_result");
 
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -531,10 +535,11 @@ public class ManagementService {
       schemes.put(TupleScheme.class, new query_resultTupleSchemeFactory());
     }
 
+    public List<TimeSeriesPoint> success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      SUCCESS((short)0, "success");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -549,6 +554,8 @@ public class ManagementService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
           default:
             return null;
         }
@@ -587,9 +594,14 @@ public class ManagementService {
         return _fieldName;
       }
     }
+
+    // isset id assignments
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TimeSeriesPoint.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(query_result.class, metaDataMap);
     }
@@ -597,10 +609,24 @@ public class ManagementService {
     public query_result() {
     }
 
+    public query_result(
+      List<TimeSeriesPoint> success)
+    {
+      this();
+      this.success = success;
+    }
+
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public query_result(query_result other) {
+      if (other.isSetSuccess()) {
+        List<TimeSeriesPoint> __this__success = new ArrayList<TimeSeriesPoint>();
+        for (TimeSeriesPoint other_element : other.success) {
+          __this__success.add(new TimeSeriesPoint(other_element));
+        }
+        this.success = __this__success;
+      }
     }
 
     public query_result deepCopy() {
@@ -609,15 +635,66 @@ public class ManagementService {
 
     @Override
     public void clear() {
+      this.success = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<TimeSeriesPoint> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(TimeSeriesPoint elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<TimeSeriesPoint>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<TimeSeriesPoint> getSuccess() {
+      return this.success;
+    }
+
+    public query_result setSuccess(List<TimeSeriesPoint> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<TimeSeriesPoint>)value);
+        }
+        break;
+
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
       }
       throw new IllegalStateException();
     }
@@ -629,6 +706,8 @@ public class ManagementService {
       }
 
       switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -646,6 +725,15 @@ public class ManagementService {
       if (that == null)
         return false;
 
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
       return true;
     }
 
@@ -662,6 +750,16 @@ public class ManagementService {
       int lastComparison = 0;
       query_result typedOther = (query_result)other;
 
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -682,6 +780,13 @@ public class ManagementService {
       StringBuilder sb = new StringBuilder("query_result(");
       boolean first = true;
 
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -724,6 +829,25 @@ public class ManagementService {
             break;
           }
           switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+                {
+                  org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                  struct.success = new ArrayList<TimeSeriesPoint>(_list24.size);
+                  for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                  {
+                    TimeSeriesPoint _elem26; // required
+                    _elem26 = new TimeSeriesPoint();
+                    _elem26.read(iprot);
+                    struct.success.add(_elem26);
+                  }
+                  iprot.readListEnd();
+                }
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -739,6 +863,18 @@ public class ManagementService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
+            for (TimeSeriesPoint _iter27 : struct.success)
+            {
+              _iter27.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -756,11 +892,40 @@ public class ManagementService {
       @Override
       public void write(org.apache.thrift.protocol.TProtocol prot, query_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSuccess()) {
+          {
+            oprot.writeI32(struct.success.size());
+            for (TimeSeriesPoint _iter28 : struct.success)
+            {
+              _iter28.write(oprot);
+            }
+          }
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, query_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TList _list29 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new ArrayList<TimeSeriesPoint>(_list29.size);
+            for (int _i30 = 0; _i30 < _list29.size; ++_i30)
+            {
+              TimeSeriesPoint _elem31; // required
+              _elem31 = new TimeSeriesPoint();
+              _elem31.read(iprot);
+              struct.success.add(_elem31);
+            }
+          }
+          struct.setSuccessIsSet(true);
+        }
       }
     }
 

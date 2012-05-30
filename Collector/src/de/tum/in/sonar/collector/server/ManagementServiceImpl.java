@@ -1,11 +1,16 @@
 package de.tum.in.sonar.collector.server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.TimeSeriesPoint;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
+import de.tum.in.sonar.collector.tsdb.DataPoint;
 import de.tum.in.sonar.collector.tsdb.Query;
 import de.tum.in.sonar.collector.tsdb.QueryException;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
@@ -18,16 +23,30 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	private TimeSeriesDatabase tsdb;
 
 	@Override
-	public void query(TimeSeriesQuery query) throws TException {
+	public List<TimeSeriesPoint> query(TimeSeriesQuery query) throws TException {
 
 		Query tsdbQuery = new Query(query.getSensor(), query.getStartTime(), query.getStopTime());
 		try {
-			tsdb.run(tsdbQuery);
+			List<DataPoint> dataPoints = tsdb.run(tsdbQuery);
+			List<TimeSeriesPoint> tsPoints = new ArrayList<TimeSeriesPoint>(dataPoints.size());
+
+			for (DataPoint point : dataPoints) {
+				TimeSeriesPoint tsPoint = new TimeSeriesPoint();
+				tsPoints.add(tsPoint);
+
+				tsPoint.setValue(point.getValue());
+				tsPoint.setLabels(point.getLabels());
+			}
+
+			return tsPoints;
+
 		} catch (QueryException e) {
 			logger.error("Error while executing query", e);
 		} catch (UnresolvableException e) {
 			logger.error("Error while mapping in query", e);
 		}
+
+		return null;
 	}
 
 	public void setTsdb(TimeSeriesDatabase tsdb) {
