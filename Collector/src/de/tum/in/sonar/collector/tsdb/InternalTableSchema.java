@@ -1,11 +1,11 @@
 package de.tum.in.sonar.collector.tsdb;
 
-public class InternalTableDescriptor implements Comparable<InternalTableDescriptor> {
+public class InternalTableSchema implements Comparable<InternalTableSchema> {
 	private final String name;
 
 	private final String[] families;
 
-	public InternalTableDescriptor(String name, String[] families) {
+	public InternalTableSchema(String name, String[] families) {
 		this.name = name;
 		this.families = families;
 	}
@@ -19,7 +19,7 @@ public class InternalTableDescriptor implements Comparable<InternalTableDescript
 	}
 
 	@Override
-	public int compareTo(InternalTableDescriptor o) {
+	public int compareTo(InternalTableSchema o) {
 		return name.compareTo(o.getName());
 	}
 
@@ -30,7 +30,7 @@ public class InternalTableDescriptor implements Comparable<InternalTableDescript
 
 	@Override
 	public boolean equals(Object obj) {
-		InternalTableDescriptor desc = (InternalTableDescriptor) obj;
+		InternalTableSchema desc = (InternalTableSchema) obj;
 		return name.equals(desc.getName());
 	}
 }

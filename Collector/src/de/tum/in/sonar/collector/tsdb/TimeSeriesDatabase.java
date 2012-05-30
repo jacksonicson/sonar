@@ -12,6 +12,7 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +49,20 @@ public class TimeSeriesDatabase {
 		return value.length;
 	}
 
+	private int keyWidth(int labels) {
+		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_WIDTH + Const.LABEL_ID_WIDTH
+				* labels;
+
+		return keyWidth;
+	}
+
 	byte[] buildKey(DataPoint point) throws UnresolvableException {
 
 		sensorResolver.setHbaseUtil(hbaseUtil);
 		hostnameResolver.setHbaseUtil(hbaseUtil);
 		labelResolver.setHbaseUtil(hbaseUtil);
 
-		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_WIDTH + Const.LABEL_ID_WIDTH
-				* point.getLabels().size();
+		int keyWidth = keyWidth(point.getLabels().size());
 		byte[] key = new byte[keyWidth];
 
 		int index = 0;
@@ -76,22 +83,22 @@ public class TimeSeriesDatabase {
 			HBaseAdmin hbase = new HBaseAdmin(hbaseUtil.getConfig());
 
 			// Table layout
-			Set<InternalTableDescriptor> tables = new HashSet<InternalTableDescriptor>();
-			tables.add(new InternalTableDescriptor(Const.TABLE_TSDB, new String[] { Const.FAMILY_TSDB_DATA }));
-			tables.add(new InternalTableDescriptor(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD,
+			Set<InternalTableSchema> tables = new HashSet<InternalTableSchema>();
+			tables.add(new InternalTableSchema(Const.TABLE_TSDB, new String[] { Const.FAMILY_TSDB_DATA }));
+			tables.add(new InternalTableSchema(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD,
 					Const.FAMILY_UID_BACKWARD }));
 
 			// Remove all existing table from the set
 			HTableDescriptor tableDescriptors[] = hbase.listTables();
 			for (HTableDescriptor desc : tableDescriptors) {
 				String name = Bytes.toString(desc.getName());
-				tables.remove(new InternalTableDescriptor(name, new String[] {}));
+				tables.remove(new InternalTableSchema(name, new String[] {}));
 
 				logger.info("HBase table found: " + name);
 			}
 
 			// Create all remaining tables
-			for (InternalTableDescriptor internalDesc : tables) {
+			for (InternalTableSchema internalDesc : tables) {
 
 				logger.debug("Creating HBase table: " + internalDesc.getName());
 
@@ -147,4 +154,22 @@ public class TimeSeriesDatabase {
 		this.hbaseUtil = hbaseUtil;
 	}
 
+	public void run(Query query) throws QueryException {
+
+		try {
+			HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
+			Scan scan = new Scan();
+
+			byte[] startRow = new byte[keyWidth(query.getLabels().size())];
+			byte[] stopRow = new byte[keyWidth(query.getLabels().size())];
+
+			scan.setStartRow(startRow);
+			scan.setStopRow(stopRow);
+
+			table.getScanner(scan);
+
+		} catch (IOException e) {
+			throw new QueryException(e);
+		}
+	}
 }
