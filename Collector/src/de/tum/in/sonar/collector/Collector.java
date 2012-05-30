@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import de.tum.in.sonar.collector.server.CollectServiceImpl;
 import de.tum.in.sonar.collector.server.ManagementServiceImpl;
 import de.tum.in.sonar.collector.server.ServerBootstrap;
-import de.tum.in.sonar.collector.tsdb.Tsdb;
+import de.tum.in.sonar.collector.tsdb.TableCreationException;
+import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 
 public class Collector {
 
@@ -18,9 +19,14 @@ public class Collector {
 
 		HBaseUtil hbase = new HBaseUtil();
 
-		Tsdb tsdb = new Tsdb();
+		TimeSeriesDatabase tsdb = new TimeSeriesDatabase();
 		tsdb.setHbaseUtil(hbase);
-		tsdb.setupTables();
+		try {
+			tsdb.setupTables();
+		} catch (TableCreationException e) {
+			logger.error("Error while creating HBase talbe structure", e);
+			System.exit(1);
+		}
 
 		CollectServiceImpl collectService = new CollectServiceImpl();
 		collectService.setTsdb(tsdb);
@@ -36,7 +42,6 @@ public class Collector {
 		logger.info("Sever started");
 
 		dataSinkServer.wait(threads);
-
 	}
 
 	public static void main(String[] args) {

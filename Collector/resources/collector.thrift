@@ -21,6 +21,13 @@ struct File {
 	4:set<string> labels,
 }
 
+struct TimeSeriesQuery {
+	1:long startTime,
+	2:long stopTime,
+	3:string sensor,
+	5:set<string>labels,
+	4:optional string hostname,
+}
 
 service CollectService {
 	void logMessage(1:Identifier id, 2:string message),
@@ -31,5 +38,6 @@ service CollectService {
 }
 
 service ManagementService {
-	// TODO
+	
+	void query(1:TimeSeriesQuery query),
 }

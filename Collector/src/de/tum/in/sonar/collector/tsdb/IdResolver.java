@@ -122,10 +122,6 @@ public class IdResolver {
 		return -1;
 	}
 
-	void scanId(Integer id) {
-
-	}
-
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {
 		this.hbaseUtil = hbaseUtil;
 	}

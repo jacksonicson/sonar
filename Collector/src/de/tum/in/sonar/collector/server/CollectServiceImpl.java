@@ -9,13 +9,13 @@ import de.tum.in.sonar.collector.File;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.TimeSeriesPoint;
 import de.tum.in.sonar.collector.tsdb.DataPoint;
-import de.tum.in.sonar.collector.tsdb.Tsdb;
+import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 
 public class CollectServiceImpl implements CollectService.Iface {
 
 	private static final Logger logger = LoggerFactory.getLogger(CollectServiceImpl.class);
 
-	private Tsdb tsdb;
+	private TimeSeriesDatabase tsdb;
 
 	@Override
 	public void logMessage(Identifier id, String message) throws TException {
@@ -41,7 +41,7 @@ public class CollectServiceImpl implements CollectService.Iface {
 		logger.warn("log results - not implemented");
 	}
 
-	public void setTsdb(Tsdb tsdb) {
+	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
 	}
 }
