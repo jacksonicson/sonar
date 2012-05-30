@@ -48,7 +48,7 @@ public class TimeSeriesDatabase {
 		return value.length;
 	}
 
-	byte[] buildKey(DataPoint_mv point) throws UnresolvableException {
+	byte[] buildKey(DataPoint point) throws UnresolvableException {
 
 		sensorResolver.setHbaseUtil(hbaseUtil);
 		hostnameResolver.setHbaseUtil(hbaseUtil);
@@ -117,7 +117,7 @@ public class TimeSeriesDatabase {
 		// TODO: Add row to compaction algorithm
 	}
 
-	public void writeData(DataPoint_mv dataPoint) {
+	public void writeData(DataPoint dataPoint) {
 
 		try {
 			byte[] key = buildKey(dataPoint);
