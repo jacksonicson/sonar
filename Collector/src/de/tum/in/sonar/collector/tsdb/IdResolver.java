@@ -50,30 +50,46 @@ public class IdResolver {
 		throw new UnresolvableException();
 	}
 
-	private long createMapping(String name) throws IOException {
+	private Long createMapping(String name) throws IOException {
 
 		HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
-
-		// Create a new index
 
 		long value = uidTable.incrementColumnValue(Bytes.toBytes("counter"), Bytes.toBytes("forward"),
 				Bytes.toBytes(type), 1);
 
-		logger.info("Value for mapping: " + value);
-
-		// TODO: Prevent duplicates
 		Put put = new Put(Bytes.toBytes(name));
 		put.add(Bytes.toBytes("forward"), Bytes.toBytes(type), Bytes.toBytes(value));
-		uidTable.put(put);
 
-		put = new Put(Bytes.toBytes(value));
-		put.add(Bytes.toBytes("backward"), Bytes.toBytes(type), Bytes.toBytes(name));
-		uidTable.put(put);
+		boolean success = uidTable.checkAndPut(Bytes.toBytes(name), Bytes.toBytes("forward"), Bytes.toBytes(type),
+				null, put);
 
-		return value;
+		if (success) {
+			put = new Put(Bytes.toBytes(value));
+			put.add(Bytes.toBytes("backward"), Bytes.toBytes(type), Bytes.toBytes(name));
+			uidTable.put(put);
+
+			return value;
+		}
+
+		return null;
 	}
 
-	long scanNames(String name) {
+	private Long createMappingRetry(String name) throws UnresolvableException {
+
+		for (int retry = 0; retry < 3; retry++) {
+			try {
+				Long mapping = createMapping(name);
+				if (mapping != null)
+					return mapping;
+			} catch (IOException e) {
+				logger.debug("could not insert mapping", e);
+			}
+		}
+
+		throw new UnresolvableException();
+	}
+
+	long scanNames(String name) throws UnresolvableException {
 		try {
 			HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
 
@@ -84,7 +100,7 @@ public class IdResolver {
 
 			if (!uidTable.exists(get)) {
 				logger.info("creating new mapping");
-				long value = createMapping(name);
+				long value = createMappingRetry(name);
 				logger.info("value: " + value);
 
 				return value;
@@ -92,7 +108,7 @@ public class IdResolver {
 
 			KeyValue kvalue = result.getColumnLatest(Bytes.toBytes("forward"), Bytes.toBytes(type));
 			if (kvalue == null) {
-				long value = createMapping(name);
+				long value = createMappingRetry(name);
 				return value;
 			}
 
