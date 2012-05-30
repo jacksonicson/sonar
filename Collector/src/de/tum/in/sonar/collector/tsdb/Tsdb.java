@@ -9,6 +9,8 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +105,21 @@ public class Tsdb {
 	}
 
 	public void writeData(DataPoint dataPoint) {
+		byte[] key = dataPoint.buildKey();
+
+		try {
+			HTable table = new HTable(hbaseUtil.getConfig(), "tsdb");
+
+			// Create a new row in this case!
+			Put put = new Put(key);
+			put.add(Bytes.toBytes("data"), Bytes.toBytes("null"), Bytes.toBytes("null"));
+
+			table.put(put);
+
+		} catch (IOException e) {
+			logger.error("could not write tsdb to hbase", e);
+		}
+
 		logger.info("writing data ");
 	}
 

@@ -1,15 +1,15 @@
 package de.tum.in.sonar.collector.tsdb;
 
-import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.util.Bytes;
 
 public class DataPoint {
 
-	private final int METRIC_ID_WIDTH = 3;
-	private final int TAG_ID_WIDTH = 3;
-	private final int TIMESTAMP_WIDTH = 5;
+	private final int SENSOR_ID_WIDTH = 4;
+	private final int LABEL_ID_WIDTH = 4;
+	private final int TIMESTAMP_WIDTH = 8;
+	private final int HOSTNAME_WIDTH = 4;
 
 	private long timestamp;
 	private int sensor;
@@ -28,33 +28,33 @@ public class DataPoint {
 		return value.length;
 	}
 
-	byte[] writeTimestamp(byte[] key, long timestamp) {
+	private int writeTimestamp(byte[] key) {
 		long hourSinceEpoch = timestamp - (timestamp % 3600);
 		byte[] hourTimestamp = Bytes.toBytes(hourSinceEpoch);
 
-		System.arraycopy(hourTimestamp, 0, key, METRIC_ID_WIDTH, TIMESTAMP_WIDTH);
+		System.arraycopy(hourTimestamp, 0, key, SENSOR_ID_WIDTH, TIMESTAMP_WIDTH);
 
-		return key;
-	}
-
-	private int lookupMetricId(String metric) {
-		return 0;
+		return TIMESTAMP_WIDTH;
 	}
 
 	private int lookupTagId(String tag) {
-		return 0;
+		return 111;
 	}
 
-	byte[] buildKey(String metric, List<String> tags) {
-		int keyWidth = METRIC_ID_WIDTH + TIMESTAMP_WIDTH + TAG_ID_WIDTH * tags.size();
+	byte[] buildKey() {
+		int keyWidth = SENSOR_ID_WIDTH + TIMESTAMP_WIDTH + HOSTNAME_WIDTH + LABEL_ID_WIDTH * labels.size();
 		byte[] key = new byte[keyWidth];
 
-		int index = 0;
-		index += appendToKey(key, index, lookupMetricId(metric), METRIC_ID_WIDTH);
-		index += TIMESTAMP_WIDTH;
+		// Key structure:
+		// sensor id, timestamp, hostname-id, n * label-id
 
-		for (String tag : tags) {
-			index += appendToKey(key, index, lookupTagId(tag), TAG_ID_WIDTH);
+		int index = 0;
+		index += appendToKey(key, index, sensor, SENSOR_ID_WIDTH);
+		index += writeTimestamp(key);
+		index += HOSTNAME_WIDTH;
+
+		for (String label : labels) {
+			index += appendToKey(key, index, lookupTagId(label), LABEL_ID_WIDTH);
 		}
 
 		return key;

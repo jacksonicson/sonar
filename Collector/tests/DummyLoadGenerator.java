@@ -22,26 +22,26 @@ public class DummyLoadGenerator {
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);
-			
+
 			CollectService.Client client = new CollectService.Client(protocol);
-			
-			
+
 			Identifier id = new Identifier();
-			id.setTimestamp(0);
-			id.setSensor(1);
+			id.setTimestamp(System.currentTimeMillis());
+			id.setSensor(1234);
 			id.setHostname("jack");
 
 			client.logMessage(id, "hello world");
-			
-			
+
 			Set<String> labels = new HashSet<String>();
+			labels.add("cpu");
+			labels.add("test");
+			labels.add("experiment1");
 
 			TimeSeriesPoint tsp = new TimeSeriesPoint();
 			tsp.setLabels(labels);
 			tsp.setValue(33);
-			
+
 			client.logMetric(id, tsp);
-			
 
 			transport.close();
 
