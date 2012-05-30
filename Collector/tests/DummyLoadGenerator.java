@@ -25,23 +25,24 @@ public class DummyLoadGenerator {
 
 			CollectService.Client client = new CollectService.Client(protocol);
 
-			Identifier id = new Identifier();
-			id.setTimestamp(System.currentTimeMillis());
-			id.setSensor("cpu");
-			id.setHostname("jack");
-
-			client.logMessage(id, "hello world");
-
 			Set<String> labels = new HashSet<String>();
 			labels.add("cpu");
 			labels.add("test");
 			labels.add("experiment1");
 
-			TimeSeriesPoint tsp = new TimeSeriesPoint();
-			tsp.setLabels(labels);
-			tsp.setValue(33);
+			for (int i = 0; i < 1000; i++) {
 
-			client.logMetric(id, tsp);
+				Identifier id = new Identifier();
+				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
+				id.setSensor("cpu");
+				id.setHostname("jack");
+
+				TimeSeriesPoint tsp = new TimeSeriesPoint();
+				tsp.setLabels(labels);
+				tsp.setValue(i);
+
+				client.logMetric(id, tsp);
+			}
 
 			transport.close();
 

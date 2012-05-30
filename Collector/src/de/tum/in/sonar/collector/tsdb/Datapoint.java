@@ -3,10 +3,14 @@ package de.tum.in.sonar.collector.tsdb;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tum.in.sonar.collector.HBaseUtil;
 
 public class DataPoint {
+
+	private static final Logger logger = LoggerFactory.getLogger(DataPoint.class);
 
 	private final int SENSOR_ID_WIDTH = 8;
 	private final int LABEL_ID_WIDTH = 8;
@@ -21,7 +25,12 @@ public class DataPoint {
 	private String sensor;
 	private String hostname;
 	private Set<String> labels;
+
 	private long value;
+
+	long getValue() {
+		return value;
+	}
 
 	public DataPoint() {
 		labelResolver = new IdResolver("label");
@@ -39,8 +48,19 @@ public class DataPoint {
 		return value.length;
 	}
 
-	private int writeTimestamp(byte[] key) {
+	long getOffset() {
 		long hourSinceEpoch = timestamp - (timestamp % 3600);
+		long offset = (timestamp - hourSinceEpoch);
+		return offset;
+	}
+
+	private int writeTimestamp(byte[] key) {
+
+		logger.info("timestamp: " + timestamp);
+		logger.info("Secs: " + (timestamp % 3600));
+		long hourSinceEpoch = timestamp - (timestamp % 3600);
+		logger.info("hour: " + hourSinceEpoch);
+
 		byte[] hourTimestamp = Bytes.toBytes(hourSinceEpoch);
 
 		System.arraycopy(hourTimestamp, 0, key, SENSOR_ID_WIDTH, TIMESTAMP_WIDTH);

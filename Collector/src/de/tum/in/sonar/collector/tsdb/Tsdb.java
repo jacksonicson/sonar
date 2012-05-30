@@ -104,6 +104,10 @@ public class Tsdb {
 
 	}
 
+	private void scheduleCompaction(byte[] row) {
+		// TODO
+	}
+
 	public void writeData(DataPoint dataPoint) {
 
 		try {
@@ -112,9 +116,10 @@ public class Tsdb {
 
 			// Create a new row in this case!
 			Put put = new Put(key);
-			put.add(Bytes.toBytes("data"), Bytes.toBytes("null"), Bytes.toBytes("null"));
-
+			put.add(Bytes.toBytes("data"), Bytes.toBytes(dataPoint.getOffset()), Bytes.toBytes(dataPoint.getValue()));
 			table.put(put);
+
+			scheduleCompaction(key);
 
 		} catch (IOException e) {
 			logger.error("could not write tsdb to hbase", e);
