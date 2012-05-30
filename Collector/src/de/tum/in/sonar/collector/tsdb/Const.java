@@ -1,6 +1,6 @@
 package de.tum.in.sonar.collector.tsdb;
 
-public interface Const {
+interface Const {
 
 	public static final int SENSOR_ID_WIDTH = 8;
 	public static final int LABEL_ID_WIDTH = 8;

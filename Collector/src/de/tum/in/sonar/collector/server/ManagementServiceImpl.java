@@ -13,6 +13,7 @@ import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.tsdb.DataPoint;
 import de.tum.in.sonar.collector.tsdb.Query;
 import de.tum.in.sonar.collector.tsdb.QueryException;
+import de.tum.in.sonar.collector.tsdb.TimeSeries;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 import de.tum.in.sonar.collector.tsdb.UnresolvableException;
 
@@ -27,10 +28,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		Query tsdbQuery = new Query(query.getSensor(), query.getStartTime(), query.getStopTime());
 		try {
-			List<DataPoint> dataPoints = tsdb.run(tsdbQuery);
-			List<TimeSeriesPoint> tsPoints = new ArrayList<TimeSeriesPoint>(dataPoints.size());
+			TimeSeries timeSeries = tsdb.run(tsdbQuery);
+			List<TimeSeriesPoint> tsPoints = new ArrayList<TimeSeriesPoint>(100);
 
-			for (DataPoint point : dataPoints) {
+			for (DataPoint point : timeSeries) {
 				TimeSeriesPoint tsPoint = new TimeSeriesPoint();
 				tsPoints.add(tsPoint);
 

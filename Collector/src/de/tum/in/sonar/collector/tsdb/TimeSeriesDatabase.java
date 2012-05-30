@@ -1,9 +1,7 @@
 package de.tum.in.sonar.collector.tsdb;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
 
@@ -37,12 +35,16 @@ public class TimeSeriesDatabase {
 
 	private HTablePool tsdbTablePool;
 
+	private CompactionQueue compactionQueue;
+
 	public TimeSeriesDatabase() {
 		this.labelResolver = new IdResolver("label");
 		this.hostnameResolver = new IdResolver("hostname");
 		this.sensorResolver = new IdResolver("sensor");
 
 		this.tsdbTablePool = new HTablePool();
+		this.compactionQueue = new CompactionQueue();
+		this.compactionQueue.start();
 	}
 
 	private int appendToKey(byte[] key, int index, long value) {
@@ -122,7 +124,7 @@ public class TimeSeriesDatabase {
 	}
 
 	private void scheduleCompaction(byte[] row) {
-		// TODO: Add row to compaction algorithm
+		this.compactionQueue.schedule(row);
 	}
 
 	public void writeData(DataPoint dataPoint) {
@@ -157,6 +159,8 @@ public class TimeSeriesDatabase {
 		this.sensorResolver.setHbaseUtil(hbaseUtil);
 		this.hostnameResolver.setHbaseUtil(hbaseUtil);
 		this.labelResolver.setHbaseUtil(hbaseUtil);
+
+		this.compactionQueue.setHbaseUtil(hbaseUtil);
 	}
 
 	long getHourSinceEpoch(long timestamp) {
@@ -170,7 +174,7 @@ public class TimeSeriesDatabase {
 		return offset;
 	}
 
-	public List<DataPoint> run(Query query) throws QueryException, UnresolvableException {
+	public TimeSeries run(Query query) throws QueryException, UnresolvableException {
 
 		try {
 			HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
@@ -208,7 +212,7 @@ public class TimeSeriesDatabase {
 			logger.debug("Starting table scanner on query");
 			ResultScanner scanner = table.getScanner(scan);
 
-			List<DataPoint> dataPoints = new ArrayList<DataPoint>(50);
+			TimeSeries timeSeries = new TimeSeries();
 
 			Result next;
 			while ((next = scanner.next()) != null) {
@@ -216,9 +220,17 @@ public class TimeSeriesDatabase {
 				byte[] rowKey = next.getRow();
 				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH);
 
+				TimeSeriesFragment fragment = timeSeries.newFragment();
+
 				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 
 				for (byte[] key : familyMap.keySet()) {
+
+					if (Bytes.toString(key).equals("group")) {
+						fragment.addSegment(familyMap.get(key));
+						continue;
+					}
+
 					long value = Bytes.toLong(key);
 					long data = Bytes.toLong(familyMap.get(key));
 
@@ -227,13 +239,13 @@ public class TimeSeriesDatabase {
 					p.setSensor(query.getSensor());
 					p.setTimestamp(timestampHours + value);
 					p.setValue(data);
-					dataPoints.add(p);
+					fragment.addPoint(p);
 
 					logger.info("qualifier: " + value + " data: " + data);
 				}
 			}
 
-			return dataPoints;
+			return timeSeries;
 
 		} catch (IOException e) {
 			throw new QueryException(e);

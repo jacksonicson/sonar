@@ -1,6 +1,6 @@
 package de.tum.in.sonar.collector.tsdb;
 
-public class InternalTableSchema implements Comparable<InternalTableSchema> {
+class InternalTableSchema implements Comparable<InternalTableSchema> {
 	private final String name;
 
 	private final String[] families;
