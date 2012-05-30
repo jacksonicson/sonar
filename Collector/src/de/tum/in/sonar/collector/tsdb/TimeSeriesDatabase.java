@@ -12,6 +12,8 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
@@ -57,10 +59,6 @@ public class TimeSeriesDatabase {
 	}
 
 	byte[] buildKey(DataPoint point) throws UnresolvableException {
-
-		sensorResolver.setHbaseUtil(hbaseUtil);
-		hostnameResolver.setHbaseUtil(hbaseUtil);
-		labelResolver.setHbaseUtil(hbaseUtil);
 
 		int keyWidth = keyWidth(point.getLabels().size());
 		byte[] key = new byte[keyWidth];
@@ -152,21 +150,67 @@ public class TimeSeriesDatabase {
 
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {
 		this.hbaseUtil = hbaseUtil;
+
+		this.sensorResolver.setHbaseUtil(hbaseUtil);
+		this.hostnameResolver.setHbaseUtil(hbaseUtil);
+		this.labelResolver.setHbaseUtil(hbaseUtil);
 	}
 
-	public void run(Query query) throws QueryException {
+	long getHourSinceEpoch(long timestamp) {
+		long hourSinceEpoch = timestamp - (timestamp % 3600);
+		return hourSinceEpoch;
+	}
+
+	long getSecondsInHour(long timestamp) {
+		long hourSinceEpoch = getHourSinceEpoch(timestamp);
+		long offset = (timestamp - hourSinceEpoch);
+		return offset;
+	}
+
+	public void run(Query query) throws QueryException, UnresolvableException {
 
 		try {
 			HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
 			Scan scan = new Scan();
 
+			// Start row
 			byte[] startRow = new byte[keyWidth(query.getLabels().size())];
-			byte[] stopRow = new byte[keyWidth(query.getLabels().size())];
+			int index = 0;
+			index += appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
+			index += appendToKey(startRow, index, getHourSinceEpoch(query.getStartTime()));
+
+			if (query.getHostname() != null)
+				index += appendToKey(startRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+			else
+				index += Const.HOSTNAME_WIDTH;
 
 			scan.setStartRow(startRow);
+
+			// Stop row
+			byte[] stopRow = new byte[keyWidth(query.getLabels().size())];
+
+			index = 0;
+			index += appendToKey(stopRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
+			index += appendToKey(stopRow, index, getHourSinceEpoch(query.getStartTime()));
+
+			if (query.getHostname() != null)
+				index += appendToKey(stopRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+
+			for (; index < stopRow.length; index++)
+				stopRow[index] = (byte) 0xFF;
+
 			scan.setStopRow(stopRow);
 
-			table.getScanner(scan);
+			// Load the scanner
+			logger.debug("Starting table scanner on query");
+			ResultScanner scanner = table.getScanner(scan);
+
+			Result next;
+			while ((next = scanner.next()) != null) {
+				next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
+
+				System.out.println("Result found ...");
+			}
 
 		} catch (IOException e) {
 			throw new QueryException(e);

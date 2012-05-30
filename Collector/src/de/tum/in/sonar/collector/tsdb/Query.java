@@ -18,7 +18,7 @@ public class Query {
 
 	// Optional fields
 	private String hostname;
-	private Set<String> labels;
+	private Set<String> labels = new HashSet<String>();
 
 	public Query(String sensor, long startTime, long stopTime) {
 		this.sensor = sensor;
@@ -33,7 +33,7 @@ public class Query {
 	}
 
 	public Query setLabels(String[] labels) {
-		this.labels = new HashSet<String>();
+		this.labels.clear();
 		for (String label : labels)
 			this.labels.add(label);
 
@@ -55,8 +55,8 @@ public class Query {
 	String getHostname() {
 		return hostname;
 	}
-	
+
 	Set<String> getLabels() {
-		return this.labels; 
+		return this.labels;
 	}
 }

@@ -32,6 +32,7 @@ public class Collector {
 		collectService.setTsdb(tsdb);
 
 		ManagementServiceImpl managementService = new ManagementServiceImpl();
+		managementService.setTsdb(tsdb);
 
 		ServerBootstrap dataSinkServer = new ServerBootstrap();
 		dataSinkServer.setCollectServiceImpl(collectService);
