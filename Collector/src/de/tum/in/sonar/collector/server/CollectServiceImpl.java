@@ -8,7 +8,7 @@ import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.File;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.TimeSeriesPoint;
-import de.tum.in.sonar.collector.tsdb.DataPoint;
+import de.tum.in.sonar.collector.tsdb.DataPoint_mv;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 
 public class CollectServiceImpl implements CollectService.Iface {
@@ -26,7 +26,7 @@ public class CollectServiceImpl implements CollectService.Iface {
 	public void logMetric(Identifier id, TimeSeriesPoint value) throws TException {
 		logger.debug("log metric");
 
-		DataPoint dp = new DataPoint();
+		DataPoint_mv dp = new DataPoint_mv();
 		dp.setTimestamp(id.getTimestamp());
 		dp.setSensor(id.getSensor());
 		dp.setHostname(id.getHostname());

@@ -5,10 +5,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DataPoint {
+public class DataPoint_mv {
 
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(DataPoint.class);
+	private static final Logger logger = LoggerFactory.getLogger(DataPoint_mv.class);
 
 	private long timestamp;
 	private String sensor;
