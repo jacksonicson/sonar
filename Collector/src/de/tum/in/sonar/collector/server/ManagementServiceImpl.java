@@ -35,6 +35,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				TimeSeriesPoint tsPoint = new TimeSeriesPoint();
 				tsPoints.add(tsPoint);
 
+				tsPoint.setTimestamp(point.getSecondsInHour());
 				tsPoint.setValue(point.getValue());
 				tsPoint.setLabels(point.getLabels());
 			}

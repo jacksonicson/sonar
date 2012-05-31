@@ -11,7 +11,11 @@
 		</layout>
 	</appender>
 
-	
+
+	<logger name="de.tum.in.sonar.collector">
+		<level value="dewbug" />
+		<appender-ref ref="consoleAppender" />
+	</logger>
 
 	<root>
 		<priority value="info" />

@@ -832,14 +832,14 @@ public class ManagementService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                  struct.success = new ArrayList<TimeSeriesPoint>(_list24.size);
-                  for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                  org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                  struct.success = new ArrayList<TimeSeriesPoint>(_list32.size);
+                  for (int _i33 = 0; _i33 < _list32.size; ++_i33)
                   {
-                    TimeSeriesPoint _elem26; // required
-                    _elem26 = new TimeSeriesPoint();
-                    _elem26.read(iprot);
-                    struct.success.add(_elem26);
+                    TimeSeriesPoint _elem34; // required
+                    _elem34 = new TimeSeriesPoint();
+                    _elem34.read(iprot);
+                    struct.success.add(_elem34);
                   }
                   iprot.readListEnd();
                 }
@@ -867,9 +867,9 @@ public class ManagementService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (TimeSeriesPoint _iter27 : struct.success)
+            for (TimeSeriesPoint _iter35 : struct.success)
             {
-              _iter27.write(oprot);
+              _iter35.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -900,9 +900,9 @@ public class ManagementService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (TimeSeriesPoint _iter28 : struct.success)
+            for (TimeSeriesPoint _iter36 : struct.success)
             {
-              _iter28.write(oprot);
+              _iter36.write(oprot);
             }
           }
         }
@@ -914,14 +914,14 @@ public class ManagementService {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list29 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new ArrayList<TimeSeriesPoint>(_list29.size);
-            for (int _i30 = 0; _i30 < _list29.size; ++_i30)
+            org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new ArrayList<TimeSeriesPoint>(_list37.size);
+            for (int _i38 = 0; _i38 < _list37.size; ++_i38)
             {
-              TimeSeriesPoint _elem31; // required
-              _elem31 = new TimeSeriesPoint();
-              _elem31.read(iprot);
-              struct.success.add(_elem31);
+              TimeSeriesPoint _elem39; // required
+              _elem39 = new TimeSeriesPoint();
+              _elem39.read(iprot);
+              struct.success.add(_elem39);
             }
           }
           struct.setSuccessIsSet(true);

@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.File;
 import de.tum.in.sonar.collector.Identifier;
-import de.tum.in.sonar.collector.TimeSeriesPoint;
+import de.tum.in.sonar.collector.MetricReading;
 import de.tum.in.sonar.collector.tsdb.DataPoint;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 
@@ -23,7 +23,7 @@ public class CollectServiceImpl implements CollectService.Iface {
 	}
 
 	@Override
-	public void logMetric(Identifier id, TimeSeriesPoint value) throws TException {
+	public void logMetric(Identifier id, MetricReading value) throws TException {
 		logger.debug("log metric");
 
 		DataPoint dp = new DataPoint();
@@ -32,8 +32,8 @@ public class CollectServiceImpl implements CollectService.Iface {
 		dp.setHostname(id.getHostname());
 		dp.setValue(value.getValue());
 		dp.setLabels(value.getLabels());
-		
-		tsdb.writeData(dp); 
+
+		tsdb.writeData(dp);
 	}
 
 	@Override

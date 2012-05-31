@@ -9,7 +9,7 @@ struct Identifier {
 	2:string hostname,
 }
 
-struct TimeSeriesPoint {
+struct MetricReading {
 	1:long value,
 	3:set<string> labels,
 }
@@ -19,6 +19,13 @@ struct File {
 	2:string description,
 	3:string file,
 	4:set<string> labels,
+}
+
+
+struct TimeSeriesPoint {
+	1:long timestamp,
+	2:long value,
+	3:set<string> labels,
 }
 
 struct TimeSeriesQuery {
@@ -32,7 +39,7 @@ struct TimeSeriesQuery {
 service CollectService {
 	void logMessage(1:Identifier id, 2:string message),
 	 	
-	void logMetric(1:Identifier id, 2:TimeSeriesPoint value),
+	void logMetric(1:Identifier id, 2:MetricReading value),
 	 
 	void logResults(1:Identifier id, 2:File file),
 }

@@ -665,13 +665,13 @@ public class TimeSeriesQuery implements org.apache.thrift.TBase<TimeSeriesQuery,
           case 5: // LABELS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set16 = iprot.readSetBegin();
-                struct.labels = new HashSet<String>(2*_set16.size);
-                for (int _i17 = 0; _i17 < _set16.size; ++_i17)
+                org.apache.thrift.protocol.TSet _set24 = iprot.readSetBegin();
+                struct.labels = new HashSet<String>(2*_set24.size);
+                for (int _i25 = 0; _i25 < _set24.size; ++_i25)
                 {
-                  String _elem18; // required
-                  _elem18 = iprot.readString();
-                  struct.labels.add(_elem18);
+                  String _elem26; // required
+                  _elem26 = iprot.readString();
+                  struct.labels.add(_elem26);
                 }
                 iprot.readSetEnd();
               }
@@ -725,9 +725,9 @@ public class TimeSeriesQuery implements org.apache.thrift.TBase<TimeSeriesQuery,
         oprot.writeFieldBegin(LABELS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.labels.size()));
-          for (String _iter19 : struct.labels)
+          for (String _iter27 : struct.labels)
           {
-            oprot.writeString(_iter19);
+            oprot.writeString(_iter27);
           }
           oprot.writeSetEnd();
         }
@@ -779,9 +779,9 @@ public class TimeSeriesQuery implements org.apache.thrift.TBase<TimeSeriesQuery,
       if (struct.isSetLabels()) {
         {
           oprot.writeI32(struct.labels.size());
-          for (String _iter20 : struct.labels)
+          for (String _iter28 : struct.labels)
           {
-            oprot.writeString(_iter20);
+            oprot.writeString(_iter28);
           }
         }
       }
@@ -808,13 +808,13 @@ public class TimeSeriesQuery implements org.apache.thrift.TBase<TimeSeriesQuery,
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TSet _set21 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.labels = new HashSet<String>(2*_set21.size);
-          for (int _i22 = 0; _i22 < _set21.size; ++_i22)
+          org.apache.thrift.protocol.TSet _set29 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.labels = new HashSet<String>(2*_set29.size);
+          for (int _i30 = 0; _i30 < _set29.size; ++_i30)
           {
-            String _elem23; // required
-            _elem23 = iprot.readString();
-            struct.labels.add(_elem23);
+            String _elem31; // required
+            _elem31 = iprot.readString();
+            struct.labels.add(_elem31);
           }
         }
         struct.setLabelsIsSet(true);

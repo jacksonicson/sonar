@@ -27,27 +27,24 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint, TimeSeriesPoint._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TimeSeriesPoint");
+public class MetricReading implements org.apache.thrift.TBase<MetricReading, MetricReading._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("MetricReading");
 
-  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField LABELS_FIELD_DESC = new org.apache.thrift.protocol.TField("labels", org.apache.thrift.protocol.TType.SET, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new TimeSeriesPointStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new TimeSeriesPointTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new MetricReadingStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new MetricReadingTupleSchemeFactory());
   }
 
-  public long timestamp; // required
   public long value; // required
   public Set<String> labels; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    TIMESTAMP((short)1, "timestamp"),
-    VALUE((short)2, "value"),
+    VALUE((short)1, "value"),
     LABELS((short)3, "labels");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -63,9 +60,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // TIMESTAMP
-          return TIMESTAMP;
-        case 2: // VALUE
+        case 1: // VALUE
           return VALUE;
         case 3: // LABELS
           return LABELS;
@@ -109,34 +104,28 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   }
 
   // isset id assignments
-  private static final int __TIMESTAMP_ISSET_ID = 0;
-  private static final int __VALUE_ISSET_ID = 1;
-  private BitSet __isset_bit_vector = new BitSet(2);
+  private static final int __VALUE_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
     tmpMap.put(_Fields.LABELS, new org.apache.thrift.meta_data.FieldMetaData("labels", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TimeSeriesPoint.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(MetricReading.class, metaDataMap);
   }
 
-  public TimeSeriesPoint() {
+  public MetricReading() {
   }
 
-  public TimeSeriesPoint(
-    long timestamp,
+  public MetricReading(
     long value,
     Set<String> labels)
   {
     this();
-    this.timestamp = timestamp;
-    setTimestampIsSet(true);
     this.value = value;
     setValueIsSet(true);
     this.labels = labels;
@@ -145,10 +134,9 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public TimeSeriesPoint(TimeSeriesPoint other) {
+  public MetricReading(MetricReading other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
-    this.timestamp = other.timestamp;
     this.value = other.value;
     if (other.isSetLabels()) {
       Set<String> __this__labels = new HashSet<String>();
@@ -159,47 +147,22 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     }
   }
 
-  public TimeSeriesPoint deepCopy() {
-    return new TimeSeriesPoint(this);
+  public MetricReading deepCopy() {
+    return new MetricReading(this);
   }
 
   @Override
   public void clear() {
-    setTimestampIsSet(false);
-    this.timestamp = 0;
     setValueIsSet(false);
     this.value = 0;
     this.labels = null;
-  }
-
-  public long getTimestamp() {
-    return this.timestamp;
-  }
-
-  public TimeSeriesPoint setTimestamp(long timestamp) {
-    this.timestamp = timestamp;
-    setTimestampIsSet(true);
-    return this;
-  }
-
-  public void unsetTimestamp() {
-    __isset_bit_vector.clear(__TIMESTAMP_ISSET_ID);
-  }
-
-  /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
-  public boolean isSetTimestamp() {
-    return __isset_bit_vector.get(__TIMESTAMP_ISSET_ID);
-  }
-
-  public void setTimestampIsSet(boolean value) {
-    __isset_bit_vector.set(__TIMESTAMP_ISSET_ID, value);
   }
 
   public long getValue() {
     return this.value;
   }
 
-  public TimeSeriesPoint setValue(long value) {
+  public MetricReading setValue(long value) {
     this.value = value;
     setValueIsSet(true);
     return this;
@@ -237,7 +200,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     return this.labels;
   }
 
-  public TimeSeriesPoint setLabels(Set<String> labels) {
+  public MetricReading setLabels(Set<String> labels) {
     this.labels = labels;
     return this;
   }
@@ -259,14 +222,6 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case TIMESTAMP:
-      if (value == null) {
-        unsetTimestamp();
-      } else {
-        setTimestamp((Long)value);
-      }
-      break;
-
     case VALUE:
       if (value == null) {
         unsetValue();
@@ -288,9 +243,6 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case TIMESTAMP:
-      return Long.valueOf(getTimestamp());
-
     case VALUE:
       return Long.valueOf(getValue());
 
@@ -308,8 +260,6 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     }
 
     switch (field) {
-    case TIMESTAMP:
-      return isSetTimestamp();
     case VALUE:
       return isSetValue();
     case LABELS:
@@ -322,23 +272,14 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof TimeSeriesPoint)
-      return this.equals((TimeSeriesPoint)that);
+    if (that instanceof MetricReading)
+      return this.equals((MetricReading)that);
     return false;
   }
 
-  public boolean equals(TimeSeriesPoint that) {
+  public boolean equals(MetricReading that) {
     if (that == null)
       return false;
-
-    boolean this_present_timestamp = true;
-    boolean that_present_timestamp = true;
-    if (this_present_timestamp || that_present_timestamp) {
-      if (!(this_present_timestamp && that_present_timestamp))
-        return false;
-      if (this.timestamp != that.timestamp)
-        return false;
-    }
 
     boolean this_present_value = true;
     boolean that_present_value = true;
@@ -366,24 +307,14 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     return 0;
   }
 
-  public int compareTo(TimeSeriesPoint other) {
+  public int compareTo(MetricReading other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    TimeSeriesPoint typedOther = (TimeSeriesPoint)other;
+    MetricReading typedOther = (MetricReading)other;
 
-    lastComparison = Boolean.valueOf(isSetTimestamp()).compareTo(typedOther.isSetTimestamp());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTimestamp()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, typedOther.timestamp);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetValue()).compareTo(typedOther.isSetValue());
     if (lastComparison != 0) {
       return lastComparison;
@@ -421,13 +352,9 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("TimeSeriesPoint(");
+    StringBuilder sb = new StringBuilder("MetricReading(");
     boolean first = true;
 
-    sb.append("timestamp:");
-    sb.append(this.timestamp);
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("value:");
     sb.append(this.value);
     first = false;
@@ -465,15 +392,15 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     }
   }
 
-  private static class TimeSeriesPointStandardSchemeFactory implements SchemeFactory {
-    public TimeSeriesPointStandardScheme getScheme() {
-      return new TimeSeriesPointStandardScheme();
+  private static class MetricReadingStandardSchemeFactory implements SchemeFactory {
+    public MetricReadingStandardScheme getScheme() {
+      return new MetricReadingStandardScheme();
     }
   }
 
-  private static class TimeSeriesPointStandardScheme extends StandardScheme<TimeSeriesPoint> {
+  private static class MetricReadingStandardScheme extends StandardScheme<MetricReading> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, MetricReading struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -483,15 +410,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
           break;
         }
         switch (schemeField.id) {
-          case 1: // TIMESTAMP
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.timestamp = iprot.readI64();
-              struct.setTimestampIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // VALUE
+          case 1: // VALUE
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.value = iprot.readI64();
               struct.setValueIsSet(true);
@@ -502,13 +421,13 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
           case 3: // LABELS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set16 = iprot.readSetBegin();
-                struct.labels = new HashSet<String>(2*_set16.size);
-                for (int _i17 = 0; _i17 < _set16.size; ++_i17)
+                org.apache.thrift.protocol.TSet _set0 = iprot.readSetBegin();
+                struct.labels = new HashSet<String>(2*_set0.size);
+                for (int _i1 = 0; _i1 < _set0.size; ++_i1)
                 {
-                  String _elem18; // required
-                  _elem18 = iprot.readString();
-                  struct.labels.add(_elem18);
+                  String _elem2; // required
+                  _elem2 = iprot.readString();
+                  struct.labels.add(_elem2);
                 }
                 iprot.readSetEnd();
               }
@@ -528,13 +447,10 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, MetricReading struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
-      oprot.writeI64(struct.timestamp);
-      oprot.writeFieldEnd();
       oprot.writeFieldBegin(VALUE_FIELD_DESC);
       oprot.writeI64(struct.value);
       oprot.writeFieldEnd();
@@ -542,9 +458,9 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
         oprot.writeFieldBegin(LABELS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.labels.size()));
-          for (String _iter19 : struct.labels)
+          for (String _iter3 : struct.labels)
           {
-            oprot.writeString(_iter19);
+            oprot.writeString(_iter3);
           }
           oprot.writeSetEnd();
         }
@@ -556,66 +472,56 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   }
 
-  private static class TimeSeriesPointTupleSchemeFactory implements SchemeFactory {
-    public TimeSeriesPointTupleScheme getScheme() {
-      return new TimeSeriesPointTupleScheme();
+  private static class MetricReadingTupleSchemeFactory implements SchemeFactory {
+    public MetricReadingTupleScheme getScheme() {
+      return new MetricReadingTupleScheme();
     }
   }
 
-  private static class TimeSeriesPointTupleScheme extends TupleScheme<TimeSeriesPoint> {
+  private static class MetricReadingTupleScheme extends TupleScheme<MetricReading> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, MetricReading struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetTimestamp()) {
+      if (struct.isSetValue()) {
         optionals.set(0);
       }
-      if (struct.isSetValue()) {
+      if (struct.isSetLabels()) {
         optionals.set(1);
       }
-      if (struct.isSetLabels()) {
-        optionals.set(2);
-      }
-      oprot.writeBitSet(optionals, 3);
-      if (struct.isSetTimestamp()) {
-        oprot.writeI64(struct.timestamp);
-      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetValue()) {
         oprot.writeI64(struct.value);
       }
       if (struct.isSetLabels()) {
         {
           oprot.writeI32(struct.labels.size());
-          for (String _iter20 : struct.labels)
+          for (String _iter4 : struct.labels)
           {
-            oprot.writeString(_iter20);
+            oprot.writeString(_iter4);
           }
         }
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, MetricReading struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.timestamp = iprot.readI64();
-        struct.setTimestampIsSet(true);
-      }
-      if (incoming.get(1)) {
         struct.value = iprot.readI64();
         struct.setValueIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TSet _set21 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.labels = new HashSet<String>(2*_set21.size);
-          for (int _i22 = 0; _i22 < _set21.size; ++_i22)
+          org.apache.thrift.protocol.TSet _set5 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.labels = new HashSet<String>(2*_set5.size);
+          for (int _i6 = 0; _i6 < _set5.size; ++_i6)
           {
-            String _elem23; // required
-            _elem23 = iprot.readString();
-            struct.labels.add(_elem23);
+            String _elem7; // required
+            _elem7 = iprot.readString();
+            struct.labels.add(_elem7);
           }
         }
         struct.setLabelsIsSet(true);

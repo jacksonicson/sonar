@@ -33,7 +33,7 @@ public class CollectService {
 
     public void logMessage(Identifier id, String message) throws org.apache.thrift.TException;
 
-    public void logMetric(Identifier id, TimeSeriesPoint value) throws org.apache.thrift.TException;
+    public void logMetric(Identifier id, MetricReading value) throws org.apache.thrift.TException;
 
     public void logResults(Identifier id, File file) throws org.apache.thrift.TException;
 
@@ -43,7 +43,7 @@ public class CollectService {
 
     public void logMessage(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logMessage_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void logMetric(Identifier id, TimeSeriesPoint value, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logMetric_call> resultHandler) throws org.apache.thrift.TException;
+    public void logMetric(Identifier id, MetricReading value, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logMetric_call> resultHandler) throws org.apache.thrift.TException;
 
     public void logResults(Identifier id, File file, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logResults_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -90,13 +90,13 @@ public class CollectService {
       return;
     }
 
-    public void logMetric(Identifier id, TimeSeriesPoint value) throws org.apache.thrift.TException
+    public void logMetric(Identifier id, MetricReading value) throws org.apache.thrift.TException
     {
       send_logMetric(id, value);
       recv_logMetric();
     }
 
-    public void send_logMetric(Identifier id, TimeSeriesPoint value) throws org.apache.thrift.TException
+    public void send_logMetric(Identifier id, MetricReading value) throws org.apache.thrift.TException
     {
       logMetric_args args = new logMetric_args();
       args.setId(id);
@@ -185,7 +185,7 @@ public class CollectService {
       }
     }
 
-    public void logMetric(Identifier id, TimeSeriesPoint value, org.apache.thrift.async.AsyncMethodCallback<logMetric_call> resultHandler) throws org.apache.thrift.TException {
+    public void logMetric(Identifier id, MetricReading value, org.apache.thrift.async.AsyncMethodCallback<logMetric_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       logMetric_call method_call = new logMetric_call(id, value, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -194,8 +194,8 @@ public class CollectService {
 
     public static class logMetric_call extends org.apache.thrift.async.TAsyncMethodCall {
       private Identifier id;
-      private TimeSeriesPoint value;
-      public logMetric_call(Identifier id, TimeSeriesPoint value, org.apache.thrift.async.AsyncMethodCallback<logMetric_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private MetricReading value;
+      public logMetric_call(Identifier id, MetricReading value, org.apache.thrift.async.AsyncMethodCallback<logMetric_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.id = id;
         this.value = value;
@@ -1037,7 +1037,7 @@ public class CollectService {
     }
 
     public Identifier id; // required
-    public TimeSeriesPoint value; // required
+    public MetricReading value; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -1107,7 +1107,7 @@ public class CollectService {
       tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Identifier.class)));
       tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TimeSeriesPoint.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, MetricReading.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(logMetric_args.class, metaDataMap);
     }
@@ -1117,7 +1117,7 @@ public class CollectService {
 
     public logMetric_args(
       Identifier id,
-      TimeSeriesPoint value)
+      MetricReading value)
     {
       this();
       this.id = id;
@@ -1132,7 +1132,7 @@ public class CollectService {
         this.id = new Identifier(other.id);
       }
       if (other.isSetValue()) {
-        this.value = new TimeSeriesPoint(other.value);
+        this.value = new MetricReading(other.value);
       }
     }
 
@@ -1170,11 +1170,11 @@ public class CollectService {
       }
     }
 
-    public TimeSeriesPoint getValue() {
+    public MetricReading getValue() {
       return this.value;
     }
 
-    public logMetric_args setValue(TimeSeriesPoint value) {
+    public logMetric_args setValue(MetricReading value) {
       this.value = value;
       return this;
     }
@@ -1208,7 +1208,7 @@ public class CollectService {
         if (value == null) {
           unsetValue();
         } else {
-          setValue((TimeSeriesPoint)value);
+          setValue((MetricReading)value);
         }
         break;
 
@@ -1397,7 +1397,7 @@ public class CollectService {
               break;
             case 2: // VALUE
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.value = new TimeSeriesPoint();
+                struct.value = new MetricReading();
                 struct.value.read(iprot);
                 struct.setValueIsSet(true);
               } else { 
@@ -1472,7 +1472,7 @@ public class CollectService {
           struct.setIdIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.value = new TimeSeriesPoint();
+          struct.value = new MetricReading();
           struct.value.read(iprot);
           struct.setValueIsSet(true);
         }
