@@ -25,11 +25,14 @@ public class QueryTest {
 			ManagementService.Client client = new ManagementService.Client(protocol);
 
 			TimeSeriesQuery query = new TimeSeriesQuery();
+			
 			query.setHostname("jack");
 			query.setSensor("cpu");
 			query.setStartTime(0);
 			query.setStopTime(Long.MAX_VALUE);
+			
 			List<TimeSeriesPoint> tsPoints = client.query(query);
+			
 			for (TimeSeriesPoint p : tsPoints) {
 				System.out.println("VALUE: " + p.getValue());
 			}

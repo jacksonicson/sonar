@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,8 +228,12 @@ public class TimeSeriesDatabase {
 
 				for (byte[] key : familyMap.keySet()) {
 
-					if (Bytes.toString(key).equals("group")) {
-						fragment.addSegment(familyMap.get(key));
+					if (Bytes.toString(key).equals("data")) {
+						try {
+							fragment.addSegment(familyMap.get(key));
+						} catch (TException e) {
+							e.printStackTrace();
+						}
 						continue;
 					}
 
