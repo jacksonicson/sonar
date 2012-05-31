@@ -34,7 +34,7 @@ public class QueryTest {
 			List<TransferableTimeSeriesPoint> tsPoints = client.query(query);
 
 			for (TransferableTimeSeriesPoint p : tsPoints) {
-				System.out.println("VALUE: " + p.getValue());
+				System.out.println(p.getTimestamp() + " : " + p.getValue());
 			}
 
 			transport.close();

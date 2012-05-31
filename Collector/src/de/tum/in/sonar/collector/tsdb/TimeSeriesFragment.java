@@ -26,7 +26,7 @@ public class TimeSeriesFragment implements Iterable<TimeSeriesPoint> {
 		dataPoints.add(dataPoint);
 	}
 
-	void addSegment(byte[] data) throws TException {
+	void addSegment(long hoursSinceEpoch, byte[] data) throws TException {
 		logger.info("deserializing segment");
 
 		TDeserializer deserializer = new TDeserializer();
@@ -35,7 +35,7 @@ public class TimeSeriesFragment implements Iterable<TimeSeriesPoint> {
 
 		for (CompactPoint point : ts.getPoints()) {
 			TimeSeriesPoint dp = new TimeSeriesPoint();
-			dp.setTimestamp(point.getTimestamp());
+			dp.setTimestamp(hoursSinceEpoch + point.getTimestamp());
 			dp.setValue(point.getValue());
 
 			dataPoints.add(dp);
