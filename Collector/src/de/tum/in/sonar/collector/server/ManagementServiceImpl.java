@@ -14,6 +14,7 @@ import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.util.SafeEncoder;
+import de.tum.in.sonar.collector.BundledSensorConfiguration;
 import de.tum.in.sonar.collector.ManagementService;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
@@ -195,6 +196,23 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
+	public Set<String> getSensorLabels(String sensor) throws TException {
+		Jedis jedis = jedisPool.getResource();
+
+		Set<String> labels = new HashSet<String>();
+		String val = jedis.get("sensor:" + sensor);
+		if (val != null) {
+			String key = "sensor:" + sensor + ":";
+
+			labels = jedis.smembers(key + "labels");
+		}
+
+		jedisPool.returnResource(jedis);
+
+		return labels;
+	}
+
+	@Override
 	public void setSensorConfiguration(String sensor, ByteBuffer configuration) throws TException {
 		Jedis jedis = jedisPool.getResource();
 
@@ -209,7 +227,35 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		jedisPool.returnResource(jedis);
 	}
 
+	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
+		BundledSensorConfiguration config = new BundledSensorConfiguration();
+
+		config.setSensor(sensor);
+		config.setHostname(hostname);
+
+		Jedis jedis = jedisPool.getResource();
+
+		String val = jedis.get("sensor:" + sensor);
+		if (val != null) {
+			String key = "sensor:" + sensor + ":";
+
+			// TODO: Host configuration overrides sensor configuration
+			BinaryJedis binJedis = new BinaryJedis("srv2");
+			byte[] sensorConfig = binJedis.get(SafeEncoder.encode(key + "config"));
+			config.setConfiguration(sensorConfig);
+
+			// TODO: Attach the host labels
+			Set<String> labels = jedis.smembers(key + "labels");
+			config.setLabels(labels);
+		}
+
+		jedisPool.returnResource(jedis);
+
+		return config;
+	}
+
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
 	}
+
 }

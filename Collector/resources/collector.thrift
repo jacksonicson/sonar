@@ -36,6 +36,13 @@ struct TimeSeriesQuery {
 	4:optional string hostname,
 }
 
+struct BundledSensorConfiguration {
+	1:string sensor,
+	2:string hostname,
+	3:set<string> labels,
+	4:binary configuration,
+}
+
 service CollectService {
 	void logMessage(1:Identifier id, 2:string message),
 	 	
@@ -66,5 +73,9 @@ service ManagementService {
 	
 	void setSensorLabels(1:string sensor, 3:set<string> labels),
 	
+	set<string> getSensorLabels(1:string sensor),
+	
 	void setSensorConfiguration(1:string sensor, 2:binary configuration),
+	
+	BundledSensorConfiguration getBundledSensorConfiguration(1:string sensor, 2:string hostname),
 }
