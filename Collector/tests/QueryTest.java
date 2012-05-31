@@ -8,8 +8,8 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.ManagementService;
-import de.tum.in.sonar.collector.TimeSeriesPoint;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
+import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
 
 public class QueryTest {
 
@@ -25,15 +25,15 @@ public class QueryTest {
 			ManagementService.Client client = new ManagementService.Client(protocol);
 
 			TimeSeriesQuery query = new TimeSeriesQuery();
-			
+
 			query.setHostname("jack");
 			query.setSensor("cpu");
 			query.setStartTime(0);
 			query.setStopTime(Long.MAX_VALUE);
-			
-			List<TimeSeriesPoint> tsPoints = client.query(query);
-			
-			for (TimeSeriesPoint p : tsPoints) {
+
+			List<TransferableTimeSeriesPoint> tsPoints = client.query(query);
+
+			for (TransferableTimeSeriesPoint p : tsPoints) {
 				System.out.println("VALUE: " + p.getValue());
 			}
 

@@ -10,7 +10,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.Identifier;
-import de.tum.in.sonar.collector.TimeSeriesPoint;
+import de.tum.in.sonar.collector.MetricReading;
 
 public class DummyLoadGenerator {
 
@@ -37,7 +37,7 @@ public class DummyLoadGenerator {
 				id.setSensor("cpu");
 				id.setHostname("jack");
 
-				TimeSeriesPoint tsp = new TimeSeriesPoint();
+				MetricReading tsp = new MetricReading();
 				tsp.setLabels(labels);
 				tsp.setValue(i);
 
