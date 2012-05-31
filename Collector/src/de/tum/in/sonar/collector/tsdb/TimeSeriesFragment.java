@@ -40,10 +40,16 @@ public class TimeSeriesFragment implements Iterable<DataPoint> {
 
 			dataPoints.add(dp);
 		}
+
+		logger.info("segment data points: " + dataPoints.size());
+	}
+
+	public int size() {
+		return dataPoints.size();
 	}
 
 	@Override
 	public Iterator<DataPoint> iterator() {
-		return dataPoints.iterator(); 
+		return dataPoints.iterator();
 	}
 }

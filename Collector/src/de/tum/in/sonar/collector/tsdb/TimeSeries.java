@@ -5,8 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TimeSeries implements Iterable<DataPoint> {
+
+	private static final Logger logger = LoggerFactory.getLogger(TimeSeries.class);
 
 	private List<TimeSeriesFragment> fragments = new ArrayList<TimeSeriesFragment>();
 
@@ -18,6 +22,7 @@ public class TimeSeries implements Iterable<DataPoint> {
 	}
 
 	TimeSeriesFragment newFragment() {
+		logger.info("new fragment");
 		TimeSeriesFragment fragment = new TimeSeriesFragment();
 		fragments.add(fragment);
 		return fragment;
@@ -30,7 +35,7 @@ public class TimeSeries implements Iterable<DataPoint> {
 
 		@Override
 		public boolean hasNext() {
-			if (fragment >= fragments.size())
+			if (fragment > fragments.size())
 				return false;
 
 			if (listIterator != null) {
@@ -45,6 +50,7 @@ public class TimeSeries implements Iterable<DataPoint> {
 		public DataPoint next() {
 			if (listIterator == null) {
 				listIterator = fragments.get(fragment).iterator();
+				fragment++;
 			}
 
 			if (!listIterator.hasNext()) {
