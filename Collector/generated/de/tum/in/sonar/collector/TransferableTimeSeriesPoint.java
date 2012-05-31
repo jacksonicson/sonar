@@ -27,8 +27,8 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint, TimeSeriesPoint._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TimeSeriesPoint");
+public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<TransferableTimeSeriesPoint, TransferableTimeSeriesPoint._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TransferableTimeSeriesPoint");
 
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)2);
@@ -36,8 +36,8 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new TimeSeriesPointStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new TimeSeriesPointTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new TransferableTimeSeriesPointStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new TransferableTimeSeriesPointTupleSchemeFactory());
   }
 
   public long timestamp; // required
@@ -123,13 +123,13 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TimeSeriesPoint.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TransferableTimeSeriesPoint.class, metaDataMap);
   }
 
-  public TimeSeriesPoint() {
+  public TransferableTimeSeriesPoint() {
   }
 
-  public TimeSeriesPoint(
+  public TransferableTimeSeriesPoint(
     long timestamp,
     long value,
     Set<String> labels)
@@ -145,7 +145,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public TimeSeriesPoint(TimeSeriesPoint other) {
+  public TransferableTimeSeriesPoint(TransferableTimeSeriesPoint other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.timestamp = other.timestamp;
@@ -159,8 +159,8 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     }
   }
 
-  public TimeSeriesPoint deepCopy() {
-    return new TimeSeriesPoint(this);
+  public TransferableTimeSeriesPoint deepCopy() {
+    return new TransferableTimeSeriesPoint(this);
   }
 
   @Override
@@ -176,7 +176,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     return this.timestamp;
   }
 
-  public TimeSeriesPoint setTimestamp(long timestamp) {
+  public TransferableTimeSeriesPoint setTimestamp(long timestamp) {
     this.timestamp = timestamp;
     setTimestampIsSet(true);
     return this;
@@ -199,7 +199,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     return this.value;
   }
 
-  public TimeSeriesPoint setValue(long value) {
+  public TransferableTimeSeriesPoint setValue(long value) {
     this.value = value;
     setValueIsSet(true);
     return this;
@@ -237,7 +237,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     return this.labels;
   }
 
-  public TimeSeriesPoint setLabels(Set<String> labels) {
+  public TransferableTimeSeriesPoint setLabels(Set<String> labels) {
     this.labels = labels;
     return this;
   }
@@ -322,12 +322,12 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof TimeSeriesPoint)
-      return this.equals((TimeSeriesPoint)that);
+    if (that instanceof TransferableTimeSeriesPoint)
+      return this.equals((TransferableTimeSeriesPoint)that);
     return false;
   }
 
-  public boolean equals(TimeSeriesPoint that) {
+  public boolean equals(TransferableTimeSeriesPoint that) {
     if (that == null)
       return false;
 
@@ -366,13 +366,13 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     return 0;
   }
 
-  public int compareTo(TimeSeriesPoint other) {
+  public int compareTo(TransferableTimeSeriesPoint other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    TimeSeriesPoint typedOther = (TimeSeriesPoint)other;
+    TransferableTimeSeriesPoint typedOther = (TransferableTimeSeriesPoint)other;
 
     lastComparison = Boolean.valueOf(isSetTimestamp()).compareTo(typedOther.isSetTimestamp());
     if (lastComparison != 0) {
@@ -421,7 +421,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("TimeSeriesPoint(");
+    StringBuilder sb = new StringBuilder("TransferableTimeSeriesPoint(");
     boolean first = true;
 
     sb.append("timestamp:");
@@ -465,15 +465,15 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     }
   }
 
-  private static class TimeSeriesPointStandardSchemeFactory implements SchemeFactory {
-    public TimeSeriesPointStandardScheme getScheme() {
-      return new TimeSeriesPointStandardScheme();
+  private static class TransferableTimeSeriesPointStandardSchemeFactory implements SchemeFactory {
+    public TransferableTimeSeriesPointStandardScheme getScheme() {
+      return new TransferableTimeSeriesPointStandardScheme();
     }
   }
 
-  private static class TimeSeriesPointStandardScheme extends StandardScheme<TimeSeriesPoint> {
+  private static class TransferableTimeSeriesPointStandardScheme extends StandardScheme<TransferableTimeSeriesPoint> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, TransferableTimeSeriesPoint struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -528,7 +528,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, TransferableTimeSeriesPoint struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -556,16 +556,16 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
 
   }
 
-  private static class TimeSeriesPointTupleSchemeFactory implements SchemeFactory {
-    public TimeSeriesPointTupleScheme getScheme() {
-      return new TimeSeriesPointTupleScheme();
+  private static class TransferableTimeSeriesPointTupleSchemeFactory implements SchemeFactory {
+    public TransferableTimeSeriesPointTupleScheme getScheme() {
+      return new TransferableTimeSeriesPointTupleScheme();
     }
   }
 
-  private static class TimeSeriesPointTupleScheme extends TupleScheme<TimeSeriesPoint> {
+  private static class TransferableTimeSeriesPointTupleScheme extends TupleScheme<TransferableTimeSeriesPoint> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, TransferableTimeSeriesPoint struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetTimestamp()) {
@@ -596,7 +596,7 @@ public class TimeSeriesPoint implements org.apache.thrift.TBase<TimeSeriesPoint,
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, TimeSeriesPoint struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, TransferableTimeSeriesPoint struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {

@@ -22,7 +22,7 @@ struct File {
 }
 
 
-struct TimeSeriesPoint {
+struct TransferableTimeSeriesPoint {
 	1:long timestamp,
 	2:long value,
 	3:set<string> labels,
@@ -46,5 +46,5 @@ service CollectService {
 
 service ManagementService {
 	
-	list<TimeSeriesPoint> query(1:TimeSeriesQuery query),
+	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),
 }

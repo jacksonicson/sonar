@@ -9,27 +9,27 @@ public class TimeSeriesPoint {
 	private long value;
 	private Set<String> labels = new HashSet<String>();
 
-	long getTimestamp() {
+	public long getTimestamp() {
 		return timestamp;
 	}
 
-	void setTimestamp(long timestamp) {
+	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
 
-	long getValue() {
+	public long getValue() {
 		return value;
 	}
 
-	void setValue(long value) {
+	public void setValue(long value) {
 		this.value = value;
 	}
 
-	Set<String> getLabels() {
+	public Set<String> getLabels() {
 		return labels;
 	}
 
-	void setLabels(Set<String> labels) {
+	public void setLabels(Set<String> labels) {
 		this.labels = labels;
 	}
 }

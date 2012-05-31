@@ -8,13 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.tum.in.sonar.collector.ManagementService;
-import de.tum.in.sonar.collector.TimeSeriesPoint;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
-import de.tum.in.sonar.collector.tsdb.MetricPoint;
+import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
 import de.tum.in.sonar.collector.tsdb.Query;
 import de.tum.in.sonar.collector.tsdb.QueryException;
 import de.tum.in.sonar.collector.tsdb.TimeSeries;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
+import de.tum.in.sonar.collector.tsdb.TimeSeriesPoint;
 import de.tum.in.sonar.collector.tsdb.UnresolvableException;
 
 public class ManagementServiceImpl implements ManagementService.Iface {
@@ -24,18 +24,18 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	private TimeSeriesDatabase tsdb;
 
 	@Override
-	public List<TimeSeriesPoint> query(TimeSeriesQuery query) throws TException {
+	public List<TransferableTimeSeriesPoint> query(TimeSeriesQuery query) throws TException {
 
 		Query tsdbQuery = new Query(query.getSensor(), query.getStartTime(), query.getStopTime());
 		try {
 			TimeSeries timeSeries = tsdb.run(tsdbQuery);
-			List<TimeSeriesPoint> tsPoints = new ArrayList<TimeSeriesPoint>(100);
+			List<TransferableTimeSeriesPoint> tsPoints = new ArrayList<TransferableTimeSeriesPoint>(100);
 
-			for (MetricPoint point : timeSeries) {
-				TimeSeriesPoint tsPoint = new TimeSeriesPoint();
+			for (TimeSeriesPoint point : timeSeries) {
+				TransferableTimeSeriesPoint tsPoint = new TransferableTimeSeriesPoint();
 				tsPoints.add(tsPoint);
 
-				tsPoint.setTimestamp(point.getSecondsInHour());
+				tsPoint.setTimestamp(point.getTimestamp());
 				tsPoint.setValue(point.getValue());
 				tsPoint.setLabels(point.getLabels());
 			}
