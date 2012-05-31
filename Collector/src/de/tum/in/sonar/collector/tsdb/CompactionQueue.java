@@ -11,10 +11,9 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TMemoryBuffer;
+import org.apache.thrift.TSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,18 +53,17 @@ class CompactionQueue extends Thread {
 		List<CompactPoint> points = new ArrayList<CompactPoint>();
 		List<Delete> deletes = new ArrayList<Delete>();
 
-		// http://diwakergupta.github.com/thrift-missing-guide/thrift.pdf
-		TMemoryBuffer buffer = new TMemoryBuffer(32);
-		TProtocol protocol = new TBinaryProtocol(buffer);
 		CompactTimeseries ts = null;
+		TSerializer serializer = new TSerializer();
+		TDeserializer deserializer = new TDeserializer();
 
 		for (byte[] quali : familyMap.keySet()) {
 			if (Bytes.toString(quali).equals("data")) {
 
+				logger.info("Deserializing...");
 				byte[] data = familyMap.get(quali);
-				buffer.read(data, 0, data.length);
 				ts = new CompactTimeseries();
-				ts.read(protocol);
+				deserializer.deserialize(ts, data);
 
 				continue;
 			}
@@ -87,20 +85,18 @@ class CompactionQueue extends Thread {
 		for (CompactPoint element : points)
 			ts.addToPoints(element);
 
-		buffer = new TMemoryBuffer(32);
-		protocol = new TBinaryProtocol(buffer);
-		ts.write(protocol);
+		byte[] buffer = serializer.serialize(ts);
 
 		// Updating HBase
-		Put put = new Put();
-		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer.getArray());
+		Put put = new Put(key);
+		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
 		table.delete(deletes);
 	}
 
 	@Override
 	public void run() {
-		
+
 		while (true) {
 
 			byte[] key = null;
