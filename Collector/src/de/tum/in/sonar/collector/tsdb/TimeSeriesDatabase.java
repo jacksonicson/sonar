@@ -65,7 +65,7 @@ public class TimeSeriesDatabase {
 		return keyWidth;
 	}
 
-	byte[] buildKey(DataPoint point) throws UnresolvableException {
+	byte[] buildKey(MetricPoint point) throws UnresolvableException {
 
 		int keyWidth = keyWidth(point.getLabels().size());
 		byte[] key = new byte[keyWidth];
@@ -129,7 +129,7 @@ public class TimeSeriesDatabase {
 		this.compactionQueue.schedule(row);
 	}
 
-	public void writeData(DataPoint dataPoint) {
+	public void writeData(MetricPoint dataPoint) {
 
 		try {
 			byte[] key = buildKey(dataPoint);
@@ -240,7 +240,7 @@ public class TimeSeriesDatabase {
 					long value = Bytes.toLong(key);
 					long data = Bytes.toLong(familyMap.get(key));
 
-					DataPoint p = new DataPoint();
+					MetricPoint p = new MetricPoint();
 					p.setHostname(query.getHostname());
 					p.setSensor(query.getSensor());
 					p.setTimestamp(timestampHours + value);

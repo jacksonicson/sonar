@@ -12,17 +12,17 @@ import org.slf4j.LoggerFactory;
 import de.tum.in.sonar.collector.tsdb.gen.CompactPoint;
 import de.tum.in.sonar.collector.tsdb.gen.CompactTimeseries;
 
-public class TimeSeriesFragment implements Iterable<DataPoint> {
+public class TimeSeriesFragment implements Iterable<MetricPoint> {
 
 	private static final Logger logger = LoggerFactory.getLogger(TimeSeriesFragment.class);
 
-	private List<DataPoint> dataPoints = new ArrayList<DataPoint>(60);
+	private List<MetricPoint> dataPoints = new ArrayList<MetricPoint>(60);
 
 	public TimeSeriesFragment() {
 		// Default constructor
 	}
 
-	void addPoint(DataPoint dataPoint) {
+	void addPoint(MetricPoint dataPoint) {
 		dataPoints.add(dataPoint);
 	}
 
@@ -34,7 +34,7 @@ public class TimeSeriesFragment implements Iterable<DataPoint> {
 		deserializer.deserialize(ts, data);
 
 		for (CompactPoint point : ts.getPoints()) {
-			DataPoint dp = new DataPoint();
+			MetricPoint dp = new MetricPoint();
 			dp.setTimestamp(point.getTimestamp());
 			dp.setValue(point.getValue());
 
@@ -49,7 +49,7 @@ public class TimeSeriesFragment implements Iterable<DataPoint> {
 	}
 
 	@Override
-	public Iterator<DataPoint> iterator() {
+	public Iterator<MetricPoint> iterator() {
 		return dataPoints.iterator();
 	}
 }

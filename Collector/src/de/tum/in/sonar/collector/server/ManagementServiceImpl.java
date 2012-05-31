@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import de.tum.in.sonar.collector.ManagementService;
 import de.tum.in.sonar.collector.TimeSeriesPoint;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
-import de.tum.in.sonar.collector.tsdb.DataPoint;
+import de.tum.in.sonar.collector.tsdb.MetricPoint;
 import de.tum.in.sonar.collector.tsdb.Query;
 import de.tum.in.sonar.collector.tsdb.QueryException;
 import de.tum.in.sonar.collector.tsdb.TimeSeries;
@@ -31,7 +31,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			TimeSeries timeSeries = tsdb.run(tsdbQuery);
 			List<TimeSeriesPoint> tsPoints = new ArrayList<TimeSeriesPoint>(100);
 
-			for (DataPoint point : timeSeries) {
+			for (MetricPoint point : timeSeries) {
 				TimeSeriesPoint tsPoint = new TimeSeriesPoint();
 				tsPoints.add(tsPoint);
 

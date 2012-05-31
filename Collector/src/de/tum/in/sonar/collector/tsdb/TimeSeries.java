@@ -8,7 +8,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TimeSeries implements Iterable<DataPoint> {
+public class TimeSeries implements Iterable<MetricPoint> {
 
 	private static final Logger logger = LoggerFactory.getLogger(TimeSeries.class);
 
@@ -17,7 +17,7 @@ public class TimeSeries implements Iterable<DataPoint> {
 	private TimeSeriesIterator iterator = new TimeSeriesIterator();
 
 	@Override
-	public Iterator<DataPoint> iterator() {
+	public Iterator<MetricPoint> iterator() {
 		return iterator;
 	}
 
@@ -28,10 +28,10 @@ public class TimeSeries implements Iterable<DataPoint> {
 		return fragment;
 	}
 
-	class TimeSeriesIterator implements Iterator<DataPoint> {
+	class TimeSeriesIterator implements Iterator<MetricPoint> {
 
 		int fragment = 0;
-		Iterator<DataPoint> listIterator = null;
+		Iterator<MetricPoint> listIterator = null;
 
 		@Override
 		public boolean hasNext() {
@@ -47,7 +47,7 @@ public class TimeSeries implements Iterable<DataPoint> {
 		}
 
 		@Override
-		public DataPoint next() {
+		public MetricPoint next() {
 			if (listIterator == null) {
 				listIterator = fragments.get(fragment).iterator();
 				fragment++;
