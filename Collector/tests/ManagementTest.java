@@ -1,4 +1,6 @@
 import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.thrift.TException;
@@ -29,6 +31,28 @@ public class ManagementTest {
 
 			ds = client.fetchSensor("cpu").array();
 			System.out.println("Datea: " + Bytes.toString(ds));
+
+			client.addHost("srv2");
+
+			client.delHost("srv2");
+
+			client.addHost("srv2");
+
+			Set<String> labels = new HashSet<String>();
+			labels.add("test");
+			labels.add("hello");
+			client.setHostLabels("srv2", labels);
+
+			labels = client.getLabels("srv2");
+			for (String label : labels) {
+				System.out.println("Label: " + label);
+			}
+
+			client.setSensor("srv2", "cpu", true);
+
+			client.setSensorLabels("cpu", labels);
+
+			client.setSensorConfiguration("cpu", ByteBuffer.wrap(ds));
 
 			transport.close();
 

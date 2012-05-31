@@ -57,14 +57,14 @@ service ManagementService {
 	
 	void delHost(1:string hostname),
 	
-	void setHostLabels(1:set<string> labels), 
+	void setHostLabels(1:string hostname, 2:set<string> labels),
 	
+	set<string> getLabels(1:string hostname), 
 	
-	string setSensor(1:string hostname, 2:string sensor, 3:bool activate),
+	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
+
 	
-	string getSensorKey(1:string hostname, 2:string sensor),
+	void setSensorLabels(1:string sensor, 3:set<string> labels),
 	
-	void setSensorLabels(1:string sensorKey, 3:set<string> labels),
-	
-	void setSensorConfiguration(1:string sensorKey, 2:binary configuration),
+	void setSensorConfiguration(1:string sensor, 2:binary configuration),
 }
