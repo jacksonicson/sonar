@@ -27,7 +27,7 @@ public class QueryTest {
 			TimeSeriesQuery query = new TimeSeriesQuery();
 
 			query.setHostname("jack");
-			query.setSensor("cpu");
+			query.setSensor("TEST");
 			query.setStartTime(0);
 			query.setStopTime(Long.MAX_VALUE);
 

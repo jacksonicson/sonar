@@ -29,12 +29,13 @@ public class DummyLoadGenerator {
 			labels.add("cpu");
 			labels.add("test");
 			labels.add("experiment1");
+			labels.add("super");
 
 			for (int i = 0; i < 10; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
-				id.setSensor("cpu");
+				id.setSensor("TEST");
 				id.setHostname("jack");
 
 				MetricReading tsp = new MetricReading();
