@@ -50,7 +50,7 @@ service ManagementService {
 	
 	binary fetchSensor(1:string name),
 	
-	binary deploySensor(1:string name, 2:binary package), 
+	binary deploySensor(1:string name, 2:binary file), 
 	
 	
 	void addHost(1:string hostname),

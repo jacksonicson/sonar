@@ -1,7 +1,9 @@
 package de.tum.in.sonar.collector.server;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -51,7 +53,62 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		return null;
 	}
 
+	@Override
+	public ByteBuffer fetchSensor(String name) throws TException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ByteBuffer deploySensor(String name, ByteBuffer file) throws TException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addHost(String hostname) throws TException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void delHost(String hostname) throws TException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setHostLabels(Set<String> labels) throws TException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String setSensor(String hostname, String sensor, boolean activate) throws TException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSensorKey(String hostname, String sensor) throws TException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setSensorLabels(String sensorKey, Set<String> labels) throws TException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setSensorConfiguration(String sensorKey, ByteBuffer configuration) throws TException {
+		// TODO Auto-generated method stub
+
+	}
+
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
 	}
+
 }
