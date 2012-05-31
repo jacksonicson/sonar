@@ -240,9 +240,7 @@ public class TimeSeriesDatabase {
 					long value = Bytes.toLong(key);
 					long data = Bytes.toLong(familyMap.get(key));
 
-					MetricPoint p = new MetricPoint();
-					p.setHostname(query.getHostname());
-					p.setSensor(query.getSensor());
+					TimeSeriesPoint p = new TimeSeriesPoint();
 					p.setTimestamp(timestampHours + value);
 					p.setValue(data);
 					fragment.addPoint(p);
