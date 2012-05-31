@@ -47,4 +47,24 @@ service CollectService {
 service ManagementService {
 	
 	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),
+	
+	binary fetchSensor(1:string name),
+	
+	binary deploySensor(1:string name, 2:binary package), 
+	
+	
+	void addHost(1:string hostname),
+	
+	void delHost(1:string hostname),
+	
+	void setHostLabels(1:set<string> labels), 
+	
+	
+	string setSensor(1:string hostname, 2:string sensor, 3:bool activate),
+	
+	string getSensorKey(1:string hostname, 2:string sensor),
+	
+	void setSensorLabels(1:string sensorKey, 3:set<string> labels),
+	
+	void setSensorConfiguration(1:string sensorKey, 2:binary configuration),
 }
