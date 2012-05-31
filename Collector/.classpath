@@ -28,5 +28,8 @@
 	<classpathentry kind="lib" path="lib/thrift/httpcore-4.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/thrift/libthrift-0.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/google guice/guice-3.0-no_aop.jar"/>
+	<classpathentry kind="lib" path="lib/jedis/jedis-2.2.0-SNAPSHOT.jar" sourcepath="D:/work/3party/jedis/src"/>
+	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6-sources.jar"/>
+	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -12,7 +12,7 @@
 	</appender>
 
 
-	<logger name="de.tum.in.sonar.collector">
+	<logger name="de.tum.in.sonar.collector" additivity="false">
 		<level value="dewbug" />
 		<appender-ref ref="consoleAppender" />
 	</logger>

@@ -9,6 +9,9 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.util.SafeEncoder;
 import de.tum.in.sonar.collector.ManagementService;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
@@ -24,6 +27,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	private static final Logger logger = LoggerFactory.getLogger(ManagementServiceImpl.class);
 
 	private TimeSeriesDatabase tsdb;
+
+	private JedisPool jedisPool = new JedisPool("srv2");
 
 	@Override
 	public List<TransferableTimeSeriesPoint> query(TimeSeriesQuery query) throws TException {
@@ -55,14 +60,19 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public ByteBuffer fetchSensor(String name) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		logger.debug("fetching sensor " + name);
+		name = "sensor:" + name;
+		BinaryJedis jedis = new BinaryJedis("srv2");
+		byte[] data = jedis.get(SafeEncoder.encode(name));
+		return ByteBuffer.wrap(data);
 	}
 
 	@Override
-	public ByteBuffer deploySensor(String name, ByteBuffer file) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+	public void deploySensor(String name, ByteBuffer file) throws TException {
+		logger.debug("deploying sensor " + name);
+		name = "sensor:" + name;
+		BinaryJedis jedis = new BinaryJedis("srv2");
+		jedis.set(SafeEncoder.encode(name), file.array());
 	}
 
 	@Override
