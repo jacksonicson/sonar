@@ -30,7 +30,7 @@ public class DummyLoadGenerator {
 			labels.add("test");
 			labels.add("experiment1");
 
-			for (int i = 0; i < 1000; i++) {
+			for (int i = 0; i < 10; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);

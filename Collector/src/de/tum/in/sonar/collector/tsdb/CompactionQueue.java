@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
-import java.util.Vector;
 
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
@@ -27,20 +26,17 @@ class CompactionQueue extends Thread {
 
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
-	private List<byte[]> scheduledRows = new Vector<byte[]>();
+	private List<byte[]> scheduledRows = new ArrayList<byte[]>();
 
 	private HBaseUtil hbaseUtil;
 
 	private HTable table = null;
 
-	public CompactionQueue() {
-		this.start();
-	}
-
 	void schedule(byte[] key) {
-		synchronized (scheduledRows) {
+		logger.info("Scheduling");
+		synchronized (this) {
 			this.scheduledRows.add(key);
-			this.scheduledRows.notify();
+			this.notify();
 		}
 	}
 
@@ -48,6 +44,8 @@ class CompactionQueue extends Thread {
 		if (table == null) {
 			table = new HTable(hbaseUtil.getConfig(), Const.TABLE_TSDB);
 		}
+
+		logger.info("Running compation");
 
 		Get get = new Get(key);
 		Result result = table.get(get);
@@ -76,11 +74,11 @@ class CompactionQueue extends Thread {
 			points.add(point);
 			point.setTimestamp(Bytes.toLong(quali));
 			point.setValue(Bytes.toLong(familyMap.get(quali)));
-			
+
 			Delete del = new Delete(key);
-			del.deleteColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), quali); 
-			deletes.add(del); 
-			
+			del.deleteColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), quali);
+			deletes.add(del);
+
 		}
 
 		if (ts == null)
@@ -100,31 +98,40 @@ class CompactionQueue extends Thread {
 		table.delete(deletes);
 	}
 
+	@Override
 	public void run() {
-
+		
 		while (true) {
 
 			byte[] key = null;
 
-			synchronized (scheduledRows) {
-				if (scheduledRows.isEmpty()) {
-					try {
-						scheduledRows.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						continue;
+			while (true) {
+				synchronized (this) {
+					if (scheduledRows.isEmpty())
+						try {
+							logger.info("waiting for compaction");
+							this.wait();
+							logger.info("notified");
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							continue;
+						}
+					else {
+						key = scheduledRows.get(0);
+						scheduledRows.remove(0);
+						break;
 					}
 				}
-
-				key = scheduledRows.get(0);
-				scheduledRows.remove(0);
 			}
 
 			try {
+				logger.info("Running copaction...");
 				compact(key);
 			} catch (IOException e) {
-				e.printStackTrace(); 
+				System.out.println("err");
+				e.printStackTrace();
 			} catch (TException e) {
+				System.out.println("err");
 				e.printStackTrace();
 			}
 		}

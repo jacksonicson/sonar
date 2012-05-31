@@ -43,8 +43,9 @@ public class TimeSeriesDatabase {
 		this.sensorResolver = new IdResolver("sensor");
 
 		this.tsdbTablePool = new HTablePool();
+		
 		this.compactionQueue = new CompactionQueue();
-		this.compactionQueue.start();
+		this.compactionQueue.start(); 
 	}
 
 	private int appendToKey(byte[] key, int index, long value) {
