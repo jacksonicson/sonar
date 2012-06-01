@@ -21,26 +21,7 @@
     <favorites_list name="WebUI" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="index.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="44" column="41" selection-start="1205" selection-end="1205" vertical-scroll-proportion="-13.076923">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="template.html" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/template.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="46" column="46" selection-start="1233" selection-end="1233" vertical-scroll-proportion="0.42553192">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -311,8 +292,26 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/template.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="46" selection-start="1233" selection-end="1233" vertical-scroll-proportion="0.42553192">
+        <state line="44" column="66" selection-start="1205" selection-end="1205" vertical-scroll-proportion="-11.769231">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bootstrap/js/bootstrap.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bootstrap/js/bootstrap.min.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="50" selection-start="167" selection-end="167" vertical-scroll-proportion="0.1046798">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
