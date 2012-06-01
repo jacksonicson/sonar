@@ -18,7 +18,7 @@ public class DummyLoadGenerator {
 
 		TTransport transport;
 		try {
-			transport = new TSocket("localhost", 7911);
+			transport = new TSocket("localhost", 7921);
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);

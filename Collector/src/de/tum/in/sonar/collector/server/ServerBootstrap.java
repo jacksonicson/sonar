@@ -1,7 +1,9 @@
 package de.tum.in.sonar.collector.server;
 
+import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
+import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -25,12 +27,34 @@ public class ServerBootstrap {
 				CollectService.Processor processor = new CollectService.Processor(collectServiceImpl);
 
 				// Transport
-				TServerTransport serverTransport = new TServerSocket(7911);
+				TServerTransport serverTransport = new TServerSocket(7921);
 
 				// Server (connects transport and processor)
 				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
 
 				logger.info("Starting CollectionService ...");
+				server.serve();
+
+			} catch (TTransportException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	class CollectNonblockingServiceThread extends Thread {
+		public void run() {
+			try {
+				// Service Processor
+				CollectService.Processor processor = new CollectService.Processor(collectServiceImpl);
+
+				// Transport
+				TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(7922);
+
+				// Server (connects transport and processor)
+				TServer server = new TNonblockingServer(
+						new TNonblockingServer.Args(serverTransport).processor(processor));
+
+				logger.info("Starting nonblocking CollectionService ...");
 				server.serve();
 
 			} catch (TTransportException e) {
@@ -46,16 +70,32 @@ public class ServerBootstrap {
 				ManagementService.Processor processor = new ManagementService.Processor(managementServiceImpl);
 
 				// Nonblocking transport
-				TServerTransport serverTransport = new TServerSocket(7912);
+				TServerSocket serverTransport = new TServerSocket(7931);
 
-				// Parameters for the server
-				TSimpleServer.Args args = new TSimpleServer.Args(serverTransport);
-				args.processor(processor);
+				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
 
-				// Server
-				TServer server = new TSimpleServer(args);
+				logger.info("Starting blocking ManagementService ...");
+				server.serve();
 
-				logger.info("Starting ManagementService ...");
+			} catch (TTransportException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	class ManagementNonblockingServiceThread extends Thread {
+		public void run() {
+			try {
+				// Service Processor
+				ManagementService.Processor processor = new ManagementService.Processor(managementServiceImpl);
+
+				// Nonblocking transport
+				TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(7932);
+
+				TServer server = new TNonblockingServer(
+						new TNonblockingServer.Args(serverTransport).processor(processor));
+
+				logger.info("Starting nonblocking ManagementService ...");
 				server.serve();
 
 			} catch (TTransportException e) {
@@ -65,7 +105,8 @@ public class ServerBootstrap {
 	}
 
 	public Thread[] start() {
-		Thread[] threads = new Thread[] { new ManagementServiceThread(), new CollectServiceThread() };
+		Thread[] threads = new Thread[] { new ManagementServiceThread(), new CollectServiceThread(),
+				new ManagementNonblockingServiceThread(), new CollectNonblockingServiceThread() };
 
 		for (Thread thread : threads) {
 			thread.start();
@@ -92,5 +133,5 @@ public class ServerBootstrap {
 	public void setManagementServiceImpl(ManagementServiceImpl managementServiceImpl) {
 		this.managementServiceImpl = managementServiceImpl;
 	}
-	
+
 }

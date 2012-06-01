@@ -141,6 +141,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getLabels(String hostname) throws TException {
+		
+		logger.debug("reading labels for hostname: " + hostname);
+		
 		Jedis jedis = jedisPool.getResource();
 
 		Set<String> labels = new HashSet<String>();

@@ -6,8 +6,7 @@ var experimental = require('./experimental');
 
 var PORT = 8080;
 
-function plain(req, resp)
-{
+function plain(req, resp) {
     resp.end("hello world");
 }
 
@@ -28,3 +27,28 @@ app.use(connect.static('static'));
 app.listen(PORT);
 
 console.log('server running at localhost:' + PORT);
+
+console.log("connecting with a thrift controller")
+
+
+var thrift = require('thrift');
+var managementService = require('./ManagementService');
+
+var ttransport = thrift.transport;
+
+var connection = thrift.createConnection('localhost', 7932);
+client = thrift.createClient(managementService, connection);
+
+connection.on("error", function (err) {
+    console.log("an error with the connection occured: " + err);
+});
+
+client.getLabels("srv2", function (err, result) {
+    console.log("received a result");
+    for (i in result) {
+        console.log(result[i]);
+    }
+});
+
+console.log("done");
+
