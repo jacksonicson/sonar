@@ -17,7 +17,7 @@ public class QueryTest {
 
 		TTransport transport;
 		try {
-			transport = new TSocket("localhost", 7932);
+			transport = new TSocket("localhost", 7931);
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);

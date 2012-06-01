@@ -179,6 +179,11 @@ public class TimeSeriesDatabase {
 	public TimeSeries run(Query query) throws QueryException, UnresolvableException {
 
 		try {
+			logger.debug("start: " + query.getStartTime());
+			logger.debug("stop: " + query.getStopTime());
+			logger.debug("hostname: " + query.getHostname());
+			logger.debug("sensor: " + query.getSensor());
+
 			HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
 			Scan scan = new Scan();
 
@@ -218,6 +223,8 @@ public class TimeSeriesDatabase {
 
 			Result next;
 			while ((next = scanner.next()) != null) {
+
+				logger.debug("Row found");
 
 				byte[] rowKey = next.getRow();
 				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH);

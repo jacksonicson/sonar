@@ -1,4 +1,5 @@
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.thrift.TException;
@@ -31,7 +32,8 @@ public class DummyLoadGenerator {
 			labels.add("experiment1");
 			labels.add("super");
 
-			for (int i = 0; i < 10; i++) {
+			Random rand = new Random();
+			for (int i = 0; i < 1000; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
@@ -40,7 +42,8 @@ public class DummyLoadGenerator {
 
 				MetricReading tsp = new MetricReading();
 				tsp.setLabels(labels);
-				tsp.setValue(i);
+
+				tsp.setValue(Math.abs(rand.nextInt()));
 
 				client.logMetric(id, tsp);
 			}
