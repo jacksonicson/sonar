@@ -26,8 +26,8 @@
     </FindUsagesManager>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="258" />
-    <option name="y" value="215" />
+    <option name="x" value="72" />
+    <option name="y" value="305" />
     <option name="width" value="1009" />
     <option name="height" value="605" />
   </component>
@@ -87,7 +87,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="258" y="215" width="1009" height="605" extended-state="1" />
+    <frame x="72" y="305" width="1009" height="605" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
