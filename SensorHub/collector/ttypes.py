@@ -494,6 +494,66 @@ class TimeSeriesQuery:
   def __ne__(self, other):
     return not (self == other)
 
+class SensorConfiguration:
+  """
+  Attributes:
+   - interval
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'interval', None, None, ), # 1
+  )
+
+  def __init__(self, interval=None,):
+    self.interval = interval
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.interval = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('SensorConfiguration')
+    if self.interval is not None:
+      oprot.writeFieldBegin('interval', TType.I64, 1)
+      oprot.writeI64(self.interval)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class BundledSensorConfiguration:
   """
   Attributes:
@@ -508,7 +568,7 @@ class BundledSensorConfiguration:
     (1, TType.STRING, 'sensor', None, None, ), # 1
     (2, TType.STRING, 'hostname', None, None, ), # 2
     (3, TType.SET, 'labels', (TType.STRING,None), None, ), # 3
-    (4, TType.STRING, 'configuration', None, None, ), # 4
+    (4, TType.STRUCT, 'configuration', (SensorConfiguration, SensorConfiguration.thrift_spec), None, ), # 4
   )
 
   def __init__(self, sensor=None, hostname=None, labels=None, configuration=None,):
@@ -547,8 +607,9 @@ class BundledSensorConfiguration:
         else:
           iprot.skip(ftype)
       elif fid == 4:
-        if ftype == TType.STRING:
-          self.configuration = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.configuration = SensorConfiguration()
+          self.configuration.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -577,8 +638,8 @@ class BundledSensorConfiguration:
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.configuration is not None:
-      oprot.writeFieldBegin('configuration', TType.STRING, 4)
-      oprot.writeString(self.configuration)
+      oprot.writeFieldBegin('configuration', TType.STRUCT, 4)
+      self.configuration.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

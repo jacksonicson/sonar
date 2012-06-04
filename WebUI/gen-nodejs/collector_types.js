@@ -655,3 +655,56 @@ BundledSensorConfiguration.prototype.write = function(output) {
   return;
 };
 
+var SensorConfiguration = module.exports.SensorConfiguration = function(args) {
+  this.interval = null;
+  if (args) {
+    if (args.interval !== undefined) {
+      this.interval = args.interval;
+    }
+  }
+};
+SensorConfiguration.prototype = {};
+SensorConfiguration.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.I64) {
+        this.interval = input.readI64();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+SensorConfiguration.prototype.write = function(output) {
+  output.writeStructBegin('SensorConfiguration');
+  if (this.interval) {
+    output.writeFieldBegin('interval', Thrift.Type.I64, 1);
+    output.writeI64(this.interval);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+

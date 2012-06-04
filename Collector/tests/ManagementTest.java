@@ -1,5 +1,7 @@
+import java.nio.ByteBuffer;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -8,6 +10,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.SensorConfiguration;
 
 public class ManagementTest {
 
@@ -15,12 +18,20 @@ public class ManagementTest {
 
 		TTransport transport;
 		try {
-			transport = new TSocket("localhost", 7932);
+			transport = new TSocket("localhost", 7931);
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);
 
 			ManagementService.Client client = new ManagementService.Client(protocol);
+
+			String data = "Really new sensor version";
+			byte[] ds = Bytes.toBytes(data);
+			client.deploySensor("cpu", ByteBuffer.wrap(ds));
+
+			SensorConfiguration configuration = new SensorConfiguration();
+			configuration.setInterval(1); 
+			client.setSensorConfiguration("cpu", configuration);
 
 			Set<String> labels = client.getLabels("srv2");
 			for (String label : labels) {

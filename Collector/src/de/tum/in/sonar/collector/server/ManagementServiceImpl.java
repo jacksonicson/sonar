@@ -16,6 +16,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.util.SafeEncoder;
 import de.tum.in.sonar.collector.BundledSensorConfiguration;
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.SensorConfiguration;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
 import de.tum.in.sonar.collector.tsdb.Query;
@@ -251,15 +252,14 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
-	public void setSensorConfiguration(String sensor, ByteBuffer configuration) throws TException {
+	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
 		Jedis jedis = jedisPool.getResource();
 
 		String val = jedis.get("sensor:" + sensor);
 		if (val != null) {
 			String key = "sensor:" + sensor + ":";
 
-			BinaryJedis binJedis = new BinaryJedis("srv2");
-			binJedis.set(SafeEncoder.encode(key + "config"), configuration.array());
+			jedis.set(key + "config" + ":" + "interval", Long.toString(configuration.getInterval()));
 		}
 
 		jedisPool.returnResource(jedis);
@@ -277,10 +277,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (val != null) {
 			String key = "sensor:" + sensor + ":";
 
+			long interval = Long.parseLong(jedis.get(key + "config" + ":" + "interval"));
+
 			// TODO: Host configuration overrides sensor configuration
-			BinaryJedis binJedis = new BinaryJedis("srv2");
-			byte[] sensorConfig = binJedis.get(SafeEncoder.encode(key + "config"));
-			config.setConfiguration(sensorConfig);
+			SensorConfiguration configuration = new SensorConfiguration();
+			configuration.setInterval(interval);
+			config.setConfiguration(configuration);
 
 			// TODO: Attach the host labels
 			Set<String> labels = jedis.smembers(key + "labels");

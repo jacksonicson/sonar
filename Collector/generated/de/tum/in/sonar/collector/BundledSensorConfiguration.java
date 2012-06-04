@@ -33,7 +33,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
   private static final org.apache.thrift.protocol.TField SENSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("sensor", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField LABELS_FIELD_DESC = new org.apache.thrift.protocol.TField("labels", org.apache.thrift.protocol.TType.SET, (short)3);
-  private static final org.apache.thrift.protocol.TField CONFIGURATION_FIELD_DESC = new org.apache.thrift.protocol.TField("configuration", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField CONFIGURATION_FIELD_DESC = new org.apache.thrift.protocol.TField("configuration", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -44,7 +44,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
   public String sensor; // required
   public String hostname; // required
   public Set<String> labels; // required
-  public ByteBuffer configuration; // required
+  public SensorConfiguration configuration; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -125,7 +125,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.CONFIGURATION, new org.apache.thrift.meta_data.FieldMetaData("configuration", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SensorConfiguration.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BundledSensorConfiguration.class, metaDataMap);
   }
@@ -137,7 +137,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     String sensor,
     String hostname,
     Set<String> labels,
-    ByteBuffer configuration)
+    SensorConfiguration configuration)
   {
     this();
     this.sensor = sensor;
@@ -164,8 +164,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       this.labels = __this__labels;
     }
     if (other.isSetConfiguration()) {
-      this.configuration = org.apache.thrift.TBaseHelper.copyBinary(other.configuration);
-;
+      this.configuration = new SensorConfiguration(other.configuration);
     }
   }
 
@@ -268,21 +267,11 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     }
   }
 
-  public byte[] getConfiguration() {
-    setConfiguration(org.apache.thrift.TBaseHelper.rightSize(configuration));
-    return configuration == null ? null : configuration.array();
+  public SensorConfiguration getConfiguration() {
+    return this.configuration;
   }
 
-  public ByteBuffer bufferForConfiguration() {
-    return configuration;
-  }
-
-  public BundledSensorConfiguration setConfiguration(byte[] configuration) {
-    setConfiguration(configuration == null ? (ByteBuffer)null : ByteBuffer.wrap(configuration));
-    return this;
-  }
-
-  public BundledSensorConfiguration setConfiguration(ByteBuffer configuration) {
+  public BundledSensorConfiguration setConfiguration(SensorConfiguration configuration) {
     this.configuration = configuration;
     return this;
   }
@@ -332,7 +321,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       if (value == null) {
         unsetConfiguration();
       } else {
-        setConfiguration((ByteBuffer)value);
+        setConfiguration((SensorConfiguration)value);
       }
       break;
 
@@ -529,7 +518,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     if (this.configuration == null) {
       sb.append("null");
     } else {
-      org.apache.thrift.TBaseHelper.toString(this.configuration, sb);
+      sb.append(this.configuration);
     }
     first = false;
     sb.append(")");
@@ -609,8 +598,9 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
             }
             break;
           case 4: // CONFIGURATION
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.configuration = iprot.readBinary();
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.configuration = new SensorConfiguration();
+              struct.configuration.read(iprot);
               struct.setConfigurationIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -655,7 +645,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       }
       if (struct.configuration != null) {
         oprot.writeFieldBegin(CONFIGURATION_FIELD_DESC);
-        oprot.writeBinary(struct.configuration);
+        struct.configuration.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -705,7 +695,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         }
       }
       if (struct.isSetConfiguration()) {
-        oprot.writeBinary(struct.configuration);
+        struct.configuration.write(oprot);
       }
     }
 
@@ -735,7 +725,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         struct.setLabelsIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.configuration = iprot.readBinary();
+        struct.configuration = new SensorConfiguration();
+        struct.configuration.read(iprot);
         struct.setConfigurationIsSet(true);
       }
     }

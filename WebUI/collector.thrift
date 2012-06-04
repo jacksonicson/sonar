@@ -21,7 +21,6 @@ struct File {
 	4:set<string> labels,
 }
 
-
 struct TransferableTimeSeriesPoint {
 	1:long timestamp,
 	2:long value,
@@ -41,6 +40,10 @@ struct BundledSensorConfiguration {
 	2:string hostname,
 	3:set<string> labels,
 	4:binary configuration,
+}
+
+struct SensorConfiguration {
+	1:long interval,
 }
 
 service CollectService {
@@ -69,13 +72,15 @@ service ManagementService {
 	set<string> getLabels(1:string hostname), 
 	
 	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
+	
+	set<string> getSensors(1:string hostname),
 
 	
 	void setSensorLabels(1:string sensor, 3:set<string> labels),
 	
 	set<string> getSensorLabels(1:string sensor),
 	
-	void setSensorConfiguration(1:string sensor, 2:binary configuration),
+	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
 	
 	BundledSensorConfiguration getBundledSensorConfiguration(1:string sensor, 2:string hostname),
 }

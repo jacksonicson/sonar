@@ -22,14 +22,14 @@ function tsdbHandler(req, resp) {
         console.log("Could not connect with the Collector: " + err);
     });
 
-    var time = Math.round(new Date().getTime() / 1000);
+    var time = Math.round(new Date().getTime() / 100);
     console.log("time: " + time);
 
     var query = new types.TimeSeriesQuery({
         startTime:0,
         stopTime:time,
         hostname:"jack",
-        sensor:"TEST"
+        sensor:"cpu"
     });
 
     client.query(query, function (err, result) {

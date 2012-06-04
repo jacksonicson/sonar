@@ -2022,7 +2022,7 @@ class setSensorConfiguration_args:
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'sensor', None, None, ), # 1
-    (2, TType.STRING, 'configuration', None, None, ), # 2
+    (2, TType.STRUCT, 'configuration', (SensorConfiguration, SensorConfiguration.thrift_spec), None, ), # 2
   )
 
   def __init__(self, sensor=None, configuration=None,):
@@ -2044,8 +2044,9 @@ class setSensorConfiguration_args:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.STRING:
-          self.configuration = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.configuration = SensorConfiguration()
+          self.configuration.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -2063,8 +2064,8 @@ class setSensorConfiguration_args:
       oprot.writeString(self.sensor)
       oprot.writeFieldEnd()
     if self.configuration is not None:
-      oprot.writeFieldBegin('configuration', TType.STRING, 2)
-      oprot.writeString(self.configuration)
+      oprot.writeFieldBegin('configuration', TType.STRUCT, 2)
+      self.configuration.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

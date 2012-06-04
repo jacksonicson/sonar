@@ -53,7 +53,7 @@ public class ManagementService {
 
     public Set<String> getSensorLabels(String sensor) throws org.apache.thrift.TException;
 
-    public void setSensorConfiguration(String sensor, ByteBuffer configuration) throws org.apache.thrift.TException;
+    public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws org.apache.thrift.TException;
 
     public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws org.apache.thrift.TException;
 
@@ -83,7 +83,7 @@ public class ManagementService {
 
     public void getSensorLabels(String sensor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getSensorLabels_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void setSensorConfiguration(String sensor, ByteBuffer configuration, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.setSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException;
+    public void setSensorConfiguration(String sensor, SensorConfiguration configuration, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.setSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException;
 
     public void getBundledSensorConfiguration(String sensor, String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getBundledSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -349,13 +349,13 @@ public class ManagementService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getSensorLabels failed: unknown result");
     }
 
-    public void setSensorConfiguration(String sensor, ByteBuffer configuration) throws org.apache.thrift.TException
+    public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws org.apache.thrift.TException
     {
       send_setSensorConfiguration(sensor, configuration);
       recv_setSensorConfiguration();
     }
 
-    public void send_setSensorConfiguration(String sensor, ByteBuffer configuration) throws org.apache.thrift.TException
+    public void send_setSensorConfiguration(String sensor, SensorConfiguration configuration) throws org.apache.thrift.TException
     {
       setSensorConfiguration_args args = new setSensorConfiguration_args();
       args.setSensor(sensor);
@@ -779,7 +779,7 @@ public class ManagementService {
       }
     }
 
-    public void setSensorConfiguration(String sensor, ByteBuffer configuration, org.apache.thrift.async.AsyncMethodCallback<setSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException {
+    public void setSensorConfiguration(String sensor, SensorConfiguration configuration, org.apache.thrift.async.AsyncMethodCallback<setSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       setSensorConfiguration_call method_call = new setSensorConfiguration_call(sensor, configuration, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -788,8 +788,8 @@ public class ManagementService {
 
     public static class setSensorConfiguration_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String sensor;
-      private ByteBuffer configuration;
-      public setSensorConfiguration_call(String sensor, ByteBuffer configuration, org.apache.thrift.async.AsyncMethodCallback<setSensorConfiguration_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private SensorConfiguration configuration;
+      public setSensorConfiguration_call(String sensor, SensorConfiguration configuration, org.apache.thrift.async.AsyncMethodCallback<setSensorConfiguration_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.sensor = sensor;
         this.configuration = configuration;
@@ -9047,7 +9047,7 @@ public class ManagementService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("setSensorConfiguration_args");
 
     private static final org.apache.thrift.protocol.TField SENSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("sensor", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField CONFIGURATION_FIELD_DESC = new org.apache.thrift.protocol.TField("configuration", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField CONFIGURATION_FIELD_DESC = new org.apache.thrift.protocol.TField("configuration", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -9056,7 +9056,7 @@ public class ManagementService {
     }
 
     public String sensor; // required
-    public ByteBuffer configuration; // required
+    public SensorConfiguration configuration; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -9126,7 +9126,7 @@ public class ManagementService {
       tmpMap.put(_Fields.SENSOR, new org.apache.thrift.meta_data.FieldMetaData("sensor", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CONFIGURATION, new org.apache.thrift.meta_data.FieldMetaData("configuration", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING          , true)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SensorConfiguration.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(setSensorConfiguration_args.class, metaDataMap);
     }
@@ -9136,7 +9136,7 @@ public class ManagementService {
 
     public setSensorConfiguration_args(
       String sensor,
-      ByteBuffer configuration)
+      SensorConfiguration configuration)
     {
       this();
       this.sensor = sensor;
@@ -9151,8 +9151,7 @@ public class ManagementService {
         this.sensor = other.sensor;
       }
       if (other.isSetConfiguration()) {
-        this.configuration = org.apache.thrift.TBaseHelper.copyBinary(other.configuration);
-;
+        this.configuration = new SensorConfiguration(other.configuration);
       }
     }
 
@@ -9190,21 +9189,11 @@ public class ManagementService {
       }
     }
 
-    public byte[] getConfiguration() {
-      setConfiguration(org.apache.thrift.TBaseHelper.rightSize(configuration));
-      return configuration == null ? null : configuration.array();
+    public SensorConfiguration getConfiguration() {
+      return this.configuration;
     }
 
-    public ByteBuffer bufferForConfiguration() {
-      return configuration;
-    }
-
-    public setSensorConfiguration_args setConfiguration(byte[] configuration) {
-      setConfiguration(configuration == null ? (ByteBuffer)null : ByteBuffer.wrap(configuration));
-      return this;
-    }
-
-    public setSensorConfiguration_args setConfiguration(ByteBuffer configuration) {
+    public setSensorConfiguration_args setConfiguration(SensorConfiguration configuration) {
       this.configuration = configuration;
       return this;
     }
@@ -9238,7 +9227,7 @@ public class ManagementService {
         if (value == null) {
           unsetConfiguration();
         } else {
-          setConfiguration((ByteBuffer)value);
+          setConfiguration((SensorConfiguration)value);
         }
         break;
 
@@ -9371,7 +9360,7 @@ public class ManagementService {
       if (this.configuration == null) {
         sb.append("null");
       } else {
-        org.apache.thrift.TBaseHelper.toString(this.configuration, sb);
+        sb.append(this.configuration);
       }
       first = false;
       sb.append(")");
@@ -9425,8 +9414,9 @@ public class ManagementService {
               }
               break;
             case 2: // CONFIGURATION
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.configuration = iprot.readBinary();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.configuration = new SensorConfiguration();
+                struct.configuration.read(iprot);
                 struct.setConfigurationIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -9454,7 +9444,7 @@ public class ManagementService {
         }
         if (struct.configuration != null) {
           oprot.writeFieldBegin(CONFIGURATION_FIELD_DESC);
-          oprot.writeBinary(struct.configuration);
+          struct.configuration.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -9486,7 +9476,7 @@ public class ManagementService {
           oprot.writeString(struct.sensor);
         }
         if (struct.isSetConfiguration()) {
-          oprot.writeBinary(struct.configuration);
+          struct.configuration.write(oprot);
         }
       }
 
@@ -9499,7 +9489,8 @@ public class ManagementService {
           struct.setSensorIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.configuration = iprot.readBinary();
+          struct.configuration = new SensorConfiguration();
+          struct.configuration.read(iprot);
           struct.setConfigurationIsSet(true);
         }
       }
