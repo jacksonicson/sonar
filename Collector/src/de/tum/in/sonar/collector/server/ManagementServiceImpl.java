@@ -73,9 +73,16 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	@Override
 	public void deploySensor(String name, ByteBuffer file) throws TException {
 		logger.debug("deploying sensor " + name);
+
+		// Set sensor binary file
 		name = "sensor:" + name;
 		BinaryJedis jedis = new BinaryJedis("srv2");
 		jedis.set(SafeEncoder.encode(name), file.array());
+
+		// Add sensor the the sensor list
+		Jedis jedisString = jedisPool.getResource();
+		jedisString.lpush("sensors", name);
+		jedisPool.returnResource(jedisString);
 	}
 
 	@Override
@@ -141,9 +148,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getLabels(String hostname) throws TException {
-		
+
 		logger.debug("reading labels for hostname: " + hostname);
-		
+
 		Jedis jedis = jedisPool.getResource();
 
 		Set<String> labels = new HashSet<String>();
@@ -179,6 +186,34 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 
 		jedisPool.returnResource(jedis);
+	}
+
+	@Override
+	public Set<String> getSensors(String hostname) throws TException {
+		Jedis jedis = jedisPool.getResource();
+
+		String val = jedis.get("host:" + hostname);
+		Set<String> result = new HashSet<String>();
+		if (val != null) {
+			logger.debug("val " + val);
+			long id = Integer.parseInt(val);
+			String key = "host:" + id + ":";
+
+			// Get all sensors
+			Long len = jedis.llen("sensors");
+			List<String> sensors = jedis.lrange("sensors", 0, len);
+			for (String sensor : sensors) {
+				logger.debug("checking sensor: " + sensor);
+				String flag = jedis.get(key + "sensor:" + sensor);
+				if (flag != null && flag.equals("on")) {
+					logger.debug("found active sensor: " + sensor);
+					result.add(sensor);
+				}
+			}
+		}
+
+		jedisPool.returnResource(jedis);
+		return result;
 	}
 
 	@Override

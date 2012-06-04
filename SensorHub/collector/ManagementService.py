@@ -78,6 +78,13 @@ class Iface:
     """
     pass
 
+  def getSensors(self, hostname):
+    """
+    Parameters:
+     - hostname
+    """
+    pass
+
   def setSensorLabels(self, sensor, labels):
     """
     Parameters:
@@ -355,6 +362,36 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     return
 
+  def getSensors(self, hostname):
+    """
+    Parameters:
+     - hostname
+    """
+    self.send_getSensors(hostname)
+    return self.recv_getSensors()
+
+  def send_getSensors(self, hostname):
+    self._oprot.writeMessageBegin('getSensors', TMessageType.CALL, self._seqid)
+    args = getSensors_args()
+    args.hostname = hostname
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getSensors(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = getSensors_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getSensors failed: unknown result");
+
   def setSensorLabels(self, sensor, labels):
     """
     Parameters:
@@ -490,6 +527,7 @@ class Processor(Iface, TProcessor):
     self._processMap["setHostLabels"] = Processor.process_setHostLabels
     self._processMap["getLabels"] = Processor.process_getLabels
     self._processMap["setSensor"] = Processor.process_setSensor
+    self._processMap["getSensors"] = Processor.process_getSensors
     self._processMap["setSensorLabels"] = Processor.process_setSensorLabels
     self._processMap["getSensorLabels"] = Processor.process_getSensorLabels
     self._processMap["setSensorConfiguration"] = Processor.process_setSensorConfiguration
@@ -594,6 +632,17 @@ class Processor(Iface, TProcessor):
     result = setSensor_result()
     self._handler.setSensor(args.hostname, args.sensor, args.activate)
     oprot.writeMessageBegin("setSensor", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getSensors(self, seqid, iprot, oprot):
+    args = getSensors_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getSensors_result()
+    result.success = self._handler.getSensors(args.hostname)
+    oprot.writeMessageBegin("getSensors", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1586,6 +1635,133 @@ class setSensor_result:
   def __ne__(self, other):
     return not (self == other)
 
+class getSensors_args:
+  """
+  Attributes:
+   - hostname
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'hostname', None, None, ), # 1
+  )
+
+  def __init__(self, hostname=None,):
+    self.hostname = hostname
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.hostname = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getSensors_args')
+    if self.hostname is not None:
+      oprot.writeFieldBegin('hostname', TType.STRING, 1)
+      oprot.writeString(self.hostname)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getSensors_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.SET, 'success', (TType.STRING,None), None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.SET:
+          self.success = set()
+          (_etype59, _size56) = iprot.readSetBegin()
+          for _i60 in xrange(_size56):
+            _elem61 = iprot.readString();
+            self.success.add(_elem61)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getSensors_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.SET, 0)
+      oprot.writeSetBegin(TType.STRING, len(self.success))
+      for iter62 in self.success:
+        oprot.writeString(iter62)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class setSensorLabels_args:
   """
   Attributes:
@@ -1621,10 +1797,10 @@ class setSensorLabels_args:
       elif fid == 3:
         if ftype == TType.SET:
           self.labels = set()
-          (_etype59, _size56) = iprot.readSetBegin()
-          for _i60 in xrange(_size56):
-            _elem61 = iprot.readString();
-            self.labels.add(_elem61)
+          (_etype66, _size63) = iprot.readSetBegin()
+          for _i67 in xrange(_size63):
+            _elem68 = iprot.readString();
+            self.labels.add(_elem68)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -1645,8 +1821,8 @@ class setSensorLabels_args:
     if self.labels is not None:
       oprot.writeFieldBegin('labels', TType.SET, 3)
       oprot.writeSetBegin(TType.STRING, len(self.labels))
-      for iter62 in self.labels:
-        oprot.writeString(iter62)
+      for iter69 in self.labels:
+        oprot.writeString(iter69)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1794,10 +1970,10 @@ class getSensorLabels_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype66, _size63) = iprot.readSetBegin()
-          for _i67 in xrange(_size63):
-            _elem68 = iprot.readString();
-            self.success.add(_elem68)
+          (_etype73, _size70) = iprot.readSetBegin()
+          for _i74 in xrange(_size70):
+            _elem75 = iprot.readString();
+            self.success.add(_elem75)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -1814,8 +1990,8 @@ class getSensorLabels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter69 in self.success:
-        oprot.writeString(iter69)
+      for iter76 in self.success:
+        oprot.writeString(iter76)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

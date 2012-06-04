@@ -68,6 +68,8 @@ service ManagementService {
 	set<string> getLabels(1:string hostname), 
 	
 	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
+	
+	set<string> getSensors(1:string hostname),
 
 	
 	void setSensorLabels(1:string sensor, 3:set<string> labels),

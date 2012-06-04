@@ -31,6 +31,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  void setHostLabels(string hostname,  labels)'
   print '   getLabels(string hostname)'
   print '  void setSensor(string hostname, string sensor, bool activate)'
+  print '   getSensors(string hostname)'
   print '  void setSensorLabels(string sensor,  labels)'
   print '   getSensorLabels(string sensor)'
   print '  void setSensorConfiguration(string sensor, string configuration)'
@@ -133,6 +134,12 @@ elif cmd == 'setSensor':
     print 'setSensor requires 3 args'
     sys.exit(1)
   pp.pprint(client.setSensor(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'getSensors':
+  if len(args) != 1:
+    print 'getSensors requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.getSensors(args[0],))
 
 elif cmd == 'setSensorLabels':
   if len(args) != 2:
