@@ -7,6 +7,8 @@ import sys
 import time
 from socket import gethostname;
 
+import random; 
+
 HOSTNAME = 'srv2' # gethostname(); 
 
 
@@ -54,7 +56,9 @@ def main():
         ids.hostname = HOSTNAME 
         
         value = ttypes.MetricReading();
-        value.value = 100
+        
+        
+        value.value = random.randint(1,100)
         value.labels = []
         
         print "logging metric..."
