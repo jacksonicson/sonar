@@ -78,7 +78,73 @@ def main():
         s.enter(bundledConfiguration.configuration.interval, 1, print_time, (sensor, bundledConfiguration))
     
     s.run()
+
+
+import zlib
+import zipfile
+
+def testzip():
     
+    f = open("../cpu.zip", "rb")
+    ba = bytearray()
+    
+    byte = f.read(1)
+    while byte:
+        ba.extend(byte)
+        byte = f.read(1)
+        
+        
+    f.close()
+
+
+    print ba       
+    
+    
+    zf = zipfile.ZipFile('../cpu.zip')
+    
+    import os
+    
+    for info in zf.infolist():
+        print info.filename
+        
+        target = '../cpu/'
+        try:
+            os.makedirs(target)
+        except:
+            pass
+
+
+        if info.filename.endswith('/'):
+            try:
+                print 'creating directory ' + info.filename
+                os.makedirs(target + info.filename)
+            except:
+                pass
+            continue
+        
+        
+        file = zf.read(info.filename)
+        
+        f = open("../cpu/" + info.filename, "wb")
+        
+        f.write(file)
+        f.close()
+    
+#    for filename in [ 'README.txt', 'notthere.txt' ]:
+#    try:
+#        data = zf.read(filename)
+#    except KeyError:
+#        print 'ERROR: Did not find %s in zip file' % filename
+#    else:
+#        print filename, ':'
+#        print repr(data)
+#    print
+#    
+#    print ba    
+    
+    
+    pass
 
 if __name__ == '__main__':
-    main(); 
+    main()
+   # testzip() 
