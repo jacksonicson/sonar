@@ -58,9 +58,16 @@ service ManagementService {
 	
 	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),
 	
+	
 	binary fetchSensor(1:string name),
 	
-	void deploySensor(1:string name, 2:binary file), 
+	void deploySensor(1:string name, 2:binary file),
+	
+	set<string> getAllSensors(),
+	
+	bool  hasBinary(1:string sensor),
+	
+	set<string> getSensorLabels(1:string sensor),
 	
 	
 	void addHost(1:string hostname),
@@ -74,11 +81,8 @@ service ManagementService {
 	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
 	
 	set<string> getSensors(1:string hostname),
-
 	
 	void setSensorLabels(1:string sensor, 3:set<string> labels),
-	
-	set<string> getSensorLabels(1:string sensor),
 	
 	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
 	

@@ -16,8 +16,6 @@ HOSTNAME = 'srv2' # gethostname();
 
 
 
-
-
 def main():
     print "test"
     

@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Sonar</title>
+
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="bootstrap/css/docs.css" rel="stylesheet">
+    <link href="bootstrap/js/google-code-prettify/prettify.css" rel="stylesheet">
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+    </style>
+
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="bootstrap/ico/favicon.ico">
+
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+
+</head>
+<body>
+
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="brand" href="#">Sonar</a>
+
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li><a href="index.html">Dashboard</a></li>
+                    <li class="active"><a href="#a">Configuration</a></li>
+                    <li><a href="highstocktest.html">Browser</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container">
+
+    <div class="span8">
+
+
+        <div class="tabbable">
+            <ul class="nav nav-tabs" data-tabs="tabs">
+                <li class="active"><a href="#tab1" data-toggle="tab">Sensors</a></li>
+                <li><a href="#tab2" data-toggle="tab">Hostnames</a></li>
+            </ul>
+            <div class="tab-content">
+
+                <div class="tab-pane active" id="tab1">
+                    <a class="btn" href="">New Sensor</a>
+                    <table class="table" id="listSensors">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Sensor Name</th>
+                            <th>Binary Available</th>
+                            <th>Labels</th>
+                        </tr>
+                        </thead>
+                        <tbody id='listSensorsBody'>
+                        <tr>
+                            <td colspan="4">Loading...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane" id="tab2">
+                    <a class="btn" href="">New Host</a>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Hostname</th>
+                            <th>Resolve</th>
+                            <th>Ping</th>
+                            <th>Sensors</th>
+                            <th>Labels</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                jQuery(document).ready(function ($) {
+                    $('#tabs').tab();
+
+                    // $('sensors').
+
+                    $.ajax({
+                        type:"GET",
+                        url:'/sensors',
+                        dataType:'json',
+
+                        success:function (data) {
+
+                            var $wrap = $('#listSensorsBody');
+                            $wrap.children().remove();
+                            for (i in data) {
+                                sensor = data[i];
+                                console.log("dd " + sensor.name);
+                                $wrap.append(
+                                        $('<tr>')
+                                                .append(
+                                                $('<td>').text(i),
+                                                $('<td>').text(sensor.name),
+                                                $('<td>').text('yes'),
+                                                $('<td>').text(sensor.labels)
+                                        )
+                                );
+                            }
+
+                            //alert(data); // shows whole dom
+                            // alert( $(data).find('#wrapper').html() ); // returns null
+                        },
+                        error:function () {
+                            alert("Sorry, The requested property could not be found.");
+                        }
+                    });
+                });
+            </script>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="bootstrap/js/jquery.js"></script>
+<script src="bootstrap/js/google-code-prettify/prettify.js"></script>
+<script src="bootstrap/js/bootstrap-transition.js"></script>
+<script src="bootstrap/js/bootstrap-alert.js"></script>
+<script src="bootstrap/js/bootstrap-modal.js"></script>
+<script src="bootstrap/js/bootstrap-dropdown.js"></script>
+<script src="bootstrap/js/bootstrap-scrollspy.js"></script>
+<script src="bootstrap/js/bootstrap-tab.js"></script>
+<script src="bootstrap/js/bootstrap-tooltip.js"></script>
+<script src="bootstrap/js/bootstrap-popover.js"></script>
+<script src="bootstrap/js/bootstrap-button.js"></script>
+<script src="bootstrap/js/bootstrap-collapse.js"></script>
+<script src="bootstrap/js/bootstrap-carousel.js"></script>
+<script src="bootstrap/js/bootstrap-typeahead.js"></script>
+<script src="bootstrap/js/application.js"></script>
+
+
+</body>
+</html>

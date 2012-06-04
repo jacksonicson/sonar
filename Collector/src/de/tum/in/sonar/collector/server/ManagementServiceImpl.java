@@ -75,15 +75,15 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	public void deploySensor(String name, ByteBuffer file) throws TException {
 		logger.debug("deploying sensor " + name);
 
-		// Set sensor binary file
-		name = "sensor:" + name;
-		BinaryJedis jedis = new BinaryJedis("srv2");
-		jedis.set(SafeEncoder.encode(name), file.array());
-
 		// Add sensor the the sensor list
 		Jedis jedisString = jedisPool.getResource();
 		jedisString.lpush("sensors", name);
 		jedisPool.returnResource(jedisString);
+
+		// Set sensor binary file
+		name = "sensor:" + name;
+		BinaryJedis jedis = new BinaryJedis("srv2");
+		jedis.set(SafeEncoder.encode(name), file.array());
 	}
 
 	@Override
@@ -190,6 +190,28 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
+	public Set<String> getAllSensors() throws TException {
+		Jedis jedisString = jedisPool.getResource();
+		long length = jedisString.llen("sensors");
+
+		List<String> sensorNames = jedisString.lrange("sensors", 0, length);
+
+		Set<String> result = new HashSet<String>();
+		result.addAll(sensorNames);
+
+		jedisPool.returnResource(jedisString);
+
+		return result;
+	}
+
+	@Override
+	public boolean hasBinary(String sensor) throws TException {
+		Jedis jedisString = jedisPool.getResource();
+		byte[] data = jedisString.get(SafeEncoder.encode("sensors:" + sensor));
+		return data.length > 64;
+	}
+
+	@Override
 	public Set<String> getSensors(String hostname) throws TException {
 		Jedis jedis = jedisPool.getResource();
 
@@ -242,7 +264,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		String val = jedis.get("sensor:" + sensor);
 		if (val != null) {
 			String key = "sensor:" + sensor + ":";
-
 			labels = jedis.smembers(key + "labels");
 		}
 
@@ -297,5 +318,4 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
 	}
-
 }

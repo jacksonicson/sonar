@@ -14,6 +14,55 @@ function plain(req, resp) {
     resp.end("hello world");
 }
 
+function sensorsHandler(req, resp) {
+    var connection = thrift.createConnection('localhost', 7932);
+    client = thrift.createClient(managementService, connection);
+
+    connection.on("error", function (err) {
+        console.log("Could not connect with the Collector: " + err);
+    });
+
+    client.getAllSensors(function (err, result) {
+
+        sensorData = []
+
+        counter = 0;
+        for (sensor in result) {
+
+            console.log("sensor " + result[sensor]);
+            var value = result[sensor]
+            console.log("VALUE " + value);
+
+            var test = function (err, rr) {
+
+                counter++;
+                console.log("callback " + counter + " of " + result.length);
+
+                sensorInfo = {
+                    name:result[sensor],
+                    labels:rr
+                }
+                console.log("PUSH: " + self.value);
+                sensorData.push(sensorInfo)
+
+                if (counter == result.length) {
+
+                    console.log("running return ...");
+                    console.log("test done");
+
+                    var ss = JSON.stringify(sensorData);
+                    resp.end(ss);
+                }
+            }
+
+            test.value = value;
+
+
+            client.getSensorLabels(result[sensor], test)
+        }
+    })
+}
+
 function tsdbHandler(req, resp) {
     var connection = thrift.createConnection('localhost', 7932);
     client = thrift.createClient(managementService, connection);
@@ -45,7 +94,7 @@ function tsdbHandler(req, resp) {
                 var time = result[i].timestamp;
                 var value = result[i].value;
 
-                jsonObj.push([time,value]);
+                jsonObj.push([time, value]);
             }
 
 
@@ -73,7 +122,8 @@ function tsdbHandler(req, resp) {
 var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),
-    new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, [])
+    new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, []),
+    new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, [])
 ]);
 
 // dump url configuration
