@@ -58,7 +58,7 @@ def main():
         value = ttypes.MetricReading();
         
         
-        value.value = random.randint(1,100)
+        value.value = random.randint(1, 100)
         value.labels = []
         
         print "logging metric..."
@@ -70,7 +70,14 @@ def main():
     
     
     # Download all the sensors
-    for sensor in sensors: 
+    for sensor in sensors:
+        # Download sensor package
+        data = client.fetchSensor(sensor)
+        z = open(sensor + ".zip", "wb")
+        z.write(data)
+        z.close()
+        
+        # Configure and schedule sensor 
         bundledConfiguration = client.getBundledSensorConfiguration(sensor, HOSTNAME) 
         print bundledConfiguration
         sensor_configurations[sensor] = bundledConfiguration;
