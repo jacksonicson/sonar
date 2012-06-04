@@ -72,10 +72,16 @@ def main():
     # Download all the sensors
     for sensor in sensors:
         # Download sensor package
+        print 'downloading sensor ...'
         data = client.fetchSensor(sensor)
         z = open(sensor + ".zip", "wb")
         z.write(data)
         z.close()
+        print 'sensor download complete'
+        
+        print 'decompressing sensor ...'
+        decompress_sensor(sensor); 
+        print 'sensor decompression completed'
         
         # Configure and schedule sensor 
         bundledConfiguration = client.getBundledSensorConfiguration(sensor, HOSTNAME) 
@@ -86,9 +92,37 @@ def main():
     
     s.run()
 
-
 import zlib
 import zipfile
+import os
+def decompress_sensor(sensor):
+    zf = zipfile.ZipFile(sensor + ".zip")
+    
+    for info in zf.infolist():
+        print info.filename
+        
+        target = '../sensors/' + sensor + "/"
+        try:
+            os.makedirs(target)
+        except:
+            pass
+
+
+        if info.filename.endswith('/'):
+            try:
+                print 'creating directory ' + info.filename
+                os.makedirs(target + info.filename)
+            except:
+                pass
+            continue
+        
+        cf = zf.read(info.filename)
+        
+        f = open(target + info.filename, "wb")
+        f.write(cf)
+        f.close()
+        
+    zf.close()
 
 def testzip():
     
@@ -107,35 +141,7 @@ def testzip():
     print ba       
     
     
-    zf = zipfile.ZipFile('../cpu.zip')
     
-    import os
-    
-    for info in zf.infolist():
-        print info.filename
-        
-        target = '../cpu/'
-        try:
-            os.makedirs(target)
-        except:
-            pass
-
-
-        if info.filename.endswith('/'):
-            try:
-                print 'creating directory ' + info.filename
-                os.makedirs(target + info.filename)
-            except:
-                pass
-            continue
-        
-        
-        file = zf.read(info.filename)
-        
-        f = open("../cpu/" + info.filename, "wb")
-        
-        f.write(file)
-        f.close()
     
 #    for filename in [ 'README.txt', 'notthere.txt' ]:
 #    try:

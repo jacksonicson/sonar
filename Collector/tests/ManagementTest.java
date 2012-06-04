@@ -1,3 +1,7 @@
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Set;
 
@@ -14,7 +18,7 @@ import de.tum.in.sonar.collector.SensorConfiguration;
 
 public class ManagementTest {
 
-	public static void main(String arg[]) {
+	public static void main(String arg[]) throws IOException {
 
 		TTransport transport;
 		try {
@@ -30,13 +34,26 @@ public class ManagementTest {
 			client.deploySensor("cpu", ByteBuffer.wrap(ds));
 
 			SensorConfiguration configuration = new SensorConfiguration();
-			configuration.setInterval(1); 
+			configuration.setInterval(1);
 			client.setSensorConfiguration("cpu", configuration);
 
 			Set<String> labels = client.getLabels("srv2");
 			for (String label : labels) {
 				System.out.println("Label: " + label);
 			}
+
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			InputStream in = new FileInputStream("cpu.zip");
+
+			byte[] buffer = new byte[32];
+			int len = 0;
+			while ((len = in.read(buffer)) > 0) {
+				out.write(buffer, 0, len);
+			}
+
+			System.out.println("Uploading sensor package now ...");
+			client.deploySensor("cpu", ByteBuffer.wrap(out.toByteArray()));
+			System.out.println("OK");
 
 			//
 			//
