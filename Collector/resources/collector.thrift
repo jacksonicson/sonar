@@ -21,7 +21,6 @@ struct File {
 	4:set<string> labels,
 }
 
-
 struct TransferableTimeSeriesPoint {
 	1:long timestamp,
 	2:long value,
