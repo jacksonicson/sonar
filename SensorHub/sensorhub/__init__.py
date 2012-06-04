@@ -5,6 +5,9 @@ from thrift.transport import TSocket, TTransport
 import sched
 import sys
 import time
+from socket import gethostname;
+
+HOSTNAME = 'srv2' # gethostname(); 
 
 
 
@@ -31,12 +34,7 @@ def main():
     transport.open();
     transport2.open(); 
     
-    list = client.getSensorLabels("cpu");
-    print "Sensor labels"
-    for i in list:
-        print i
-
-    sensors = client.getSensors("srv2")
+    sensors = client.getSensors(HOSTNAME)
     for sensor in sensors:
         print 'sensor found ' + sensor
 
@@ -53,7 +51,7 @@ def main():
         ids = ttypes.Identifier();
         ids.timestamp = int(time.time())
         ids.sensor = sensor
-        ids.hostname = "srv2" 
+        ids.hostname = HOSTNAME 
         
         value = ttypes.MetricReading();
         value.value = 100
@@ -68,7 +66,7 @@ def main():
     
     # Download all the sensors
     for sensor in sensors: 
-        sensorConfiguration = client.getBundledSensorConfiguration(sensor, "srv2") 
+        sensorConfiguration = client.getBundledSensorConfiguration(sensor, HOSTNAME) 
         print sensorConfiguration
         sensor_configurations[sensor] = sensorConfiguration;
         
