@@ -6,8 +6,11 @@ import sched
 import sys
 import time
 from socket import gethostname;
-
-import random; 
+import zlib
+import zipfile
+import os
+import random;
+import shutil 
 
 HOSTNAME = 'srv2' # gethostname(); 
 
@@ -72,6 +75,11 @@ def main():
     # Download all the sensors
     for sensor in sensors:
         # Download sensor package
+        
+        if os.path.exists(sensor + ".zip"):
+            print 'removing sensor' 
+            os.remove(sensor + ".zip")
+            
         print 'downloading sensor ...'
         data = client.fetchSensor(sensor)
         z = open(sensor + ".zip", "wb")
@@ -88,32 +96,56 @@ def main():
         print bundledConfiguration
         sensor_configurations[sensor] = bundledConfiguration;
         
-        s.enter(bundledConfiguration.configuration.interval, 1, print_time, (sensor, bundledConfiguration))
-    
+        # s.enter(bundledConfiguration.configuration.interval, 1, print_time, (sensor, bundledConfiguration))
+        
+    s.enter(5, 1, self_monitoring, (client2, s))
     s.run()
 
-import zlib
-import zipfile
-import os
+def self_monitoring(client, s):
+    print 'ping'
+    
+    ids = ttypes.Identifier();
+    ids.timestamp = int(time.time())
+    ids.sensor = 'sensorhub'
+    ids.hostname = HOSTNAME 
+
+    value = ttypes.MetricReading();
+    value.value = 1
+    value.labels = []
+    
+    client.logMetric(ids, value)
+    
+    ids.timestamp = ids.timestamp + 1
+    value.value = 0
+    client.logMetric(ids, value)
+    
+    s.enter(5, 1, self_monitoring, (client, s))
+    
+
+
 def decompress_sensor(sensor):
     zf = zipfile.ZipFile(sensor + ".zip")
     
+    target = '../sensors/' + sensor + "/"
+    
+    if os.path.exists(target):
+        print 'removing sensor directory: ' + target
+        shutil.rmtree(target, True)
+    
+    try:
+        os.makedirs(target)
+    except:
+        pass
+    
     for info in zf.infolist():
         print info.filename
-        
-        target = '../sensors/' + sensor + "/"
-        try:
-            os.makedirs(target)
-        except:
-            pass
-
 
         if info.filename.endswith('/'):
             try:
                 print 'creating directory ' + info.filename
                 os.makedirs(target + info.filename)
             except:
-                pass
+                print 'fail'
             continue
         
         cf = zf.read(info.filename)

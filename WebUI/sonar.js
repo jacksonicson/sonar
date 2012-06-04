@@ -29,7 +29,7 @@ function tsdbHandler(req, resp) {
         startTime:0,
         stopTime:time,
         hostname:"jack",
-        sensor:"cpu"
+        sensor:"sensorhub"
     });
 
     client.query(query, function (err, result) {
