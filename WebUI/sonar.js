@@ -15,6 +15,9 @@ function plain(req, resp) {
     resp.end("hello world");
 }
 
+function delSensorHandler(req, resp) {
+
+}
 
 function addSensorHandler(req, resp) {
     console.log("adding new sensor " + req.method);
@@ -163,6 +166,7 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, []),
     new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, [])
+    new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, [])
 ]);
 
 // dump url configuration
