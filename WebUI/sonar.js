@@ -4,6 +4,7 @@ var router = require('./router');
 var connect = require('connect');
 var experimental = require('./experimental');
 var qs = require('querystring');
+var url = require('url');
 
 var PORT = 8080;
 
@@ -15,6 +16,21 @@ function plain(req, resp) {
     resp.end("hello world");
 }
 
+function delSensorHandler(req, resp) {
+    var connection = thrift.createConnection('localhost', 7932);
+    var client = thrift.createClient(managementService, connection);
+
+    var query = url.parse(req.url).query;
+    var body = qs.parse(query);
+    var sensorName = body.sensorName;
+
+    console.log("deleting sensor name: " + sensorName);
+
+    client.delSensor(sensorName, function (err, ret) {
+        console.log("ok");
+        resp.end("ok");
+    });
+}
 
 function addSensorHandler(req, resp) {
     console.log("adding new sensor " + req.method);
@@ -162,7 +178,8 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),
     new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, []),
     new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
-    new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, [])
+    new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
+    new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, [])
 ]);
 
 // dump url configuration

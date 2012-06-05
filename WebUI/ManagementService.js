@@ -675,6 +675,87 @@ ManagementService_getSensorLabels_result.prototype.write = function(output) {
   return;
 };
 
+var ManagementService_delSensor_args = function(args) {
+  this.sensor = null;
+  if (args) {
+    if (args.sensor !== undefined) {
+      this.sensor = args.sensor;
+    }
+  }
+};
+ManagementService_delSensor_args.prototype = {};
+ManagementService_delSensor_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.sensor = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ManagementService_delSensor_args.prototype.write = function(output) {
+  output.writeStructBegin('ManagementService_delSensor_args');
+  if (this.sensor) {
+    output.writeFieldBegin('sensor', Thrift.Type.STRING, 1);
+    output.writeString(this.sensor);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var ManagementService_delSensor_result = function(args) {
+};
+ManagementService_delSensor_result.prototype = {};
+ManagementService_delSensor_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ManagementService_delSensor_result.prototype.write = function(output) {
+  output.writeStructBegin('ManagementService_delSensor_result');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 var ManagementService_addHost_args = function(args) {
   this.hostname = null;
   if (args) {
@@ -1858,6 +1939,37 @@ ManagementServiceClient.prototype.recv_getSensorLabels = function(input,mtype,rs
   }
   return callback('getSensorLabels failed: unknown result');
 };
+ManagementServiceClient.prototype.delSensor = function(sensor, callback) {
+  this.seqid += 1;
+  this._reqs[this.seqid] = callback;
+  this.send_delSensor(sensor);
+};
+
+ManagementServiceClient.prototype.send_delSensor = function(sensor) {
+  var output = new this.pClass(this.output);
+  output.writeMessageBegin('delSensor', Thrift.MessageType.CALL, this.seqid);
+  var args = new ManagementService_delSensor_args();
+  args.sensor = sensor;
+  args.write(output);
+  output.writeMessageEnd();
+  return this.output.flush();
+};
+
+ManagementServiceClient.prototype.recv_delSensor = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new ManagementService_delSensor_result();
+  result.read(input);
+  input.readMessageEnd();
+
+  callback(null)
+};
 ManagementServiceClient.prototype.addHost = function(hostname, callback) {
   this.seqid += 1;
   this._reqs[this.seqid] = callback;
@@ -2248,6 +2360,20 @@ ManagementServiceProcessor.prototype.process_getSensorLabels = function(seqid, i
   this._handler.getSensorLabels(args.sensor, function (success) {
     result.success = success;
     output.writeMessageBegin("getSensorLabels", Thrift.MessageType.REPLY, seqid);
+    result.write(output);
+    output.writeMessageEnd();
+    output.flush();
+  })
+}
+
+ManagementServiceProcessor.prototype.process_delSensor = function(seqid, input, output) {
+  var args = new ManagementService_delSensor_args();
+  args.read(input);
+  input.readMessageEnd();
+  var result = new ManagementService_delSensor_result();
+  this._handler.delSensor(args.sensor, function (success) {
+    result.success = success;
+    output.writeMessageBegin("delSensor", Thrift.MessageType.REPLY, seqid);
     result.write(output);
     output.writeMessageEnd();
     output.flush();

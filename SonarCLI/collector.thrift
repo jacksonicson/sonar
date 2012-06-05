@@ -62,6 +62,7 @@ service ManagementService {
 	
 	void deploySensor(1:string name, 2:binary file), 
 	
+	
 	void addHost(1:string hostname),
 	
 	void delHost(1:string hostname),
@@ -73,6 +74,7 @@ service ManagementService {
 	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
 	
 	set<string> getSensors(1:string hostname),
+
 	
 	void setSensorLabels(1:string sensor, 3:set<string> labels),
 	

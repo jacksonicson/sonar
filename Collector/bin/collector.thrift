@@ -62,9 +62,11 @@ service CollectService {
 
 service ManagementService {
 	
+	// Query Section
 	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),
 	
 	
+	// Sensor Section
 	binary fetchSensor(1:string name),
 	
 	void deploySensor(1:string name, 2:binary file),
@@ -75,7 +77,14 @@ service ManagementService {
 	
 	set<string> getSensorLabels(1:string sensor),
 	
+	void delSensor(1:string sensor),
 	
+	void setSensorLabels(1:string sensor, 3:set<string> labels),
+	
+	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
+	
+	
+	// Host Section
 	void addHost(1:string hostname),
 	
 	void delHost(1:string hostname),
@@ -87,10 +96,6 @@ service ManagementService {
 	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
 	
 	set<string> getSensors(1:string hostname),
-	
-	void setSensorLabels(1:string sensor, 3:set<string> labels),
-	
-	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
 	
 	BundledSensorConfiguration getBundledSensorConfiguration(1:string sensor, 2:string hostname),
 }

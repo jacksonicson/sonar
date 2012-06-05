@@ -6,8 +6,6 @@
 
     <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="bootstrap/css/docs.css" rel="stylesheet">
-    <link href="bootstrap/js/google-code-prettify/prettify.css" rel="stylesheet">
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
 
@@ -82,6 +80,7 @@
                         <thead>
                         <tr>
                             <th>#</th>
+                            <th>&nbsp;</th>
                             <th>Sensor Name</th>
                             <th>Binary Available</th>
                             <th>Labels</th>
@@ -116,6 +115,20 @@
 
             <script type="text/javascript">
 
+                function deleteSensor(event) {
+                    var sensor = event.target.id;
+
+                    $.ajax({
+                        type:"GET",
+                        url:'/delsensor?sensorName=' + sensor,
+                        dataType:'text',
+                        success:function (data) {
+
+                            updateSensorList();
+                        }
+                    });
+                }
+
                 function updateSensorList() {
                     /*    var $wrap = $('#listSensorsBody');
                      $wrap.children().remove();
@@ -143,6 +156,9 @@
                                         $('<tr>')
                                                 .append(
                                                 $('<td>').text(i),
+                                                $('<td>').append(
+                                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                                                ),
                                                 $('<td>').text(sensor.name),
                                                 $('<td>').text('-'),
                                                 $('<td>').text(sensor.labels)
@@ -238,8 +254,6 @@
 <!-- javascript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="bootstrap/js/jquery.js"></script>
-<script src="bootstrap/js/google-code-prettify/prettify.js"></script>
 <script src="bootstrap/js/bootstrap-transition.js"></script>
 <script src="bootstrap/js/bootstrap-alert.js"></script>
 <script src="bootstrap/js/bootstrap-modal.js"></script>
@@ -252,7 +266,6 @@
 <script src="bootstrap/js/bootstrap-collapse.js"></script>
 <script src="bootstrap/js/bootstrap-carousel.js"></script>
 <script src="bootstrap/js/bootstrap-typeahead.js"></script>
-<script src="bootstrap/js/application.js"></script>
 
 
 </body>

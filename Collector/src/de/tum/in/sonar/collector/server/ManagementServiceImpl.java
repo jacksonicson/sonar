@@ -72,6 +72,36 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
+	public void delSensor(String sensor) throws TException {
+		// Remove the sensor binary
+		Jedis jedis = jedisPool.getResource();
+
+		// Remove sensor from the sensors list
+		long llen = jedis.llen("sensors");
+		jedis.lrem("sensors", llen, sensor);
+
+		// Remove the binary
+		jedis.del("sensor:" + sensor);
+
+		// Remove configuration
+		jedis.del("sensor:" + sensor + ":config"); 
+		
+		// Remove labels
+		jedis.del("sensor:" + sensor + ":labels");
+
+		// Remove sensor from hosts
+		String key = "hostnames";
+		long hostCount = jedis.llen(key);
+		List<String> hosts = jedis.lrange(key, 0, hostCount);
+		for (String hostname : hosts) {
+			String id = jedis.get("hosts:" + hostname);
+			jedis.del(hostname + ":" + id + ":sensor:" + sensor);
+		}
+
+		jedisPool.returnResource(jedis);
+	}
+
+	@Override
 	public void deploySensor(String name, ByteBuffer file) throws TException {
 		logger.debug("deploying sensor " + name);
 
@@ -87,6 +117,23 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
+	public void setSensorLabels(String sensor, Set<String> labels) throws TException {
+		Jedis jedis = jedisPool.getResource();
+
+		String val = jedis.get("sensor:" + sensor);
+		if (val != null) {
+			String key = "sensor:" + sensor + ":";
+
+			String[] arrLabels = new String[labels.size()];
+			labels.toArray(arrLabels);
+
+			jedis.sadd(key + "labels", arrLabels);
+		}
+
+		jedisPool.returnResource(jedis);
+	}
+
+	@Override
 	public void addHost(String hostname) throws TException {
 		Jedis jedis = jedisPool.getResource();
 
@@ -98,7 +145,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 			id = jedis.incr("hosts");
 
-			String key = "host:" + hostname;
+			String key = "hostnames";
+			jedis.lpush(key, hostname);
+
+			key = "host:" + hostname;
 			jedis.set(key, "" + id);
 
 			key = "host:" + id + ":hostname";
@@ -240,23 +290,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
-	public void setSensorLabels(String sensor, Set<String> labels) throws TException {
-		Jedis jedis = jedisPool.getResource();
-
-		String val = jedis.get("sensor:" + sensor);
-		if (val != null) {
-			String key = "sensor:" + sensor + ":";
-
-			String[] arrLabels = new String[labels.size()];
-			labels.toArray(arrLabels);
-
-			jedis.sadd(key + "labels", arrLabels);
-		}
-
-		jedisPool.returnResource(jedis);
-	}
-
-	@Override
 	public Set<String> getSensorLabels(String sensor) throws TException {
 		Jedis jedis = jedisPool.getResource();
 
@@ -318,4 +351,5 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
 	}
+
 }
