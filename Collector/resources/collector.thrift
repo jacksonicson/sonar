@@ -14,6 +14,12 @@ struct MetricReading {
 	3:set<string> labels,
 }
 
+struct LogMessage {
+	1: int logLevel,
+	2: string logMessage,
+	3: string programName,
+}
+
 struct File {
 	1:string filename,
 	2:string description,
@@ -47,7 +53,7 @@ struct BundledSensorConfiguration {
 }
 
 service CollectService {
-	void logMessage(1:Identifier id, 2:string message),
+	void logMessage(1:Identifier id, 2:LogMessage message),
 	 	
 	void logMetric(1:Identifier id, 2:MetricReading value),
 	 

@@ -33,7 +33,7 @@ public class IdResolver {
 		this.type = type;
 	}
 
-	long resolveName(String name) throws UnresolvableException {
+	public long resolveName(String name) throws UnresolvableException {
 		if (forwardMapping.containsKey(name)) {
 			return forwardMapping.get(name);
 		}
@@ -42,7 +42,7 @@ public class IdResolver {
 		return scan;
 	}
 
-	String resolveId(Integer id) throws UnresolvableException {
+	public String resolveId(Integer id) throws UnresolvableException {
 		if (reverseMapping.containsKey(id)) {
 			return reverseMapping.get(id);
 		}
@@ -52,7 +52,7 @@ public class IdResolver {
 
 	private Long createMapping(String name) throws IOException {
 
-		HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
+		HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
 		long value = uidTable.incrementColumnValue(Bytes.toBytes("counter"), Bytes.toBytes("forward"),
 				Bytes.toBytes(type), 1);
@@ -91,7 +91,7 @@ public class IdResolver {
 
 	long scanNames(String name) throws UnresolvableException {
 		try {
-			HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
+			HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
 			logger.info("checking for name: " + name + " of type " + type);
 

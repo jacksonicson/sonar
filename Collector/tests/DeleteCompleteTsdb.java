@@ -25,12 +25,12 @@ public class DeleteCompleteTsdb {
 			table.delete(delete);
 		}
 
-		table = new HTable(util.getConfig(), "tsdb-uid");
+		table = new HTable(util.getConfig(), "tsdb_uid");
 		scan = new Scan();
 		scanner = table.getScanner(scan);
 		for (Result res : scanner) {
 
-			System.out.println("Deleting tsdb-uid row: " + res.getRow());
+			System.out.println("Deleting tsdb_uid row: " + res.getRow());
 
 			Delete delete = new Delete(res.getRow());
 			table.delete(delete);

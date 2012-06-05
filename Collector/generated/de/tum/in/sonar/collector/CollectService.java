@@ -31,7 +31,7 @@ public class CollectService {
 
   public interface Iface {
 
-    public void logMessage(Identifier id, String message) throws org.apache.thrift.TException;
+    public void logMessage(Identifier id, LogMessage message) throws org.apache.thrift.TException;
 
     public void logMetric(Identifier id, MetricReading value) throws org.apache.thrift.TException;
 
@@ -41,7 +41,7 @@ public class CollectService {
 
   public interface AsyncIface {
 
-    public void logMessage(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logMessage_call> resultHandler) throws org.apache.thrift.TException;
+    public void logMessage(Identifier id, LogMessage message, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logMessage_call> resultHandler) throws org.apache.thrift.TException;
 
     public void logMetric(Identifier id, MetricReading value, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.logMetric_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -69,13 +69,13 @@ public class CollectService {
       super(iprot, oprot);
     }
 
-    public void logMessage(Identifier id, String message) throws org.apache.thrift.TException
+    public void logMessage(Identifier id, LogMessage message) throws org.apache.thrift.TException
     {
       send_logMessage(id, message);
       recv_logMessage();
     }
 
-    public void send_logMessage(Identifier id, String message) throws org.apache.thrift.TException
+    public void send_logMessage(Identifier id, LogMessage message) throws org.apache.thrift.TException
     {
       logMessage_args args = new logMessage_args();
       args.setId(id);
@@ -150,7 +150,7 @@ public class CollectService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void logMessage(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<logMessage_call> resultHandler) throws org.apache.thrift.TException {
+    public void logMessage(Identifier id, LogMessage message, org.apache.thrift.async.AsyncMethodCallback<logMessage_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       logMessage_call method_call = new logMessage_call(id, message, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -159,8 +159,8 @@ public class CollectService {
 
     public static class logMessage_call extends org.apache.thrift.async.TAsyncMethodCall {
       private Identifier id;
-      private String message;
-      public logMessage_call(Identifier id, String message, org.apache.thrift.async.AsyncMethodCallback<logMessage_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private LogMessage message;
+      public logMessage_call(Identifier id, LogMessage message, org.apache.thrift.async.AsyncMethodCallback<logMessage_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.id = id;
         this.message = message;
@@ -328,7 +328,7 @@ public class CollectService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("logMessage_args");
 
     private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-    private static final org.apache.thrift.protocol.TField MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("message", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("message", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -337,7 +337,7 @@ public class CollectService {
     }
 
     public Identifier id; // required
-    public String message; // required
+    public LogMessage message; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -407,7 +407,7 @@ public class CollectService {
       tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Identifier.class)));
       tmpMap.put(_Fields.MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("message", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LogMessage.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(logMessage_args.class, metaDataMap);
     }
@@ -417,7 +417,7 @@ public class CollectService {
 
     public logMessage_args(
       Identifier id,
-      String message)
+      LogMessage message)
     {
       this();
       this.id = id;
@@ -432,7 +432,7 @@ public class CollectService {
         this.id = new Identifier(other.id);
       }
       if (other.isSetMessage()) {
-        this.message = other.message;
+        this.message = new LogMessage(other.message);
       }
     }
 
@@ -470,11 +470,11 @@ public class CollectService {
       }
     }
 
-    public String getMessage() {
+    public LogMessage getMessage() {
       return this.message;
     }
 
-    public logMessage_args setMessage(String message) {
+    public logMessage_args setMessage(LogMessage message) {
       this.message = message;
       return this;
     }
@@ -508,7 +508,7 @@ public class CollectService {
         if (value == null) {
           unsetMessage();
         } else {
-          setMessage((String)value);
+          setMessage((LogMessage)value);
         }
         break;
 
@@ -696,8 +696,9 @@ public class CollectService {
               }
               break;
             case 2: // MESSAGE
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.message = iprot.readString();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.message = new LogMessage();
+                struct.message.read(iprot);
                 struct.setMessageIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -725,7 +726,7 @@ public class CollectService {
         }
         if (struct.message != null) {
           oprot.writeFieldBegin(MESSAGE_FIELD_DESC);
-          oprot.writeString(struct.message);
+          struct.message.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -757,7 +758,7 @@ public class CollectService {
           struct.id.write(oprot);
         }
         if (struct.isSetMessage()) {
-          oprot.writeString(struct.message);
+          struct.message.write(oprot);
         }
       }
 
@@ -771,7 +772,8 @@ public class CollectService {
           struct.setIdIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.message = iprot.readString();
+          struct.message = new LogMessage();
+          struct.message.read(iprot);
           struct.setMessageIsSet(true);
         }
       }

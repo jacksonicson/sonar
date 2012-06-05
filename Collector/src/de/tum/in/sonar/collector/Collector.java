@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.tum.in.sonar.collector.log.LogDatabase;
 import de.tum.in.sonar.collector.server.CollectServiceImpl;
 import de.tum.in.sonar.collector.server.ManagementServiceImpl;
 import de.tum.in.sonar.collector.server.ServerBootstrap;
@@ -21,6 +22,7 @@ public class Collector {
 
 		TimeSeriesDatabase tsdb = new TimeSeriesDatabase();
 		tsdb.setHbaseUtil(hbase);
+
 		try {
 			tsdb.setupTables();
 		} catch (TableCreationException e) {
@@ -28,8 +30,19 @@ public class Collector {
 			System.exit(1);
 		}
 
+		// initilize the log database
+		LogDatabase logdb = new LogDatabase();
+		logdb.setHbaseUtil(hbase);
+		try {
+			logdb.setupTables();
+		} catch (TableCreationException e) {
+			logger.error("Error while creating HBase talbe structure", e);
+			System.exit(1);
+		}
+
 		CollectServiceImpl collectService = new CollectServiceImpl();
 		collectService.setTsdb(tsdb);
+		collectService.setLogdb(logdb);
 
 		ManagementServiceImpl managementService = new ManagementServiceImpl();
 		managementService.setTsdb(tsdb);
