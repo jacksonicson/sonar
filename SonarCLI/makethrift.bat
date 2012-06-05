@@ -1,0 +1,1 @@
+thrift -out . --gen py ./sonar/collector.thrift

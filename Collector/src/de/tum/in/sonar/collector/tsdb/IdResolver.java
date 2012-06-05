@@ -52,7 +52,7 @@ public class IdResolver {
 
 	private Long createMapping(String name) throws IOException {
 
-		HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
+		HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
 		long value = uidTable.incrementColumnValue(Bytes.toBytes("counter"), Bytes.toBytes("forward"),
 				Bytes.toBytes(type), 1);
@@ -91,7 +91,7 @@ public class IdResolver {
 
 	long scanNames(String name) throws UnresolvableException {
 		try {
-			HTable uidTable = new HTable(hbaseUtil.getConfig(), "tsdb-uid");
+			HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
 			logger.info("checking for name: " + name + " of type " + type);
 
