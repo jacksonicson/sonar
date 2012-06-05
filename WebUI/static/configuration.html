@@ -58,10 +58,13 @@
     </div>
 </div>
 
-
 <div class="container">
 
     <div class="span8">
+
+        <div class="alert alert-error" id="errors">
+            Error: No error message!
+        </div>
 
 
         <div class="tabbable">
@@ -69,10 +72,12 @@
                 <li class="active"><a href="#tab1" data-toggle="tab">Sensors</a></li>
                 <li><a href="#tab2" data-toggle="tab">Hostnames</a></li>
             </ul>
+
             <div class="tab-content">
 
                 <div class="tab-pane active" id="tab1">
-                    <a class="btn" href="">New Sensor</a>
+
+                    <a class="btn" data-toggle="modal" href="#newSensorDlg">New Sensor</a>
                     <table class="table" id="listSensors">
                         <thead>
                         <tr>
@@ -110,10 +115,17 @@
             </div>
 
             <script type="text/javascript">
-                jQuery(document).ready(function ($) {
-                    $('#tabs').tab();
 
-                    // $('sensors').
+                function updateSensorList() {
+                    /*    var $wrap = $('#listSensorsBody');
+                     $wrap.children().remove();
+                     $wrap.append(
+                     $('<tr>')
+                     .append(
+                     $('<td>').colspan(4).text("Loading ...")
+                     )
+                     )
+                     ; */
 
                     $.ajax({
                         type:"GET",
@@ -132,7 +144,7 @@
                                                 .append(
                                                 $('<td>').text(i),
                                                 $('<td>').text(sensor.name),
-                                                $('<td>').text('yes'),
+                                                $('<td>').text('-'),
                                                 $('<td>').text(sensor.labels)
                                         )
                                 );
@@ -145,6 +157,43 @@
                             alert("Sorry, The requested property could not be found.");
                         }
                     });
+                }
+
+                jQuery(document).ready(function ($) {
+                    $('#tabs').tab();
+
+                    $('#errors').hide();
+
+                    $('#submitSensor').click(function(event){
+
+                    });
+
+                    $('#submitSensor').click(function (event) {
+
+                        var test = $("#newSensorForm").serialize();
+                        console.log("FORM: " + test);
+
+                        $.ajax({
+                            type:"POST",
+                            url:'/addsensor',
+                            dataType:'text',
+                            data:test,
+
+                            success:function (data) {
+                                if(data == 'ok')
+                                {
+                                    updateSensorList();
+                                } else {
+                                    $('#errors').show();
+                                    $('#errors').text("Error: Could not save sensor...");
+                                }
+
+                                $('#newSensorDlg').modal('hide');
+                            }
+                        });
+                    })
+
+                    updateSensorList();
                 });
             </script>
 
@@ -152,6 +201,39 @@
     </div>
 </div>
 
+
+<div class="modal hide" id="newSensorDlg">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>New Sensor</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" id="newSensorForm">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="sensorName">Sensor Name:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="Sensor Name" id="sensorName" name="sensorName"/>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="sensorLabels">Labels:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="sensorLabels" name="sensorLabels"/>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary" id="submitSensor">Save changes</a>
+    </div>
+</div>
 
 <!-- javascript
 ================================================== -->

@@ -3,6 +3,7 @@ var http = require('http');
 var router = require('./router');
 var connect = require('connect');
 var experimental = require('./experimental');
+var qs = require('querystring');
 
 var PORT = 8080;
 
@@ -12,6 +13,43 @@ var types = require("./collector_types");
 
 function plain(req, resp) {
     resp.end("hello world");
+}
+
+
+function addSensorHandler(req, resp) {
+    console.log("adding new sensor " + req.method);
+
+    var body = "";
+
+    req.on('data', function (data) {
+        console.log("data: " + data);
+        body += data;
+    });
+
+    req.on('end', function () {
+        console.log("end: " + body);
+        body = qs.parse(body);
+
+        var connection = thrift.createConnection('localhost', 7932);
+        client = thrift.createClient(managementService, connection);
+
+        if (body.sensorName != null && body.sensorName.length > 3) {
+
+            client.deploySensor(body.sensorName, "null", function (err, ret) {
+                    console.log("sensor registered");
+
+                    // Decompose the labels
+                    var labels = body.sensorLabels.split(",");
+                    console.log("labels " + labels);
+                    client.setSensorLabels(body.sensorName, labels, function (err, ret) {
+                        resp.end("ok");
+                    });
+                }
+            )
+            ;
+        }
+
+    })
 }
 
 function sensorsHandler(req, resp) {
@@ -24,38 +62,38 @@ function sensorsHandler(req, resp) {
 
     client.getAllSensors(function (err, result) {
 
-        sensorData = []
+        var sensorData = []
 
-        counter = 0;
-        for (sensor in result) {
+        var counter = 0;
+        for (var sensor in result) {
 
             console.log("sensor " + result[sensor]);
             var value = result[sensor]
             console.log("VALUE " + value);
 
-            var test = function (err, rr) {
+            var test = (function (value) {
+                return function test(err, rr) {
+                    counter++;
+                    console.log("callback " + counter + " of " + result.length);
 
-                counter++;
-                console.log("callback " + counter + " of " + result.length);
+                    var sensorInfo = {
+                        name:value,
+                        labels:rr
+                    }
+                    console.log("PUSH: " + value);
+                    sensorData.push(sensorInfo)
 
-                sensorInfo = {
-                    name:result[sensor],
-                    labels:rr
+                    if (counter == result.length) {
+
+                        console.log("running return ...");
+                        console.log("test done");
+
+                        console.log("sensor data: " + sensorData);
+                        var ss = JSON.stringify(sensorData);
+                        resp.end(ss);
+                    }
                 }
-                console.log("PUSH: " + self.value);
-                sensorData.push(sensorInfo)
-
-                if (counter == result.length) {
-
-                    console.log("running return ...");
-                    console.log("test done");
-
-                    var ss = JSON.stringify(sensorData);
-                    resp.end(ss);
-                }
-            }
-
-            test.value = value;
+            })(value);
 
 
             client.getSensorLabels(result[sensor], test)
@@ -123,7 +161,8 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),
     new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, []),
-    new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, [])
+    new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
+    new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, [])
 ]);
 
 // dump url configuration

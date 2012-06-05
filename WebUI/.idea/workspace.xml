@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="119" />
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="115" mnemonic="7" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="157" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -26,19 +25,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="configuration.html" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="configuration.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/configuration.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="129" column="65" selection-start="4230" selection-end="4230" vertical-scroll-proportion="-9.692307">
+            <state line="83" column="48" selection-start="2533" selection-end="2533" vertical-scroll-proportion="0.5122807">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="43" column="34" selection-start="1204" selection-end="1204" vertical-scroll-proportion="0.31536925">
+            <state line="85" column="43" selection-start="2502" selection-end="2502" vertical-scroll-proportion="-5.66">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="collector_types.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/collector_types.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="177" column="26" selection-start="4213" selection-end="4213" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -254,16 +262,16 @@
         <option value="$PROJECT_DIR$/setup.sh" />
         <option value="$PROJECT_DIR$/static/index.html" />
         <option value="$PROJECT_DIR$/static/highstocktest.html" />
-        <option value="$PROJECT_DIR$/static/configuration.html" />
         <option value="$PROJECT_DIR$/sonar.js" />
+        <option value="$PROJECT_DIR$/static/configuration.html" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1296" />
-    <option name="height" value="1000" />
+    <option name="width" value="1696" />
+    <option name="height" value="1026" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -471,17 +479,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1296" height="1000" extended-state="6" />
+    <frame x="-8" y="-8" width="1696" height="1026" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25775656" sideWeight="0.15952381" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25775656" sideWeight="0.45833334" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1955341" sideWeight="0.19745958" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1955341" sideWeight="0.77482677" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.37380952" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2251732" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -573,11 +581,6 @@
         <state line="96" column="41" selection-start="2998" selection-end="2998" vertical-scroll-proportion="0.52589" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/collector_types.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="55" selection-start="495" selection-end="495" vertical-scroll-proportion="-2.9433658" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/router.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="9" column="35" selection-start="205" selection-end="205" vertical-scroll-proportion="0.0">
@@ -588,13 +591,6 @@
     <entry file="file://$PROJECT_DIR$/static/highstocktest.html">
       <provider selected="true" editor-type-id="text-editor">
         <state line="42" column="51" selection-start="1297" selection-end="1297" vertical-scroll-proportion="-13.730769">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="24" selection-start="240" selection-end="429" vertical-scroll-proportion="-11.115385">
           <folding />
         </state>
       </provider>
@@ -770,13 +766,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/configuration.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="129" column="65" selection-start="4230" selection-end="4230" vertical-scroll-proportion="-9.692307">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/transport.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="54" column="37" selection-start="1857" selection-end="1857" vertical-scroll-proportion="0.0">
@@ -784,9 +773,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/static/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="24" selection-start="240" selection-end="429" vertical-scroll-proportion="-11.115385">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/collector_types.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="177" column="26" selection-start="4213" selection-end="4213" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="34" selection-start="1204" selection-end="1204" vertical-scroll-proportion="0.31536925">
+        <state line="85" column="43" selection-start="2502" selection-end="2502" vertical-scroll-proportion="-5.66">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/configuration.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="83" column="48" selection-start="2533" selection-end="2533" vertical-scroll-proportion="0.5122807">
           <folding />
         </state>
       </provider>

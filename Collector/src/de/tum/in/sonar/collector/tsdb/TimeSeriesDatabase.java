@@ -89,7 +89,8 @@ public class TimeSeriesDatabase {
 
 			// Table layout
 			Set<InternalTableSchema> tables = new HashSet<InternalTableSchema>();
-			tables.add(new InternalTableSchema(Const.TABLE_TSDB, new String[] { Const.FAMILY_TSDB_DATA }));
+			tables.add(new InternalTableSchema(Const.TABLE_TSDB, new String[] { "forward", "backward" }));
+			tables.add(new InternalTableSchema(Const.TABLE_UID, new String[] { Const.FAMILY_TSDB_DATA }));
 			tables.add(new InternalTableSchema(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD,
 					Const.FAMILY_UID_BACKWARD }));
 
