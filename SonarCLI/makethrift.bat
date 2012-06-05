@@ -1,1 +1,1 @@
-thrift -out . --gen py ./sonar/collector.thrift
+thrift -out . --gen py collector.thrift
