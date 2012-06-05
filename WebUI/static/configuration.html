@@ -120,9 +120,8 @@
 
                     $.ajax({
                         type:"GET",
-                        url:'/delSensor',
+                        url:'/delsensor?sensorName=' + sensor,
                         dataType:'text',
-
                         success:function (data) {
 
                             updateSensorList();

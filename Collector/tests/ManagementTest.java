@@ -31,9 +31,9 @@ public class ManagementTest {
 
 			client.delSensor("asdf");
 			
-//			String data = "Really new sensor version";
-//			byte[] ds = Bytes.toBytes(data);
-//			client.deploySensor("cpu", ByteBuffer.wrap(ds));
+			String data = "Really new sensor version";
+			byte[] ds = Bytes.toBytes(data);
+			client.deploySensor("cpu", ByteBuffer.wrap(ds));
 //
 //			SensorConfiguration configuration = new SensorConfiguration();
 //			configuration.setInterval(1);
