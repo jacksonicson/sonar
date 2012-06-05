@@ -56,9 +56,11 @@ service CollectService {
 
 service ManagementService {
 	
+	// Query Section
 	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),
 	
 	
+	// Sensor Section
 	binary fetchSensor(1:string name),
 	
 	void deploySensor(1:string name, 2:binary file),
@@ -71,6 +73,8 @@ service ManagementService {
 	
 	void delSensor(1:string sensor),
 	
+	
+	// Host Section
 	void addHost(1:string hostname),
 	
 	void delHost(1:string hostname),
