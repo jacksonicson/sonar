@@ -14,14 +14,8 @@ def deploy(sensor, file):
     client = ManagementService.Client(protocol);
     transport.open();
     
-    
-    
     f = open(file, 'rb')
-    ba = bytearray()
-    byte = f.read(1)
-    while byte:
-        ba.extend(byte)
-        byte = f.read(1)
+    ba = f.read()
     f.close()
     
     client.deploySensor(sensor, ba); 
