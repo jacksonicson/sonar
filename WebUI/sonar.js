@@ -24,7 +24,7 @@ function delHostHandler(req, resp) {
     var body = qs.parse(query);
     var hostname = body.hostname;
 
-    client.delHost(hostname, function(err, ret) {
+    client.delHost(hostname, function (err, ret) {
         console.log("host removed: " + hostname);
         resp.end("ok");
     })
@@ -157,6 +157,7 @@ connection.on("error", function (err) {
 
 function hostsHandler(req, resp) {
 
+    var connection = thrift.createConnection('localhost', 7932);
     var client = thrift.createClient(managementService, connection);
 
     var dataTable = []
@@ -173,6 +174,11 @@ function hostsHandler(req, resp) {
             client.getAllHosts(function (err, hosts) {
 
                 console.log("hosts received");
+
+                if (hosts.length == 0) {
+                    resp.end(JSON.stringify(dataTable));
+                    return;
+                }
 
                 // Iterate over all hosts
                 for (var i in hosts) {
@@ -229,7 +235,7 @@ function hostsHandler(req, resp) {
 
 function sensorsHandler(req, resp) {
     var connection = thrift.createConnection('localhost', 7932);
-    client = thrift.createClient(managementService, connection);
+    var client = thrift.createClient(managementService, connection);
 
     connection.on("error", function (err) {
         console.log("Could not connect with the Collector: " + err);
@@ -237,7 +243,14 @@ function sensorsHandler(req, resp) {
 
     client.getAllSensors(function (err, result) {
 
+        console.log("returned from all sensors");
+
         var sensorData = []
+
+        if (result.length == 0) {
+            var ss = JSON.stringify(sensorData);
+            resp.end(ss);
+        }
 
         var counter = 0;
         for (var sensor in result) {
@@ -269,7 +282,6 @@ function sensorsHandler(req, resp) {
                     }
                 }
             })(value);
-
 
             client.getSensorLabels(result[sensor], test)
         }

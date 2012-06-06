@@ -343,7 +343,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		// Get sensor configuration
 		SensorConfiguration sensorConfig = new SensorConfiguration();
 		key = key("sensor", sensor, "config");
-		sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
+		if (jedis.exists(key))
+			sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
 		config.setConfiguration(sensorConfig);
 
 		// Get all labels (aggregation of host and sensor)
