@@ -32,6 +32,68 @@ function delSensorHandler(req, resp) {
     });
 }
 
+function addHostHandler(req, resp) {
+    console.log("add host handler");
+
+    var body = "";
+    req.on('data', function (data) {
+        body += data;
+    });
+
+    req.on('end', function () {
+        console.log("end host add body: " + body);
+        body = qs.parse(body);
+
+        var connection = thrift.createConnection('localhost', 7932);
+        var client = thrift.createClient(managementService, connection);
+
+        console.log("host name: " + body.hostname);
+
+        if (body.hostname != null && body.hostname.length >= 3) {
+
+            client.addHost(body.hostname, function (err, ret) {
+
+                console.log("a");
+
+                var labels = body.hostLabels.split(",");
+                client.setHostLabels(body.hostname, labels, function (err, ret) {
+
+                    console.log("b");
+                    var sensorList = [];
+                    for (var i in body) {
+                        if (i.indexOf("sensor_") == 0) {
+                            console.log("sensor active " + i);
+                            sensorList[i.replace("sensor_", '')] = body[i]
+                        }
+                    }
+
+                    var counter = 0;
+                    for (var i in sensorList) {
+                        var active = false;
+                        if (sensorList[i] == "on") {
+                            console.log("sensor " + i + " is active!!!!");
+                            active = true;
+                        }
+
+                        client.setSensor(body.hostname, i, active, function (err, ret) {
+                            counter++;
+                            if (counter == sensorList.length) {
+                                console.log("everything worked out...");
+                                resp.end("ok");
+                            }
+                        })
+                    }
+
+                    if (sensorList.length == 0)
+                        resp.end("ok");
+                })
+            })
+
+        }
+
+    })
+}
+
 function addSensorHandler(req, resp) {
     console.log("adding new sensor " + req.method);
 
@@ -47,9 +109,12 @@ function addSensorHandler(req, resp) {
         body = qs.parse(body);
 
         var connection = thrift.createConnection('localhost', 7932);
-        client = thrift.createClient(managementService, connection);
+        var client = thrift.createClient(managementService, connection);
 
-        if (body.sensorName != null && body.sensorName.length > 3) {
+        console.log("sensor name: " + body.sensorName);
+
+        if (body.sensorName != null && body.sensorName.length >= 3) {
+
 
             client.deploySensor(body.sensorName, "null", function (err, ret) {
                     console.log("sensor registered");
@@ -246,7 +311,8 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
-    new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, [])
+    new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
+    new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, [])
 ]);
 
 // dump url configuration

@@ -113,191 +113,223 @@
 
 <script type="text/javascript">
 
-    function deleteSensor(event) {
-        var sensor = event.target.id;
+function deleteSensor(event) {
+    var sensor = event.target.id;
 
-        $.ajax({
-            type:"GET",
-            url:'/delsensor?sensorName=' + sensor,
-            dataType:'text',
-            success:function (data) {
+    $.ajax({
+        type:"GET",
+        url:'/delsensor?sensorName=' + sensor,
+        dataType:'text',
+        success:function (data) {
 
-                updateSensorList();
+            updateSensorList();
+        }
+    });
+}
+
+function submitHost(event) {
+    var editHost = event.target.id;
+
+    var form = $('#newHostForm').serialize();
+    console.log(form);
+
+    $.ajax({
+        type:"POST",
+        url:'/addhost',
+        dataType:'text',
+        data:form,
+
+        success:function (data) {
+            if (data == 'ok') {
+                updateHostsList();
+                $('#newHost').modal('hide');
+            } else {
+                $('#errors').show();
+                $('#errors').text("Error: Could not save host...");
             }
-        });
-    }
 
-    function editHost(event) {
-        console.log("editing host");
+            $('#newHost').modal('hide');
+        }
+    });
+}
 
-        var editHost = event.target.id;
+function editHost(event) {
+    console.log("editing host");
 
+    var editHost = event.target.id;
 
-        $.ajax({
-            type:"GET",
-            url:'/hosts',
-            dataType:'json',
+    var sensorField = $('#sensorField').empty();
 
-            success:function (hosts) {
+    $.ajax({
+        type:"GET",
+        url:'/hosts',
+        dataType:'json',
 
-                for (var i in hosts) {
-                    var host = hosts[i];
+        success:function (hosts) {
 
-                    console.log("checking hostname: " + host.hostname + " against " + editHost);
-                    if (host.hostname == editHost) {
-                        console.log("Hostname LISTING SENSORS NOW: " + host.hostname);
+            for (var i in hosts) {
+                var host = hosts[i];
 
-                        var sensorField = $('#sensorField');
+                console.log("checking hostname: " + host.hostname + " against " + editHost);
+                if (host.hostname == editHost) {
+                    console.log("Hostname LISTING SENSORS NOW: " + host.hostname);
 
-                        for (var s in host.sensor) {
-                            var sensor = host.sensor[s]
-                            sensorField.append(
-                                    $('<div>').addClass("controls").attr("id", s.name).append(
-                                            $('<label>').addClass("checkbox").text(sensor.name).append(
-                                                    $('<input>').attr("type", "checkbox").attr("id", sensor.name).attr("name", sensor.name)
-                                            )
-                                    )
+                    var sensorField = $('#sensorField');
 
-                            )
-                        }
-
-                        $('#newHost').modal('show');
-                    }
-                }
-            }
-        });
-
-
-    }
-
-    function updateHostsList() {
-        $.ajax({
-            type:"GET",
-            url:'/hosts',
-            dataType:'json',
-
-            success:function (data) {
-                console.log("done: " + data);
-
-                var $wrap = $('#listHostsBody');
-                $wrap.children('tr').remove();
-
-                console.log("# hosts: " + data.length)
-                for (var i in data) {
-                    var host = data[i];
-
-                    console.log("Hostname: " + host.hostname);
-
-                    var sensorCell = $('<td>')
                     for (var s in host.sensor) {
-                        var sensor = host.sensor[s];
-                        sensorCell.append(
-                                $('<table>').append(
-                                        $('<tr>').append(
-                                                $('<td>').text(sensor.name),
-                                                $('<td>').text(sensor.active)
+                        var sensor = host.sensor[s]
+                        var checked = "no";
+                        if (sensor.active == true)
+                            checked = "yes";
+
+                        sensorField.append(
+                                $('<div>').addClass("controls").attr("id", s.name).append(
+                                        $('<label>').addClass("checkbox").text(sensor.name).append(
+                                                $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
                                         )
                                 )
                         )
+
+                        if (sensor.active) {
+                            $("chbx_" + sensor.name).attr("checked", "yes")
+                        }
                     }
 
-                    $wrap.append(
-                            $('<tr>')
-                                    .append(
-                                    $('<td>').text(i),
-                                    $('<td>').append(
-                                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
-                                    ),
-                                    $('<td>').append(
-                                            $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
-                                    ),
-                                    $('<td>').append(sensorCell)
+                    $('#newHost').modal('show');
+                }
+            }
+        }
+    });
+
+
+}
+
+function updateHostsList() {
+    $.ajax({
+        type:"GET",
+        url:'/hosts',
+        dataType:'json',
+
+        success:function (data) {
+            console.log("done: " + data);
+
+            var $wrap = $('#listHostsBody');
+            $wrap.children('tr').remove();
+
+            console.log("# hosts: " + data.length)
+            for (var i in data) {
+                var host = data[i];
+
+                console.log("Hostname: " + host.hostname);
+
+                var sensorCell = $('<td>')
+                for (var s in host.sensor) {
+                    var sensor = host.sensor[s];
+                    sensorCell.append(
+                            $('<table>').append(
+                                    $('<tr>').append(
+                                            $('<td>').text(sensor.name),
+                                            $('<td>').text(sensor.active)
+                                    )
                             )
-                    );
+                    )
                 }
 
-                //alert(data); // shows whole dom
-                // alert( $(data).find('#wrapper').html() ); // returns null
-
-            },
-            error:function () {
-                alert("Sorry, The requested property could not be found.");
+                $wrap.append(
+                        $('<tr>')
+                                .append(
+                                $('<td>').text(i),
+                                $('<td>').append(
+                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
+                                ),
+                                $('<td>').append(
+                                        $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
+                                ),
+                                $('<td>').append(sensorCell)
+                        )
+                );
             }
-        });
-    }
 
-    function updateSensorList() {
+            //alert(data); // shows whole dom
+            // alert( $(data).find('#wrapper').html() ); // returns null
+
+        },
+        error:function () {
+            alert("Sorry, The requested property could not be found.");
+        }
+    });
+}
+
+function updateSensorList() {
+    $.ajax({
+        type:"GET",
+        url:'/sensors',
+        dataType:'json',
+
+        success:function (data) {
+
+            var $wrap = $('#listSensorsBody');
+            $wrap.children().remove();
+            for (i in data) {
+                sensor = data[i];
+                console.log("dd " + sensor.name);
+                $wrap.append(
+                        $('<tr>')
+                                .append(
+                                $('<td>').text(i),
+                                $('<td>').append(
+                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                                ),
+                                $('<td>').text(sensor.name),
+                                $('<td>').text('-'),
+                                $('<td>').text(sensor.labels)
+                        )
+                );
+            }
+
+            //alert(data); // shows whole dom
+            // alert( $(data).find('#wrapper').html() ); // returns null
+        },
+        error:function () {
+            alert("Sorry, The requested property could not be found.");
+        }
+    });
+}
+
+jQuery(document).ready(function ($) {
+    $('#tabs').tab();
+
+    $('#errors').hide();
+
+    $('#submitHost').click(submitHost);
+
+    $('#submitSensor').click(function (event) {
+
+        var test = $("#newSensorForm").serialize();
+        console.log("FORM: " + test);
+
         $.ajax({
-            type:"GET",
-            url:'/sensors',
-            dataType:'json',
+            type:"POST",
+            url:'/addsensor',
+            dataType:'text',
+            data:test,
 
             success:function (data) {
-
-                var $wrap = $('#listSensorsBody');
-                $wrap.children().remove();
-                for (i in data) {
-                    sensor = data[i];
-                    console.log("dd " + sensor.name);
-                    $wrap.append(
-                            $('<tr>')
-                                    .append(
-                                    $('<td>').text(i),
-                                    $('<td>').append(
-                                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
-                                    ),
-                                    $('<td>').text(sensor.name),
-                                    $('<td>').text('-'),
-                                    $('<td>').text(sensor.labels)
-                            )
-                    );
+                if (data == 'ok') {
+                    updateSensorList();
+                } else {
+                    $('#errors').show();
+                    $('#errors').text("Error: Could not save sensor...");
                 }
 
-                //alert(data); // shows whole dom
-                // alert( $(data).find('#wrapper').html() ); // returns null
-            },
-            error:function () {
-                alert("Sorry, The requested property could not be found.");
+                $('#newSensorDlg').modal('hide');
             }
         });
-    }
+    })
 
-    jQuery(document).ready(function ($) {
-        $('#tabs').tab();
-
-        $('#errors').hide();
-
-        $('#submitSensor').click(function (event) {
-
-        });
-
-        $('#submitSensor').click(function (event) {
-
-            var test = $("#newSensorForm").serialize();
-            console.log("FORM: " + test);
-
-            $.ajax({
-                type:"POST",
-                url:'/addsensor',
-                dataType:'text',
-                data:test,
-
-                success:function (data) {
-                    if (data == 'ok') {
-                        updateSensorList();
-                    } else {
-                        $('#errors').show();
-                        $('#errors').text("Error: Could not save sensor...");
-                    }
-
-                    $('#newSensorDlg').modal('hide');
-                }
-            });
-        })
-
-        updateSensorList();
-        updateHostsList();
-    });
+    updateSensorList();
+    updateHostsList();
+});
 </script>
 
 </div>
@@ -310,7 +342,7 @@
         <h3>New Host</h3>
     </div>
     <div class="modal-body">
-        <form class="form-horizontal" id="newSensorForm">
+        <form class="form-horizontal" id="newHostForm">
             <fieldset>
                 <div class="control-group">
                     <label class="control-label" for="hostName">Hostname:</label>
@@ -339,7 +371,7 @@
 
     <div class="modal-footer">
         <a href="#" class="btn" data-dismiss="modal">Close</a>
-        <a href="#" class="btn btn-primary" id="submitSensor">Save changes</a>
+        <a href="#" class="btn btn-primary" id="submitHost">Save changes</a>
     </div>
 </div>
 
