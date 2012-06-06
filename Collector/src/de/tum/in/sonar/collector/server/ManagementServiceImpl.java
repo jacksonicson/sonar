@@ -71,7 +71,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:labels -> [] - set of labels
 	//
 	// :host:[hostname]:labels -> [] - set of labels
-	// :host:[hostname]:sensor:[sensorname] - enables a sensor
+	// :host:[hostname]:sensor:[sensorname] - enables or disables a sensor
 	// :host:[hostname]:sensor:[sensorname]/config:[item] - overrides a sensor
 	// configuration
 
@@ -190,11 +190,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setHostLabels(String hostname, Set<String> labels) throws TException {
-		logger.debug("Setting labels for host: " + hostname); 
+		logger.debug("Setting labels for host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("host", hostname, "labels");
-		jedis.sadd(key, labels.toArray(new String[] {})); 
+		jedis.sadd(key, labels.toArray(new String[] {}));
 
 		jedisPool.returnResource(jedis);
 	}
@@ -206,51 +206,47 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		// Get all the labels in the key
 		String key = key("host", hostname, "labels");
-		Set<String> labels = jedis.smembers(key); 
-		
+		Set<String> labels = jedis.smembers(key);
+
+		jedisPool.returnResource(jedis);
 		return labels;
 	}
 
 	@Override
 	public void setSensor(String hostname, String sensor, boolean activate) throws TException {
+		logger.debug("set sensor: " + sensor + " for th host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
-		String val = jedis.get("host:" + hostname);
-		if (val != null) {
-			logger.debug("val " + val);
-			long id = Integer.parseInt(val);
-			String key = "host:" + id + ":";
-
-			String flag = "on";
-			if (!activate)
-				flag = "off";
-
-			jedis.set(key + "sensor:" + sensor, flag);
-		}
+		// Update the sensor setting
+		String key = key("host", hostname, "sensor", sensor);
+		jedis.set(key, Boolean.toString(activate));
 
 		jedisPool.returnResource(jedis);
 	}
 
 	@Override
 	public Set<String> getAllSensors() throws TException {
-		Jedis jedisString = jedisPool.getResource();
-		long length = jedisString.llen("sensors");
+		logger.debug("get all available sensors");
+		Jedis jedis = jedisPool.getResource();
 
-		List<String> sensorNames = jedisString.lrange("sensors", 0, length);
+		String key = key("sensors");
+		Set<String> sensors = jedis.smembers(key);
 
-		Set<String> result = new HashSet<String>();
-		result.addAll(sensorNames);
-
-		jedisPool.returnResource(jedisString);
-
-		return result;
+		jedisPool.returnResource(jedis);
+		return sensors;
 	}
 
 	@Override
 	public boolean hasBinary(String sensor) throws TException {
-		Jedis jedisString = jedisPool.getResource();
-		byte[] data = jedisString.get(SafeEncoder.encode("sensors:" + sensor));
-		return data.length > 64;
+		logger.debug("ask for sensor binary: " + sensor);
+		Jedis jedis = jedisPool.getResource();
+
+		String key = key("sensor", sensor, "binary");
+		byte[] data = jedis.get(SafeEncoder.encode(key));
+		boolean available = data.length > 64;
+
+		jedisPool.returnResource(jedis);
+		return available;
 	}
 
 	@Override
