@@ -68,6 +68,72 @@ function addSensorHandler(req, resp) {
     })
 }
 
+var connection = thrift.createConnection('localhost', 7932);
+connection.on("error", function (err) {
+    console.log("Could not connect with the Collector: " + err);
+});
+
+function hostsHandler(req, resp) {
+
+    var client = thrift.createClient(managementService, connection);
+
+    var dataTable = []
+    var hostCounter = 0;
+    var sensorCounter = 0;
+
+    // Get all registered sensors
+    client.getAllSensors((function () {
+        return function (err, sensors) {
+
+            console.log("sensors received");
+
+            // Fetch all hosts
+            client.getAllHosts(function (err, hosts) {
+
+                console.log("hosts received");
+
+                // Iterate over all hotss
+                for (var i in hosts) {
+
+                    console.log("iterating host " + i);
+
+
+                    dataTable[i] = {
+                        hostname:hosts[i],
+                        sensor:[]
+                    }
+
+                    for (var j in sensors) {
+
+                        console.log("iterating host sensor: " + sensors[j] + " hosts: " + hosts[i]);
+
+                        // Get bundled sensor configuration for the host
+                        client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
+                            return function (err, sensorConfig) {
+
+                                console.log("BUNDLE: " + sensorConfig);
+
+                                dataTable[i].sensor[j] = {
+                                    name:sensorConfig.sensor,
+                                    labels:sensorConfig.labels,
+                                    active:sensorConfig.active
+                                }
+
+                                sensorCounter++;
+                                if (sensorCounter >= hosts.length * sensors.length) {
+                                    console.log("FINISHED");
+                                    resp.end(JSON.stringify(dataTable));
+                                }
+                            }
+                        })(i, j));
+                    }
+
+                }
+            })
+        }
+    })());
+}
+
 function sensorsHandler(req, resp) {
     var connection = thrift.createConnection('localhost', 7932);
     client = thrift.createClient(managementService, connection);
@@ -179,7 +245,8 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, []),
     new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
-    new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, [])
+    new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
+    new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, [])
 ]);
 
 // dump url configuration

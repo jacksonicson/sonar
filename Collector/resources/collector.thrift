@@ -50,6 +50,7 @@ struct BundledSensorConfiguration {
 	2:string hostname,
 	3:set<string> labels,
 	4:SensorConfiguration configuration,
+	5:bool active,
 }
 
 service CollectService {
@@ -86,6 +87,8 @@ service ManagementService {
 	
 	// Host Section
 	void addHost(1:string hostname),
+	
+	set<string> getAllHosts(),
 	
 	void delHost(1:string hostname),
 	

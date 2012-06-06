@@ -43,8 +43,9 @@ CollectService_logMessage_args.prototype.read = function(input) {
       }
       break;
       case 2:
-      if (ftype == Thrift.Type.STRING) {
-        this.message = input.readString();
+      if (ftype == Thrift.Type.STRUCT) {
+        this.message = new ttypes.LogMessage();
+        this.message.read(input);
       } else {
         input.skip(ftype);
       }
@@ -66,8 +67,8 @@ CollectService_logMessage_args.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.message) {
-    output.writeFieldBegin('message', Thrift.Type.STRING, 2);
-    output.writeString(this.message);
+    output.writeFieldBegin('message', Thrift.Type.STRUCT, 2);
+    this.message.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

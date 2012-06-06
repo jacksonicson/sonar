@@ -84,8 +84,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		jedis.del("sensor:" + sensor);
 
 		// Remove configuration
-		jedis.del("sensor:" + sensor + ":config"); 
-		
+		jedis.del("sensor:" + sensor + ":config");
+
 		// Remove labels
 		jedis.del("sensor:" + sensor + ":labels");
 
@@ -327,11 +327,22 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		Jedis jedis = jedisPool.getResource();
 
+		String host = jedis.get("host:" + hostname);
+		long hostId = Long.parseLong(host);
+
 		String val = jedis.get("sensor:" + sensor);
 		if (val != null) {
 			String key = "sensor:" + sensor + ":";
 
 			long interval = Long.parseLong(jedis.get(key + "config" + ":" + "interval"));
+
+			// Active
+			String active = jedis.get("host:" + hostId + ":sensor:" + sensor);
+			logger.debug("active state: " + active);
+			if(active == null)
+				active = "off"; 
+			
+			config.setActive(active.equals("on"));
 
 			// TODO: Host configuration overrides sensor configuration
 			SensorConfiguration configuration = new SensorConfiguration();
@@ -350,6 +361,21 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
+	}
+
+	@Override
+	public Set<String> getAllHosts() throws TException {
+		Jedis jedis = jedisPool.getResource();
+
+		Set<String> hostnames = new HashSet<String>();
+
+		long length = jedis.llen("hostnames");
+		List<String> result = jedis.lrange("hostnames", 0, length);
+		hostnames.addAll(result);
+
+		jedisPool.returnResource(jedis);
+
+		return hostnames;
 	}
 
 }

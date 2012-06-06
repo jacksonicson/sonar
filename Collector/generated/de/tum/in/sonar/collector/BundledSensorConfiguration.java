@@ -34,6 +34,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField LABELS_FIELD_DESC = new org.apache.thrift.protocol.TField("labels", org.apache.thrift.protocol.TType.SET, (short)3);
   private static final org.apache.thrift.protocol.TField CONFIGURATION_FIELD_DESC = new org.apache.thrift.protocol.TField("configuration", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField ACTIVE_FIELD_DESC = new org.apache.thrift.protocol.TField("active", org.apache.thrift.protocol.TType.BOOL, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,13 +46,15 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
   public String hostname; // required
   public Set<String> labels; // required
   public SensorConfiguration configuration; // required
+  public boolean active; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SENSOR((short)1, "sensor"),
     HOSTNAME((short)2, "hostname"),
     LABELS((short)3, "labels"),
-    CONFIGURATION((short)4, "configuration");
+    CONFIGURATION((short)4, "configuration"),
+    ACTIVE((short)5, "active");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,6 +77,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
           return LABELS;
         case 4: // CONFIGURATION
           return CONFIGURATION;
+        case 5: // ACTIVE
+          return ACTIVE;
         default:
           return null;
       }
@@ -114,6 +119,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
   }
 
   // isset id assignments
+  private static final int __ACTIVE_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -126,6 +133,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.CONFIGURATION, new org.apache.thrift.meta_data.FieldMetaData("configuration", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SensorConfiguration.class)));
+    tmpMap.put(_Fields.ACTIVE, new org.apache.thrift.meta_data.FieldMetaData("active", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BundledSensorConfiguration.class, metaDataMap);
   }
@@ -137,19 +146,24 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     String sensor,
     String hostname,
     Set<String> labels,
-    SensorConfiguration configuration)
+    SensorConfiguration configuration,
+    boolean active)
   {
     this();
     this.sensor = sensor;
     this.hostname = hostname;
     this.labels = labels;
     this.configuration = configuration;
+    this.active = active;
+    setActiveIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public BundledSensorConfiguration(BundledSensorConfiguration other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetSensor()) {
       this.sensor = other.sensor;
     }
@@ -166,6 +180,7 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     if (other.isSetConfiguration()) {
       this.configuration = new SensorConfiguration(other.configuration);
     }
+    this.active = other.active;
   }
 
   public BundledSensorConfiguration deepCopy() {
@@ -178,6 +193,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     this.hostname = null;
     this.labels = null;
     this.configuration = null;
+    setActiveIsSet(false);
+    this.active = false;
   }
 
   public String getSensor() {
@@ -291,6 +308,29 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
     }
   }
 
+  public boolean isActive() {
+    return this.active;
+  }
+
+  public BundledSensorConfiguration setActive(boolean active) {
+    this.active = active;
+    setActiveIsSet(true);
+    return this;
+  }
+
+  public void unsetActive() {
+    __isset_bit_vector.clear(__ACTIVE_ISSET_ID);
+  }
+
+  /** Returns true if field active is set (has been assigned a value) and false otherwise */
+  public boolean isSetActive() {
+    return __isset_bit_vector.get(__ACTIVE_ISSET_ID);
+  }
+
+  public void setActiveIsSet(boolean value) {
+    __isset_bit_vector.set(__ACTIVE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SENSOR:
@@ -325,6 +365,14 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       }
       break;
 
+    case ACTIVE:
+      if (value == null) {
+        unsetActive();
+      } else {
+        setActive((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -341,6 +389,9 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
 
     case CONFIGURATION:
       return getConfiguration();
+
+    case ACTIVE:
+      return Boolean.valueOf(isActive());
 
     }
     throw new IllegalStateException();
@@ -361,6 +412,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       return isSetLabels();
     case CONFIGURATION:
       return isSetConfiguration();
+    case ACTIVE:
+      return isSetActive();
     }
     throw new IllegalStateException();
   }
@@ -411,6 +464,15 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       if (!(this_present_configuration && that_present_configuration))
         return false;
       if (!this.configuration.equals(that.configuration))
+        return false;
+    }
+
+    boolean this_present_active = true;
+    boolean that_present_active = true;
+    if (this_present_active || that_present_active) {
+      if (!(this_present_active && that_present_active))
+        return false;
+      if (this.active != that.active)
         return false;
     }
 
@@ -470,6 +532,16 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetActive()).compareTo(typedOther.isSetActive());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetActive()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.active, typedOther.active);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -521,6 +593,10 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       sb.append(this.configuration);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("active:");
+    sb.append(this.active);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -539,6 +615,8 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -606,6 +684,14 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // ACTIVE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.active = iprot.readBool();
+              struct.setActiveIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -648,6 +734,9 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         struct.configuration.write(oprot);
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(ACTIVE_FIELD_DESC);
+      oprot.writeBool(struct.active);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -678,7 +767,10 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       if (struct.isSetConfiguration()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetActive()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetSensor()) {
         oprot.writeString(struct.sensor);
       }
@@ -697,12 +789,15 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       if (struct.isSetConfiguration()) {
         struct.configuration.write(oprot);
       }
+      if (struct.isSetActive()) {
+        oprot.writeBool(struct.active);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, BundledSensorConfiguration struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.sensor = iprot.readString();
         struct.setSensorIsSet(true);
@@ -728,6 +823,10 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         struct.configuration = new SensorConfiguration();
         struct.configuration.read(iprot);
         struct.setConfigurationIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.active = iprot.readBool();
+        struct.setActiveIsSet(true);
       }
     }
   }

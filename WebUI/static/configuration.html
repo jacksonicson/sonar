@@ -100,14 +100,13 @@
                         <thead>
                         <tr>
                             <th>#</th>
+                            <th>&nbsp;</th>
                             <th>Hostname</th>
-                            <th>Resolve</th>
-                            <th>Ping</th>
                             <th>Sensors</th>
                             <th>Labels</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id='listHostsBody'>
                         </tbody>
                     </table>
                 </div>
@@ -129,17 +128,48 @@
                     });
                 }
 
-                function updateSensorList() {
-                    /*    var $wrap = $('#listSensorsBody');
-                     $wrap.children().remove();
-                     $wrap.append(
-                     $('<tr>')
-                     .append(
-                     $('<td>').colspan(4).text("Loading ...")
-                     )
-                     )
-                     ; */
+                function updateHostsList() {
+                    $.ajax({
+                        type:"GET",
+                        url:'/hosts',
+                        dataType:'text',
 
+                        success:function (data) {
+                            console.log("done: " + data);
+/*
+                            var $wrap = $('#listHostsBody');
+                            $wrap.children('tr').remove();
+
+                            for (var i in data) {
+                                var host = data[i];
+                                console.log("dd " + host.name);
+
+                                $wrap.append(
+                                        $('<tr>')
+                                                .append(
+                                                $('<td>').text(i),
+                                                $('<td>').append(
+                                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
+                                                ),
+                                                $('<td>').text(host.name),
+                                                $('<td>').text('-'),
+                                                $('<td>').text(host.sensors),
+                                                $('<td>').text(host.labels)
+                                        )
+                                );
+                            }
+
+                            //alert(data); // shows whole dom
+                            // alert( $(data).find('#wrapper').html() ); // returns null
+                            */
+                        },
+                        error:function () {
+                            alert("Sorry, The requested property could not be found.");
+                        }
+                    });
+                }
+
+                function updateSensorList() {
                     $.ajax({
                         type:"GET",
                         url:'/sensors',
@@ -180,7 +210,7 @@
 
                     $('#errors').hide();
 
-                    $('#submitSensor').click(function(event){
+                    $('#submitSensor').click(function (event) {
 
                     });
 
@@ -196,8 +226,7 @@
                             data:test,
 
                             success:function (data) {
-                                if(data == 'ok')
-                                {
+                                if (data == 'ok') {
                                     updateSensorList();
                                 } else {
                                     $('#errors').show();
@@ -210,6 +239,7 @@
                     })
 
                     updateSensorList();
+                    updateHostsList();
                 });
             </script>
 
@@ -230,7 +260,8 @@
                     <label class="control-label" for="sensorName">Sensor Name:</label>
 
                     <div class="controls">
-                        <input type="text" class="input-xlarge" placeholder="Sensor Name" id="sensorName" name="sensorName"/>
+                        <input type="text" class="input-xlarge" placeholder="Sensor Name" id="sensorName"
+                               name="sensorName"/>
                     </div>
                 </div>
 
@@ -238,7 +269,8 @@
                     <label class="control-label" for="sensorLabels">Labels:</label>
 
                     <div class="controls">
-                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="sensorLabels" name="sensorLabels"/>
+                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="sensorLabels"
+                               name="sensorLabels"/>
                     </div>
                 </div>
             </fieldset>

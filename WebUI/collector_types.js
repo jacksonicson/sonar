@@ -175,6 +175,88 @@ MetricReading.prototype.write = function(output) {
   return;
 };
 
+var LogMessage = module.exports.LogMessage = function(args) {
+  this.logLevel = null;
+  this.logMessage = null;
+  this.programName = null;
+  if (args) {
+    if (args.logLevel !== undefined) {
+      this.logLevel = args.logLevel;
+    }
+    if (args.logMessage !== undefined) {
+      this.logMessage = args.logMessage;
+    }
+    if (args.programName !== undefined) {
+      this.programName = args.programName;
+    }
+  }
+};
+LogMessage.prototype = {};
+LogMessage.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.I32) {
+        this.logLevel = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.logMessage = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.programName = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+LogMessage.prototype.write = function(output) {
+  output.writeStructBegin('LogMessage');
+  if (this.logLevel) {
+    output.writeFieldBegin('logLevel', Thrift.Type.I32, 1);
+    output.writeI32(this.logLevel);
+    output.writeFieldEnd();
+  }
+  if (this.logMessage) {
+    output.writeFieldBegin('logMessage', Thrift.Type.STRING, 2);
+    output.writeString(this.logMessage);
+    output.writeFieldEnd();
+  }
+  if (this.programName) {
+    output.writeFieldBegin('programName', Thrift.Type.STRING, 3);
+    output.writeString(this.programName);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 var File = module.exports.File = function(args) {
   this.filename = null;
   this.description = null;
@@ -593,6 +675,7 @@ var BundledSensorConfiguration = module.exports.BundledSensorConfiguration = fun
   this.hostname = null;
   this.labels = null;
   this.configuration = null;
+  this.active = null;
   if (args) {
     if (args.sensor !== undefined) {
       this.sensor = args.sensor;
@@ -605,6 +688,9 @@ var BundledSensorConfiguration = module.exports.BundledSensorConfiguration = fun
     }
     if (args.configuration !== undefined) {
       this.configuration = args.configuration;
+    }
+    if (args.active !== undefined) {
+      this.active = args.active;
     }
   }
 };
@@ -664,6 +750,13 @@ BundledSensorConfiguration.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 5:
+      if (ftype == Thrift.Type.BOOL) {
+        this.active = input.readBool();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -702,6 +795,11 @@ BundledSensorConfiguration.prototype.write = function(output) {
   if (this.configuration) {
     output.writeFieldBegin('configuration', Thrift.Type.STRUCT, 4);
     this.configuration.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.active) {
+    output.writeFieldBegin('active', Thrift.Type.BOOL, 5);
+    output.writeBool(this.active);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

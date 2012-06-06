@@ -34,6 +34,8 @@ public class ManagementTest {
 			String data = "Really new sensor version";
 			byte[] ds = Bytes.toBytes(data);
 			client.deploySensor("cpu", ByteBuffer.wrap(ds));
+			
+			client.addHost("test");
 //
 //			SensorConfiguration configuration = new SensorConfiguration();
 //			configuration.setInterval(1);
