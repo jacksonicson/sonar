@@ -2,6 +2,7 @@ package de.tum.in.sonar.collector.server;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -206,6 +207,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		// Get all the labels in the key
 		String key = key("host", hostname, "labels");
+		if (!jedis.exists(key))
+			return Collections.emptySet();
+
 		Set<String> labels = jedis.smembers(key);
 
 		jedisPool.returnResource(jedis);
@@ -230,6 +234,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("sensors");
+		if (!jedis.exists(key))
+			return Collections.emptySet();
+
 		Set<String> sensors = jedis.smembers(key);
 
 		jedisPool.returnResource(jedis);
@@ -242,6 +249,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("sensor", sensor, "binary");
+		if (!jedis.exists(key))
+			return false;
+
 		byte[] data = jedis.get(SafeEncoder.encode(key));
 		boolean available = data.length > 64;
 
@@ -251,129 +261,117 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
+		logger.debug("get all sensors for host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
-		String val = jedis.get("host:" + hostname);
-		Set<String> result = new HashSet<String>();
-		if (val != null) {
-			logger.debug("val " + val);
-			long id = Integer.parseInt(val);
-			String key = "host:" + id + ":";
+		String key = key("host", hostname, "sensor");
+		String query = key + ":*:true";
+		Set<String> sensorKeys = jedis.keys(query);
 
-			// Get all sensors
-			Long len = jedis.llen("sensors");
-			List<String> sensors = jedis.lrange("sensors", 0, len);
-			for (String sensor : sensors) {
-				logger.debug("checking sensor: " + sensor);
-				String flag = jedis.get(key + "sensor:" + sensor);
-				if (flag != null && flag.equals("on")) {
-					logger.debug("found active sensor: " + sensor);
-					result.add(sensor);
-				}
-			}
+		Set<String> sensors = new HashSet<String>();
+		for (String sensor : sensorKeys) {
+			sensor = sensor.replaceFirst(key, "");
+			sensor = sensor.replaceFirst(":true", "");
+
+			logger.debug("sensor found: " + sensor);
+			sensors.add(sensor);
 		}
 
 		jedisPool.returnResource(jedis);
-		return result;
+		return sensors;
 	}
 
 	@Override
 	public Set<String> getSensorLabels(String sensor) throws TException {
+		logger.debug("get sensor labels: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 
-		Set<String> labels = new HashSet<String>();
-		String val = jedis.get("sensor:" + sensor);
-		if (val != null) {
-			String key = "sensor:" + sensor + ":";
-			labels = jedis.smembers(key + "labels");
-		}
+		String key = key("sensor", sensor, "labels");
+		if (!jedis.exists(key))
+			return Collections.emptySet();
+
+		Set<String> labels = jedis.smembers(key);
 
 		jedisPool.returnResource(jedis);
-
 		return labels;
 	}
 
 	@Override
 	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
+		logger.debug("setting sensor configuration: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 
-		String val = jedis.get("sensor:" + sensor);
-		if (val != null) {
-			String key = "sensor:" + sensor + ":";
-
-			jedis.set(key + "config" + ":" + "interval", Long.toString(configuration.getInterval()));
-		}
+		String key = key("sensor", sensor, "config");
+		jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
 
 		jedisPool.returnResource(jedis);
 	}
 
-	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
-		BundledSensorConfiguration config = new BundledSensorConfiguration();
+	@Override
+	public Set<String> getAllHosts() throws TException {
+		logger.debug("get all hosts");
+		Jedis jedis = jedisPool.getResource();
 
+		String key = key("hosts");
+		if (!jedis.exists(key))
+			return Collections.emptySet();
+
+		Set<String> hostnames = jedis.smembers(key);
+
+		jedisPool.returnResource(jedis);
+		return hostnames;
+	}
+
+	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
+		logger.debug("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
+		Jedis jedis = jedisPool.getResource();
+
+		// Set default settings
+		BundledSensorConfiguration config = new BundledSensorConfiguration();
 		config.setSensor(sensor);
 		config.setHostname(hostname);
 
-		Jedis jedis = jedisPool.getResource();
-
-		String host = jedis.get("host:" + hostname);
-		long hostId = 0;
-		try {
-			hostId = Long.parseLong(host);
-		} catch (Exception e) {
-			return null;
+		// Get the sensor activation state
+		String key = key("host", hostname, "sensor", sensor);
+		if (jedis.exists(key)) {
+			boolean status = Boolean.getBoolean(jedis.get(key));
+			config.setActive(status);
+		} else {
+			config.setActive(false);
 		}
 
-		String val = jedis.get("sensor:" + sensor);
-		if (val != null) {
-			String key = "sensor:" + sensor + ":";
+		// Get sensor configuration
+		SensorConfiguration sensorConfig = new SensorConfiguration();
+		key = key("sensor", sensor, "config");
+		sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
+		config.setConfiguration(sensorConfig);
 
-			long interval = 0;
-			try {
-				interval = Long.parseLong(jedis.get(key + "config" + ":" + "interval"));
-			} catch (NumberFormatException e) {
+		// Get all labels (aggregation of host and sensor)
+		key = key("sensor", sensor, "labels");
+		Set<String> sensorLabels = null;
+		if (jedis.exists(key))
+			sensorLabels = jedis.smembers(key);
+		else
+			sensorLabels = Collections.emptySet();
 
-			}
+		key = key("host", hostname, "labels");
+		Set<String> hostLabels = null;
+		if (jedis.exists(key))
+			hostLabels = jedis.smembers(key);
+		else
+			hostLabels = Collections.emptySet();
 
-			// Active
-			String active = jedis.get("host:" + hostId + ":sensor:" + sensor);
-			logger.debug("active state: " + active);
-			if (active == null)
-				active = "off";
-
-			config.setActive(active.equals("on"));
-
-			// TODO: Host configuration overrides sensor configuration
-			SensorConfiguration configuration = new SensorConfiguration();
-			configuration.setInterval(interval);
-			config.setConfiguration(configuration);
-
-			// TODO: Attach the host labels
-			Set<String> labels = jedis.smembers(key + "labels");
-			config.setLabels(labels);
-		}
+		Set<String> allLabels = new HashSet<String>();
+		allLabels.addAll(sensorLabels);
+		allLabels.addAll(hostLabels);
+		config.setLabels(allLabels);
 
 		jedisPool.returnResource(jedis);
-
 		return config;
 	}
 
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
-	}
-
-	@Override
-	public Set<String> getAllHosts() throws TException {
-		Jedis jedis = jedisPool.getResource();
-
-		Set<String> hostnames = new HashSet<String>();
-
-		long length = jedis.llen("hostnames");
-		List<String> result = jedis.lrange("hostnames", 0, length);
-		hostnames.addAll(result);
-
-		jedisPool.returnResource(jedis);
-
-		return hostnames;
 	}
 
 }
