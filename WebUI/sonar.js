@@ -165,26 +165,14 @@ function hostsHandler(req, resp) {
     var sensorCounter = 0;
 
     // Get all registered sensors
-    client.getAllSensors((function () {
+    client.getAllSensors(function () {
         return function (err, sensors) {
-
-            console.log("sensors received");
 
             // Fetch all hosts
             client.getAllHosts(function (err, hosts) {
 
-                console.log("hosts received");
-
-                if (hosts.length == 0) {
-                    resp.end(JSON.stringify(dataTable));
-                    return;
-                }
-
                 // Iterate over all hosts
                 for (var i in hosts) {
-
-                    console.log("iterating host " + i);
-
 
                     dataTable[i] = {
                         hostname:hosts[i],
@@ -192,34 +180,20 @@ function hostsHandler(req, resp) {
                         sensor:[]
                     }
 
-                    console.log("GETTING LABELS FOR HOST: " + hosts[i]);
+                    // Getting labels for the current host
                     client.getLabels(hosts[i], (function (i) {
-
                         return function (err, labels) {
-
-                            console.log("LABELS: " + labels + " for host " + hosts[i]);
                             dataTable[i].labels = labels;
 
+                            // Get sensor configuration for all (sensors + hosts)
                             for (var j in sensors) {
-
-                                console.log("iterating host sensor: " + sensors[j] + " hosts: " + hosts[i]);
-
                                 // Get bundled sensor configuration for the host
                                 client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
                                     return function (err, sensorConfig) {
-
-                                        console.log("BUNDLE: " + sensorConfig);
-
                                         dataTable[i].sensor[j] = {
                                             name:sensorConfig.sensor,
                                             labels:sensorConfig.labels,
                                             active:sensorConfig.active
-                                        }
-
-                                        sensorCounter++;
-                                        if (sensorCounter >= hosts.length * sensors.length) {
-                                            console.log("FINISHED");
-                                            resp.end(JSON.stringify(dataTable));
                                         }
                                     }
                                 })(i, j));
@@ -230,7 +204,7 @@ function hostsHandler(req, resp) {
                 }
             })
         }
-    })());
+    });
 }
 
 function sensorsHandler(req, resp) {
