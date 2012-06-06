@@ -197,8 +197,8 @@ function tsdbHandler(req, resp) {
     var query = new types.TimeSeriesQuery({
         startTime:0,
         stopTime:time,
-        hostname:"srv2",
-        sensor:"cpu"
+        hostname:"jack",
+        sensor:"TEST"
     });
 
     client.query(query, function (err, result) {

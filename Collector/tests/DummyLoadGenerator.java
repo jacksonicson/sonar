@@ -33,7 +33,7 @@ public class DummyLoadGenerator {
 			labels.add("super");
 
 			Random rand = new Random();
-			for (int i = 0; i < 1000; i++) {
+			for (int i = 0; i < 100; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);

@@ -103,7 +103,6 @@
                             <th>&nbsp;</th>
                             <th>Hostname</th>
                             <th>Sensors</th>
-                            <th>Labels</th>
                         </tr>
                         </thead>
                         <tbody id='listHostsBody'>
@@ -128,6 +127,24 @@
                     });
                 }
 
+                function editHost() {
+                    console.log("editing host");
+
+                    /*
+                <div class="controls" id="sensorActive">
+                            <label class="checkbox"><input type="checkbox" id="check_xx" name="CPU" /> CPU</label>
+                            </div>
+
+                            */
+
+                    $('#sensorField').children('').clear();
+
+
+
+
+                    $('#newHost').modal('show');
+                }
+
                 function updateHostsList() {
                     $.ajax({
                         type:"GET",
@@ -143,6 +160,8 @@
                             console.log("# hosts: " + data.length)
                             for (var i in data) {
                                 var host = data[i];
+
+                                console.log("Hostname: " + host.hostname);
 
                                 var sensorCell = $('<td>')
                                 for(var s in host.sensor)
@@ -165,8 +184,9 @@
                                                 $('<td>').append(
                                                         $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
                                                 ),
-                                                $('<td>').text(host.name),
-                                                $('<td>').text('-'),
+                                                $('<td>').append(
+                                                        $('<a>').text(host.hostname).click(editHost).attr("href","#")
+                                                ),
                                                 $('<td>').append(sensorCell)
                                         )
                                 );
@@ -260,6 +280,47 @@
     </div>
 </div>
 
+<div class="modal hide" id="newHost">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>New Host</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" id="newSensorForm">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="hostName">Hostname:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="Sensor Name" id="hostName"
+                               name="hostname"/>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="hostLables">Labels:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="hostLables"
+                               name="hostLabels"/>
+                    </div>
+                </div>
+
+                <div class="control-group" id="sensorField">
+                    <div class="controls" id="sensorActive">
+                        <label class="checkbox"><input type="checkbox" id="check_xx" name="CPU" /> CPU</label>
+                    </div>
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary" id="submitSensor">Save changes</a>
+    </div>
+</div>
 
 <div class="modal hide" id="newSensorDlg">
     <div class="modal-header">
