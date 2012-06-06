@@ -25,19 +25,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="115" column="58" selection-start="3389" selection-end="3389" vertical-scroll-proportion="0.0">
+            <state line="107" column="40" selection-start="2954" selection-end="2954" vertical-scroll-proportion="0.5275862">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="configuration.html" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="configuration.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/configuration.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="145" column="17" selection-start="4468" selection-end="4468" vertical-scroll-proportion="0.700361">
+            <state line="154" column="12" selection-start="4125" selection-end="4125" vertical-scroll-proportion="-10.192307">
               <folding />
             </state>
           </provider>
@@ -237,7 +237,7 @@
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="recentsLimit" value="5" />
-    <property name="options.lastSelected" value="preferences.keymap" />
+    <property name="options.lastSelected" value="editor.preferences.folding" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
     <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
@@ -491,16 +491,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sonar.js">
+    <entry file="file://$PROJECT_DIR$/static/configuration.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="115" column="58" selection-start="3389" selection-end="3389" vertical-scroll-proportion="0.0">
+        <state line="154" column="12" selection-start="4125" selection-end="4125" vertical-scroll-proportion="-10.192307">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/configuration.html">
+    <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="145" column="17" selection-start="4468" selection-end="4468" vertical-scroll-proportion="0.700361">
+        <state line="107" column="40" selection-start="2954" selection-end="2954" vertical-scroll-proportion="0.5275862">
           <folding />
         </state>
       </provider>

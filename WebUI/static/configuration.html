@@ -58,226 +58,250 @@
 
 <div class="container">
 
-    <div class="span8">
+<div class="span8">
 
-        <div class="alert alert-error" id="errors">
-            Error: No error message!
-        </div>
-
-
-        <div class="tabbable">
-            <ul class="nav nav-tabs" data-tabs="tabs">
-                <li class="active"><a href="#tab1" data-toggle="tab">Sensors</a></li>
-                <li><a href="#tab2" data-toggle="tab">Hostnames</a></li>
-            </ul>
-
-            <div class="tab-content">
-
-                <div class="tab-pane active" id="tab1">
-
-                    <a class="btn" data-toggle="modal" href="#newSensorDlg">New Sensor</a>
-                    <table class="table" id="listSensors">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>&nbsp;</th>
-                            <th>Sensor Name</th>
-                            <th>Binary Available</th>
-                            <th>Labels</th>
-                        </tr>
-                        </thead>
-                        <tbody id='listSensorsBody'>
-                        <tr>
-                            <td colspan="4">Loading...</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="tab-pane" id="tab2">
-                    <a class="btn" href="">New Host</a>
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>&nbsp;</th>
-                            <th>Hostname</th>
-                            <th>Sensors</th>
-                        </tr>
-                        </thead>
-                        <tbody id='listHostsBody'>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <script type="text/javascript">
-
-                function deleteSensor(event) {
-                    var sensor = event.target.id;
-
-                    $.ajax({
-                        type:"GET",
-                        url:'/delsensor?sensorName=' + sensor,
-                        dataType:'text',
-                        success:function (data) {
-
-                            updateSensorList();
-                        }
-                    });
-                }
-
-                function editHost() {
-                    console.log("editing host");
-
-                    /*
-                <div class="controls" id="sensorActive">
-                            <label class="checkbox"><input type="checkbox" id="check_xx" name="CPU" /> CPU</label>
-                            </div>
-
-                            */
-
-                    $('#sensorField').children('').clear();
+<div class="alert alert-error" id="errors">
+    Error: No error message!
+</div>
 
 
+<div class="tabbable">
+<ul class="nav nav-tabs" data-tabs="tabs">
+    <li class="active"><a href="#tab1" data-toggle="tab">Sensors</a></li>
+    <li><a href="#tab2" data-toggle="tab">Hostnames</a></li>
+</ul>
+
+<div class="tab-content">
+
+    <div class="tab-pane active" id="tab1">
+
+        <a class="btn" data-toggle="modal" href="#newSensorDlg">New Sensor</a>
+        <table class="table" id="listSensors">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>&nbsp;</th>
+                <th>Sensor Name</th>
+                <th>Binary Available</th>
+                <th>Labels</th>
+            </tr>
+            </thead>
+            <tbody id='listSensorsBody'>
+            <tr>
+                <td colspan="4">Loading...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane" id="tab2">
+        <a class="btn" href="">New Host</a>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>&nbsp;</th>
+                <th>Hostname</th>
+                <th>Sensors</th>
+            </tr>
+            </thead>
+            <tbody id='listHostsBody'>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function deleteSensor(event) {
+        var sensor = event.target.id;
+
+        $.ajax({
+            type:"GET",
+            url:'/delsensor?sensorName=' + sensor,
+            dataType:'text',
+            success:function (data) {
+
+                updateSensorList();
+            }
+        });
+    }
+
+    function editHost(event) {
+        console.log("editing host");
+
+        var editHost = event.target.id;
 
 
-                    $('#newHost').modal('show');
-                }
+        $.ajax({
+            type:"GET",
+            url:'/hosts',
+            dataType:'json',
 
-                function updateHostsList() {
-                    $.ajax({
-                        type:"GET",
-                        url:'/hosts',
-                        dataType:'json',
+            success:function (hosts) {
 
-                        success:function (data) {
-                            console.log("done: " + data);
+                for (var i in hosts) {
+                    var host = hosts[i];
 
-                            var $wrap = $('#listHostsBody');
-                            $wrap.children('tr').remove();
+                    console.log("checking hostname: " + host.hostname + " against " + editHost);
+                    if (host.hostname == editHost) {
+                        console.log("Hostname LISTING SENSORS NOW: " + host.hostname);
 
-                            console.log("# hosts: " + data.length)
-                            for (var i in data) {
-                                var host = data[i];
+                        var sensorField = $('#sensorField');
 
-                                console.log("Hostname: " + host.hostname);
-
-                                var sensorCell = $('<td>')
-                                for(var s in host.sensor)
-                                {
-                                    var sensor = host.sensor[s];
-                                    sensorCell.append(
-                                            $('<table>').append(
-                                                    $('<tr>').append(
-                                                            $('<td>').text(sensor.name),
-                                                            $('<td>').text(sensor.active)
-                                                    )
+                        for (var s in host.sensor) {
+                            var sensor = host.sensor[s]
+                            sensorField.append(
+                                    $('<div>').addClass("controls").attr("id", s.name).append(
+                                            $('<label>').addClass("checkbox").text(sensor.name).append(
+                                                    $('<input>').attr("type", "checkbox").attr("id", sensor.name).attr("name", sensor.name)
                                             )
                                     )
-                                }
 
-                                $wrap.append(
-                                        $('<tr>')
-                                                .append(
-                                                $('<td>').text(i),
-                                                $('<td>').append(
-                                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
-                                                ),
-                                                $('<td>').append(
-                                                        $('<a>').text(host.hostname).click(editHost).attr("href","#")
-                                                ),
-                                                $('<td>').append(sensorCell)
-                                        )
-                                );
-                            }
-
-                            //alert(data); // shows whole dom
-                            // alert( $(data).find('#wrapper').html() ); // returns null
-
-                        },
-                        error:function () {
-                            alert("Sorry, The requested property could not be found.");
+                            )
                         }
-                    });
+
+                        $('#newHost').modal('show');
+                    }
                 }
+            }
+        });
 
-                function updateSensorList() {
-                    $.ajax({
-                        type:"GET",
-                        url:'/sensors',
-                        dataType:'json',
 
-                        success:function (data) {
+    }
 
-                            var $wrap = $('#listSensorsBody');
-                            $wrap.children().remove();
-                            for (i in data) {
-                                sensor = data[i];
-                                console.log("dd " + sensor.name);
-                                $wrap.append(
-                                        $('<tr>')
-                                                .append(
-                                                $('<td>').text(i),
-                                                $('<td>').append(
-                                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
-                                                ),
+    function updateHostsList() {
+        $.ajax({
+            type:"GET",
+            url:'/hosts',
+            dataType:'json',
+
+            success:function (data) {
+                console.log("done: " + data);
+
+                var $wrap = $('#listHostsBody');
+                $wrap.children('tr').remove();
+
+                console.log("# hosts: " + data.length)
+                for (var i in data) {
+                    var host = data[i];
+
+                    console.log("Hostname: " + host.hostname);
+
+                    var sensorCell = $('<td>')
+                    for (var s in host.sensor) {
+                        var sensor = host.sensor[s];
+                        sensorCell.append(
+                                $('<table>').append(
+                                        $('<tr>').append(
                                                 $('<td>').text(sensor.name),
-                                                $('<td>').text('-'),
-                                                $('<td>').text(sensor.labels)
+                                                $('<td>').text(sensor.active)
                                         )
-                                );
-                            }
+                                )
+                        )
+                    }
 
-                            //alert(data); // shows whole dom
-                            // alert( $(data).find('#wrapper').html() ); // returns null
-                        },
-                        error:function () {
-                            alert("Sorry, The requested property could not be found.");
-                        }
-                    });
+                    $wrap.append(
+                            $('<tr>')
+                                    .append(
+                                    $('<td>').text(i),
+                                    $('<td>').append(
+                                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
+                                    ),
+                                    $('<td>').append(
+                                            $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
+                                    ),
+                                    $('<td>').append(sensorCell)
+                            )
+                    );
                 }
 
-                jQuery(document).ready(function ($) {
-                    $('#tabs').tab();
+                //alert(data); // shows whole dom
+                // alert( $(data).find('#wrapper').html() ); // returns null
 
-                    $('#errors').hide();
+            },
+            error:function () {
+                alert("Sorry, The requested property could not be found.");
+            }
+        });
+    }
 
-                    $('#submitSensor').click(function (event) {
+    function updateSensorList() {
+        $.ajax({
+            type:"GET",
+            url:'/sensors',
+            dataType:'json',
 
-                    });
+            success:function (data) {
 
-                    $('#submitSensor').click(function (event) {
+                var $wrap = $('#listSensorsBody');
+                $wrap.children().remove();
+                for (i in data) {
+                    sensor = data[i];
+                    console.log("dd " + sensor.name);
+                    $wrap.append(
+                            $('<tr>')
+                                    .append(
+                                    $('<td>').text(i),
+                                    $('<td>').append(
+                                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                                    ),
+                                    $('<td>').text(sensor.name),
+                                    $('<td>').text('-'),
+                                    $('<td>').text(sensor.labels)
+                            )
+                    );
+                }
 
-                        var test = $("#newSensorForm").serialize();
-                        console.log("FORM: " + test);
+                //alert(data); // shows whole dom
+                // alert( $(data).find('#wrapper').html() ); // returns null
+            },
+            error:function () {
+                alert("Sorry, The requested property could not be found.");
+            }
+        });
+    }
 
-                        $.ajax({
-                            type:"POST",
-                            url:'/addsensor',
-                            dataType:'text',
-                            data:test,
+    jQuery(document).ready(function ($) {
+        $('#tabs').tab();
 
-                            success:function (data) {
-                                if (data == 'ok') {
-                                    updateSensorList();
-                                } else {
-                                    $('#errors').show();
-                                    $('#errors').text("Error: Could not save sensor...");
-                                }
+        $('#errors').hide();
 
-                                $('#newSensorDlg').modal('hide');
-                            }
-                        });
-                    })
+        $('#submitSensor').click(function (event) {
 
-                    updateSensorList();
-                    updateHostsList();
-                });
-            </script>
+        });
 
-        </div>
-    </div>
+        $('#submitSensor').click(function (event) {
+
+            var test = $("#newSensorForm").serialize();
+            console.log("FORM: " + test);
+
+            $.ajax({
+                type:"POST",
+                url:'/addsensor',
+                dataType:'text',
+                data:test,
+
+                success:function (data) {
+                    if (data == 'ok') {
+                        updateSensorList();
+                    } else {
+                        $('#errors').show();
+                        $('#errors').text("Error: Could not save sensor...");
+                    }
+
+                    $('#newSensorDlg').modal('hide');
+                }
+            });
+        })
+
+        updateSensorList();
+        updateHostsList();
+    });
+</script>
+
+</div>
+</div>
 </div>
 
 <div class="modal hide" id="newHost">
@@ -307,9 +331,6 @@
                 </div>
 
                 <div class="control-group" id="sensorField">
-                    <div class="controls" id="sensorActive">
-                        <label class="checkbox"><input type="checkbox" id="check_xx" name="CPU" /> CPU</label>
-                    </div>
                 </div>
 
             </fieldset>
