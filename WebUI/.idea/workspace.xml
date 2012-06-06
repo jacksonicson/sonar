@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="318" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="340" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -28,7 +28,7 @@
       <file leaf-file-name="configuration.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/configuration.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="392" column="17" selection-start="11248" selection-end="11248" vertical-scroll-proportion="-1.7631578">
+            <state line="392" column="17" selection-start="11248" selection-end="11248" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -37,7 +37,7 @@
       <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="179" column="23" selection-start="5328" selection-end="5328" vertical-scroll-proportion="0.46345514">
+            <state line="207" column="56" selection-start="6455" selection-end="6455" vertical-scroll-proportion="0.5619632">
               <folding />
             </state>
           </provider>
@@ -172,11 +172,11 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="options.lastSelected" value="preferences.editor" />
     <property name="recentsLimit" value="5" />
-    <property name="options.lastSelected" value="editor.preferences.completion" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -264,11 +264,11 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1955341" sideWeight="0.19745958" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28003183" sideWeight="0.80595237" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16229117" sideWeight="0.75238097" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19404761" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="FLOATING" visible="true" weight="0.24761905" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" x="1290" y="176" width="1257" height="374" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -337,30 +337,22 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/gen-nodejs/ManagementService.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1748" column="35" selection-start="43473" selection-end="43473" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="1748" column="35" selection-start="43473" selection-end="43473" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/transport.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="37" selection-start="1857" selection-end="1857" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="54" column="37" selection-start="1857" selection-end="1857" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="24" selection-start="240" selection-end="429" vertical-scroll-proportion="0.46612903">
-          <folding />
-        </state>
+        <state line="17" column="24" selection-start="240" selection-end="429" vertical-scroll-proportion="0.46612903" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/collector_types.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="177" column="26" selection-start="4213" selection-end="4213" vertical-scroll-proportion="0.33281735">
-          <folding />
-        </state>
+        <state line="177" column="26" selection-start="4213" selection-end="4213" vertical-scroll-proportion="0.33281735" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/img/glyphicons-halflings-white.png">
@@ -370,23 +362,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap-responsive.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="10" selection-start="438" selection-end="440" vertical-scroll-proportion="-9.18">
-          <folding />
-        </state>
+        <state line="27" column="10" selection-start="438" selection-end="440" vertical-scroll-proportion="-9.18" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap-responsive.min.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1759" column="38" selection-start="28287" selection-end="28287" vertical-scroll-proportion="-3.72">
-          <folding />
-        </state>
+        <state line="1759" column="38" selection-start="28287" selection-end="28287" vertical-scroll-proportion="-3.72" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/img/glyphicons-halflings.png">
@@ -396,51 +382,39 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/collector.thrift">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="19" selection-start="240" selection-end="240" vertical-scroll-proportion="0.46896553">
-          <folding />
-        </state>
+        <state line="16" column="19" selection-start="240" selection-end="240" vertical-scroll-proportion="0.46896553" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ManagementService.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1875" column="9" selection-start="46793" selection-end="46793" vertical-scroll-proportion="0.33275864">
-          <folding />
-        </state>
+        <state line="1875" column="9" selection-start="46793" selection-end="46793" vertical-scroll-proportion="0.33275864" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="36" selection-start="2712" selection-end="2712" vertical-scroll-proportion="0.43965518">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
+        <state line="77" column="36" selection-start="2712" selection-end="2712" vertical-scroll-proportion="0.43965518" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/highstocktest.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="26" selection-start="2725" selection-end="2725" vertical-scroll-proportion="2.9151626">
-          <folding />
-        </state>
+        <state line="95" column="26" selection-start="2725" selection-end="2725" vertical-scroll-proportion="2.9151626" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/configuration.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="29" selection-start="29" selection-end="29" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="0" column="29" selection-start="29" selection-end="29" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/configuration.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="392" column="17" selection-start="11248" selection-end="11248" vertical-scroll-proportion="-1.7631578">
+        <state line="392" column="17" selection-start="11248" selection-end="11248" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="179" column="23" selection-start="5328" selection-end="5328" vertical-scroll-proportion="0.46345514">
+        <state line="207" column="56" selection-start="6455" selection-end="6455" vertical-scroll-proportion="0.5619632">
           <folding />
         </state>
       </provider>

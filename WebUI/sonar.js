@@ -161,49 +161,71 @@ function hostsHandler(req, resp) {
     var client = thrift.createClient(managementService, connection);
 
     var dataTable = []
-    var hostCounter = 0;
-    var sensorCounter = 0;
+    var counter = 0;
+
+    console.log("hosts handler");
 
     // Get all registered sensors
-    client.getAllSensors(function () {
-        return function (err, sensors) {
+    client.getAllSensors(function (err, sensors) {
 
-            // Fetch all hosts
-            client.getAllHosts(function (err, hosts) {
+        // Fetch all hosts
+        client.getAllHosts(function (err, hosts) {
 
-                // Iterate over all hosts
-                for (var i in hosts) {
+            if (hosts.length == 0) {
+                resp.end(JSON.stringify(dataTable));
+                return;
+            }
 
-                    dataTable[i] = {
-                        hostname:hosts[i],
-                        labels:[],
-                        sensor:[]
-                    }
+            // Iterate over all hosts
+            for (var i in hosts) {
 
-                    // Getting labels for the current host
-                    client.getLabels(hosts[i], (function (i) {
-                        return function (err, labels) {
-                            dataTable[i].labels = labels;
+                dataTable[i] = {
+                    hostname:hosts[i],
+                    labels:[],
+                    sensor:[]
+                }
 
-                            // Get sensor configuration for all (sensors + hosts)
-                            for (var j in sensors) {
-                                // Get bundled sensor configuration for the host
-                                client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
-                                    return function (err, sensorConfig) {
-                                        dataTable[i].sensor[j] = {
-                                            name:sensorConfig.sensor,
-                                            labels:sensorConfig.labels,
-                                            active:sensorConfig.active
-                                        }
-                                    }
-                                })(i, j));
+                // Getting labels for the current host
+                client.getLabels(hosts[i], (function (i) {
+                    return function (err, labels) {
+
+                        console.log("labels received");
+                        dataTable[i].labels = labels;
+
+                        counter++;
+                        if (sensors.length == 0) {
+                            if (counter == hosts.length) {
+                                resp.end(JSON.stringify(dataTable));
+                                return;
                             }
                         }
-                    })(i))
 
-                }
-            })
-        }
+                        // Get sensor configuration for all (sensors + hosts)
+                        for (var j in sensors) {
+                            // Get bundled sensor configuration for the host
+                            client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
+                                return function (err, sensorConfig) {
+                                    dataTable[i].sensor[j] = {
+                                        name:sensorConfig.sensor,
+                                        labels:sensorConfig.labels,
+                                        active:sensorConfig.active
+                                    }
+
+                                    // For each host all sensors have to be evaluated
+                                    counter++;
+                                    if (counter >= sensors.length * hosts.length) {
+                                        resp.end(JSON.stringify(dataTable));
+                                        return;
+                                    }
+                                }
+                            })(i, j));
+                        }
+                    }
+                })(i))
+
+
+            }
+        })
     });
 }
 

@@ -230,7 +230,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getAllSensors() throws TException {
-		logger.debug("get all available sensors");
+		logger.debug("get all sensors");
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("sensors");
