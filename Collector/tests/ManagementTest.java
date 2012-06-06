@@ -1,8 +1,6 @@
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.util.Bytes;
@@ -14,7 +12,6 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.ManagementService;
-import de.tum.in.sonar.collector.SensorConfiguration;
 
 public class ManagementTest {
 
@@ -29,35 +26,39 @@ public class ManagementTest {
 
 			ManagementService.Client client = new ManagementService.Client(protocol);
 
-			client.delSensor("asdf");
-			
 			String data = "Really new sensor version";
 			byte[] ds = Bytes.toBytes(data);
 			client.deploySensor("cpu", ByteBuffer.wrap(ds));
-			
+
 			client.addHost("test");
-//
-//			SensorConfiguration configuration = new SensorConfiguration();
-//			configuration.setInterval(1);
-//			client.setSensorConfiguration("cpu", configuration);
-//
-//			Set<String> labels = client.getLabels("srv2");
-//			for (String label : labels) {
-//				System.out.println("Label: " + label);
-//			}
-//
-//			ByteArrayOutputStream out = new ByteArrayOutputStream();
-//			InputStream in = new FileInputStream("cpu.zip");
-//
-//			byte[] buffer = new byte[32];
-//			int len = 0;
-//			while ((len = in.read(buffer)) > 0) {
-//				out.write(buffer, 0, len);
-//			}
-//
-//			System.out.println("Uploading sensor package now ...");
-//			client.deploySensor("cpu", ByteBuffer.wrap(out.toByteArray()));
-//			System.out.println("OK");
+			Set<String> labels = new HashSet<String>();
+			labels.add("asdf");
+			client.setHostLabels("test", labels);
+
+			System.out.println("Labels: " + client.getLabels("test"));
+
+			//
+			// SensorConfiguration configuration = new SensorConfiguration();
+			// configuration.setInterval(1);
+			// client.setSensorConfiguration("cpu", configuration);
+			//
+			// Set<String> labels = client.getLabels("srv2");
+			// for (String label : labels) {
+			// System.out.println("Label: " + label);
+			// }
+			//
+			// ByteArrayOutputStream out = new ByteArrayOutputStream();
+			// InputStream in = new FileInputStream("cpu.zip");
+			//
+			// byte[] buffer = new byte[32];
+			// int len = 0;
+			// while ((len = in.read(buffer)) > 0) {
+			// out.write(buffer, 0, len);
+			// }
+			//
+			// System.out.println("Uploading sensor package now ...");
+			// client.deploySensor("cpu", ByteBuffer.wrap(out.toByteArray()));
+			// System.out.println("OK");
 
 			//
 			//

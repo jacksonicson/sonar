@@ -56,6 +56,9 @@ function addHostHandler(req, resp) {
                 console.log("a");
 
                 var labels = body.hostLabels.split(",");
+
+                console.log("SAVING LABELS: " + labels);
+
                 client.setHostLabels(body.hostname, labels, function (err, ret) {
 
                     console.log("b");
@@ -165,33 +168,44 @@ function hostsHandler(req, resp) {
 
                     dataTable[i] = {
                         hostname:hosts[i],
+                        labels:[],
                         sensor:[]
                     }
 
-                    for (var j in sensors) {
+                    console.log("GETTING LABELS FOR HOST: " + hosts[i]);
+                    client.getLabels(hosts[i], (function (i) {
 
-                        console.log("iterating host sensor: " + sensors[j] + " hosts: " + hosts[i]);
+                        return function (err, labels) {
 
-                        // Get bundled sensor configuration for the host
-                        client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
-                            return function (err, sensorConfig) {
+                            console.log("LABELS: " + labels + " for host " + hosts[i]);
+                            dataTable[i].labels = labels;
 
-                                console.log("BUNDLE: " + sensorConfig);
+                            for (var j in sensors) {
 
-                                dataTable[i].sensor[j] = {
-                                    name:sensorConfig.sensor,
-                                    labels:sensorConfig.labels,
-                                    active:sensorConfig.active
-                                }
+                                console.log("iterating host sensor: " + sensors[j] + " hosts: " + hosts[i]);
 
-                                sensorCounter++;
-                                if (sensorCounter >= hosts.length * sensors.length) {
-                                    console.log("FINISHED");
-                                    resp.end(JSON.stringify(dataTable));
-                                }
+                                // Get bundled sensor configuration for the host
+                                client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
+                                    return function (err, sensorConfig) {
+
+                                        console.log("BUNDLE: " + sensorConfig);
+
+                                        dataTable[i].sensor[j] = {
+                                            name:sensorConfig.sensor,
+                                            labels:sensorConfig.labels,
+                                            active:sensorConfig.active
+                                        }
+
+                                        sensorCounter++;
+                                        if (sensorCounter >= hosts.length * sensors.length) {
+                                            console.log("FINISHED");
+                                            resp.end(JSON.stringify(dataTable));
+                                        }
+                                    }
+                                })(i, j));
                             }
-                        })(i, j));
-                    }
+                        }
+                    })(i))
 
                 }
             })

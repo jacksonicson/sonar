@@ -95,7 +95,7 @@
     </div>
 
     <div class="tab-pane" id="tab2">
-        <a class="btn" href="">New Host</a>
+        <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
         <table class="table">
             <thead>
             <tr>
@@ -127,6 +127,7 @@ function deleteSensor(event) {
     });
 }
 
+
 function submitHost(event) {
     var editHost = event.target.id;
 
@@ -153,10 +154,48 @@ function submitHost(event) {
     });
 }
 
-function editHost(event) {
-    console.log("editing host");
+function newHost(event) {
+    var sensorField = $('#sensorField').empty();
 
+    $.ajax({
+        type:"GET",
+        url:'/sensors',
+        dataType:'json',
+
+        success:function (sensors) {
+
+            var sensorField = $('#sensorField');
+
+            for (var s in sensors) {
+                var sensor = sensors[s]
+                var checked = "no";
+
+                sensorField.append(
+                        $('<div>').addClass("controls").attr("id", s.name).append(
+                                $('<label>').addClass("checkbox").text(sensor.name).append(
+                                        $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
+                                )
+                        )
+                )
+            }
+
+
+            $('#hostName').attr("value", "");
+            $('#hostLabels').attr("value", "");
+
+            $('#newHost').modal('show');
+        }
+    });
+}
+
+function editHost(event) {
     var editHost = event.target.id;
+    editHostIntern(event, editHost)
+}
+
+function editHostIntern(event, editHost) {
+
+    console.log("editing host");
 
     var sensorField = $('#sensorField').empty();
 
@@ -176,11 +215,20 @@ function editHost(event) {
 
                     var sensorField = $('#sensorField');
 
+                    $('#hostName').attr("value", host.hostname);
+
+                    console.log("labels: " + host.labels);
+                    var labelsString = "";
+                    for (var i in host.labels) {
+                        labelsString += host.labels[i] + ",";
+                    }
+
+                    $('#hostLabels').attr("value", labelsString);
+
+
                     for (var s in host.sensor) {
+
                         var sensor = host.sensor[s]
-                        var checked = "no";
-                        if (sensor.active == true)
-                            checked = "yes";
 
                         sensorField.append(
                                 $('<div>').addClass("controls").attr("id", s.name).append(
@@ -190,12 +238,17 @@ function editHost(event) {
                                 )
                         )
 
+                        console.log("sensor active: " + sensor.active + " sensor " + sensor.name);
+
                         if (sensor.active) {
-                            $("chbx_" + sensor.name).attr("checked", "yes")
+                            $("#chbx_" + sensor.name).attr("checked", "yes")
                         }
                     }
 
                     $('#newHost').modal('show');
+
+                    // hostname found - form filled - exit
+                    break;
                 }
             }
         }
@@ -302,6 +355,7 @@ jQuery(document).ready(function ($) {
     $('#errors').hide();
 
     $('#submitHost').click(submitHost);
+    $('#btnNewHost').click(newHost);
 
     $('#submitSensor').click(function (event) {
 
@@ -354,10 +408,10 @@ jQuery(document).ready(function ($) {
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="hostLables">Labels:</label>
+                    <label class="control-label" for="hostLabels">Labels:</label>
 
                     <div class="controls">
-                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="hostLables"
+                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="hostLabels"
                                name="hostLabels"/>
                     </div>
                 </div>
