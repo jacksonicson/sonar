@@ -59,7 +59,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Error while mapping in query", e);
 		}
 
-		return null;
+		return new ArrayList<TransferableTimeSeriesPoint>();
 	}
 
 	@Override
@@ -334,14 +334,19 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (val != null) {
 			String key = "sensor:" + sensor + ":";
 
-			long interval = Long.parseLong(jedis.get(key + "config" + ":" + "interval"));
+			long interval = 0;
+			try {
+				interval = Long.parseLong(jedis.get(key + "config" + ":" + "interval"));
+			} catch (NumberFormatException e) {
+
+			}
 
 			// Active
 			String active = jedis.get("host:" + hostId + ":sensor:" + sensor);
 			logger.debug("active state: " + active);
-			if(active == null)
-				active = "off"; 
-			
+			if (active == null)
+				active = "off";
+
 			config.setActive(active.equals("on"));
 
 			// TODO: Host configuration overrides sensor configuration

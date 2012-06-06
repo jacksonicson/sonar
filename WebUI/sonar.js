@@ -92,7 +92,7 @@ function hostsHandler(req, resp) {
 
                 console.log("hosts received");
 
-                // Iterate over all hotss
+                // Iterate over all hosts
                 for (var i in hosts) {
 
                     console.log("iterating host " + i);
@@ -197,13 +197,13 @@ function tsdbHandler(req, resp) {
     var query = new types.TimeSeriesQuery({
         startTime:0,
         stopTime:time,
-        hostname:"jack",
-        sensor:"sensorhub"
+        hostname:"srv2",
+        sensor:"cpu"
     });
 
     client.query(query, function (err, result) {
 
-            console.log("result received");
+            console.log("result received: " + result);
             console.log("length: " + result.length);
 
             var jsonObj = []; //declare array

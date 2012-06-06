@@ -132,17 +132,31 @@
                     $.ajax({
                         type:"GET",
                         url:'/hosts',
-                        dataType:'text',
+                        dataType:'json',
 
                         success:function (data) {
                             console.log("done: " + data);
-/*
+
                             var $wrap = $('#listHostsBody');
                             $wrap.children('tr').remove();
 
+                            console.log("# hosts: " + data.length)
                             for (var i in data) {
                                 var host = data[i];
-                                console.log("dd " + host.name);
+
+                                var sensorCell = $('<td>')
+                                for(var s in host.sensor)
+                                {
+                                    var sensor = host.sensor[s];
+                                    sensorCell.append(
+                                            $('<table>').append(
+                                                    $('<tr>').append(
+                                                            $('<td>').text(sensor.name),
+                                                            $('<td>').text(sensor.active)
+                                                    )
+                                            )
+                                    )
+                                }
 
                                 $wrap.append(
                                         $('<tr>')
@@ -153,15 +167,14 @@
                                                 ),
                                                 $('<td>').text(host.name),
                                                 $('<td>').text('-'),
-                                                $('<td>').text(host.sensors),
-                                                $('<td>').text(host.labels)
+                                                $('<td>').append(sensorCell)
                                         )
                                 );
                             }
 
                             //alert(data); // shows whole dom
                             // alert( $(data).find('#wrapper').html() ); // returns null
-                            */
+
                         },
                         error:function () {
                             alert("Sorry, The requested property could not be found.");
