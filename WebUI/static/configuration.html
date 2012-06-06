@@ -113,6 +113,20 @@
 
 <script type="text/javascript">
 
+
+function deleteHost(event) {
+    var host = event.target.id;
+
+    $.ajax({
+        type:"GET",
+        url:'/delhost?hostname=' + host,
+        dataType:'text',
+        success:function (data) {
+            updateHostsList();
+        }
+    });
+}
+
 function deleteSensor(event) {
     var sensor = event.target.id;
 
@@ -293,7 +307,7 @@ function updateHostsList() {
                                 .append(
                                 $('<td>').text(i),
                                 $('<td>').append(
-                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.name).click(deleteSensor)
+                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
                                 ),
                                 $('<td>').append(
                                         $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)

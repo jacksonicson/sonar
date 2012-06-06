@@ -168,9 +168,13 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			long id = Integer.parseInt(val);
 
 			String key = "host:" + id + ":hostname";
-			jedis.del(key, hostname);
+			jedis.del(key);
 
 			jedis.del("host:" + hostname, hostname);
+
+			key = "hostnames";
+			long llen = jedis.llen(key);
+			jedis.lrem(key, llen, hostname);
 
 			logger.debug("host deleted");
 		}
@@ -328,7 +332,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Jedis jedis = jedisPool.getResource();
 
 		String host = jedis.get("host:" + hostname);
-		long hostId = Long.parseLong(host);
+		long hostId = 0; 
+		try {
+			hostId = Long.parseLong(host);
+		} catch (Exception e) {
+			return null; 
+		}
 
 		String val = jedis.get("sensor:" + sensor);
 		if (val != null) {

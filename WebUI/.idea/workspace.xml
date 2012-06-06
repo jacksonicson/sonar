@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="318" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="332" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -25,20 +25,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sonar.js">
+      <file leaf-file-name="connection.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="223" column="26" selection-start="7090" selection-end="7090" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="configuration.html" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/static/configuration.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="182" column="45" selection-start="4770" selection-end="4770" vertical-scroll-proportion="0.39285713">
-              <folding />
+            <state line="74" column="31" selection-start="2592" selection-end="2592" vertical-scroll-proportion="0.35172415">
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -60,6 +53,7 @@
         <option value="$PROJECT_DIR$/static/highstocktest.html" />
         <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/configuration.html" />
+        <option value="$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js" />
       </list>
     </option>
   </component>
@@ -399,11 +393,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="96" column="41" selection-start="2998" selection-end="2998" vertical-scroll-proportion="0.52589" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/router.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="9" column="35" selection-start="205" selection-end="205" vertical-scroll-proportion="0.0">
@@ -491,17 +480,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sonar.js">
+    <entry file="file://$PROJECT_DIR$/static/configuration.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="223" column="26" selection-start="7090" selection-end="7090" vertical-scroll-proportion="0.0">
+        <state line="124" column="30" selection-start="3287" selection-end="3287" vertical-scroll-proportion="0.5694444">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/configuration.html">
+    <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="182" column="45" selection-start="4770" selection-end="4770" vertical-scroll-proportion="0.39285713">
+        <state line="199" column="0" selection-start="5953" selection-end="5953" vertical-scroll-proportion="0.27413794">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="74" column="31" selection-start="2592" selection-end="2592" vertical-scroll-proportion="0.35172415">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

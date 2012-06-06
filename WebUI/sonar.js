@@ -16,6 +16,20 @@ function plain(req, resp) {
     resp.end("hello world");
 }
 
+function delHostHandler(req, resp) {
+    var connection = thrift.createConnection('localhost', 7932);
+    var client = thrift.createClient(managementService, connection);
+
+    var query = url.parse(req.url).query;
+    var body = qs.parse(query);
+    var hostname = body.hostname;
+
+    client.delHost(hostname, function(err, ret) {
+        console.log("host removed: " + hostname);
+        resp.end("ok");
+    })
+}
+
 function delSensorHandler(req, resp) {
     var connection = thrift.createConnection('localhost', 7932);
     var client = thrift.createClient(managementService, connection);
@@ -326,7 +340,8 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
-    new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, [])
+    new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
+    new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, [])
 ]);
 
 // dump url configuration
