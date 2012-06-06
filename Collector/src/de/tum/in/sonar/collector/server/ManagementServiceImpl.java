@@ -62,121 +62,127 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		return new ArrayList<TransferableTimeSeriesPoint>();
 	}
 
+	// Redis Key Layout:
+	// :sensors -> [] - set of sensor names
+	// :hosts -> [] - set of hostnames
+	//
+	// :sensor:[name]:binary - binary for the sensor
+	// :sensor:[name]:config:[item] - configuration for the sensor
+	// :sensor:[name]:labels -> [] - set of labels
+	//
+	// :host:[hostname]:labels -> [] - set of labels
+	// :host:[hostname]:sensor:[sensorname] - enables a sensor
+	// :host:[hostname]:sensor:[sensorname]/config:[item] - overrides a sensor
+	// configuration
+
+	private String key(String... args) {
+		StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < args.length; i++) {
+			builder.append(args[i]);
+			if ((i + 1) < args.length)
+				builder.append(":");
+		}
+
+		return builder.toString();
+	}
+
+	private final String getRedisServer() {
+		return "srv2";
+	}
+
 	@Override
 	public ByteBuffer fetchSensor(String name) throws TException {
-		logger.debug("fetching sensor " + name);
-		name = "sensor:" + name;
-		BinaryJedis jedis = new BinaryJedis("srv2");
-		byte[] data = jedis.get(SafeEncoder.encode(name));
+		logger.debug("client fetches the sensor: " + name);
+
+		String key = key("sensor", name);
+		BinaryJedis jedis = new BinaryJedis(getRedisServer());
+		byte[] data = jedis.get(SafeEncoder.encode(key));
 		return ByteBuffer.wrap(data);
 	}
 
 	@Override
-	public void delSensor(String sensor) throws TException {
-		// Remove the sensor binary
+	public void delSensor(String name) throws TException {
+		logger.debug("removing sensor: " + name);
 		Jedis jedis = jedisPool.getResource();
 
-		// Remove sensor from the sensors list
-		long llen = jedis.llen("sensors");
-		jedis.lrem("sensors", llen, sensor);
+		// Remove from the sensors set
+		logger.debug("removing from sensors list");
+		jedis.srem("sensors", name);
 
-		// Remove the binary
-		jedis.del("sensor:" + sensor);
+		// Remove all keys from the sensor segment
+		String query = key("sensor", name);
+		Set<String> keys = jedis.keys(query + ":*");
+		for (String key : keys) {
+			logger.debug("removing key: " + key);
+			jedis.del(key);
+		}
 
-		// Remove configuration
-		jedis.del("sensor:" + sensor + ":config");
-
-		// Remove labels
-		jedis.del("sensor:" + sensor + ":labels");
-
-		// Remove sensor from hosts
-		String key = "hostnames";
-		long hostCount = jedis.llen(key);
-		List<String> hosts = jedis.lrange(key, 0, hostCount);
-		for (String hostname : hosts) {
-			String id = jedis.get("hosts:" + hostname);
-			jedis.del(hostname + ":" + id + ":sensor:" + sensor);
+		// Remove the sensor from all the host configurations
+		query = "host:" + "*" + ":sensor:" + name + ":" + "*";
+		keys = jedis.keys(query + ":*");
+		for (String key : keys) {
+			logger.debug("removing key: " + key);
+			jedis.del(key);
 		}
 
 		jedisPool.returnResource(jedis);
 	}
 
 	@Override
-	public void deploySensor(String name, ByteBuffer file) throws TException {
+	public void deploySensor(String name, ByteBuffer binary) throws TException {
 		logger.debug("deploying sensor " + name);
+		Jedis jedis = jedisPool.getResource();
 
-		// Add sensor the the sensor list
-		Jedis jedisString = jedisPool.getResource();
-		jedisString.lpush("sensors", name);
-		jedisPool.returnResource(jedisString);
+		// Add sensor the the sensor set
+		jedis.sadd("sensors", name);
 
-		// Set sensor binary file
-		name = "sensor:" + name;
-		BinaryJedis jedis = new BinaryJedis("srv2");
-		jedis.set(SafeEncoder.encode(name), file.array());
+		// Add sensor binary
+		String key = key("sensor", name, "binary");
+		jedis.set(SafeEncoder.encode(key), binary.array());
+
+		jedisPool.returnResource(jedis);
 	}
 
 	@Override
-	public void setSensorLabels(String sensor, Set<String> labels) throws TException {
+	public void setSensorLabels(String name, Set<String> labels) throws TException {
+		logger.debug("setting sensor labels: " + name);
 		Jedis jedis = jedisPool.getResource();
 
-		String val = jedis.get("sensor:" + sensor);
-		if (val != null) {
-			String key = "sensor:" + sensor + ":";
-
-			String[] arrLabels = new String[labels.size()];
-			labels.toArray(arrLabels);
-
-			jedis.sadd(key + "labels", arrLabels);
-		}
+		// Add labels to the key
+		String key = key("sensor", name, "labels");
+		jedis.sadd(key, labels.toArray(new String[] {}));
 
 		jedisPool.returnResource(jedis);
 	}
 
 	@Override
 	public void addHost(String hostname) throws TException {
+		logger.debug("add host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
-		long res = jedis.setnx("host:" + hostname, hostname);
-		long id = 0;
-		logger.debug("result");
-		if (res == 1) {
-			logger.debug("creating new host");
-
-			id = jedis.incr("hosts");
-
-			String key = "hostnames";
-			jedis.lpush(key, hostname);
-
-			key = "host:" + hostname;
-			jedis.set(key, "" + id);
-
-			key = "host:" + id + ":hostname";
-			jedis.set(key, hostname);
-		}
+		// Add hostname to the hosts list
+		String key = key("hosts");
+		jedis.sadd(key, hostname);
 
 		jedisPool.returnResource(jedis);
 	}
 
 	@Override
 	public void delHost(String hostname) throws TException {
+		logger.debug("removing host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
-		String val = jedis.get("host:" + hostname);
-		if (val != null) {
-			logger.debug("val " + val);
-			long id = Integer.parseInt(val);
+		// Remove from the hosts set
+		logger.debug("removing from hosts list");
+		jedis.srem("hosts", hostname);
 
-			String key = "host:" + id + ":hostname";
+		// Remove all keys from the host segment
+		String query = key("host", hostname);
+		Set<String> keys = jedis.keys(query + ":*");
+		for (String key : keys) {
+			logger.debug("removing key: " + key);
 			jedis.del(key);
-
-			jedis.del("host:" + hostname, hostname);
-
-			key = "hostnames";
-			long llen = jedis.llen(key);
-			jedis.lrem(key, llen, hostname);
-
-			logger.debug("host deleted");
 		}
 
 		jedisPool.returnResource(jedis);
@@ -184,42 +190,24 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setHostLabels(String hostname, Set<String> labels) throws TException {
+		logger.debug("Setting labels for host: " + hostname); 
 		Jedis jedis = jedisPool.getResource();
 
-		String val = jedis.get("host:" + hostname);
-		if (val != null) {
-			logger.debug("val " + val);
-			long id = Integer.parseInt(val);
-
-			String key = "host:" + id + ":";
-			String[] arrLabels = new String[labels.size()];
-			labels.toArray(arrLabels);
-
-			jedis.sadd(key + "labels", arrLabels);
-		}
+		String key = key("host", hostname, "labels");
+		jedis.sadd(key, labels.toArray(new String[] {})); 
 
 		jedisPool.returnResource(jedis);
 	}
 
 	@Override
 	public Set<String> getLabels(String hostname) throws TException {
-
-		logger.debug("reading labels for hostname: " + hostname);
-
+		logger.debug("reading labels for host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
-		Set<String> labels = new HashSet<String>();
-		String val = jedis.get("host:" + hostname);
-		if (val != null) {
-			logger.debug("val " + val);
-			long id = Integer.parseInt(val);
-
-			String key = "host:" + id + ":";
-			labels = jedis.smembers(key + "labels");
-		}
-
-		jedisPool.returnResource(jedis);
-
+		// Get all the labels in the key
+		String key = key("host", hostname, "labels");
+		Set<String> labels = jedis.smembers(key); 
+		
 		return labels;
 	}
 
@@ -332,11 +320,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Jedis jedis = jedisPool.getResource();
 
 		String host = jedis.get("host:" + hostname);
-		long hostId = 0; 
+		long hostId = 0;
 		try {
 			hostId = Long.parseLong(host);
 		} catch (Exception e) {
-			return null; 
+			return null;
 		}
 
 		String val = jedis.get("sensor:" + sensor);
