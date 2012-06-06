@@ -192,8 +192,8 @@ function hostsHandler(req, resp) {
                         console.log("labels received");
                         dataTable[i].labels = labels;
 
-                        counter++;
                         if (sensors.length == 0) {
+                            counter++;
                             if (counter == hosts.length) {
                                 resp.end(JSON.stringify(dataTable));
                                 return;
