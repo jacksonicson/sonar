@@ -29,19 +29,23 @@ import de.tum.in.sonar.collector.tsdb.UnresolvableException;
 
 public class ManagementServiceImpl implements ManagementService.Iface {
 
-	private static final Logger logger = LoggerFactory.getLogger(ManagementServiceImpl.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(ManagementServiceImpl.class);
 
 	private TimeSeriesDatabase tsdb;
 
 	private JedisPool jedisPool = new JedisPool("srv2");
 
 	@Override
-	public List<TransferableTimeSeriesPoint> query(TimeSeriesQuery query) throws TException {
+	public List<TransferableTimeSeriesPoint> query(TimeSeriesQuery query)
+			throws TException {
 
-		Query tsdbQuery = new Query(query.getSensor(), query.getStartTime(), query.getStopTime());
+		Query tsdbQuery = new Query(query.getSensor(), query.getStartTime(),
+				query.getStopTime());
 		try {
 			TimeSeries timeSeries = tsdb.run(tsdbQuery);
-			List<TransferableTimeSeriesPoint> tsPoints = new ArrayList<TransferableTimeSeriesPoint>(100);
+			List<TransferableTimeSeriesPoint> tsPoints = new ArrayList<TransferableTimeSeriesPoint>(
+					100);
 
 			for (TimeSeriesPoint point : timeSeries) {
 				TransferableTimeSeriesPoint tsPoint = new TransferableTimeSeriesPoint();
@@ -146,7 +150,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
-	public void setSensorLabels(String name, Set<String> labels) throws TException {
+	public void setSensorLabels(String name, Set<String> labels)
+			throws TException {
 		logger.debug("setting sensor labels: " + name);
 		Jedis jedis = jedisPool.getResource();
 
@@ -190,11 +195,14 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
-	public void setHostLabels(String hostname, Set<String> labels) throws TException {
+	public void setHostLabels(String hostname, Set<String> labels)
+			throws TException {
 		logger.debug("Setting labels for host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("host", hostname, "labels");
+		if(jedis.exists(key))
+			jedis.del(key); 
 		jedis.sadd(key, labels.toArray(new String[] {}));
 
 		jedisPool.returnResource(jedis);
@@ -217,7 +225,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
-	public void setSensor(String hostname, String sensor, boolean activate) throws TException {
+	public void setSensor(String hostname, String sensor, boolean activate)
+			throws TException {
 		logger.debug("set sensor: " + sensor + " for th host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
@@ -265,16 +274,21 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("host", hostname, "sensor");
-		String query = key + ":*:true";
+		String query = key + ":";
+		logger.debug("finding sensors with query: " + query);
 		Set<String> sensorKeys = jedis.keys(query);
 
 		Set<String> sensors = new HashSet<String>();
-		for (String sensor : sensorKeys) {
-			sensor = sensor.replaceFirst(key, "");
-			sensor = sensor.replaceFirst(":true", "");
+		for (String sensorKey : sensorKeys) {
+			// Check state of the sensor
+			logger.debug("checking sensor key: " + sensorKey);
+			boolean state = Boolean.getBoolean(jedis.get(sensorKey));
 
-			logger.debug("sensor found: " + sensor);
-			sensors.add(sensor);
+			if (state) {
+				String sensor = sensorKey.replaceFirst(query, "");
+				logger.debug("sensor found: " + sensor);
+				sensors.add(sensor);
+			}
 		}
 
 		jedisPool.returnResource(jedis);
@@ -297,12 +311,14 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
-	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
+	public void setSensorConfiguration(String sensor,
+			SensorConfiguration configuration) throws TException {
 		logger.debug("setting sensor configuration: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("sensor", sensor, "config");
-		jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
+		jedis.set(key(key, "interval"),
+				Long.toString(configuration.getInterval()));
 
 		jedisPool.returnResource(jedis);
 	}
@@ -322,8 +338,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		return hostnames;
 	}
 
-	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
-		logger.debug("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
+	public BundledSensorConfiguration getBundledSensorConfiguration(
+			String sensor, String hostname) throws TException {
+		logger.debug("reading bundled sensor configuration for sensor: "
+				+ sensor + " and hostname: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 
 		// Set default settings
@@ -333,8 +351,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		// Get the sensor activation state
 		String key = key("host", hostname, "sensor", sensor);
+		logger.debug("checking sensor with key: " + key);
 		if (jedis.exists(key)) {
-			boolean status = Boolean.getBoolean(jedis.get(key));
+			logger.debug("found");
+			boolean status = Boolean.parseBoolean(jedis.get(key));
+			logger.debug("status " + status);
 			config.setActive(status);
 		} else {
 			config.setActive(false);

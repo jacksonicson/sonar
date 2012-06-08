@@ -65,49 +65,67 @@ function addHostHandler(req, resp) {
 
         if (body.hostname != null && body.hostname.length >= 3) {
 
-            client.addHost(body.hostname, function (err, ret) {
+            client.getAllSensors(function (err, sensors) {
 
-                console.log("a");
+                client.addHost(body.hostname, function (err, ret) {
 
-                var labels = body.hostLabels.split(",");
+                    console.log("a");
 
-                console.log("SAVING LABELS: " + labels);
+                    var labels = body.hostLabels.split(",");
 
-                client.setHostLabels(body.hostname, labels, function (err, ret) {
+                    console.log("SAVING LABELS: " + labels);
 
-                    console.log("b");
-                    var sensorList = [];
-                    for (var i in body) {
-                        if (i.indexOf("sensor_") == 0) {
-                            console.log("sensor active " + i);
-                            sensorList[i.replace("sensor_", '')] = body[i]
-                        }
-                    }
+                    client.setHostLabels(body.hostname, labels, function (err, ret) {
 
-                    var counter = 0;
-                    for (var i in sensorList) {
-                        var active = false;
-                        if (sensorList[i] == "on") {
-                            console.log("sensor " + i + " is active!!!!");
-                            active = true;
-                        }
-
-                        client.setSensor(body.hostname, i, active, function (err, ret) {
-                            counter++;
-                            if (counter == sensorList.length) {
-                                console.log("everything worked out...");
-                                resp.end("ok");
+                        console.log("b");
+                        var sensorList = [];
+                        for (var i in body) {
+                            if (i.indexOf("sensor_") == 0) {
+                                console.log("sensor active " + i);
+                                sensorList[i.replace("sensor_", '')] = body[i]
                             }
-                        })
-                    }
+                        }
 
-                    if (sensorList.length == 0)
-                        resp.end("ok");
+                        var disableList = [];
+                        for(var s in sensors)
+                        {
+                            if(sensorList.hasOwnProperty(sensors[s]) == false)
+                            {
+                                disableList[sensors[s]] = 'off';
+                            }
+                        }
+
+                        for(var item in disableList)
+                        {
+                            sensorList[item] = disableList[item];
+                        }
+
+                        var counter = 0;
+                        for (var i in sensorList) {
+                            var active = false;
+                            if (sensorList[i] == "on") {
+                                console.log("sensor " + i + " is active!!!!");
+                                active = true;
+                            }
+
+                            console.log("SETTING SENSOR: " + i);
+
+                            client.setSensor(body.hostname, i, active, function (err, ret) {
+                                console.log("sensor set " + i);
+                                counter++;
+                                if (counter == sensorList.length) {
+                                    console.log("everything worked out...");
+                                    resp.end("ok");
+                                }
+                            })
+                        }
+
+                        if (sensorList.length == 0)
+                            resp.end("ok");
+                    })
                 })
             })
-
         }
-
     })
 }
 
@@ -202,6 +220,7 @@ function hostsHandler(req, resp) {
 
                         // Get sensor configuration for all (sensors + hosts)
                         for (var j in sensors) {
+                            console.log("checking sensor: " + sensors[j]);
                             // Get bundled sensor configuration for the host
                             client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
                                 return function (err, sensorConfig) {
