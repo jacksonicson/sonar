@@ -1,9 +1,5 @@
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -12,6 +8,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.TimeSeriesQuery;
 
 public class ManagementTest {
 
@@ -24,18 +21,30 @@ public class ManagementTest {
 
 			TProtocol protocol = new TBinaryProtocol(transport);
 
-			ManagementService.Client client = new ManagementService.Client(protocol);
+			ManagementService.Client client = new ManagementService.Client(
+					protocol);
 
-			String data = "Really new sensor version";
-			byte[] ds = Bytes.toBytes(data);
-			client.deploySensor("cpu", ByteBuffer.wrap(ds));
+			TimeSeriesQuery query = new TimeSeriesQuery();
+			query.hostname = "jack";
+			query.sensor = " TEST";
+			
+			query.startTime = 0;
+			query.stopTime = Long.MAX_VALUE;
 
-			client.addHost("test");
-			Set<String> labels = new HashSet<String>();
-			labels.add("asdf");
-			client.setHostLabels("test", labels);
+			client.query(query);
 
-			System.out.println("Labels: " + client.getLabels("test"));
+			// String data = "Really new sensor version";
+			// byte[] ds = Bytes.toBytes(data);
+			// client.deploySensor("cpu", ByteBuffer.wrap(ds));
+			//
+			// client.addHost("test");
+			// Set<String> labels = new HashSet<String>();
+			// labels.add("asdf");
+			// client.setHostLabels("test", labels);
+			//
+			// System.out.println("Labels: " + client.getLabels("test"));
+			//
+			//
 
 			//
 			// SensorConfiguration configuration = new SensorConfiguration();

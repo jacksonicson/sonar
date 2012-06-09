@@ -33,10 +33,11 @@ public class DummyLoadGenerator {
 			labels.add("super");
 
 			Random rand = new Random();
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 10; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
+				
 				id.setSensor("TEST");
 				id.setHostname("jack");
 

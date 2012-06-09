@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Sonar</title>
+
+    <!-- Le styles -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="bootstrap/css/datepicker.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+    </style>
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+</head>
+<body>
+
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="brand" href="#">Sonar</a>
+
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li><a href="configuration.html">Configuration</a></li>
+                    <li class="active"><a href="#">Browser</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
+Functionality to browse the data
+-->
+
+<div class="container">
+
+
+    <div class="row">
+
+        <div class="span4">
+            <form class="form-horizontal" id="queryForm">
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="hostName">Hostname:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" placeholder="Hostname" id="hostName"
+                                   name="hostname"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sensorName">Sensor:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" placeholder="Sensor Name" id="sensorName"
+                                   name="sensor"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sensorLabels">Labels:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" placeholder="label0, label1, .."
+                                   id="sensorLabels"
+                                   name="sensorLabels"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="dp1">Start:</label>
+
+                        <div class="controls">
+                            <input type="text" class="span2" value="02/16/2012" id="dp1" name="startTime">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="dp2">Stop:</label>
+
+                        <div class="controls">
+                            <input type="text" class="span2" value="02/16/2012" id="dp2" name="stopTime">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="addQuery">Add Query</button>
+                        <button class="btn">Cancel</button>
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+
+        <div class="span4 offset1">
+            <table class="table" id="listSensors">
+                <thead>
+                <tr>
+                    <th>Query</th>
+                    <th>Host</th>
+                    <th>Sensor</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td colspan="3">Loading...</td>
+                </tr>
+                <tr>
+                    <td colspan="3">Loading...</td>
+                </tr>
+                <tr>
+                    <td colspan="3">Loading...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+
+    <div class="container">
+
+        <div id="container" style="height: 500px; min-width: 500px"></div>
+
+        <script type="text/javascript">
+
+            var dat = [
+                [1338985354, 0],
+                [1338985394, 222]
+            ]
+            var graph;
+
+            $(function () {
+                var asdf = $('#dp1').datepicker()
+                $('#dp2').datepicker()
+
+                $('#addQuery').on("click", function (event) {
+
+                    event.preventDefault();
+
+                    // var str = $('#dp1').attr("value");
+
+                    var ser = $('#queryForm').serialize();
+
+                    // Ajax call to get the filtered data!
+                    $.ajax({
+                        type:"POST",
+                        url:'/tsdb',
+                        dataType:'json',
+                        data:ser,
+
+                        success:function (data) {
+                        }
+                    });
+
+                    console.log(ser);
+
+                    graph.addSeries({
+                        name:'TEST',
+                        data:dat
+                    });
+
+
+                })
+
+
+                $.getJSON('/tsdb', function (data) {
+                    graph = {
+                        chart:{
+                            renderTo:'container',
+                            animation:false
+                        },
+
+                        rangeSelector:{
+                            selected:0
+                        },
+
+                        plotOptions:{
+                            series:{
+                                animation:false
+                            }
+                        },
+
+                        title:{
+                            text:'TSDB Test'
+                        },
+
+                        series:[
+                            {
+                                name:'TimeSeries',
+                                data:data
+                            }
+                        ]
+                    }
+
+                    // Create the chart
+                    graph = new Highcharts.StockChart(graph);
+
+
+                });
+
+            });
+
+        </script>
+
+
+    </div>
+</div>
+
+
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+<script src="./bootstrap/js/bootstrap-transition.js"></script>
+<script src="./bootstrap/js/bootstrap-alert.js"></script>
+<script src="./bootstrap/js/bootstrap-modal.js"></script>
+<script src="./bootstrap/js/bootstrap-dropdown.js"></script>
+<script src="./bootstrap/js/bootstrap-scrollspy.js"></script>
+<script src="./bootstrap/js/bootstrap-tab.js"></script>
+<script src="./bootstrap/js/bootstrap-tooltip.js"></script>
+<script src="./bootstrap/js/bootstrap-popover.js"></script>
+<script src="./bootstrap/js/bootstrap-button.js"></script>
+<script src="./bootstrap/js/bootstrap-collapse.js"></script>
+<script src="./bootstrap/js/bootstrap-carousel.js"></script>
+<script src="./bootstrap/js/bootstrap-typeahead.js"></script>
+<script src="./bootstrap/js/bootstrap-datepicker.js"></script>
+
+
+<script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+
+</body>
+</html>

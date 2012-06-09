@@ -21,7 +21,7 @@ public class DummyLogGenerator {
 
 			CollectService.Client client = new CollectService.Client(protocol);
 
-			for (int i = 0; i < 1000; i++) {
+			for (int i = 0; i < 10; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);

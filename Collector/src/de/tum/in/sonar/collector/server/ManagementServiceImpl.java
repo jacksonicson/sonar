@@ -42,6 +42,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		Query tsdbQuery = new Query(query.getSensor(), query.getStartTime(),
 				query.getStopTime());
+		tsdbQuery.setHostname(query.hostname); 
 		try {
 			TimeSeries timeSeries = tsdb.run(tsdbQuery);
 			List<TransferableTimeSeriesPoint> tsPoints = new ArrayList<TransferableTimeSeriesPoint>(

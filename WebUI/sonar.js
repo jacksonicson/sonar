@@ -1,6 +1,8 @@
 // Palermo server startup
 var http = require('http');
 var router = require('./router');
+// var XDate = require('./xdate2');
+var moment = require('moment')
 var connect = require('connect');
 var experimental = require('./experimental');
 var qs = require('querystring');
@@ -87,16 +89,13 @@ function addHostHandler(req, resp) {
                         }
 
                         var disableList = [];
-                        for(var s in sensors)
-                        {
-                            if(sensorList.hasOwnProperty(sensors[s]) == false)
-                            {
+                        for (var s in sensors) {
+                            if (sensorList.hasOwnProperty(sensors[s]) == false) {
                                 disableList[sensors[s]] = 'off';
                             }
                         }
 
-                        for(var item in disableList)
-                        {
+                        for (var item in disableList) {
                             sensorList[item] = disableList[item];
                         }
 
@@ -304,58 +303,72 @@ function sensorsHandler(req, resp) {
 }
 
 function tsdbHandler(req, resp) {
-    var connection = thrift.createConnection('localhost', 7932);
-    client = thrift.createClient(managementService, connection);
 
-    connection.on("error", function (err) {
-        console.log("Could not connect with the Collector: " + err);
+    var body = "";
+
+    if (req.method == 'GET') {
+        var jsonObj = [];
+        var ss = JSON.stringify(jsonObj);
+        console.log(ss);
+        resp.end(ss);
+
+        return;
+    }
+
+
+    req.on('data', function (data) {
+        console.log("data: " + data);
+        body += data;
     });
 
-    var time = Math.round(new Date().getTime() / 100);
-    console.log("time: " + time);
-
-    var query = new types.TimeSeriesQuery({
-        startTime:0,
-        stopTime:time,
-        hostname:"jack",
-        sensor:"TEST"
-    });
-
-    client.query(query, function (err, result) {
-
-            console.log("result received: " + result);
-            console.log("length: " + result.length);
-
-            var jsonObj = []; //declare array
-
-            for (i in result) {
-                console.log("value " + result[i].value);
-
-                var time = result[i].timestamp;
-                var value = result[i].value;
-
-                jsonObj.push([time, value]);
-            }
+    req.on('end', function () {
+        console.log("body: " + body);
+        body = qs.parse(body);
 
 
+        console.log("startTime: " + body.startTime);
+
+
+        var connection = thrift.createConnection('localhost', 7932);
+        var client = thrift.createClient(managementService, connection);
+
+        connection.on("error", function (err) {
+            console.log("Could not connect with the Collector: " + err);
+        });
+
+
+        var startUnix = moment(body.startTime, "MM/DD/YYYY");
+        startUnix = startUnix.unix();
+
+        var endUnix = moment(body.stopTime, "MM/DD/YYYY");
+        endUnix = endUnix.unix();
+
+        var labels = body.labels;
+        var hostname = body.hostname;
+        var sensor = body.sensor;
+
+        console.log("hostname: " + hostname);
+        console.log("sensor: " + sensor);
+
+        var query = new types.TimeSeriesQuery({
+            startTime:startUnix,
+            stopTime:endUnix,
+            hostname:hostname,
+            sensor:sensor
+        });
+
+        // Execute the query
+        client.query(query, function (err, timeSeries) {
+
+
+            console.log("received feedback");
+
+            var jsonObj = [];
             var ss = JSON.stringify(jsonObj);
             console.log(ss);
             resp.end(ss);
-        }
-    )
-    ;
-
-    /*
-     client.getLabels("srv2", function (err, result) {
-     console.log("received a result");
-     for (i in result) {
-     console.log(result[i]);
-     }
-     }); */
-
-// console.log("done");
-
-// Send the data in a json formatted string
+        });
+    });
 }
 
 // configure urls

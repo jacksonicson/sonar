@@ -34,8 +34,8 @@ class CompactionQueue extends Thread {
 	void schedule(byte[] key) {
 		logger.info("Scheduling");
 		synchronized (this) {
-			this.scheduledRows.add(key);
-			this.notify();
+//			this.scheduledRows.add(key);
+//			this.notify();
 		}
 	}
 
