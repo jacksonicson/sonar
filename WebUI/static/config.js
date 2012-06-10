@@ -223,9 +223,9 @@ function updateHostsList() {
                 }
 
                 var list = $('<ul>');
-                for (var i in activeSensors) {
+                for (var j in activeSensors) {
                     list.append(
-                        $('<li>').text(activeSensors[i])
+                        $('<li>').text(activeSensors[j])
                     )
                 }
 
