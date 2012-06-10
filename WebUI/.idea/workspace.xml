@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="380" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="376" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -20,51 +20,43 @@
   <component name="DaemonCodeAnalyzer">
     <disable_hints />
   </component>
+  <component name="DockManager">
+    <window id="2">
+      <content type="file-editors">
+        <state>
+          <leaf>
+            <file leaf-file-name="browse.js" pinned="false" current="false" current-in-tab="true">
+              <entry file="file://$PROJECT_DIR$/static/browse.js">
+                <provider selected="true" editor-type-id="text-editor">
+                  <state line="2" column="11" selection-start="49" selection-end="49" vertical-scroll-proportion="0.04171779">
+                    <folding />
+                  </state>
+                </provider>
+              </entry>
+            </file>
+            <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
+              <entry file="file://$PROJECT_DIR$/sonar.js">
+                <provider selected="true" editor-type-id="text-editor">
+                  <state line="330" column="45" selection-start="10438" selection-end="10438" vertical-scroll-proportion="0.0">
+                    <folding />
+                  </state>
+                </provider>
+              </entry>
+            </file>
+          </leaf>
+        </state>
+      </content>
+    </window>
+  </component>
   <component name="FavoritesManager">
     <favorites_list name="WebUI" />
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="configuration.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/static/configuration.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="376" column="12" selection-start="10702" selection-end="10702" vertical-scroll-proportion="-0.65384614">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="browse.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="121" column="0" selection-start="3888" selection-end="3888" vertical-scroll-proportion="0.4384303">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sonar.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="361" column="0" selection-start="11282" selection-end="11282" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="xdate2.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/xdate2.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="22" selection-start="267" selection-end="267" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="xdate.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/xdate.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="0" selection-start="7272" selection-end="7272" vertical-scroll-proportion="0.0">
+            <state line="61" column="10" selection-start="1859" selection-end="1859" vertical-scroll-proportion="0.15082383">
               <folding />
             </state>
           </provider>
@@ -91,6 +83,7 @@
         <option value="$PROJECT_DIR$/xdate2.js" />
         <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/browse.html" />
+        <option value="$PROJECT_DIR$/static/browse.js" />
       </list>
     </option>
   </component>
@@ -303,8 +296,8 @@
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1955341" sideWeight="0.19745958" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20922832" sideWeight="0.75238097" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="SLIDING" type="FLOATING" visible="true" weight="0.20922832" sideWeight="0.24642856" order="1" side_tool="true" content_ui="tabs" x="-395" y="133" width="366" height="647" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20922832" sideWeight="0.74523807" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
@@ -375,11 +368,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/static/bootstrap/img/glyphicons-halflings-white.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap-responsive.css">
       <provider selected="true" editor-type-id="text-editor">
         <state line="27" column="10" selection-start="438" selection-end="440" vertical-scroll-proportion="-9.18" />
@@ -435,20 +423,6 @@
         <state line="18" column="0" selection-start="7272" selection-end="7272" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/configuration.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="376" column="12" selection-start="10702" selection-end="10702" vertical-scroll-proportion="-0.65384614">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sonar.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="361" column="0" selection-start="11282" selection-end="11282" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/dygraph-combined.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1" column="48" selection-start="90" selection-end="129" vertical-scroll-proportion="0.020858895">
@@ -456,9 +430,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/static/configuration.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="379" column="16" selection-start="10797" selection-end="10797" vertical-scroll-proportion="-10.230769">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sonar.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="330" column="45" selection-start="10438" selection-end="10438" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/browse.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="11" selection-start="49" selection-end="49" vertical-scroll-proportion="0.04171779">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="121" column="0" selection-start="3888" selection-end="3888" vertical-scroll-proportion="0.4384303">
+        <state line="61" column="10" selection-start="1859" selection-end="1859" vertical-scroll-proportion="0.15082383">
           <folding />
         </state>
       </provider>

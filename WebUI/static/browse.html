@@ -7,6 +7,7 @@
     <!-- Le styles -->
     <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="bootstrap/css/datepicker.css" rel="stylesheet">
+
     <style type="text/css">
         body {
             padding-top: 60px;
@@ -17,21 +18,16 @@
             padding: 9px 0;
         }
     </style>
+
     <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
+    <script type="text/javascript" src="browse.js"></script>
 
 </head>
 <body>
 
-
+<!-- Navbar -->
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container-fluid">
@@ -47,59 +43,49 @@
     </div>
 </div>
 
-<!--
-Functionality to browse the data
--->
-
+<!-- Content container -->
 <div class="container">
 
-
     <div class="row">
-
         <div class="span4">
-            <form class="form-horizontal" id="queryForm">
+            <form class="well" id="queryForm">
                 <fieldset>
                     <div class="control-group">
-                        <label class="control-label" for="hostName">Hostname:</label>
-
+                        <label class="control-label" for="hostname">Hostname</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge" placeholder="Hostname" id="hostName"
+                            <input type="text" class="input-xlarge" placeholder="hotstname" id="hostname"
                                    name="hostname"/>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="sensorName">Sensor:</label>
-
+                        <label class="control-label" for="sensor">Sensor</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge" placeholder="Sensor Name" id="sensorName"
+                            <input type="text" class="input-xlarge" placeholder="sensor" id="sensor"
                                    name="sensor"/>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="sensorLabels">Labels:</label>
-
+                        <label class="control-label" for="labels">Labels</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge" placeholder="label0, label1, .."
-                                   id="sensorLabels"
-                                   name="sensorLabels"/>
+                            <input type="text" class="input-xlarge" placeholder="label, label, .."
+                                   id="labels"
+                                   name="labels"/>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="dp1">Start:</label>
-
+                        <label class="control-label" for="startdate">Start</label>
                         <div class="controls">
-                            <input type="text" class="span2" value="02/16/2012" id="dp1" name="startTime">
+                            <input type="text" class="input-xlarge" value="02/16/2011" id="startdate" name="startdate">
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="dp2">Stop:</label>
-
+                        <label class="control-label" for="stopdate">Stop</label>
                         <div class="controls">
-                            <input type="text" class="span2" value="02/16/2012" id="dp2" name="stopTime">
+                            <input type="text" class="input-xlarge" value="02/16/2012" id="stopdate" name="stopdate">
                         </div>
                     </div>
 
@@ -112,133 +98,12 @@ Functionality to browse the data
             </form>
         </div>
 
-
+        <div class="span8" id="container">
+        </div>
     </div>
 
 
-    <div class="container">
 
-        <div id="container" style="height: 500px; min-width: 500px"></div>
-
-
-
-        <script type="text/javascript">
-
-            var dat = [
-                [0, 0]
-                //[1338985394, 222]
-            ]
-
-            var graph;
-
-            $(function () {
-
-                var asdf = $('#dp1').datepicker()
-                $('#dp2').datepicker()
-
-                $('#addQuery').on("click", function (event) {
-
-                    event.preventDefault();
-
-                    // var str = $('#dp1').attr("value");
-
-                    var ser = $('#queryForm').serialize();
-
-                    // Ajax call to get the filtered data!
-                    $.ajax({
-                        type:"POST",
-                        url:'/tsdb',
-                        dataType:'json',
-                        data:ser,
-
-                        success:function (list) {
-
-                            //while(graph.series.length > 0)
-                            //    graph.series[0].remove(true);
-
-                            var rand = Math.floor(Math.random() * 11)
-
-                            console.log("data received: " + list);
-
-                            /*var series = graph.addSeries({
-                                name:'test' + rand,
-                                data:list
-                            }, true) */
-
-
-                            if(list.length == 0)
-                                list.push([0,0])
-
-                            graph.series[0].setData(list);
-
-
-
-
-                        }
-                    });
-
-                    /*console.log(ser);
-
-                    graph.addSeries({
-                        name:'TEST',
-                        data:dat
-                    }); */
-
-
-                })
-
-
-                graph = {
-
-                    tooltip: {
-                        enabled:false
-                    },
-
-                    navigation: {
-                      buttonOptions: {
-                          enabled: false
-                      }
-                    },
-
-                    chart:{
-                        renderTo:'container',
-                        animation:false
-                    },
-
-                    rangeSelector:{
-                        selected:0,
-                        enabled:true,
-                        inputEnabled:false
-                    },
-
-                    plotOptions:{
-                        series:{
-                            animation:false
-                        }
-                    },
-
-                    title:{
-
-                    },
-
-                    series:[
-                        {
-                            name:'TEST',
-                            data:dat
-                        }
-                    ]
-                }
-
-                // Create the chart
-                graph = new Highcharts.StockChart(graph);
-
-
-            });
-
-        </script>
-
-
-    </div>
 </div>
 
 
@@ -260,7 +125,7 @@ Functionality to browse the data
 <script src="./bootstrap/js/bootstrap-typeahead.js"></script>
 <script src="./bootstrap/js/bootstrap-datepicker.js"></script>
 
-
+<!-- non default javascript -->
 <script src="http://code.highcharts.com/stock/highstock.js"></script>
 <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
 

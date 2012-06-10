@@ -11588,7 +11588,7 @@ Series.prototype = {
 		}
 
 		// destroy all SVGElements associated to the series
-		each(['area', 'graph', 'dataLabelsGroup', 'group', 'tracker'], function (prop) {
+		each(['area', 'chart', 'dataLabelsGroup', 'group', 'tracker'], function (prop) {
 			if (series[prop]) {
 
 				// issue 134 workaround

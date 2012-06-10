@@ -317,17 +317,13 @@ function tsdbHandler(req, resp) {
 
 
     req.on('data', function (data) {
-        console.log("data: " + data);
         body += data;
     });
 
     req.on('end', function () {
-        console.log("body: " + body);
         body = qs.parse(body);
 
-
-        console.log("startTime: " + body.startTime);
-
+        console.log("startTime: " + body.startdate);
 
         var connection = thrift.createConnection('localhost', 7932);
         var client = thrift.createClient(managementService, connection);
@@ -337,10 +333,10 @@ function tsdbHandler(req, resp) {
         });
 
 
-        var startUnix = moment(body.startTime, "MM/DD/YYYY");
+        var startUnix = moment(body.startdate, "MM/DD/YYYY");
         startUnix = startUnix.unix();
 
-        var endUnix = moment(body.stopTime, "MM/DD/YYYY");
+        var endUnix = moment(body.stopdate, "MM/DD/YYYY");
         endUnix = endUnix.unix() + 24 * 3600;
 
         var labels = body.labels;
