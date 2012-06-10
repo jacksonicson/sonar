@@ -1,5 +1,6 @@
 // Palermo server startup
 var http = require('http');
+var template = require('swig');
 var router = require('./router');
 // var XDate = require('./xdate2');
 var moment = require('moment')
@@ -375,8 +376,42 @@ function tsdbHandler(req, resp) {
     });
 }
 
+// Getting started with monogdb
+// http://howtonode.org/node-js-and-mongodb-getting-started-with-mongojs
+
+// From validation
+// https://github.com/chriso/node-validator
+
+// Swig templating engine
+// https://github.com/paularmstrong/swig
+// http://paularmstrong.github.com/node-templates/
+
+template.init({
+    allowErrors: false,
+    autoescape: false,
+    cache: false,
+    encoding: 'utf8',
+    filters: {},
+    root: 'static',
+    tags: {},
+    extensions: {},
+    tzOffset: 0
+})
+
+function browse(req, resp)
+{
+
+
+    var compiled = template.compileFile('browse.html');
+    var rendered = compiled.render({
+    });
+    resp.end(rendered);
+}
+
 // configure urls
 var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
+    new router.UrlNode('BROWSE', {url:'browse', handler: browse}, []),
+
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),
     new router.UrlNode('TSDB', {url:'tsdb', handler:tsdbHandler}, []),

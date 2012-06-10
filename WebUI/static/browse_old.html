@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Sonar</title>
+
+    <!-- Le styles -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="bootstrap/css/datepicker.css" rel="stylesheet">
+
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+    </style>
+
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="browse.js"></script>
+
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="brand" href="#">Sonar</a>
+
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li><a href="configuration.html">Configuration</a></li>
+                    <li class="active"><a href="#">Browser</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content container -->
+<div class="container">
+
+    <div class="row">
+        <div class="span4">
+            <form class="well" id="queryForm">
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="hostname">Hostname</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" placeholder="hotstname" id="hostname"
+                                   name="hostname"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="sensor">Sensor</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" placeholder="sensor" id="sensor"
+                                   name="sensor"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="labels">Labels</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" placeholder="label, label, .."
+                                   id="labels"
+                                   name="labels"/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="startdate">Start</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" value="02/16/2011" id="startdate" name="startdate">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="stopdate">Stop</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" value="02/16/2012" id="stopdate" name="stopdate">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="addQuery">Query</button>
+                        <button class="btn">Cancel</button>
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+
+        <div class="span8" id="container">
+        </div>
+    </div>
+
+
+
+</div>
+
+
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+<script src="./bootstrap/js/bootstrap-transition.js"></script>
+<script src="./bootstrap/js/bootstrap-alert.js"></script>
+<script src="./bootstrap/js/bootstrap-modal.js"></script>
+<script src="./bootstrap/js/bootstrap-dropdown.js"></script>
+<script src="./bootstrap/js/bootstrap-scrollspy.js"></script>
+<script src="./bootstrap/js/bootstrap-tab.js"></script>
+<script src="./bootstrap/js/bootstrap-tooltip.js"></script>
+<script src="./bootstrap/js/bootstrap-popover.js"></script>
+<script src="./bootstrap/js/bootstrap-button.js"></script>
+<script src="./bootstrap/js/bootstrap-collapse.js"></script>
+<script src="./bootstrap/js/bootstrap-carousel.js"></script>
+<script src="./bootstrap/js/bootstrap-typeahead.js"></script>
+<script src="./bootstrap/js/bootstrap-datepicker.js"></script>
+
+<!-- non default javascript -->
+<script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+
+</body>
+</html>

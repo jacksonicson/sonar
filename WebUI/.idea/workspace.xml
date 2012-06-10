@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="376" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="387" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -28,16 +28,7 @@
             <file leaf-file-name="browse.js" pinned="false" current="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/static/browse.js">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state line="2" column="11" selection-start="49" selection-end="49" vertical-scroll-proportion="0.04171779">
-                    <folding />
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/sonar.js">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state line="330" column="45" selection-start="10438" selection-end="10438" vertical-scroll-proportion="0.0">
+                  <state line="19" column="0" selection-start="285" selection-end="285" vertical-scroll-proportion="0.39631903">
                     <folding />
                   </state>
                 </provider>
@@ -53,10 +44,30 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="browse.html" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="browse.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="61" column="10" selection-start="1859" selection-end="1859" vertical-scroll-proportion="0.15082383">
+            <state line="70" column="7" selection-start="2584" selection-end="2584" vertical-scroll-proportion="-10.461538">
+              <folding>
+                <element signature="tag#div#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="template.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/template.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sonar.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="394" column="17" selection-start="12151" selection-end="12151" vertical-scroll-proportion="0.4380368">
               <folding />
             </state>
           </provider>
@@ -81,9 +92,10 @@
         <option value="$PROJECT_DIR$/static/highstocktest.html" />
         <option value="$PROJECT_DIR$/static/configuration.html" />
         <option value="$PROJECT_DIR$/xdate2.js" />
-        <option value="$PROJECT_DIR$/sonar.js" />
-        <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/browse.js" />
+        <option value="$PROJECT_DIR$/static/template.html" />
+        <option value="$PROJECT_DIR$/static/browse.html" />
+        <option value="$PROJECT_DIR$/sonar.js" />
       </list>
     </option>
   </component>
@@ -190,6 +202,20 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="node_modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="WebUI" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="WebUI" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="gen-nodejs" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -209,6 +235,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\work\sonar\sonar\WebUI\static" />
       <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\js" />
       <recent name="D:\work\dev\sonar\sonar\WebUI" />
       <recent name="D:\work\dev\sonar\sonar\WebUI\static" />
@@ -292,7 +319,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1296" height="1000" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -301,7 +328,7 @@
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="FLOATING" visible="true" weight="0.24761905" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" x="1290" y="628" width="1257" height="374" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="FLOATING" visible="true" weight="0.24761905" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" x="1290" y="628" width="1257" height="374" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -368,11 +395,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap-responsive.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="10" selection-start="438" selection-end="440" vertical-scroll-proportion="-9.18" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap-responsive.min.css">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
@@ -408,11 +430,6 @@
         <state line="0" column="29" selection-start="29" selection-end="29" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/template.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="38" selection-start="972" selection-end="972" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/xdate2.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="22" selection-start="267" selection-end="267" vertical-scroll-proportion="0.0" />
@@ -437,23 +454,39 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sonar.js">
+    <entry file="file://$PROJECT_DIR$/static/browse_old.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="330" column="45" selection-start="10438" selection-end="10438" vertical-scroll-proportion="0.0">
+        <state line="69" column="22" selection-start="2258" selection-end="2258" vertical-scroll-proportion="0.3231939">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/template.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="11" selection-start="49" selection-end="49" vertical-scroll-proportion="0.04171779">
+        <state line="19" column="0" selection-start="285" selection-end="285" vertical-scroll-proportion="0.39631903">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="10" selection-start="1859" selection-end="1859" vertical-scroll-proportion="0.15082383">
+        <state line="70" column="7" selection-start="2584" selection-end="2584" vertical-scroll-proportion="-10.461538">
+          <folding>
+            <element signature="tag#div#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sonar.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="394" column="17" selection-start="12151" selection-end="12151" vertical-scroll-proportion="0.4380368">
           <folding />
         </state>
       </provider>
