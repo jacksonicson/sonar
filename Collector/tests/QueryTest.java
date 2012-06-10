@@ -21,20 +21,19 @@ public class QueryTest {
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);
-
 			ManagementService.Client client = new ManagementService.Client(protocol);
 
+			
 			TimeSeriesQuery query = new TimeSeriesQuery();
-
 			query.setHostname("jack");
 			query.setSensor("TEST");
 			query.setStartTime(0);
 			query.setStopTime(Long.MAX_VALUE);
 
 			List<TransferableTimeSeriesPoint> tsPoints = client.query(query);
-
+			System.out.println("LENGTH " + tsPoints.size()); 
 			for (TransferableTimeSeriesPoint p : tsPoints) {
-				System.out.println(p.getTimestamp() + " : " + p.getValue());
+				System.out.println("row: " + p.getTimestamp() + " : " + p.getValue());
 			}
 
 			transport.close();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="372" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="380" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -28,25 +28,25 @@
       <file leaf-file-name="configuration.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/configuration.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="376" column="12" selection-start="10702" selection-end="10702" vertical-scroll-proportion="-3.1842105">
+            <state line="376" column="12" selection-start="10702" selection-end="10702" vertical-scroll-proportion="-0.65384614">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="browse.html" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="browse.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="82" column="52" selection-start="2675" selection-end="2675" vertical-scroll-proportion="-5.6973686">
+            <state line="121" column="0" selection-start="3888" selection-end="3888" vertical-scroll-proportion="0.4384303">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="362" column="0" selection-start="11265" selection-end="11265" vertical-scroll-proportion="0.4993865">
+            <state line="361" column="0" selection-start="11282" selection-end="11282" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -56,9 +56,7 @@
         <entry file="file://$PROJECT_DIR$/xdate2.js">
           <provider selected="true" editor-type-id="text-editor">
             <state line="13" column="22" selection-start="267" selection-end="267" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="e#0#155#0" expanded="false" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -91,8 +89,8 @@
         <option value="$PROJECT_DIR$/static/highstocktest.html" />
         <option value="$PROJECT_DIR$/static/configuration.html" />
         <option value="$PROJECT_DIR$/xdate2.js" />
-        <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/sonar.js" />
+        <option value="$PROJECT_DIR$/static/browse.html" />
       </list>
     </option>
   </component>
@@ -147,6 +145,16 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -189,109 +197,22 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="static" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="less" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="static" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="static" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="static" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="gen-nodejs" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files" />
-      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="options.lastSelected" value="preferences.editor" />
     <property name="recentsLimit" value="5" />
+    <property name="options.lastSelected" value="preferences.editor" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -300,11 +221,11 @@
       <recent name="D:\work\dev\sonar\sonar\WebUI\static" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\work\sonar\sonar\WebUI\static" />
       <recent name="D:\work\sonar\sonar\WebUI" />
       <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\less" />
       <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap" />
       <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\js" />
-      <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\css" />
     </key>
   </component>
   <component name="RunManager" selected="Node JS.Sonar">
@@ -383,7 +304,7 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1955341" sideWeight="0.19745958" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21877486" sideWeight="0.75238097" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20922832" sideWeight="0.75238097" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
@@ -454,11 +375,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/collector_types.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="177" column="26" selection-start="4213" selection-end="4213" vertical-scroll-proportion="0.33281735" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/bootstrap/img/glyphicons-halflings-white.png">
       <provider selected="true" editor-type-id="images">
         <state />
@@ -506,44 +422,43 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/template.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="38" selection-start="972" selection-end="972" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/xdate.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="0" selection-start="7272" selection-end="7272" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/configuration.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="376" column="12" selection-start="10702" selection-end="10702" vertical-scroll-proportion="-3.1842105">
-          <folding />
-        </state>
+        <state line="37" column="38" selection-start="972" selection-end="972" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/xdate2.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="22" selection-start="267" selection-end="267" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#155#0" expanded="false" />
-          </folding>
-        </state>
+        <state line="13" column="22" selection-start="267" selection-end="267" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.html">
+    <entry file="file://$PROJECT_DIR$/xdate.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="82" column="52" selection-start="2675" selection-end="2675" vertical-scroll-proportion="-5.6973686">
+        <state line="18" column="0" selection-start="7272" selection-end="7272" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/configuration.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="376" column="12" selection-start="10702" selection-end="10702" vertical-scroll-proportion="-0.65384614">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="362" column="0" selection-start="11265" selection-end="11265" vertical-scroll-proportion="0.4993865">
+        <state line="361" column="0" selection-start="11282" selection-end="11282" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/dygraph-combined.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="48" selection-start="90" selection-end="129" vertical-scroll-proportion="0.020858895">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/browse.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="121" column="0" selection-start="3888" selection-end="3888" vertical-scroll-proportion="0.4384303">
           <folding />
         </state>
       </provider>

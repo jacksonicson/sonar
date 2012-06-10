@@ -71,12 +71,22 @@ public class TimeSeriesDatabase {
 		byte[] key = new byte[keyWidth];
 
 		int index = 0;
-		index += appendToKey(key, index, sensorResolver.resolveName(point.getSensor()));
-		index += appendToKey(key, index, point.getHourSinceEpoch());
-		index += appendToKey(key, index, hostnameResolver.resolveName(point.getHostname()));
+		// Sensor
+		appendToKey(key, index, sensorResolver.resolveName(point.getSensor()));
+		index += 8;
 
+		// Hostname
+		appendToKey(key, index, hostnameResolver.resolveName(point.getHostname()));
+		index += 8;
+
+		// Hour
+		appendToKey(key, index, point.getHourSinceEpoch());
+		index += 8;
+
+		// Labels
 		for (String label : point.getLabels()) {
-			index += appendToKey(key, index, labelResolver.resolveName(label));
+			appendToKey(key, index, labelResolver.resolveName(label));
+			index += 8;
 		}
 
 		return key;
@@ -177,6 +187,17 @@ public class TimeSeriesDatabase {
 		return offset;
 	}
 
+	public String getHexString(byte[] b) {
+		String result = "";
+		for (int i = 0; i < b.length; i++) {
+			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1) + " ";
+
+			if ((i + 1) % 8 == 0)
+				result += " - ";
+		}
+		return result;
+	}
+
 	public TimeSeries run(Query query) throws QueryException, UnresolvableException {
 
 		try {
@@ -188,33 +209,65 @@ public class TimeSeriesDatabase {
 			HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
 			Scan scan = new Scan();
 
-			// Start row
-			byte[] startRow = new byte[keyWidth(query.getLabels().size())];
+			// Empty start row
+			// ===============================================================
+			byte[] startRow = new byte[keyWidth(10)];
 			int index = 0;
-			index += appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
-			index += appendToKey(startRow, index, getHourSinceEpoch(query.getStartTime()));
 
-			if (query.getHostname() != null)
-				index += appendToKey(startRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
-			else
-				index += Const.HOSTNAME_WIDTH;
+			// Add sensor
+			appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
+			index += 8;
 
+			// Add hostname
+			if (query.getHostname() != null) {
+				logger.debug("Using hostname in query");
+				appendToKey(startRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+				index += 8;
+			} else {
+				index += 8;
+			}
+
+			// Add start time
+			appendToKey(startRow, index, getHourSinceEpoch(query.getStartTime()));
+			index += 8;
+
+			// Define start row now
 			scan.setStartRow(startRow);
+			logger.info("start: " + getHexString(startRow));
 
-			// Stop row
-			byte[] stopRow = new byte[keyWidth(query.getLabels().size())];
+			// Empty stop row
+			// ===============================================================
+			byte[] stopRow = new byte[keyWidth(10)];
 
 			index = 0;
-			index += appendToKey(stopRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
-			index += appendToKey(stopRow, index, getHourSinceEpoch(query.getStopTime()));
 
-			if (query.getHostname() != null)
-				index += appendToKey(stopRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+			// Add sensor
+			appendToKey(stopRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
+			index += 8;
 
+			// Add hostname
+			if (query.getHostname() != null) {
+				logger.debug("Using hostname in query");
+				appendToKey(stopRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+				index += 8;
+			} else {
+				index += 8;
+			}
+
+			// Add stop time
+			appendToKey(stopRow, index, getHourSinceEpoch(query.getStopTime()));
+			index += 8;
+
+			// Fill the remaining digits with ones
 			for (; index < stopRow.length; index++)
 				stopRow[index] = (byte) 0xFF;
 
+			// Define stop row
 			scan.setStopRow(stopRow);
+			logger.info("stop:  " + getHexString(stopRow));
+
+			// Rows finished
+			// ===============================================================
 
 			// Load the scanner
 			logger.debug("Starting table scanner on query");
@@ -225,10 +278,12 @@ public class TimeSeriesDatabase {
 			Result next;
 			while ((next = scanner.next()) != null) {
 
-				logger.debug("Row found");
+				// logger.debug("Row found");
 
 				byte[] rowKey = next.getRow();
 				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH);
+				long hostname = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + 8);
+				logger.info("hostname: " + hostname);
 
 				TimeSeriesFragment fragment = timeSeries.newFragment();
 
@@ -253,7 +308,7 @@ public class TimeSeriesDatabase {
 					p.setValue(data);
 					fragment.addPoint(p);
 
-					logger.info("qualifier: " + value + " data: " + data);
+					// logger.info("qualifier: " + value + " data: " + data);
 				}
 			}
 

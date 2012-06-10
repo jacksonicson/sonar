@@ -108,12 +108,17 @@ public class IdResolver {
 
 			KeyValue kvalue = result.getColumnLatest(Bytes.toBytes("forward"), Bytes.toBytes(type));
 			if (kvalue == null) {
+				logger.info("creating new mapping");
 				long value = createMappingRetry(name);
+				logger.info("value: " + value);
+
 				return value;
 			}
 
 			byte[] value = kvalue.getValue();
-			return Bytes.toLong(value);
+			long lValue = Bytes.toLong(value);
+			logger.info("resolved to value: " + lValue);
+			return lValue;
 
 		} catch (IOException e) {
 			e.printStackTrace();

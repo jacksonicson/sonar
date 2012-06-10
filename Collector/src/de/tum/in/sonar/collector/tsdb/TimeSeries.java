@@ -37,6 +37,9 @@ public class TimeSeries implements Iterable<TimeSeriesPoint> {
 		public boolean hasNext() {
 			if (fragment > fragments.size())
 				return false;
+			
+			if(fragments.size() == 0)
+				return false;
 
 			if (listIterator != null) {
 				if (!listIterator.hasNext())

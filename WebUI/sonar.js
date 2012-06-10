@@ -341,7 +341,7 @@ function tsdbHandler(req, resp) {
         startUnix = startUnix.unix();
 
         var endUnix = moment(body.stopTime, "MM/DD/YYYY");
-        endUnix = endUnix.unix();
+        endUnix = endUnix.unix() + 24 * 3600;
 
         var labels = body.labels;
         var hostname = body.hostname;
@@ -349,10 +349,13 @@ function tsdbHandler(req, resp) {
 
         console.log("hostname: " + hostname);
         console.log("sensor: " + sensor);
+        console.log("startTime: " + startUnix);
+        console.log("endTime: " + endUnix);
 
         var query = new types.TimeSeriesQuery({
             startTime:startUnix,
             stopTime:endUnix,
+
             hostname:hostname,
             sensor:sensor
         });
@@ -360,10 +363,15 @@ function tsdbHandler(req, resp) {
         // Execute the query
         client.query(query, function (err, timeSeries) {
 
-
-            console.log("received feedback");
-
             var jsonObj = [];
+
+            for(i in timeSeries)
+            {
+                console.log("received feedback " + timeSeries[i]);
+                var item = [timeSeries[i].timestamp * 1000, timeSeries[i].value];
+                jsonObj.push(item)
+            }
+
             var ss = JSON.stringify(jsonObj);
             console.log(ss);
             resp.end(ss);

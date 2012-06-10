@@ -24,7 +24,9 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
+
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
 
 </head>
 <body>
@@ -102,7 +104,7 @@ Functionality to browse the data
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="addQuery">Add Query</button>
+                        <button type="submit" class="btn btn-primary" id="addQuery">Query</button>
                         <button class="btn">Cancel</button>
                     </div>
 
@@ -110,29 +112,6 @@ Functionality to browse the data
             </form>
         </div>
 
-        <div class="span4 offset1">
-            <table class="table" id="listSensors">
-                <thead>
-                <tr>
-                    <th>Query</th>
-                    <th>Host</th>
-                    <th>Sensor</th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr>
-                    <td colspan="3">Loading...</td>
-                </tr>
-                <tr>
-                    <td colspan="3">Loading...</td>
-                </tr>
-                <tr>
-                    <td colspan="3">Loading...</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
 
     </div>
 
@@ -141,15 +120,19 @@ Functionality to browse the data
 
         <div id="container" style="height: 500px; min-width: 500px"></div>
 
+
+
         <script type="text/javascript">
 
             var dat = [
-                [1338985354, 0],
-                [1338985394, 222]
+                [0, 0]
+                //[1338985394, 222]
             ]
+
             var graph;
 
             $(function () {
+
                 var asdf = $('#dp1').datepicker()
                 $('#dp2').datepicker()
 
@@ -168,55 +151,87 @@ Functionality to browse the data
                         dataType:'json',
                         data:ser,
 
-                        success:function (data) {
+                        success:function (list) {
+
+                            //while(graph.series.length > 0)
+                            //    graph.series[0].remove(true);
+
+                            var rand = Math.floor(Math.random() * 11)
+
+                            console.log("data received: " + list);
+
+                            /*var series = graph.addSeries({
+                                name:'test' + rand,
+                                data:list
+                            }, true) */
+
+
+                            if(list.length == 0)
+                                list.push([0,0])
+
+                            graph.series[0].setData(list);
+
+
+
+
                         }
                     });
 
-                    console.log(ser);
+                    /*console.log(ser);
 
                     graph.addSeries({
                         name:'TEST',
                         data:dat
-                    });
+                    }); */
 
 
                 })
 
 
-                $.getJSON('/tsdb', function (data) {
-                    graph = {
-                        chart:{
-                            renderTo:'container',
+                graph = {
+
+                    tooltip: {
+                        enabled:false
+                    },
+
+                    navigation: {
+                      buttonOptions: {
+                          enabled: false
+                      }
+                    },
+
+                    chart:{
+                        renderTo:'container',
+                        animation:false
+                    },
+
+                    rangeSelector:{
+                        selected:0,
+                        enabled:true,
+                        inputEnabled:false
+                    },
+
+                    plotOptions:{
+                        series:{
                             animation:false
-                        },
+                        }
+                    },
 
-                        rangeSelector:{
-                            selected:0
-                        },
+                    title:{
 
-                        plotOptions:{
-                            series:{
-                                animation:false
-                            }
-                        },
+                    },
 
-                        title:{
-                            text:'TSDB Test'
-                        },
+                    series:[
+                        {
+                            name:'TEST',
+                            data:dat
+                        }
+                    ]
+                }
 
-                        series:[
-                            {
-                                name:'TimeSeries',
-                                data:data
-                            }
-                        ]
-                    }
+                // Create the chart
+                graph = new Highcharts.StockChart(graph);
 
-                    // Create the chart
-                    graph = new Highcharts.StockChart(graph);
-
-
-                });
 
             });
 

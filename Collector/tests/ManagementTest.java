@@ -27,7 +27,7 @@ public class ManagementTest {
 			TimeSeriesQuery query = new TimeSeriesQuery();
 			query.hostname = "jack";
 			query.sensor = " TEST";
-			
+
 			query.startTime = 0;
 			query.stopTime = Long.MAX_VALUE;
 
