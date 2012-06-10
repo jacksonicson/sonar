@@ -16,6 +16,14 @@ $(function () {
 function setupDatePickers() {
     $('#startdate').datepicker()
     $('#stopdate').datepicker()
+
+
+    $('.dropdown-timepicker').timepicker({
+        defaultTime: 'current',
+        minuteStep: 15,
+        disableFocus: false,
+        template: 'dropdown'
+    });
 }
 
 function setupHandlers() {
