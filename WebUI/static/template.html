@@ -23,6 +23,15 @@
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
+    <script type="text/javascript">
+        $(function() {
+            var pathname = window.location.pathname;
+            pathname = pathname.replace('/', '');
+            pathname = pathname.charAt(0).toUpperCase() + pathname.slice(1);
+            $('#nav' + pathname).attr("class", "active");
+        });
+    </script>
+
     {% block jshead %}
     <!-- stylesheets and JS in the header -->
     {% endblock %}
@@ -38,8 +47,8 @@
 
             <div class="nav-collapse">
                 <ul class="nav">
-                    <li><a href="configuration.html">Configuration</a></li>
-                    <li class="active"><a href="#">Browser</a></li>
+                    <li id="navConfig"><a href="config">Configuration</a></li>
+                    <li id="navBrowse"><a href="browse">Browser</a></li>
                 </ul>
             </div>
         </div>

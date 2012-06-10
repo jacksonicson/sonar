@@ -400,9 +400,15 @@ template.init({
 
 function browse(req, resp)
 {
-
-
     var compiled = template.compileFile('browse.html');
+    var rendered = compiled.render({
+    });
+    resp.end(rendered);
+}
+
+function config(req, resp)
+{
+    var compiled = template.compileFile('config.html');
     var rendered = compiled.render({
     });
     resp.end(rendered);
@@ -411,6 +417,7 @@ function browse(req, resp)
 // configure urls
 var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('BROWSE', {url:'browse', handler: browse}, []),
+    new router.UrlNode('CONFIG', {url:'config', handler: config}, []),
 
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),
