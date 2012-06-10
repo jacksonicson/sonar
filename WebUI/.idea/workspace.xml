@@ -38,7 +38,7 @@
       <file leaf-file-name="config.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/config.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="0" selection-start="163" selection-end="163" vertical-scroll-proportion="-0.65384614">
+            <state line="30" column="29" selection-start="946" selection-end="946" vertical-scroll-proportion="-15.692307">
               <folding />
             </state>
           </provider>
@@ -47,7 +47,16 @@
       <file leaf-file-name="config.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="165" column="0" selection-start="4181" selection-end="4181" vertical-scroll-proportion="-0.62094766">
+            <state line="137" column="24" selection-start="3210" selection-end="3210" vertical-scroll-proportion="0.55486286">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="template.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/template.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="100" column="39" selection-start="2709" selection-end="2709" vertical-scroll-proportion="-26.153847">
               <folding />
             </state>
           </provider>
@@ -74,10 +83,10 @@
         <option value="$PROJECT_DIR$/static/sonar.css" />
         <option value="$PROJECT_DIR$/router.js" />
         <option value="$PROJECT_DIR$/static/browse.js" />
-        <option value="$PROJECT_DIR$/static/template.html" />
         <option value="$PROJECT_DIR$/static/config.html" />
         <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/browse.html" />
+        <option value="$PROJECT_DIR$/static/template.html" />
         <option value="$PROJECT_DIR$/static/config.js" />
       </list>
     </option>
@@ -481,13 +490,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/template.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="27" selection-start="535" selection-end="535" vertical-scroll-proportion="0.3878327">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
       <provider selected="true" editor-type-id="text-editor">
         <state line="28" column="25" selection-start="1244" selection-end="1244" vertical-scroll-proportion="0.33291772">
@@ -509,16 +511,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/static/template.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="100" column="39" selection-start="2709" selection-end="2709" vertical-scroll-proportion="-26.153847">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/static/config.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="0" selection-start="163" selection-end="163" vertical-scroll-proportion="-0.65384614">
+        <state line="30" column="29" selection-start="946" selection-end="946" vertical-scroll-proportion="-15.692307">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/config.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="165" column="0" selection-start="4181" selection-end="4181" vertical-scroll-proportion="-0.62094766">
+        <state line="137" column="24" selection-start="3210" selection-end="3210" vertical-scroll-proportion="0.55486286">
           <folding />
         </state>
       </provider>

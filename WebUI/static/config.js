@@ -250,7 +250,7 @@ function updateHostsList() {
 
         },
         error:function () {
-            alert("Sorry, The requested property could not be found.");
+            console.log("ajax call failed");
         }
     });
 }
@@ -298,7 +298,7 @@ function updateSensorList() {
             stopAlert();
         },
         error:function () {
-            alert("Sorry, The requested property could not be found.");
+            console.log("ajax call failed");
         }
     });
 }
