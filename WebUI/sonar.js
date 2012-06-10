@@ -430,6 +430,10 @@ function configjs(req, resp)
     console.log(map);
 
     var rendered = compiled.render(urlMap);
+    resp.writeHead(200, {
+        'Content-Type' : 'text/javascript',
+        'Content-Length' : rendered.length
+    })
     resp.end(rendered);
 }
 
