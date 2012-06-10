@@ -420,15 +420,6 @@ function configjs(req, resp)
     var compiled = template.compileFile('config.js');
 
     var urlMap = urls.generateUrlMap();
-    console.log(urlMap);
-
-    var map = {
-        test : 'asdf'
-    }
-    map['asdf'] = 'asdf;'
-
-    console.log(map);
-
     var rendered = compiled.render(urlMap);
     resp.writeHead(200, {
         'Content-Type' : 'text/javascript',
