@@ -44,19 +44,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="template.html" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="template.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/template.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="28" column="20" selection-start="819" selection-end="819" vertical-scroll-proportion="-6.5384617">
+            <state line="56" column="0" selection-start="1586" selection-end="1586" vertical-scroll-proportion="0.43092522">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="config.html" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="config.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/config.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="428" column="0" selection-start="12573" selection-end="12573" vertical-scroll-proportion="0.3231939">
+            <state line="428" column="0" selection-start="12573" selection-end="12573" vertical-scroll-proportion="-9.807693">
               <folding>
                 <element signature="tag#div#0" expanded="false" />
                 <element signature="tag#div#1" expanded="false" />
@@ -463,21 +463,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/template.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="20" selection-start="819" selection-end="819" vertical-scroll-proportion="-6.5384617">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/config.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="428" column="0" selection-start="12573" selection-end="12573" vertical-scroll-proportion="0.3231939">
+        <state line="428" column="0" selection-start="12573" selection-end="12573" vertical-scroll-proportion="-9.807693">
           <folding>
             <element signature="tag#div#0" expanded="false" />
             <element signature="tag#div#1" expanded="false" />
             <element signature="tag#div#2" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/template.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="0" selection-start="1586" selection-end="1586" vertical-scroll-proportion="0.43092522">
+          <folding />
         </state>
       </provider>
     </entry>
