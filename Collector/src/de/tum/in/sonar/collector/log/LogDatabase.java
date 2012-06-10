@@ -20,6 +20,7 @@ import de.tum.in.sonar.collector.HBaseUtil;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.LogMessage;
 import de.tum.in.sonar.collector.tsdb.IdResolver;
+import de.tum.in.sonar.collector.tsdb.InvalidLabelException;
 import de.tum.in.sonar.collector.tsdb.TableCreationException;
 import de.tum.in.sonar.collector.tsdb.UnresolvableException;
 
@@ -49,8 +50,7 @@ public class LogDatabase {
 	}
 
 	private int keyWidth() {
-		int keyWidth = LogConstants.SENSOR_ID_WIDTH
-				+ LogConstants.TIMESTAMP_WIDTH + LogConstants.HOSTNAME_WIDTH;
+		int keyWidth = LogConstants.SENSOR_ID_WIDTH + LogConstants.TIMESTAMP_WIDTH + LogConstants.HOSTNAME_WIDTH;
 		return keyWidth;
 	}
 
@@ -63,15 +63,13 @@ public class LogDatabase {
 		return value.length;
 	}
 
-	private byte[] buildKey(Identifier id) throws UnresolvableException {
+	private byte[] buildKey(Identifier id) throws UnresolvableException, InvalidLabelException {
 		int keyWidth = keyWidth();
 		byte[] key = new byte[keyWidth];
 
 		int index = 0;
-		index += appendToKey(key, index,
-				sensorResolver.resolveName(id.getSensor()));
-		index += appendToKey(key, index,
-				hostnameResolver.resolveName(id.getHostname()));
+		index += appendToKey(key, index, sensorResolver.resolveName(id.getSensor()));
+		index += appendToKey(key, index, hostnameResolver.resolveName(id.getHostname()));
 		index += appendToKey(key, index, id.getTimestamp());
 		return key;
 	}
@@ -80,13 +78,11 @@ public class LogDatabase {
 
 		try {
 			byte[] key = buildKey(id);
-			HTableInterface table = this.tsdbTablePool
-					.getTable(LogConstants.TABLE_LOG);
+			HTableInterface table = this.tsdbTablePool.getTable(LogConstants.TABLE_LOG);
 			// Create a new row in this case
 			Put put = new Put(key);
 			TSerializer serializer = new TSerializer();
-			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA),
-					Bytes.toBytes(LogConstants.QUALIFIER_LOG_DATA),
+			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(LogConstants.QUALIFIER_LOG_DATA),
 					serializer.serialize(message));
 
 			table.put(put);
@@ -96,6 +92,8 @@ public class LogDatabase {
 			logger.error("could not create key for datapoint", e);
 		} catch (TException e) {
 			logger.error("could not serialize payload data", e);
+		} catch (InvalidLabelException e) {
+			logger.error("invalid label used", e);
 		}
 
 		logger.info("writing data ");
@@ -121,10 +119,8 @@ public class LogDatabase {
 			if (!tableExists) {
 				// Create all remaining tables
 				logger.info("Creating Log table..");
-				HTableDescriptor desc = new HTableDescriptor(
-						LogConstants.TABLE_LOG);
-				HColumnDescriptor meta = new HColumnDescriptor(
-						Bytes.toBytes(LogConstants.FAMILY_LOG_DATA));
+				HTableDescriptor desc = new HTableDescriptor(LogConstants.TABLE_LOG);
+				HColumnDescriptor meta = new HColumnDescriptor(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA));
 				desc.addFamily(meta);
 				hbase.createTable(desc);
 			}

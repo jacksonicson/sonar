@@ -65,7 +65,7 @@ public class TimeSeriesDatabase {
 		return keyWidth;
 	}
 
-	byte[] buildKey(MetricPoint point) throws UnresolvableException {
+	byte[] buildKey(MetricPoint point) throws UnresolvableException, InvalidLabelException {
 
 		int keyWidth = keyWidth(point.getLabels().size());
 		byte[] key = new byte[keyWidth];
@@ -161,6 +161,8 @@ public class TimeSeriesDatabase {
 			logger.error("could not write tsdb to hbase", e);
 		} catch (UnresolvableException e) {
 			logger.error("could not create key for datapoint", e);
+		} catch (InvalidLabelException e) {
+			logger.error("invalid label used", e);
 		}
 
 		logger.info("writing data ");
@@ -315,6 +317,8 @@ public class TimeSeriesDatabase {
 			return timeSeries;
 
 		} catch (IOException e) {
+			throw new QueryException(e);
+		} catch (InvalidLabelException e) {
 			throw new QueryException(e);
 		}
 	}

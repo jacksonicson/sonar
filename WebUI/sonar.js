@@ -1,7 +1,7 @@
 http://jdewit.github.com/bootstrap-timepicker/
 // http://www.rapidtables.com/web/color/Web_Color.htm
 // Palermo server startup
-var http = require('http');
+    var http = require('http');
 var template = require('swig');
 var router = require('./router');
 // var XDate = require('./xdate2');
@@ -278,25 +278,37 @@ function sensorsHandler(req, resp) {
 
             var test = (function (value) {
                 return function test(err, rr) {
-                    counter++;
-                    console.log("callback " + counter + " of " + result.length);
 
-                    var sensorInfo = {
-                        name:value,
-                        labels:rr
-                    }
-                    console.log("PUSH: " + value);
-                    sensorData.push(sensorInfo)
+                    console.log("labels: " + rr);
 
-                    if (counter == result.length) {
+                    client.hasBinary(value, function (err, hasBinary) {
 
-                        console.log("running return ...");
-                        console.log("test done");
+                        console.log("Has binary: " + hasBinary);
 
-                        console.log("sensor data: " + sensorData);
-                        var ss = JSON.stringify(sensorData);
-                        resp.end(ss);
-                    }
+                        counter++;
+                        console.log("callback " + counter + " of " + result.length);
+
+                        var sensorInfo = {
+                            name:value,
+                            labels:rr,
+                            binary:hasBinary
+                        }
+                        console.log("PUSH: " + value);
+                        sensorData.push(sensorInfo)
+
+                        if (counter == result.length) {
+
+                            console.log("running return ...");
+                            console.log("test done");
+
+                            console.log("sensor data: " + sensorData);
+                            var ss = JSON.stringify(sensorData);
+                            resp.end(ss);
+                        }
+
+                    });
+
+
                 }
             })(value);
 
@@ -364,8 +376,7 @@ function tsdbHandler(req, resp) {
 
             var jsonObj = [];
 
-            for(i in timeSeries)
-            {
+            for (i in timeSeries) {
                 console.log("received feedback " + timeSeries[i]);
                 var item = [timeSeries[i].timestamp * 1000, timeSeries[i].value];
                 jsonObj.push(item)
@@ -389,27 +400,25 @@ function tsdbHandler(req, resp) {
 // http://paularmstrong.github.com/node-templates/
 
 template.init({
-    allowErrors: false,
-    autoescape: false,
-    cache: false,
-    encoding: 'utf8',
-    filters: {},
-    root: 'static',
-    tags: {},
-    extensions: {},
-    tzOffset: 0
+    allowErrors:false,
+    autoescape:false,
+    cache:false,
+    encoding:'utf8',
+    filters:{},
+    root:'static',
+    tags:{},
+    extensions:{},
+    tzOffset:0
 })
 
-function browse(req, resp)
-{
+function browse(req, resp) {
     var compiled = template.compileFile('browse.html');
     var rendered = compiled.render({
     });
     resp.end(rendered);
 }
 
-function config(req, resp)
-{
+function config(req, resp) {
     var compiled = template.compileFile('config.html');
     var rendered = compiled.render({
     });
@@ -417,25 +426,27 @@ function config(req, resp)
 }
 
 
-function configjs(req, resp)
-{
+function configjs(req, resp) {
     var compiled = template.compileFile('config.js');
 
     var urlMap = urls.generateUrlMap();
+    console.log("RUNNING CONFIG")
+    console.log("URLS " + urlMap);
+
     var rendered = compiled.render(urlMap);
     resp.writeHead(200, {
-        'Content-Type' : 'text/javascript',
-        'Content-Length' : rendered.length
+        'Content-Type':'text/javascript',
+        'Content-Length':rendered.length
     })
     resp.end(rendered);
 }
 
 // configure urls
 var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
-    new router.UrlNode('BROWSE', {url:'browse', handler: browse}, []),
-    new router.UrlNode('CONFIG', {url:'config', handler: config}, []),
+    new router.UrlNode('BROWSE', {url:'browse', handler:browse}, []),
+    new router.UrlNode('CONFIG', {url:'config', handler:config}, []),
 
-    new router.UrlNode('CONFIGJS', {url:'config.js', handler: configjs}, []),
+    new router.UrlNode('CONFIGJS', {url:'config.js', handler:configjs}, []),
 
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),

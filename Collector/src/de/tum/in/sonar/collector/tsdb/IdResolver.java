@@ -2,7 +2,9 @@ package de.tum.in.sonar.collector.tsdb;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Get;
@@ -33,7 +35,18 @@ public class IdResolver {
 		this.type = type;
 	}
 
-	public long resolveName(String name) throws UnresolvableException {
+	private static final Set<String> INVALID_LABELS = new HashSet<String>();
+
+	static {
+		INVALID_LABELS.add("counter");
+	}
+
+	private boolean isValid(String label) {
+		label = label.toUpperCase();
+		return INVALID_LABELS.contains(label) == false;
+	}
+
+	public long resolveName(String name) throws UnresolvableException, InvalidLabelException {
 		if (forwardMapping.containsKey(name)) {
 			return forwardMapping.get(name);
 		}
@@ -50,7 +63,9 @@ public class IdResolver {
 		throw new UnresolvableException();
 	}
 
-	private Long createMapping(String name) throws IOException {
+	private Long createMapping(String name) throws InvalidLabelException, IOException {
+		if (!isValid(name))
+			throw new InvalidLabelException(name);
 
 		HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
@@ -74,7 +89,7 @@ public class IdResolver {
 		return null;
 	}
 
-	private Long createMappingRetry(String name) throws UnresolvableException {
+	private Long createMappingRetry(String name) throws UnresolvableException, InvalidLabelException {
 
 		for (int retry = 0; retry < 3; retry++) {
 			try {
@@ -89,7 +104,7 @@ public class IdResolver {
 		throw new UnresolvableException();
 	}
 
-	long scanNames(String name) throws UnresolvableException {
+	long scanNames(String name) throws UnresolvableException, InvalidLabelException {
 		try {
 			HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 

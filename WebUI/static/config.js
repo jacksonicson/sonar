@@ -53,7 +53,7 @@ function deleteSensor(event) {
 
     $.ajax({
         type:"GET",
-        url:'/{{ROOT_SENSORDEL}}?sensorName=' + sensor,
+        url:'{{ROOT_SENSORDEL}}?sensorName=' + sensor,
         dataType:'text',
         success:function (data) {
 
@@ -152,8 +152,13 @@ function editHostIntern(event, editHost) {
 
                     console.log("labels: " + host.labels);
                     var labelsString = "";
-                    for (var i in host.labels) {
-                        labelsString += host.labels[i] + ",";
+                    for (var i = 0; i < host.labels.length; i++) {
+                        if(host.labels[i] == '')
+                            continue;
+
+                        labelsString += host.labels[i];
+                        if ((i + 1) >= host.labels.length)
+                            labelsString += ","
                     }
 
                     $('#hostLabels').attr("value", labelsString);
@@ -252,6 +257,7 @@ function updateHostsList() {
 
 function updateSensorList() {
     doAlert("Loading...");
+
     $.ajax({
         type:"GET",
         url:'{{ROOT_SENSORS}}',
@@ -259,21 +265,29 @@ function updateSensorList() {
 
         success:function (data) {
 
-            var $wrap = $('#listSensorsBody');
-            $wrap.children().remove();
-            for (i in data) {
-                sensor = data[i];
-                console.log("dd " + sensor.name);
-                $wrap.append(
+            var wrap = $('#listSensorsBody');
+            wrap.children('tr').remove();
+            for (var i in data) {
+                var sensor = data[i];
+
+                var labelString = '';
+                for (var j = 0; j < sensor.labels.length; j++) {
+                    labelString += sensor.labels[j];
+                    if (j < (sensor.labels.length - 1))
+                        labelString += ","
+                }
+
+                wrap.append(
                     $('<tr>')
                         .append(
                         $('<td>').text(i),
+
                         $('<td>').append(
                             $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
                         ),
                         $('<td>').text(sensor.name),
-                        $('<td>').text('-'),
-                        $('<td>').text(sensor.labels)
+                        $('<td>').text(sensor.binary),
+                        $('<td>').text(labelString)
                     )
                 );
             }
