@@ -24,12 +24,33 @@
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
     <script type="text/javascript">
-        $(function() {
+        $(function () {
             var pathname = window.location.pathname;
             pathname = pathname.replace('/', '');
             pathname = pathname.charAt(0).toUpperCase() + pathname.slice(1);
             $('#nav' + pathname).attr("class", "active");
+
+            $('#alertBox').hide();
         });
+
+        var alertCount = 0;
+
+        function doAlert(message) {
+            $('#alertBox').text(message)
+            $('#alertBox').show();
+
+            alertCount++;
+        }
+
+        function stopAlert() {
+            alertCount--;
+            if (alertCount <= 0)
+                $('#alertBox').hide();
+
+            if (alertCount < 0)
+                alertCount = 0;
+        }
+
     </script>
 
     {% block jshead %}
@@ -55,8 +76,15 @@
     </div>
 </div>
 
+
 <!-- Content container -->
 <div class="container">
+
+    <div class="alert" id="alertBox">
+        <button class="close" data-dismiss="alert">×</button>
+        no alert
+    </div>
+
     {% block container %}
     <!-- this is the content area -->
     {% endblock %}

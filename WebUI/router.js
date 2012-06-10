@@ -131,12 +131,14 @@ exports.UrlNode = function(name, params, childs) {
     this.generateUrlMap = function (map, path, url) {
         if (!map)
             map = {};
+
         if (!url)
             url = ''
+
         if (!path)
             path = name;
         else
-            path += '.' + name;
+            path += '_' + name;
 
         if (params.url)
             url += params.url

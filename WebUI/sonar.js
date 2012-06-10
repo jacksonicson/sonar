@@ -414,10 +414,31 @@ function config(req, resp)
     resp.end(rendered);
 }
 
+
+function configjs(req, resp)
+{
+    var compiled = template.compileFile('config.js');
+
+    var urlMap = urls.generateUrlMap();
+    console.log(urlMap);
+
+    var map = {
+        test : 'asdf'
+    }
+    map['asdf'] = 'asdf;'
+
+    console.log(map);
+
+    var rendered = compiled.render(urlMap);
+    resp.end(rendered);
+}
+
 // configure urls
 var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('BROWSE', {url:'browse', handler: browse}, []),
     new router.UrlNode('CONFIG', {url:'config', handler: config}, []),
+
+    new router.UrlNode('CONFIGJS', {url:'config.js', handler: configjs}, []),
 
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
     new router.UrlNode('REGISTER', {url:'register', handler:experimental.register}, []),

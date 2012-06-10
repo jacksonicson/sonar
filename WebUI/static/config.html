@@ -1,354 +1,68 @@
 {% extends 'template.html' %}
+
 {% block jshead %}
+<link href="sonar.css" rel="stylesheet">
+
 <script type="text/javascript" src="config.js"></script>
 {% endblock%}
 
 {% block container %}
 
 <div class="span8">
+    <div class="tabbable">
+        <!-- Specify the tabs -->
+        <ul class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tabSensor" data-toggle="tab">Sensors</a></li>
+            <li><a href="#tabHostnames" data-toggle="tab">Hostnames</a></li>
+        </ul>
 
-<div class="alert alert-error" id="errors">
-    Error: No error message!
-</div>
+        <!-- Tab content -->
+        <div class="tab-content">
 
+            <!-- Sensors -->
+            <div class="tab-pane active" id="tabSensor">
 
-<div class="tabbable">
-<ul class="nav nav-tabs" data-tabs="tabs">
-    <li class="active"><a href="#tab1" data-toggle="tab">Sensors</a></li>
-    <li><a href="#tab2" data-toggle="tab">Hostnames</a></li>
-</ul>
+                <a class="btn" data-toggle="modal" href="#newSensorDlg">New Sensor</a>
+                <table class="table" id="listSensors">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>&nbsp;</th>
+                        <th>Sensor Name</th>
+                        <th>Binary Available</th>
+                        <th>Labels</th>
+                    </tr>
+                    </thead>
+                    <tbody id='listSensorsBody'>
+                    <tr>
+                        <td colspan="4">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
-<div class="tab-content">
+            <!-- Hostnames -->
+            <div class="tab-pane" id="tabHostnames">
+                <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>&nbsp;</th>
+                        <th>Hostname</th>
+                        <th>Sensors</th>
+                    </tr>
+                    </thead>
+                    <tbody id='listHostsBody'>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <div class="tab-pane active" id="tab1">
-
-        <a class="btn" data-toggle="modal" href="#newSensorDlg">New Sensor</a>
-        <table class="table" id="listSensors">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>&nbsp;</th>
-                <th>Sensor Name</th>
-                <th>Binary Available</th>
-                <th>Labels</th>
-            </tr>
-            </thead>
-            <tbody id='listSensorsBody'>
-            <tr>
-                <td colspan="4">Loading...</td>
-            </tr>
-            </tbody>
-        </table>
     </div>
-
-    <div class="tab-pane" id="tab2">
-        <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>&nbsp;</th>
-                <th>Hostname</th>
-                <th>Sensors</th>
-            </tr>
-            </thead>
-            <tbody id='listHostsBody'>
-            </tbody>
-        </table>
-    </div>
 </div>
 
-<script type="text/javascript">
-
-
-function deleteHost(event) {
-    var host = event.target.id;
-
-    $.ajax({
-        type:"GET",
-        url:'/delhost?hostname=' + host,
-        dataType:'text',
-        success:function (data) {
-            updateHostsList();
-        }
-    });
-}
-
-function deleteSensor(event) {
-    var sensor = event.target.id;
-
-    $.ajax({
-        type:"GET",
-        url:'/delsensor?sensorName=' + sensor,
-        dataType:'text',
-        success:function (data) {
-
-            updateSensorList();
-        }
-    });
-}
-
-
-function submitHost(event) {
-    var editHost = event.target.id;
-
-    var form = $('#newHostForm').serialize();
-    console.log(form);
-
-    $.ajax({
-        type:"POST",
-        url:'/addhost',
-        dataType:'text',
-        data:form,
-
-        success:function (data) {
-            if (data == 'ok') {
-                updateHostsList();
-                $('#newHost').modal('hide');
-            } else {
-                $('#errors').show();
-                $('#errors').text("Error: Could not save host...");
-            }
-
-            $('#newHost').modal('hide');
-        }
-    });
-}
-
-function newHost(event) {
-    var sensorField = $('#sensorField').empty();
-
-    $.ajax({
-        type:"GET",
-        url:'/sensors',
-        dataType:'json',
-
-        success:function (sensors) {
-
-            var sensorField = $('#sensorField');
-
-            for (var s in sensors) {
-                var sensor = sensors[s]
-                var checked = "no";
-
-                sensorField.append(
-                        $('<div>').addClass("controls").attr("id", s.name).append(
-                                $('<label>').addClass("checkbox").text(sensor.name).append(
-                                        $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
-                                )
-                        )
-                )
-            }
-
-
-            $('#hostName').attr("value", "");
-            $('#hostLabels').attr("value", "");
-
-            $('#newHost').modal('show');
-        }
-    });
-}
-
-function editHost(event) {
-    var editHost = event.target.id;
-    editHostIntern(event, editHost)
-}
-
-function editHostIntern(event, editHost) {
-
-    console.log("editing host");
-
-    var sensorField = $('#sensorField').empty();
-
-    $.ajax({
-        type:"GET",
-        url:'/hosts',
-        dataType:'json',
-
-        success:function (hosts) {
-
-            for (var i in hosts) {
-                var host = hosts[i];
-
-                console.log("checking hostname: " + host.hostname + " against " + editHost);
-                if (host.hostname == editHost) {
-                    console.log("Hostname LISTING SENSORS NOW: " + host.hostname);
-
-                    var sensorField = $('#sensorField');
-
-                    $('#hostName').attr("value", host.hostname);
-
-                    console.log("labels: " + host.labels);
-                    var labelsString = "";
-                    for (var i in host.labels) {
-                        labelsString += host.labels[i] + ",";
-                    }
-
-                    $('#hostLabels').attr("value", labelsString);
-
-
-                    for (var s in host.sensor) {
-
-                        var sensor = host.sensor[s]
-
-                        sensorField.append(
-                                $('<div>').addClass("controls").attr("id", s.name).append(
-                                        $('<label>').addClass("checkbox").text(sensor.name).append(
-                                                $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
-                                        )
-                                )
-                        )
-
-                        console.log("sensor active: " + sensor.active + " sensor " + sensor.name);
-
-                        if (sensor.active) {
-                            $("#chbx_" + sensor.name).attr("checked", "yes")
-                        }
-                    }
-
-                    $('#newHost').modal('show');
-
-                    // hostname found - form filled - exit
-                    break;
-                }
-            }
-        }
-    });
-
-
-}
-
-function updateHostsList() {
-    $.ajax({
-        type:"GET",
-        url:'/hosts',
-        dataType:'json',
-
-        success:function (data) {
-            console.log("done: " + data);
-
-            var $wrap = $('#listHostsBody');
-            $wrap.children('tr').remove();
-
-            console.log("# hosts: " + data.length)
-            for (var i in data) {
-                var host = data[i];
-
-                console.log("Hostname: " + host.hostname);
-
-                var sensorCell = $('<td>')
-                for (var s in host.sensor) {
-                    var sensor = host.sensor[s];
-                    sensorCell.append(
-                            $('<table>').append(
-                                    $('<tr>').append(
-                                            $('<td>').text(sensor.name),
-                                            $('<td>').text(sensor.active)
-                                    )
-                            )
-                    )
-                }
-
-                $wrap.append(
-                        $('<tr>')
-                                .append(
-                                $('<td>').text(i),
-                                $('<td>').append(
-                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
-                                ),
-                                $('<td>').append(
-                                        $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
-                                ),
-                                $('<td>').append(sensorCell)
-                        )
-                );
-            }
-
-            //alert(data); // shows whole dom
-            // alert( $(data).find('#wrapper').html() ); // returns null
-
-        },
-        error:function () {
-            alert("Sorry, The requested property could not be found.");
-        }
-    });
-}
-
-function updateSensorList() {
-    $.ajax({
-        type:"GET",
-        url:'/sensors',
-        dataType:'json',
-
-        success:function (data) {
-
-            var $wrap = $('#listSensorsBody');
-            $wrap.children().remove();
-            for (i in data) {
-                sensor = data[i];
-                console.log("dd " + sensor.name);
-                $wrap.append(
-                        $('<tr>')
-                                .append(
-                                $('<td>').text(i),
-                                $('<td>').append(
-                                        $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
-                                ),
-                                $('<td>').text(sensor.name),
-                                $('<td>').text('-'),
-                                $('<td>').text(sensor.labels)
-                        )
-                );
-            }
-
-            //alert(data); // shows whole dom
-            // alert( $(data).find('#wrapper').html() ); // returns null
-        },
-        error:function () {
-            alert("Sorry, The requested property could not be found.");
-        }
-    });
-}
-
-jQuery(document).ready(function ($) {
-    $('#tabs').tab();
-
-    $('#errors').hide();
-
-    $('#submitHost').click(submitHost);
-    $('#btnNewHost').click(newHost);
-
-    $('#submitSensor').click(function (event) {
-
-        var test = $("#newSensorForm").serialize();
-        console.log("FORM: " + test);
-
-        $.ajax({
-            type:"POST",
-            url:'/addsensor',
-            dataType:'text',
-            data:test,
-
-            success:function (data) {
-                if (data == 'ok') {
-                    updateSensorList();
-                } else {
-                    $('#errors').show();
-                    $('#errors').text("Error: Could not save sensor...");
-                }
-
-                $('#newSensorDlg').modal('hide');
-            }
-        });
-    })
-
-    updateSensorList();
-    updateHostsList();
-});
-</script>
-
-</div>
-</div>
+<!-- Dialog new host -->
 <div class="modal hide" id="newHost">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">×</button>
@@ -387,6 +101,8 @@ jQuery(document).ready(function ($) {
         <a href="#" class="btn btn-primary" id="submitHost">Save changes</a>
     </div>
 </div>
+
+<!-- Dialog new sensor -->
 <div class="modal hide" id="newSensorDlg">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">×</button>
