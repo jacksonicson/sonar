@@ -45,19 +45,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="template.html" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="template.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/template.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="0" selection-start="686" selection-end="686" vertical-scroll-proportion="3.9230769">
+            <state line="48" column="30" selection-start="1410" selection-end="1410" vertical-scroll-proportion="0.4524715">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="config.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="config.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="257" column="20" selection-start="7048" selection-end="7048" vertical-scroll-proportion="0.4348404">
+            <state line="254" column="12" selection-start="6975" selection-end="6975" vertical-scroll-proportion="-5.52">
               <folding />
             </state>
           </provider>
@@ -75,7 +75,7 @@
       <file leaf-file-name="router.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/router.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="135" column="20" selection-start="2957" selection-end="2957" vertical-scroll-proportion="0.0">
+            <state line="120" column="14" selection-start="2657" selection-end="2657" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -101,12 +101,12 @@
         <option value="$PROJECT_DIR$/static/browse.js" />
         <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/configuration.html" />
-        <option value="$PROJECT_DIR$/static/template.html" />
         <option value="$PROJECT_DIR$/static/sonar.css" />
         <option value="$PROJECT_DIR$/static/config.html" />
         <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/router.js" />
         <option value="$PROJECT_DIR$/static/config.js" />
+        <option value="$PROJECT_DIR$/static/template.html" />
       </list>
     </option>
   </component>
@@ -473,13 +473,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/template.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="0" selection-start="686" selection-end="686" vertical-scroll-proportion="3.9230769">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/config.html">
       <provider selected="true" editor-type-id="text-editor">
         <state line="9" column="0" selection-start="186" selection-end="186" vertical-scroll-proportion="-2.0131578">
@@ -487,9 +480,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/router.js">
+    <entry file="file://$PROJECT_DIR$/static/config.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="135" column="20" selection-start="2957" selection-end="2957" vertical-scroll-proportion="0.0">
+        <state line="254" column="12" selection-start="6975" selection-end="6975" vertical-scroll-proportion="-5.52">
           <folding />
         </state>
       </provider>
@@ -501,9 +494,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/config.js">
+    <entry file="file://$PROJECT_DIR$/router.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="257" column="20" selection-start="7048" selection-end="7048" vertical-scroll-proportion="0.4348404">
+        <state line="120" column="14" selection-start="2657" selection-end="2657" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/template.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="30" selection-start="1410" selection-end="1410" vertical-scroll-proportion="0.4524715">
           <folding />
         </state>
       </provider>

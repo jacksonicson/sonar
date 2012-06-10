@@ -36,7 +36,11 @@
         var alertCount = 0;
 
         function doAlert(message) {
-            $('#alertBox').text(message)
+            $('#alertBox').empty();
+            $('#alertBox').append(
+                    $('<img>').attr("src", "wait.gif")
+            );
+            $('#alertBox').append("&nbsp;&nbsp;&nbsp;" + message);
             $('#alertBox').show();
 
             alertCount++;
