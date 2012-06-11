@@ -70,6 +70,8 @@ service ManagementService {
 	// Sensor Section
 	binary fetchSensor(1:string name),
 	
+	string sensorHash(1:string name),
+	
 	void deploySensor(1:string name, 2:binary file),
 	
 	set<string> getAllSensors(),

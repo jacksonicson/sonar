@@ -1,6 +1,8 @@
 package de.tum.in.sonar.collector.server;
 
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,6 +71,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :hosts -> [] - set of hostnames
 	//
 	// :sensor:[name]:binary - binary for the sensor
+	// :sensor:[name]:md5 - MD5 value of the binary
 	// :sensor:[name]:config:[item] - configuration for the sensor
 	// :sensor:[name]:labels -> [] - set of labels
 	//
@@ -135,6 +138,20 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
+	public String sensorHash(String name) throws TException {
+		logger.debug("sensor hash for " + name);
+		Jedis jedis = jedisPool.getResource();
+		
+		String key = key("sensor", name, "md5");
+		String md5 = ""; 
+		if(jedis.exists(key))
+			md5 = jedis.get(key); 
+		
+		jedisPool.returnResource(jedis);
+		return md5; 
+	}
+	
+	@Override
 	public void deploySensor(String name, ByteBuffer binary) throws TException {
 		logger.debug("deploying sensor " + name);
 		Jedis jedis = jedisPool.getResource();
@@ -145,6 +162,16 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		// Add sensor binary
 		String key = key("sensor", name, "binary");
 		jedis.set(SafeEncoder.encode(key), binary.array());
+
+		// Set MD5
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] md5 = md.digest(binary.array());
+			key = key("sensor", name, "md5");
+			jedis.set(key, new String(md5));
+		} catch (NoSuchAlgorithmException e) {
+			logger.error("Could not create MD5 for sensor binary", e);
+		}
 
 		jedisPool.returnResource(jedis);
 	}
@@ -279,7 +306,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Set<String> sensors = new HashSet<String>();
 		for (String sensorKey : sensorKeys) {
 			// Check state of the sensor
-			String value = jedis.get(sensorKey); 
+			String value = jedis.get(sensorKey);
 			logger.debug("checking sensor key: " + sensorKey + " - " + value);
 
 			if (value.equals("true")) {
@@ -391,5 +418,4 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
 	}
-
 }

@@ -15,8 +15,11 @@ import shutil
 HOSTNAME = gethostname(); 
 SENSORHUB = 'sensorhub'
 
-scheduler = None
-sensorConfigurations = {}
+sensorScheduler = None
+sensorConfiguration = {}
+
+managementClient = None
+loggingClient = None
 
 def registerSensorHub(managementClient, hostname):
     # Ensure that the hostname is registered
@@ -36,14 +39,25 @@ def registerSensorHub(managementClient, hostname):
 
 class SensorHandler:
     
-    def __init__(self, sensor):
+    def __init__(self, sensor, logClient):
         self.sensor = sensor
+        self.logClient = logClient
         
-    def execute(self, scheduler):
-        print 'Scheduling %s' % (self.sensor)
+    def execute(self, sensorScheduler):
+        self.runBinary()
+        
+        configuration = sensorConfiguration[self.sensor]
+        if configuration is not None: 
+            sensorScheduler.enter(configuration.configuration.interval, 0, self.execute, [sensorScheduler])
+        else:
+            print 'Stopping sensor: %s' % (self.sensor) 
+        
+    def runBinary(self):
+        print "running %s" % (self.sensor)
+        pass
+    
 
-
-def updateSensors(managementClient):
+def updateSensors():
     print 'Updating sensors...'
     
     sensors = managementClient.getSensors(HOSTNAME)
@@ -52,6 +66,10 @@ def updateSensors(managementClient):
     
     # Download all the sensors
     for sensor in sensors:
+        # Do not enable sensorhub
+        if sensor == SENSORHUB:
+            continue
+        
         # Download sensor package
         if os.path.exists(sensor + ".zip"):
             print 'removing sensor %s ' % (sensor) 
@@ -65,16 +83,16 @@ def updateSensors(managementClient):
         print 'download complete'
         
         print 'decompressing sensor ...'
-        decompress_sensor(sensor); 
+#        decompress_sensor(sensor); 
         print 'decompression completed'
         
         # Configure and schedule sensor 
         bundledConfiguration = managementClient.getBundledSensorConfiguration(sensor, HOSTNAME) 
-        sensorConfigurations[sensor] = bundledConfiguration;
+        sensorConfiguration[sensor] = bundledConfiguration;
         
-        handler = SensorHandler(sensor)
-        print 'enabling sensor %s' % (sensor)
-        scheduler.enter(bundledConfiguration.configuration.interval, 0, handler.execute, scheduler)
+        handler = SensorHandler(sensor, loggingClient)
+        print 'enabling sensor %s with interval %i' % (sensor, bundledConfiguration.configuration.interval)
+        sensorScheduler.enter(bundledConfiguration.configuration.interval, 0, handler.execute, [sensorScheduler])
         
 
 def main():
@@ -89,7 +107,10 @@ def main():
     transportLogging = TTransport.TBufferedTransport(transportLogging) 
     
     # Setup the clients
+    global managementClient
     managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(trasportManagement));
+    
+    global loggingClient
     loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
     
     # Open the transports
@@ -99,15 +120,16 @@ def main():
     # Register hostname and self-monitoring sensor
     registerSensorHub(managementClient, HOSTNAME); 
 
-    # Setup scheduler
-    scheduler = sched.scheduler(time.time, time.sleep)
+    # Setup sensorScheduler
+    global sensorScheduler;
+    sensorScheduler = sched.scheduler(time.time, time.sleep)
     
     # Fetch and configure sensors
-    scheduler.enter(5, 1, self_monitoring, (loggingClient, scheduler))
-    updateSensors(managementClient)
+    sensorScheduler.enter(5, 1, self_monitoring, (loggingClient, sensorScheduler))
+    updateSensors()
     
-    # Run scheduler
-    scheduler.run()
+    # Run sensorScheduler
+    sensorScheduler.run()
 
 
 def self_monitoring(client, s):
