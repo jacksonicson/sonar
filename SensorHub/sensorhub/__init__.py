@@ -13,12 +13,25 @@ import random;
 import shutil 
 
 HOSTNAME = 'srv2' # gethostname(); 
+SENSORHUB = 'sensorhub'
 
-
+def registerSensorHub(managementClient, hostname):
+    # Ensure that the hostname is registered
+    print 'Adding host: %s' % (hostname)
+    managementClient.addHost(hostname); 
+    
+    # Setup the self monitoring SENSORHUB sensor
+    sensor = managementClient.fetchSensor(SENSORHUB)
+    if len(sensor) == 0: 
+        print 'Deploying sensor: %s' % (SENSORHUB)
+        managementClient.deploySensor(SENSORHUB, '  ')
+        
+    # Enable sensor for hostname
+    print 'Enabling sensor: %s for host: %s' % (SENSORHUB, hostname)
+    managementClient.setSensor(hostname, SENSORHUB, True)
+        
 
 def main():
-    print "test"
-    
     # Make socket
     transport = TSocket.TSocket('localhost', 7931)
     transport2 = TSocket.TSocket("localhost", 7921)
@@ -37,13 +50,13 @@ def main():
     transport.open();
     transport2.open(); 
     
+    registerSensorHub(client, HOSTNAME); 
+    
     sensors = client.getSensors(HOSTNAME)
     for sensor in sensors:
         print 'sensor found ' + sensor
 
-
     sensor_configurations = {}
-
         
     s = sched.scheduler(time.time, time.sleep)
     
@@ -99,9 +112,8 @@ def main():
     s.enter(5, 1, self_monitoring, (client2, s))
     s.run()
 
+
 def self_monitoring(client, s):
-    print 'ping'
-    
     ids = ttypes.Identifier();
     ids.timestamp = int(time.time())
     ids.sensor = 'sensorhub'
@@ -154,40 +166,6 @@ def decompress_sensor(sensor):
         
     zf.close()
 
-def testzip():
-    
-    f = open("../cpu.zip", "rb")
-    ba = bytearray()
-    
-    byte = f.read(1)
-    while byte:
-        ba.extend(byte)
-        byte = f.read(1)
-        
-        
-    f.close()
-
-
-    print ba       
-    
-    
-    
-    
-#    for filename in [ 'README.txt', 'notthere.txt' ]:
-#    try:
-#        data = zf.read(filename)
-#    except KeyError:
-#        print 'ERROR: Did not find %s in zip file' % filename
-#    else:
-#        print filename, ':'
-#        print repr(data)
-#    print
-#    
-#    print ba    
-    
-    
-    pass
 
 if __name__ == '__main__':
     main()
-   # testzip() 
