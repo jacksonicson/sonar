@@ -33,7 +33,7 @@ public class DummyLoadGenerator {
 				Identifier id = new Identifier();
 				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
 				id.setHostname("jack");
-				id.setSensor("TEST");
+				id.setSensor("CPU");
 
 				MetricReading tsp = new MetricReading();
 				Set<String> labels = new HashSet<String>();
