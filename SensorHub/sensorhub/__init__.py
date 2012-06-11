@@ -46,53 +46,86 @@ class SensorHandler:
     def execute(self, sensorScheduler):
         self.runBinary()
         
-        configuration = sensorConfiguration[self.sensor]
-        if configuration is not None: 
-            sensorScheduler.enter(configuration.configuration.interval, 0, self.execute, [sensorScheduler])
+        global sensorConfiguration
+        if sensorConfiguration.has_key(self.sensor):
+            sensorScheduler.enter(self.configuration.configuration.interval, 0, self.execute, [sensorScheduler])
         else:
             print 'Stopping sensor: %s' % (self.sensor) 
         
     def runBinary(self):
         print "running %s" % (self.sensor)
+        
+        
         pass
     
 
 def updateSensors():
     print 'Updating sensors...'
     
-    sensors = managementClient.getSensors(HOSTNAME)
-    for sensor in sensors:
-        print 'sensor found ' + sensor
+    global sensorConfiguration
+    global sensorScheduler
     
     # Download all the sensors
+    sensors = managementClient.getSensors(HOSTNAME)
+
+    # Remove old sensors
+    for test in sensorConfiguration.keys():
+        if test not in sensors:
+            sensorConfiguration.pop(test)
+    
+    # Update configuration for the remaining sensors
     for sensor in sensors:
+        print 'sensor found ' + sensor
+        
         # Do not enable sensorhub
         if sensor == SENSORHUB:
             continue
         
-        # Download sensor package
-        if os.path.exists(sensor + ".zip"):
-            print 'removing sensor %s ' % (sensor) 
-            os.remove(sensor + ".zip")
+        # Check MD5
+        testMd5 = managementClient.sensorHash(sensor)
+        refetch = True
+        if sensorConfiguration.has_key(sensor):
+            md5 = sensorConfiguration[sensor].md5
+            if md5 == testMd5:
+                print 'skipping sensor download for %s' % (sensor)
+                refetch = False
+                
+        if refetch:
+            # Download sensor package
+            if os.path.exists(sensor + ".zip"):
+                print 'removing sensor %s ' % (sensor) 
+                os.remove(sensor + ".zip")
+                
+            print 'downloading sensor %s ...' % (sensor)
+            data = managementClient.fetchSensor(sensor)
+            z = open(sensor + ".zip", "wb")
+            z.write(data)
+            z.close()
+            print 'download complete'
             
-        print 'downloading sensor %s ...' % (sensor)
-        data = managementClient.fetchSensor(sensor)
-        z = open(sensor + ".zip", "wb")
-        z.write(data)
-        z.close()
-        print 'download complete'
+            print 'decompressing sensor ...'
+            # decompress_sensor(sensor);     
+            print 'decompression completed'
         
-        print 'decompressing sensor ...'
-#        decompress_sensor(sensor); 
-        print 'decompression completed'
         
-        # Configure and schedule sensor 
-        bundledConfiguration = managementClient.getBundledSensorConfiguration(sensor, HOSTNAME) 
-        sensorConfiguration[sensor] = bundledConfiguration;
-        
-        handler = SensorHandler(sensor, loggingClient)
-        print 'enabling sensor %s with interval %i' % (sensor, bundledConfiguration.configuration.interval)
-        sensorScheduler.enter(bundledConfiguration.configuration.interval, 0, handler.execute, [sensorScheduler])
+        # Configure and schedule sensor
+        if not sensorConfiguration.has_key(sensor):
+            sensorConfiguration[sensor] = SensorHandler(sensor, loggingClient)
+            sensorConfiguration[sensor].configuration = managementClient.getBundledSensorConfiguration(sensor, HOSTNAME)
+            sensorConfiguration[sensor].md5 = testMd5
+            
+            print 'enabling sensor %s with interval %i' % (sensor, sensorConfiguration[sensor].configuration.configuration.interval)
+            sensorScheduler.enter(sensorConfiguration[sensor].configuration.configuration.interval, 0, sensorConfiguration[sensor].execute, [sensorScheduler])
+        else:
+            print 'update'
+            sensorConfiguration[sensor].configuration = managementClient.getBundledSensorConfiguration(sensor, HOSTNAME)
+            sensorConfiguration[sensor].md5 = testMd5
+  
+  
+def regularUpdateWrapper():
+    global sensorScheduler
+    updateSensors()
+    sensorScheduler.enter(7, 0, regularUpdateWrapper, [])
         
 
 def main():
@@ -126,7 +159,7 @@ def main():
     
     # Fetch and configure sensors
     sensorScheduler.enter(5, 1, self_monitoring, (loggingClient, sensorScheduler))
-    updateSensors()
+    regularUpdateWrapper()
     
     # Run sensorScheduler
     sensorScheduler.run()
