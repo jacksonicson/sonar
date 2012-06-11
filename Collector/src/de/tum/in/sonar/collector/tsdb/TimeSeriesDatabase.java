@@ -80,7 +80,7 @@ public class TimeSeriesDatabase {
 		index += 8;
 
 		// Hour
-		appendToKey(key, index, point.getHourSinceEpoch());
+		appendToKey(key, index, getHourSinceEpoch(point.getTimestamp()));
 		index += 8;
 
 		// Labels
@@ -149,7 +149,7 @@ public class TimeSeriesDatabase {
 
 			// Create a new row in this case
 			Put put = new Put(key);
-			byte[] secs = Bytes.toBytes(dataPoint.getSecondsInHour());
+			byte[] secs = Bytes.toBytes(getSecondsInHour(dataPoint.getTimestamp()));
 			byte[] value = Bytes.toBytes(dataPoint.getValue());
 
 			put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), secs, value);

@@ -5,62 +5,39 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.tum.in.sonar.collector.Identifier;
+import de.tum.in.sonar.collector.MetricReading;
+
 public class MetricPoint {
 
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(MetricPoint.class);
 
-	private long timestamp;
-	private String sensor;
-	private String hostname;
-	private Set<String> labels;
+	private final Identifier id;
+	private final MetricReading value;
 
-	private long value;
-
-	public long getValue() {
-		return value;
-	}
-
-	public long getHourSinceEpoch() {
-		long hourSinceEpoch = timestamp - (timestamp % 3600);
-		return hourSinceEpoch;
-	}
-
-	public long getSecondsInHour() {
-		long hourSinceEpoch = getHourSinceEpoch();
-		long offset = (timestamp - hourSinceEpoch);
-		return offset;
-	}
-
-	public String getSensor() {
-		return sensor;
-	}
-
-	public String getHostname() {
-		return hostname;
-	}
-
-	public Set<String> getLabels() {
-		return labels;
-	}
-
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
-	}
-
-	public void setSensor(String sensor) {
-		this.sensor = sensor;
-	}
-
-	public void setHostname(String hostname) {
-		this.hostname = hostname;
-	}
-
-	public void setValue(long value) {
+	public MetricPoint(Identifier id, MetricReading value) {
+		this.id = id;
 		this.value = value;
 	}
 
-	public void setLabels(Set<String> labels) {
-		this.labels = labels;
+	final long getValue() {
+		return value.getValue();
+	}
+
+	final String getSensor() {
+		return id.getSensor();
+	}
+
+	final String getHostname() {
+		return id.getHostname();
+	}
+
+	final Set<String> getLabels() {
+		return value.getLabels();
+	}
+	
+	final long getTimestamp() {
+		return id.getTimestamp(); 
 	}
 }

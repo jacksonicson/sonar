@@ -25,13 +25,7 @@ public class CollectServiceImpl implements CollectService.Iface {
 	public void logMetric(Identifier id, MetricReading value) throws TException {
 		logger.debug("log metric");
 
-		MetricPoint dp = new MetricPoint();
-		dp.setTimestamp(id.getTimestamp());
-		dp.setSensor(id.getSensor());
-		dp.setHostname(id.getHostname());
-		dp.setValue(value.getValue());
-		dp.setLabels(value.getLabels());
-
+		MetricPoint dp = new MetricPoint(id, value);
 		tsdb.writeData(dp);
 	}
 
