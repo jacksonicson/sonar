@@ -279,12 +279,9 @@ public class TimeSeriesDatabase {
 
 			Result next;
 			while ((next = scanner.next()) != null) {
-
-				// logger.debug("Row found");
-
 				byte[] rowKey = next.getRow();
-				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH);
-				long hostname = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + 8);
+				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + 8);
+				long hostname = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH);
 				logger.info("hostname: " + hostname);
 
 				TimeSeriesFragment fragment = timeSeries.newFragment();
