@@ -12,8 +12,9 @@ import os
 import random;
 import shutil 
 
-HOSTNAME = gethostname(); 
+HOSTNAME = gethostname()
 SENSORHUB = 'sensorhub'
+SENSOR_DIR = '../sensors/'
 
 sensorScheduler = None
 sensorConfiguration = {}
@@ -81,6 +82,11 @@ def updateSensors():
         if sensor == SENSORHUB:
             continue
         
+        # Only accept sensors with binaries
+        if not managementClient.hasBinary(sensor):
+            print 'Skipping sensor - no binary %s' % (sensor)
+            continue
+        
         # Check MD5
         testMd5 = managementClient.sensorHash(sensor)
         refetch = True
@@ -96,6 +102,7 @@ def updateSensors():
                 print 'removing sensor %s ' % (sensor) 
                 os.remove(sensor + ".zip")
                 
+            # Download sensor
             print 'downloading sensor %s ...' % (sensor)
             data = managementClient.fetchSensor(sensor)
             z = open(sensor + ".zip", "wb")
@@ -103,9 +110,15 @@ def updateSensors():
             z.close()
             print 'download complete'
             
+            # Decompress sensor package            
             print 'decompressing sensor ...'
-            # decompress_sensor(sensor);     
+            decompress_sensor(sensor);
             print 'decompression completed'
+            
+            # Validate if sensor has a binary
+            if not validate_sensor(sensor):
+                print 'Skipping sensor - missing main binary %s' % (sensor)
+                continue     
         
         
         # Configure and schedule sensor
@@ -184,11 +197,15 @@ def self_monitoring(client, s):
     s.enter(5, 1, self_monitoring, (client, s))
     
 
+def validate_sensor(sensor):
+    target = SENSOR_DIR + sensor + "/main"
+    return os.path.exists(target)
+
 
 def decompress_sensor(sensor):
     zf = zipfile.ZipFile(sensor + ".zip")
     
-    target = '../sensors/' + sensor + "/"
+    target = SENSOR_DIR + sensor + "/"
     
     if os.path.exists(target):
         print 'removing sensor directory: ' + target
