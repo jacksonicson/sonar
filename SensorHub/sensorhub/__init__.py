@@ -10,7 +10,8 @@ import zlib
 import zipfile
 import os
 import random;
-import shutil 
+import shutil
+import subprocess 
 
 HOSTNAME = gethostname()
 SENSORHUB = 'sensorhub'
@@ -56,6 +57,31 @@ class SensorHandler:
     def runBinary(self):
         print "running %s" % (self.sensor)
         
+        target = ""
+        if os.path.exists(SENSOR_DIR + self.sensor + "/main"):
+            target = SENSOR_DIR + self.sensor + "/main"
+        elif os.path.exists(SENSOR_DIR + self.sensor + "/main.exe"):
+            target = SENSOR_DIR + self.sensor + "/main.exe"
+            
+        p = subprocess.Popen(target + " >&2", stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        lines = stdout.decode('ascii').splitlines()
+        count = 0
+        for line in lines:
+            ids = ttypes.Identifier();
+            ids.timestamp = int(time.time() + count)
+            ids.sensor = self.sensor
+            ids.hostname = HOSTNAME
+
+            count += 2
+        
+            value = ttypes.MetricReading();
+            value.value = long(line)
+            value.labels = []
+            
+            print value.value
+            
+            self.logClient.logMetric(ids, value)
         
         pass
     
@@ -198,8 +224,14 @@ def self_monitoring(client, s):
     
 
 def validate_sensor(sensor):
+    exists = False
     target = SENSOR_DIR + sensor + "/main"
-    return os.path.exists(target)
+    exists |= os.path.exists(target)
+    
+    target = SENSOR_DIR + sensor + "/main.exe"
+    exists |= os.path.exists(target)
+    
+    return exists
 
 
 def decompress_sensor(sensor):
