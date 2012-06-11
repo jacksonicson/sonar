@@ -272,18 +272,18 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		Jedis jedis = jedisPool.getResource();
 
 		String key = key("host", hostname, "sensor");
-		String query = key + ":";
+		String query = key + ":*";
 		logger.debug("finding sensors with query: " + query);
 		Set<String> sensorKeys = jedis.keys(query);
 
 		Set<String> sensors = new HashSet<String>();
 		for (String sensorKey : sensorKeys) {
 			// Check state of the sensor
-			logger.debug("checking sensor key: " + sensorKey);
-			boolean state = Boolean.getBoolean(jedis.get(sensorKey));
+			String value = jedis.get(sensorKey); 
+			logger.debug("checking sensor key: " + sensorKey + " - " + value);
 
-			if (state) {
-				String sensor = sensorKey.replaceFirst(query, "");
+			if (value.equals("true")) {
+				String sensor = sensorKey.replaceFirst(key + ":", "");
 				logger.debug("sensor found: " + sensor);
 				sensors.add(sensor);
 			}
@@ -360,6 +360,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		key = key("sensor", sensor, "config");
 		if (jedis.exists(key))
 			sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
+		else
+			sensorConfig.setInterval(5);
 		config.setConfiguration(sensorConfig);
 
 		// Get all labels (aggregation of host and sensor)
