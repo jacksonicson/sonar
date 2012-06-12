@@ -35,9 +35,7 @@ class CompactionQueue extends Thread {
 	private HTable table = null;
 
 	public void schedule(byte[] key) {
-		// check if the data already exists. if it does, update the delay
-		// and the addition timestamp
-		RowKeyJob rowKeyJob = new RowKeyJob(QUEUE_TIME_DELAY, key, System.currentTimeMillis());
+		RowKeyJob rowKeyJob = new RowKeyJob(QUEUE_TIME_DELAY, key);
 		if (delayQueue.contains(rowKeyJob))
 			delayQueue.remove(rowKeyJob);
 

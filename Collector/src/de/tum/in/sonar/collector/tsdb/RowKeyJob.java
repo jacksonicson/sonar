@@ -4,66 +4,37 @@ import java.util.Arrays;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-public class RowKeyJob implements Delayed {
+final class RowKeyJob implements Delayed {
 
 	// end of delay is always 30 minutes by default
-	private long endOfDelay = 300000;
-	private byte[] rowKey;
-	private long queueInsertTime;
+	private final long delaz;
+	private final byte[] rowKey;
+	private final long offset = System.currentTimeMillis();
 
-	public RowKeyJob() {
-	}
-
-	public RowKeyJob(long endOfDelay, byte[] rowKey, long queueInsertTime) {
+	RowKeyJob(long delay, byte[] rowKey) {
 		super();
-		this.endOfDelay = endOfDelay;
+		this.delaz = delay;
 		this.rowKey = rowKey;
-		this.queueInsertTime = queueInsertTime;
 	}
 
-	public long getEndOfDelay() {
-		return endOfDelay;
+	long getDelaz() {
+		return delaz;
 	}
 
-	public void setEndOfDelay(long endOfDelay) {
-		this.endOfDelay = endOfDelay;
-	}
-
-	public byte[] getRowKey() {
+	byte[] getRowKey() {
 		return rowKey;
-	}
-
-	public void setRowKey(byte[] rowKey) {
-		this.rowKey = rowKey;
-	}
-
-	public long getQueueInsertTime() {
-		return queueInsertTime;
-	}
-
-	public void setQueueInsertTime(long queueInsertTime) {
-		this.queueInsertTime = queueInsertTime;
 	}
 
 	@Override
 	public int compareTo(Delayed o) {
-		int ret = 0;
-		RowKeyJob ns = (RowKeyJob) o;
-		if (this.endOfDelay < ns.endOfDelay)
-			ret = -1;
-		else if (this.endOfDelay > ns.endOfDelay)
-			ret = 1;
-		else if (this.getQueueInsertTime() == ns.getQueueInsertTime())
-			ret = 0;
-		return ret;
+		RowKeyJob rowKey = (RowKeyJob) o;
+		return (int) (this.delaz - rowKey.getDelaz());
 	}
 
 	@Override
 	public long getDelay(TimeUnit unit) {
-		long tmp = unit.convert(
-				(getQueueInsertTime() - System.currentTimeMillis())
-						+ endOfDelay, TimeUnit.MILLISECONDS);
-		return tmp;
+		long remaining = delaz - (System.currentTimeMillis() - offset);
+		return unit.convert(remaining, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -82,10 +53,9 @@ public class RowKeyJob implements Delayed {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RowKeyJob other = (RowKeyJob) obj;
-		if (!Arrays.equals(rowKey, other.rowKey))
-			return false;
-		return true;
+
+		RowKeyJob job = (RowKeyJob) obj;
+		return Arrays.equals(rowKey, job.rowKey);
 	}
 
 }
