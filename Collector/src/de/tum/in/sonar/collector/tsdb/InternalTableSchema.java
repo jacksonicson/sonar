@@ -2,12 +2,17 @@ package de.tum.in.sonar.collector.tsdb;
 
 class InternalTableSchema implements Comparable<InternalTableSchema> {
 	private final String name;
-
 	private final String[] families;
+	private final int versions;
 
-	public InternalTableSchema(String name, String[] families) {
+	public InternalTableSchema(String name, String[] families, int versions) {
 		this.name = name;
 		this.families = families;
+		this.versions = versions;
+	}
+
+	public InternalTableSchema(String name, String[] families) {
+		this(name, families, 1);
 	}
 
 	String getName() {
@@ -32,5 +37,9 @@ class InternalTableSchema implements Comparable<InternalTableSchema> {
 	public boolean equals(Object obj) {
 		InternalTableSchema desc = (InternalTableSchema) obj;
 		return name.equals(desc.getName());
+	}
+
+	public int getVersions() {
+		return this.versions;
 	}
 }

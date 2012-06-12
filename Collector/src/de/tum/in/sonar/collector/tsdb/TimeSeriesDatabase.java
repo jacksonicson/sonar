@@ -121,6 +121,7 @@ public class TimeSeriesDatabase {
 				HTableDescriptor desc = new HTableDescriptor(internalDesc.getName());
 				for (String family : internalDesc.getFamilies()) {
 					HColumnDescriptor meta = new HColumnDescriptor(family.getBytes());
+					meta.setMaxVersions(internalDesc.getVersions()); 
 					desc.addFamily(meta);
 				}
 
