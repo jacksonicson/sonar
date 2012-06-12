@@ -2,7 +2,9 @@ package de.tum.in.sonar.collector.tsdb;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.DelayQueue;
 
@@ -28,14 +30,14 @@ class CompactionQueue extends Thread {
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
 	// the delay time 30 minutes currently
-	private static final long QUEUE_TIME_DELAY = 5 * 60 * 1000;
+	private static final long TIME_DELAY = 5 * 60 * 1000;
 
 	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
 
 	private HTable table = null;
 
 	public void schedule(byte[] key) {
-		RowKeyJob rowKeyJob = new RowKeyJob(QUEUE_TIME_DELAY, key);
+		RowKeyJob rowKeyJob = new RowKeyJob(TIME_DELAY, key);
 		if (delayQueue.contains(rowKeyJob))
 			delayQueue.remove(rowKeyJob);
 
@@ -89,17 +91,27 @@ class CompactionQueue extends Thread {
 		table.flushCommits();
 	}
 
-	private Result getCompactionCell(final byte[] row) throws IOException {
+	private boolean getCompactionCell(final byte[] row) throws IOException {
 		Get get = new Get(row);
 		get.addColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"));
 		Result result = table.get(get);
-		return result;
+		return result.isEmpty();
 	}
 
-	private long getLastModified(final Result result) {
-		long timestamp = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA)).get(Bytes.toBytes("bytes"))
-				.firstKey();
-		return timestamp;
+	private long getLastModified(final byte[] row) throws IOException {
+		Get get = new Get(row);
+		get.addFamily(Bytes.toBytes("data"));
+		Result result = table.get(get);
+
+		List<Long> timestampList = new ArrayList<Long>();
+		Map<Long, byte[]> timestamps = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA))
+				.get(Bytes.toBytes("data"));
+		timestampList.addAll(timestamps.keySet());
+
+		Collections.sort(timestampList);
+		long maxTimestamp = timestampList.get(timestampList.size() - 1);
+
+		return maxTimestamp;
 	}
 
 	@Override
@@ -110,21 +122,22 @@ class CompactionQueue extends Thread {
 
 			try {
 				RowKeyJob data = delayQueue.take();
-				Result compactionData = getCompactionCell(data.getRowKey());
+				boolean exists = getCompactionCell(data.getRowKey());
 
-				// Check if the compaction cell exists
-				if (compactionData == null) {
+				// Compaction cell does not exist
+				if (exists == false) {
 					compact(data.getRowKey());
 				} else {
 
-					// Check age of the compaction
-					long timestamp = getLastModified(compactionData);
+					// Check age of the last insert (compaction or TSD value)
+					long timestamp = getLastModified(data.getRowKey());
 					long delta = System.currentTimeMillis() - timestamp;
-					if (delta > QUEUE_TIME_DELAY) {
+					if (delta > TIME_DELAY) {
 						// Compaction
 						compact(data.getRowKey());
 					} else {
 						// Reschedule
+						logger.debug("reschedule compaction because compaction field changed");
 						delayQueue.add(data);
 					}
 
