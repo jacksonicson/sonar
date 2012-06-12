@@ -25,58 +25,32 @@ import de.tum.in.sonar.collector.tsdb.gen.CompactTimeseries;
 
 class CompactionQueue extends Thread {
 
+	// Logger
+	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
+
 	// the delay time 30 minutes currently
 	private static final long QUEUE_TIME_DELAY = 1800000L;
 
-	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
-
-	private DelayQueue<RowKeyJob> dq = new DelayQueue<RowKeyJob>();
-
-	private RowKeyJob data;
+	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
 
 	private HBaseUtil hbaseUtil;
 
 	private HTable table = null;
 
-	/**
-	 * Schedule the row for compaction
-	 * 
-	 * @param key
-	 *            The row key
-	 */
 	public void schedule(byte[] key) {
-		logger.info("Scheduling:" + dq.size());
-		synchronized (this) {
-			// check if the data already exists
-			// if it does, update the delay and the addition timestamp
-			RowKeyJob rowKeyJob = new RowKeyJob(QUEUE_TIME_DELAY, key,
-					System.currentTimeMillis());
-			if (dq.contains(rowKeyJob)) {
-				logger.debug("Rowkey already scheduled for compaction.. rescheduling");
-				dq.remove(rowKeyJob);
-			}
-			dq.add(rowKeyJob);
-		}
+		// check if the data already exists. if it does, update the delay
+		// and the addition timestamp
+		RowKeyJob rowKeyJob = new RowKeyJob(QUEUE_TIME_DELAY, key, System.currentTimeMillis());
+		if (delayQueue.contains(rowKeyJob))
+			delayQueue.remove(rowKeyJob);
+
+		delayQueue.add(rowKeyJob);
 	}
 
-	/**
-	 * Compact the row
-	 * 
-	 * @param key
-	 * @param timestamp
-	 * @throws IOException
-	 * @throws TException
-	 * @throws InterruptedException
-	 */
-	private void compact(byte[] key) throws IOException, TException,
-			InterruptedException {
-		if (table == null) {
-			table = new HTable(hbaseUtil.getConfig(), Const.TABLE_TSDB);
-		}
+	private void compact(byte[] key) throws IOException, TException, InterruptedException {
 		Get get = new Get(key);
 		Result result = table.get(get);
-		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes
-				.toBytes(Const.FAMILY_TSDB_DATA));
+		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 
 		List<CompactPoint> points = new ArrayList<CompactPoint>();
 		List<Delete> deletes = new ArrayList<Delete>();
@@ -114,8 +88,7 @@ class CompactionQueue extends Thread {
 
 		// Updating HBase
 		Put put = new Put(key);
-		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"),
-				buffer);
+		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
 		table.delete(deletes);
 		table.flushCommits();
@@ -133,12 +106,10 @@ class CompactionQueue extends Thread {
 		Result result;
 		try {
 			result = table.get(get);
-			NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes
-					.toBytes(Const.FAMILY_TSDB_DATA));
+			NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 			System.out.println(familyMap.size());
 
-			KeyValue keyValues = result.getColumnLatest(
-					Bytes.toBytes(Const.FAMILY_TSDB_DATA),
+			KeyValue keyValues = result.getColumnLatest(Bytes.toBytes(Const.FAMILY_TSDB_DATA),
 					Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 			if (null == keyValues) {
 				return 0L;
@@ -152,11 +123,13 @@ class CompactionQueue extends Thread {
 
 	@Override
 	public void run() {
-		logger.info("Started the compaction queue");
+		logger.info("Starting compaction thread...");
+
 		long dequeueTime = 0;
 		while (true) {
+			RowKeyJob data;
 			try {
-				data = (RowKeyJob) dq.take();
+				data = delayQueue.take();
 				dequeueTime = System.currentTimeMillis();
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
@@ -197,5 +170,11 @@ class CompactionQueue extends Thread {
 
 	void setHbaseUtil(HBaseUtil hbaseUtil) {
 		this.hbaseUtil = hbaseUtil;
+
+		try {
+			table = new HTable(hbaseUtil.getConfig(), Const.TABLE_TSDB);
+		} catch (IOException e) {
+			logger.error("could not open HBase table", e);
+		}
 	}
 }
