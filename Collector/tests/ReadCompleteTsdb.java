@@ -17,10 +17,12 @@ public class ReadCompleteTsdb {
 		HBaseUtil util = new HBaseUtil();
 
 		HTable table = new HTable(util.getConfig(), "tsdb");
-		Get get = new Get();
+		
 
 		Scan scan = new Scan();
 
+		
+		
 		System.out.println("Scanning over the rows:");
 		ResultScanner scanner = table.getScanner(scan);
 		for (Result res : scanner) {
@@ -49,7 +51,12 @@ public class ReadCompleteTsdb {
 			NavigableMap<byte[], byte[]> map = res.getFamilyMap(Bytes.toBytes("data"));
 			for (byte[] k : map.keySet()) {
 				System.out.println("KEY:" + Bytes.toLong(k));
-				for (long ts : res.getMap().get(Bytes.toBytes("data")).get(k).keySet()) {
+				
+				Get get = new Get(res.getRow());
+				get.setMaxVersions(100);
+				Result tres = table.get(get);
+				
+				for (long ts : tres.getMap().get(Bytes.toBytes("data")).get(k).keySet()) {
 					System.out.println("   Timestamp: " + ts);
 				}
 			}
