@@ -26,7 +26,6 @@ public class DummyLoadGenerator {
 
 			CollectService.Client client = new CollectService.Client(protocol);
 
-
 			Random rand = new Random();
 			for (int i = 0; i < 20; i++) {
 
@@ -39,10 +38,8 @@ public class DummyLoadGenerator {
 				Set<String> labels = new HashSet<String>();
 				tsp.setLabels(labels);
 
-				
 				tsp.setValue(Math.abs(rand.nextInt()));
 
-				
 				client.logMetric(id, tsp);
 			}
 
