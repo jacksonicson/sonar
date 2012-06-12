@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.concurrent.DelayQueue;
 
-import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
@@ -29,11 +28,9 @@ class CompactionQueue extends Thread {
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
 	// the delay time 30 minutes currently
-	private static final long QUEUE_TIME_DELAY = 1800000L;
+	private static final long QUEUE_TIME_DELAY = 5 * 60 * 1000;
 
 	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
-
-	private HBaseUtil hbaseUtil;
 
 	private HTable table = null;
 
@@ -94,83 +91,53 @@ class CompactionQueue extends Thread {
 		table.flushCommits();
 	}
 
-	private long getLastModified(byte[] row) {
-		if (table == null) {
-			try {
-				table = new HTable(hbaseUtil.getConfig(), Const.TABLE_TSDB);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+	private Result getCompactionCell(final byte[] row) throws IOException {
 		Get get = new Get(row);
-		Result result;
-		try {
-			result = table.get(get);
-			NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
-			System.out.println(familyMap.size());
+		get.addColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"));
+		Result result = table.get(get);
+		return result;
+	}
 
-			KeyValue keyValues = result.getColumnLatest(Bytes.toBytes(Const.FAMILY_TSDB_DATA),
-					Bytes.toBytes(Const.FAMILY_TSDB_DATA));
-			if (null == keyValues) {
-				return 0L;
-			}
-			return keyValues.getTimestamp();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return 0L;
+	private long getLastModified(final Result result) {
+		long timestamp = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA)).get(Bytes.toBytes("bytes"))
+				.firstKey();
+		return timestamp;
 	}
 
 	@Override
 	public void run() {
 		logger.info("Starting compaction thread...");
 
-		long dequeueTime = 0;
 		while (true) {
-			RowKeyJob data;
-			try {
-				data = delayQueue.take();
-				dequeueTime = System.currentTimeMillis();
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
-
-			byte[] rowKey = data.getRowKey();
-
-			// check the last modified timestamp on the compacted row
-			long time = getLastModified(rowKey);
 
 			try {
-				if (time == 0L) {
-					// when there was no previous compaction done i.e no
-					// compacted row.
-					// Do the compaction
-					logger.info("Running compaction as compaction was not run previously..");
-					compact(rowKey);
-				} else if (dequeueTime - time < QUEUE_TIME_DELAY) {
-					// compaction was done previously but it was done less than
-					// QUEUE_TIME_DELAY time ago
-					// re-schedule compaction
-					logger.info("Rescheduling compaction for later run as it was run recently..");
-					schedule(rowKey);
+				RowKeyJob data = delayQueue.take();
+				Result compactionData = getCompactionCell(data.getRowKey());
+
+				// Check if the compaction cell exists
+				if (compactionData == null) {
+					compact(data.getRowKey());
 				} else {
-					// run the compaction
-					logger.info("Running compaction..");
-					compact(rowKey);
+
+					// Check age of the compaction
+					long timestamp = getLastModified(compactionData);
+					long delta = System.currentTimeMillis() - timestamp;
+					if (delta > QUEUE_TIME_DELAY) {
+						// Compaction
+						compact(data.getRowKey());
+					} else {
+						// Reschedule
+						delayQueue.add(data);
+					}
+
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (TException e) {
-				e.printStackTrace();
+			} catch (IOException | TException | InterruptedException e) {
+				logger.error("Error while compacting", e);
 			}
 		}
 	}
 
 	void setHbaseUtil(HBaseUtil hbaseUtil) {
-		this.hbaseUtil = hbaseUtil;
-
 		try {
 			table = new HTable(hbaseUtil.getConfig(), Const.TABLE_TSDB);
 		} catch (IOException e) {
