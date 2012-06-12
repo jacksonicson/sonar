@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.NavigableMap;
 
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
@@ -43,6 +44,14 @@ public class ReadCompleteTsdb {
 				long tagId = Bytes.toLong(key, offset);
 				System.out.println("Tag id: " + tagId);
 				offset += 8;
+			}
+
+			NavigableMap<byte[], byte[]> map = res.getFamilyMap(Bytes.toBytes("data"));
+			for (byte[] k : map.keySet()) {
+				System.out.println("KEY:" + Bytes.toLong(k));
+				for (long ts : res.getMap().get(Bytes.toBytes("data")).get(k).keySet()) {
+					System.out.println("   Timestamp: " + ts);
+				}
 			}
 		}
 

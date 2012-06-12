@@ -27,10 +27,12 @@ public class DummyLoadGenerator {
 			CollectService.Client client = new CollectService.Client(protocol);
 
 			Random rand = new Random();
-			for (int i = 0; i < 20; i++) {
+			long time = System.currentTimeMillis();
+			System.out.println("current timestamp: " + time);
+			for (int i = 0; i < 5; i++) {
 
 				Identifier id = new Identifier();
-				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
+				id.setTimestamp(time / 1000);
 				id.setHostname("jack");
 				id.setSensor("CPU");
 
