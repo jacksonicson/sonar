@@ -24,6 +24,7 @@ sensorConfiguration = {}
 managementClient = None
 loggingClient = None
 
+
 def registerSensorHub(managementClient, hostname):
     # Ensure that the hostname is registered
     print 'Adding host: %s' % (hostname)
@@ -178,7 +179,6 @@ def regularUpdateWrapper():
     global sensorScheduler
     updateSensors()
     sensorScheduler.enter(7, 0, regularUpdateWrapper, [])
-        
 
 def main():
     print 'Hostname of this machine: %s' % (HOSTNAME)
