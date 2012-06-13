@@ -11,7 +11,8 @@ import zipfile
 import os
 import random;
 import shutil
-import subprocess 
+import subprocess
+import thread 
 
 HOSTNAME = gethostname()
 SENSORHUB = 'sensorhub'
@@ -57,29 +58,41 @@ class SensorHandler:
     def runBinary(self):
         print "running %s" % (self.sensor)
         
+        print "Thread: %i" % (thread.get_ident())
+        
         target = ""
         if os.path.exists(SENSOR_DIR + self.sensor + "/main"):
             target = SENSOR_DIR + self.sensor + "/main"
         elif os.path.exists(SENSOR_DIR + self.sensor + "/main.exe"):
             target = SENSOR_DIR + self.sensor + "/main.exe"
+        elif os.path.exists(SENSOR_DIR + self.sensor + "/main.py"):
+            target = "python " + SENSOR_DIR + self.sensor + "/main.py"
+            
+        print "Running %s " % (target)
             
         p = subprocess.Popen(target + " >&2", stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         stdout, stderr = p.communicate()
         lines = stdout.decode('ascii').splitlines()
         count = 0
+        
+        print "error %s" % (stderr)
+        
         for line in lines:
+            
+            print "line: %s" % (line)
+            
             ids = ttypes.Identifier();
             ids.timestamp = int(time.time() + count)
             ids.sensor = self.sensor
             ids.hostname = HOSTNAME
 
-            count += 2
-        
+            count += 1
+            
             value = ttypes.MetricReading();
-            value.value = long(line)
+            value.value = long(float(line))
             value.labels = []
             
-            print value.value
+            print "value: %i" % (value.value)
             
             self.logClient.logMetric(ids, value)
         
@@ -169,6 +182,7 @@ def regularUpdateWrapper():
 
 def main():
     print 'Hostname of this machine: %s' % (HOSTNAME)
+    print 'Main thread id: %i' % (thread.get_ident())
     
     # Make socket
     trasportManagement = TSocket.TSocket('localhost', 7931)
@@ -229,6 +243,9 @@ def validate_sensor(sensor):
     exists |= os.path.exists(target)
     
     target = SENSOR_DIR + sensor + "/main.exe"
+    exists |= os.path.exists(target)
+    
+    target = SENSOR_DIR + sensor + "/main.py"
     exists |= os.path.exists(target)
     
     return exists

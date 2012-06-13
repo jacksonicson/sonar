@@ -61,7 +61,7 @@
       <file leaf-file-name="ECMAScript.js2" pinned="false" current="true" current-in-tab="true">
         <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="86" column="52" selection-start="3613" selection-end="3613" vertical-scroll-proportion="0.40428063">
+            <state line="86" column="52" selection-start="3613" selection-end="3613" vertical-scroll-proportion="0.02021403">
               <folding />
             </state>
           </provider>
@@ -156,22 +156,22 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="WebUI" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -380,16 +380,16 @@
         <state line="254" column="7" selection-start="7081" selection-end="7081" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="86" column="52" selection-start="3613" selection-end="3613" vertical-scroll-proportion="0.02021403">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/static/template.html">
       <provider selected="true" editor-type-id="text-editor">
         <state line="100" column="39" selection-start="2709" selection-end="2709" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="52" selection-start="3613" selection-end="3613" vertical-scroll-proportion="0.40428063">
-          <folding />
-        </state>
       </provider>
     </entry>
   </component>
