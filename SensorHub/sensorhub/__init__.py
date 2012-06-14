@@ -134,29 +134,35 @@ def downloadSensor(sensor):
 def continuousThread(lock):
     print 'Continuous thread launched'
     while True:
-        print 'work doing work'
-
         waitList = []
-        lock.acquire()
+        
         global sensorConfiguration
         for sensor in sensorConfiguration.keys():
             if sensorConfiguration[sensor].continuous is True:
-                if  sensorConfiguration[sensor].process is None:
+                if hasattr(sensorConfiguration[sensor], 'process') == False:
                     path = SENSOR_DIR + sensorConfiguration[sensor].sensor + "/main.py"
                     process = Popen(['python', path], stdout=PIPE, bufsize=1, universal_newlines=True)
+                    print "Process launched"
+                    
                     sensorConfiguration[sensor].process = process
                     waitList.append(sensorConfiguration[sensor].process.stdout)
                 else:
                     waitList.append(sensorConfiguration[sensor].process.stdout)
-        lock.release()
         
-        print 'done'
+        
+        if len(waitList) == 0:
+            time.sleep(1)
+            print 'sleep'
+            continue
         
         # Transfer data each second
         # The pipes have to hold the data of one second!
-        ll = select(waitList, [], [], 1)[0] # get only the read list
+        ll = select(waitList, [], [], 0.1)[0] # get only the read list
         for i in ll:
+            #print 'line'
+            
             print i.readline()
+            
         
         pass
     
@@ -230,11 +236,9 @@ def updateSensors():
 def regularUpdateWrapper(lock):
     global sensorScheduler
     
-    lock.acquire()
     updateSensors()
-    lock.release()
     
-    sensorScheduler.enter(7, 0, regularUpdateWrapper, [])
+    sensorScheduler.enter(7, 0, regularUpdateWrapper, [lock])
 
 def main():
     print 'Hostname of this machine: %s' % (HOSTNAME)
@@ -264,7 +268,7 @@ def main():
 
     # Setup thread
     lock = thread.allocate_lock()
-    thread.start_new_thread(continuousThread, (lock))
+    thread.start_new_thread(continuousThread, (lock,))
 
     # Setup sensorScheduler
     global sensorScheduler;
