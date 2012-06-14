@@ -100,11 +100,18 @@ class SensorHandler:
         pass
     
 
+continiuouseList = []
+
+def runContiniuouse():
+    pass
+
+
 def updateSensors():
     print 'Updating sensors...'
     
     global sensorConfiguration
     global sensorScheduler
+    global continiuouseList
     
     # Download all the sensors
     sensors = managementClient.getSensors(HOSTNAME)
