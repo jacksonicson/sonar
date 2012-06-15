@@ -50,7 +50,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				TransferableTimeSeriesPoint tsPoint = new TransferableTimeSeriesPoint();
 				tsPoints.add(tsPoint);
 
-				logger.info("POINT: " + point.getTimestamp()); 
+				logger.info("POINT: " + point.getTimestamp());
 				tsPoint.setTimestamp(point.getTimestamp());
 				tsPoint.setValue(point.getValue());
 				tsPoint.setLabels(point.getLabels());
@@ -142,16 +142,16 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	public String sensorHash(String name) throws TException {
 		logger.debug("sensor hash for " + name);
 		Jedis jedis = jedisPool.getResource();
-		
+
 		String key = key("sensor", name, "md5");
-		String md5 = ""; 
-		if(jedis.exists(key))
-			md5 = jedis.get(key); 
-		
+		String md5 = "";
+		if (jedis.exists(key))
+			md5 = jedis.get(key);
+
 		jedisPool.returnResource(jedis);
-		return md5; 
+		return md5;
 	}
-	
+
 	@Override
 	public void deploySensor(String name, ByteBuffer binary) throws TException {
 		logger.debug("deploying sensor " + name);
@@ -389,7 +389,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (jedis.exists(key))
 			sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
 		else
-			sensorConfig.setInterval(5);
+			sensorConfig.setInterval(0);
 		config.setConfiguration(sensorConfig);
 
 		// Get all labels (aggregation of host and sensor)
