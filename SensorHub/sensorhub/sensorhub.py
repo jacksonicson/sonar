@@ -1,26 +1,22 @@
 from collector import CollectService, ManagementService, ttypes
-from thrift import Thrift
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import sched
-import sys
 import time
 from socket import gethostname;
-import zlib
-import zipfile
+
 import os
-import random;
-import shutil
+
 import subprocess
 import thread 
 from select import select
 from subprocess import Popen, PIPE
-from multiprocessing import Process, Queue 
+import package
 
 # Constants
 HOSTNAME = gethostname()
 SENSORHUB = 'sensorhub'
-SENSOR_DIR = '../sensors/'
+
 
 sensorScheduler = None
 sensorConfiguration = {}
@@ -167,7 +163,7 @@ def continuousThread(lock, loggingClient):
         
         lock.acquire()
         
-        for i in range(0,len(ll)):
+        for i in range(0, len(ll)):
             ll = ll[i]
             sensor = sensorList[i]
             try:
@@ -251,7 +247,7 @@ def updateSensors():
     sensors = managementClient.getSensors(HOSTNAME)
 
     # Remove sensors
-    sensorsMap = dict([(k,None) for k in sensors])
+    sensorsMap = dict([(k, None) for k in sensors])
     for test in sensorConfiguration.keys():
         if test not in sensorsMap:
             disableSensor(test)
@@ -315,71 +311,7 @@ def main():
     sensorScheduler.run()
 
 
-def self_monitoring(client, s):
-    ids = ttypes.Identifier();
-    ids.timestamp = int(time.time())
-    ids.sensor = 'sensorhub'
-    ids.hostname = HOSTNAME 
 
-    value = ttypes.MetricReading();
-    value.value = 1
-    value.labels = []
-    
-    client.logMetric(ids, value)
-    
-    ids.timestamp = ids.timestamp + 1
-    value.value = 0
-    client.logMetric(ids, value)
-    
-    s.enter(5, 1, self_monitoring, (client, s))
-    
-
-def validate_sensor(sensor):
-    exists = False
-    target = SENSOR_DIR + sensor + "/main"
-    exists |= os.path.exists(target)
-    
-    target = SENSOR_DIR + sensor + "/main.exe"
-    exists |= os.path.exists(target)
-    
-    target = SENSOR_DIR + sensor + "/main.py"
-    exists |= os.path.exists(target)
-    
-    return exists
-
-
-def decompress_sensor(sensor):
-    zf = zipfile.ZipFile(sensor + ".zip")
-    
-    target = SENSOR_DIR + sensor + "/"
-    
-    if os.path.exists(target):
-        print 'removing sensor directory: ' + target
-        shutil.rmtree(target, True)
-    
-    try:
-        os.makedirs(target)
-    except:
-        pass
-    
-    for info in zf.infolist():
-        print info.filename
-
-        if info.filename.endswith('/'):
-            try:
-                print 'creating directory ' + info.filename
-                os.makedirs(target + info.filename)
-            except:
-                print 'fail'
-            continue
-        
-        cf = zf.read(info.filename)
-        
-        f = open(target + info.filename, "wb")
-        f.write(cf)
-        f.close()
-        
-    zf.close()
 
 
 if __name__ == '__main__':
