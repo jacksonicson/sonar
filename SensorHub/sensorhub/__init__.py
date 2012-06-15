@@ -139,6 +139,7 @@ def continuousThread(lock, loggingClient):
         waitList = []
         sensorList = []
         
+        lock.acquire()
         for sensor in sensorConfiguration.keys():
             if sensorConfiguration[sensor].continuous is True:
                 if hasattr(sensorConfiguration[sensor], 'process') == False:
@@ -154,9 +155,12 @@ def continuousThread(lock, loggingClient):
                     waitList.append(sensorConfiguration[sensor].process.stdout)
                     sensorList.append(sensorConfiguration[sensor])
         
+        lock.release()
+        
         if len(waitList) == 0:
             time.sleep(1)
             continue
+        
         
         # Transfer data each secondd
         # The pipes have to hold the data of one second!
@@ -167,7 +171,6 @@ def continuousThread(lock, loggingClient):
         for i in range(0,len(ll)):
             ll = ll[i]
             sensor = sensorList[i]
-            print 'c %i %s' % (i,ll)
             try:
                 line = ll.readline()
                 line = line.strip()
@@ -234,8 +237,8 @@ def configureSensor(sensor):
 def disableSensor(sensor):
     print 'disabling sensor %s' % (sensor)
 
-    if sensorConfiguration[sensor].continuouse == True:
-        if sensorConfiguration[sensor].process is not None:
+    if sensorConfiguration[sensor].continuous == True:
+        if hasattr(sensorConfiguration[sensor], 'process'):
             print 'terminating process %s ' % (sensor)
             sensorConfiguration[sensor].process.kill()
     
@@ -265,7 +268,9 @@ def updateSensors():
 def regularUpdateWrapper(lock):
     global sensorScheduler
     
+    lock.acquire()
     updateSensors()
+    lock.release()
     
     sensorScheduler.enter(7, 0, regularUpdateWrapper, [lock])
 
