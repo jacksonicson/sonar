@@ -1,1 +1,0 @@
-thrift -out . --gen py collector.thrift

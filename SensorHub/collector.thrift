@@ -14,6 +14,12 @@ struct MetricReading {
 	3:set<string> labels,
 }
 
+struct LogMessage {
+	1: int logLevel,
+	2: string logMessage,
+	3: string programName,
+}
+
 struct File {
 	1:string filename,
 	2:string description,
@@ -44,10 +50,11 @@ struct BundledSensorConfiguration {
 	2:string hostname,
 	3:set<string> labels,
 	4:SensorConfiguration configuration,
+	5:bool active,
 }
 
 service CollectService {
-	void logMessage(1:Identifier id, 2:string message),
+	void logMessage(1:Identifier id, 2:LogMessage message),
 	 	
 	void logMetric(1:Identifier id, 2:MetricReading value),
 	 
@@ -56,13 +63,34 @@ service CollectService {
 
 service ManagementService {
 	
+	// Query Section
 	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),
 	
+	
+	// Sensor Section
 	binary fetchSensor(1:string name),
 	
-	void deploySensor(1:string name, 2:binary file), 
+	string sensorHash(1:string name),
 	
+	void deploySensor(1:string name, 2:binary file),
+	
+	set<string> getAllSensors(),
+	
+	bool  hasBinary(1:string sensor),
+	
+	set<string> getSensorLabels(1:string sensor),
+	
+	void delSensor(1:string sensor),
+	
+	void setSensorLabels(1:string sensor, 3:set<string> labels),
+	
+	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
+	
+	
+	// Host Section
 	void addHost(1:string hostname),
+	
+	set<string> getAllHosts(),
 	
 	void delHost(1:string hostname),
 	
@@ -73,12 +101,6 @@ service ManagementService {
 	void setSensor(1:string hostname, 2:string sensor, 3:bool activate),
 	
 	set<string> getSensors(1:string hostname),
-	
-	void setSensorLabels(1:string sensor, 3:set<string> labels),
-	
-	set<string> getSensorLabels(1:string sensor),
-	
-	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
 	
 	BundledSensorConfiguration getBundledSensorConfiguration(1:string sensor, 2:string hostname),
 }
