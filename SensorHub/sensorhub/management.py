@@ -1,5 +1,28 @@
 from constants import SENSORHUB
 
+def downloadSensor(sensor):
+    # Get the MD5 value of the binary
+    testMd5 = managementClient.sensorHash(sensor)
+    
+    # Check if MD5 changed since the last fetch
+    if sensorConfiguration.has_key(sensor):
+        md5 = sensorConfiguration[sensor].md5
+        if md5 == testMd5:
+            return md5
+            
+    # Download sensor package
+    if os.path.exists(sensor + ".zip"):
+        os.remove(sensor + ".zip")
+        
+    # Download sensor
+    data = managementClient.fetchSensor(sensor)
+    z = open(sensor + ".zip", "wb")
+    z.write(data)
+    z.close()
+    
+    # Decompress sensor package            
+    package.decompress_sensor(sensor);
+    return testMd5
 
 def registerSensorHub(managementClient, hostname):
     # Ensure that the hostname is registered
