@@ -3,6 +3,7 @@ import zipfile
 import shutil
 from constants import SENSOR_DIR
 
+
 def validate_sensor(sensor):
     exists = False
     target = SENSOR_DIR + sensor + "/main"
@@ -15,6 +16,7 @@ def validate_sensor(sensor):
     exists |= os.path.exists(target)
     
     return exists
+
 
 def decompress_sensor(sensor):
     zf = zipfile.ZipFile(sensor + ".zip")

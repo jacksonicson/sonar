@@ -3,43 +3,17 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import sched
 import time
-from socket import gethostname;
-
+import monitor
 import os
-
 import subprocess
 import thread 
 from select import select
 from subprocess import Popen, PIPE
+from constants import SENSOR_DIR
 import package
 
-# Constants
-HOSTNAME = gethostname()
-SENSORHUB = 'sensorhub'
 
 
-sensorScheduler = None
-sensorConfiguration = {}
-
-managementClient = None
-loggingClient = None
-
-
-def registerSensorHub(managementClient, hostname):
-    # Ensure that the hostname is registered
-    print 'Adding host: %s' % (hostname)
-    managementClient.addHost(hostname); 
-    
-    # Setup the self-monitoring SENSORHUB sensor
-    sensor = managementClient.fetchSensor(SENSORHUB)
-    if len(sensor) == 0: 
-        print 'Deploying sensor: %s' % (SENSORHUB)
-        managementClient.deploySensor(SENSORHUB, '  ')
-        
-    # Enable sensor for hostname
-    print 'Enabling sensor: %s for host: %s' % (SENSORHUB, hostname)
-    managementClient.setSensor(hostname, SENSORHUB, True)
-        
 
 class SensorHandler:
     
@@ -100,7 +74,6 @@ class SensorHandler:
         pass
     
 
-
 def downloadSensor(sensor):
     # Get the MD5 value of the binary
     testMd5 = managementClient.sensorHash(sensor)
@@ -122,7 +95,7 @@ def downloadSensor(sensor):
     z.close()
     
     # Decompress sensor package            
-    decompress_sensor(sensor);
+    package.decompress_sensor(sensor);
     return testMd5
     
     
@@ -304,7 +277,7 @@ def main():
     sensorScheduler = sched.scheduler(time.time, time.sleep)
     
     # Fetch and configure sensors
-    sensorScheduler.enter(5, 1, self_monitoring, (loggingClient, sensorScheduler))
+    sensorScheduler.enter(5, 1, monitor.self_monitoring, (loggingClient, sensorScheduler))
     regularUpdateWrapper(lock)
     
     # Run sensorScheduler
