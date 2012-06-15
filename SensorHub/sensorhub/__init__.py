@@ -131,38 +131,68 @@ def downloadSensor(sensor):
     return testMd5
     
     
-def continuousThread(lock):
+def continuousThread(lock, loggingClient):
     print 'Continuous thread launched'
+    global sensorConfiguration
+    
     while True:
         waitList = []
+        sensorList = []
         
-        global sensorConfiguration
         for sensor in sensorConfiguration.keys():
             if sensorConfiguration[sensor].continuous is True:
                 if hasattr(sensorConfiguration[sensor], 'process') == False:
                     path = SENSOR_DIR + sensorConfiguration[sensor].sensor + "/main.py"
+                    print 'launching path %s' % (path)
                     process = Popen(['python', path], stdout=PIPE, bufsize=1, universal_newlines=True)
                     print "Process launched"
                     
                     sensorConfiguration[sensor].process = process
-                    waitList.append(sensorConfiguration[sensor].process.stdout)
+                    waitList.append(process.stdout)
+                    sensorList.append(sensorConfiguration[sensor])
                 else:
                     waitList.append(sensorConfiguration[sensor].process.stdout)
-        
+                    sensorList.append(sensorConfiguration[sensor])
         
         if len(waitList) == 0:
             time.sleep(1)
-            print 'sleep'
             continue
         
-        # Transfer data each second
+        # Transfer data each secondd
         # The pipes have to hold the data of one second!
-        ll = select(waitList, [], [], 0.1)[0] # get only the read list
-        for i in ll:
-            #print 'line'
-            
-            print i.readline()
-            
+        ll = select(waitList, [], [], 1)[0] # get only the read list
+        
+        lock.acquire()
+        
+        for i in range(0,len(ll)):
+            ll = ll[i]
+            sensor = sensorList[i]
+            print 'c %i %s' % (i,ll)
+            try:
+                line = ll.readline()
+                line = line.strip()
+                line = line.rstrip()
+                
+                # value = float(line)
+                
+                ids = ttypes.Identifier();
+                ids.timestamp = int(time.time())
+                ids.sensor = sensor.sensor
+                ids.hostname = HOSTNAME
+    
+                value = ttypes.MetricReading();
+                value.value = long(float(line))
+                value.labels = []
+                
+                loggingClient.logMetric(ids, value)
+                
+                print "value %f for sensor %s" % (float(line), sensor.sensor)
+                
+                
+            except Exception as e:
+                print 'error %s' % e
+        
+        lock.release()
         
         pass
     
@@ -192,7 +222,6 @@ def configureSensor(sensor):
         print 'enabling sensor %s' % (sensor)
         if sensorConfiguration[sensor].configuration.configuration.interval == 0:
             sensorConfiguration[sensor].continuous = True
-            # TODO: synchronize with the polling thread ... 
         else:
             sensorConfiguration[sensor].continuous = False
             sensorScheduler.enter(sensorConfiguration[sensor].configuration.configuration.interval, 0, sensorConfiguration[sensor].execute, [sensorScheduler])
@@ -268,7 +297,7 @@ def main():
 
     # Setup thread
     lock = thread.allocate_lock()
-    thread.start_new_thread(continuousThread, (lock,))
+    thread.start_new_thread(continuousThread, (lock, loggingClient))
 
     # Setup sensorScheduler
     global sensorScheduler;
