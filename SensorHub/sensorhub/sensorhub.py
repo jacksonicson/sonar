@@ -94,7 +94,8 @@ class Sensor(object):
         # Just for safety - this should never match because inactive sensors are
         # handled by the synchronization process
         if bundledConfiguration.active == False:
-            return False
+            print 'WARN: configuration is not active'
+            # return False
 
         # Get MD5 value
         self.md5 = self.__download()
@@ -147,7 +148,7 @@ class ProcessLoader(object):
         # determine the executable
         mainFile = None
         for main in VALID_MAINS:
-            target = os.path.join(SENSOR_DIR, self.name, main)
+            target = os.path.join(SENSOR_DIR, sensor.name, main)
             if os.path.exists(target):
                 mainFile = main
                 break
@@ -161,7 +162,7 @@ class ProcessLoader(object):
         executable = None
         try:    
             index = string.rindex(mainFile, '.')
-            ending = string[index + 1:]
+            ending = mainFile[(index + 1):]
             if ending == 'py':
                 executable = 'python'
             elif ending == 'sh':
