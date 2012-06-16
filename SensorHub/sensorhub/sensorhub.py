@@ -153,6 +153,10 @@ class DiscreteWatcher(ProcessLoader):
     
     def addSensor(self, sensor):
         self.sensors.append(sensor)
+
+    def shutdownSensor(self):
+        pass
+    
         
    
 class ContinuouseWatcher(Thread, ProcessLoader):
@@ -193,8 +197,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 # remove sensor
                 del self.sensors[i]
                 
+                print 'terminating process'
                 # terminate and remove process
-                super(ProcessLoader, self).kill(self.processes[i])
+                super(ContinuouseWatcher, self).kill(self.processes[i])
                 del self.processes[i]
         
         self.lock.release()
@@ -287,7 +292,13 @@ class SensorHub(object):
 
     def __disableSensor(self, sensorName):
         print 'disabling sensor %s' % (sensorName)
-        print 'TODOTODOTODOTODOTODOTODOTODOTODOTODO'
+        
+        sensor = self.sensors[sensorName]
+        if sensor.sensorType() == Sensor.CONTINUOUSE:
+            self.continuouseWatcher.shutdownSensor(sensor)
+        elif sensor.sensorType() == Sensor.DISCRETE:
+            self.discreteWatcher.shutdownSensor(sensor)
+        
         self.sensors.pop(sensorName)
 
 
