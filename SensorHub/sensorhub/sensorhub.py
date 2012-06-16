@@ -25,13 +25,22 @@ class Sensor(object):
         self.md5 = None
     
     def receive(self, line):
+        # parsing line
+        floatValue = None
+        try:
+            floatValue = long(float(line))
+        except ValueError as e:
+            print 'could not parse line %s' % (line)
+            return
+        
+        
         ids = ttypes.Identifier();
         ids.timestamp = int(time.time())
         ids.sensor = self.name
         ids.hostname = HOSTNAME
         
         value = ttypes.MetricReading();
-        value.value = long(float(line))
+        value.value = floatValue
         value.labels = []
             
         self.loggingClient.logMetric(ids, value)
