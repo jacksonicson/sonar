@@ -9,9 +9,12 @@ import os
 import os
 import sched
 import shutil
+import string
 import thread
 import time
 import zipfile
+
+VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh')
 
 class Sensor(object):
 
@@ -100,14 +103,10 @@ class Sensor(object):
     
     def validate(self):
         exists = False
-        target = SENSOR_DIR + self.name + "/main"
-        exists |= os.path.exists(target)
         
-        target = SENSOR_DIR + self.name + "/main.exe"
-        exists |= os.path.exists(target)
-        
-        target = SENSOR_DIR + self.name + "/main.py"
-        exists |= os.path.exists(target)
+        for main in VALID_MAINS:
+            target = os.path.join(SENSOR_DIR, self.name, main)
+            exists |= os.path.exists(target)
         
         return exists
 
@@ -145,11 +144,44 @@ class Sensor(object):
 
 class ProcessLoader(object):
     def newProcess(self, sensor):
+        # determine the executable
+        mainFile = None
+        for main in VALID_MAINS:
+            target = os.path.join(SENSOR_DIR, self.name, main)
+            if os.path.exists(target):
+                mainFile = main
+                break
+            
+        # break if there is no main file
+        if mainFile == None:
+            print 'missing main file for sensor %s' % (sensor.name)
+            return
+        
+        # determine the executable (python, ..)
+        executable = None
+        try:    
+            index = string.rindex(mainFile, '.')
+            ending = string[index + 1:]
+            if ending == 'py':
+                executable = 'python'
+            elif ending == 'sh':
+                executable = None
+            elif ending == 'exe':
+                executable = None
+        except ValueError:
+            executable = None
+        
         # create a new process 
         try:
             path = os.path.join(SENSOR_DIR, sensor.name + '/main.py')
-            print 'executing python %s' % (path)
-            process = Popen(['python', path], stdout=PIPE, bufsize=1, universal_newlines=True)
+            
+            # configure executable and main file
+            if executable is None:
+                executable = [path,]
+            else:
+                executable = [executable, path]
+            
+            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
             return process
         except Exception as e:
             print 'error starting process %s' % (e)
