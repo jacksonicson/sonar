@@ -22,8 +22,6 @@ class Sensor(object):
         self.loggingClient = loggingClient
         self.managementClient = managementClient
         self.name = name
-        
-        self.configure()
     
     def receive(self, line):
         ids = ttypes.Identifier();
@@ -38,7 +36,9 @@ class Sensor(object):
         self.loggingClient.logMetric(ids, value)
             
         print "value %f for sensor %s" % (float(line), self.name)
-        
+       
+    def sensorType(self):
+        return Sensor.CONTINUOUSE
         
     def __download(self):
         # Get the MD5 value of the binary
@@ -271,12 +271,14 @@ class SensorHub(object):
    
     def __setupSensor(self, sensorName):
         sensor = Sensor(sensorName, self.loggingClient, self.managementClient)
-        self.sensors.append(sensor)
+        launch = sensor.configure()
+        self.sensors[sensorName]  = sensor
         
-        if sensor.type() == Sensor.CONTINUOUSE:
-            self.continuouseWatcher.addSensor(sensor)
-        elif sensor.type() == Sensor.DISCRETE:
-            self.discreteWatcher.addSensor(sensor)
+        if launch:
+            if sensor.sensorType() == Sensor.CONTINUOUSE:
+                self.continuouseWatcher.addSensor(sensor)
+            elif sensor.sensorType() == Sensor.DISCRETE:
+                self.discreteWatcher.addSensor(sensor)
 
 
     def __disableSensor(self, sensorName):
