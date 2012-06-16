@@ -74,6 +74,10 @@ class Sensor(object):
         if not self.managementClient.hasBinary(self.name):
             return False
 
+        # Download settings
+        bundledConfiguration = self.managementClient.getBundledSensorConfiguration(HOSTNAME, self.name)
+        self.settings = bundledConfiguration.configuration
+
         # Get MD5 value
         self.md5 = self.__download()
         return True
