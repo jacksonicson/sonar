@@ -16,10 +16,14 @@ import time
 import zipfile
 
 class Sensor(object):
+
+    CONTINUOUSE = 0
+    DISCRETE = 1 
     
-    def __init__(self, loggingClient, managementClient):
+    def __init__(self, name, loggingClient, managementClient):
         self.loggingClient = loggingClient
         self.managementClient = managementClient
+        self.name = name
     
     def data(self, line):
         ids = ttypes.Identifier();
@@ -145,6 +149,13 @@ class DiscreteWatcher(ProcessLoader):
     def __init__(self, lock, scheduler):
         self.lock = lock
         self.scheduler = scheduler
+        
+        self.sensors = []
+        
+    
+    def addSensor(self, sensor):
+        self.sensors.append(sensor)
+        
    
 class ContinuouseWatcher(Thread, ProcessLoader):
     
@@ -255,11 +266,17 @@ class SensorHub(object):
         
         # Update configuration for the remaining sensors
         for sensor in toAdd:
-            self.__seuptSensor(sensor)
+            self.__setupSensor(sensor)
+   
    
     def __setupSensor(self, sensorName):
-        pass
+        sensor = Sensor(sensorName, self.loggingClient, self.managementClient)
+        self.sensors.append(sensor)
         
+        if sensor.type() == Sensor.CONTINUOUSE:
+            self.continuouseWatcher.addSensor(sensor)
+        elif sensor.type() == Sensor.DISCRETE:
+            self.discreteWatcher.addSensor(sensor)
 
     def __disableSensor(self, sensorName):
         print 'disabling sensor %s' % (sensorName)
@@ -301,12 +318,30 @@ def main():
     sensorHub = SensorHub(lock, managementClient, loggingClient, sensorScheduler)
     
     # Scheduler self monitoring
-    sensorScheduler.enter(5, 1, monitor.self_monitoring, (loggingClient, sensorScheduler))
+    sensorScheduler.enter(5, 1, self_monitoring, (loggingClient, sensorScheduler))
     
     # Wait for scheduler and continuouse thread
     sensorScheduler.run()
     sensorHub.join()
+
+
+def self_monitoring(client, s):
+    ids = ttypes.Identifier();
+    ids.timestamp = int(time.time())
+    ids.sensor = 'sensorhub'
+    ids.hostname = HOSTNAME 
+
+    value = ttypes.MetricReading();
+    value.value = 1
+    value.labels = []
     
+    client.logMetric(ids, value)
+    
+    ids.timestamp = ids.timestamp + 1
+    value.value = 0
+    client.logMetric(ids, value)
+    
+    s.enter(5, 1, self_monitoring, (client, s))    
 
 # jump into the main method
 if __name__ == '__main__':
