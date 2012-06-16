@@ -72,10 +72,11 @@ class Sensor(object):
         
         # Only accept sensors with binaries
         if not self.managementClient.hasBinary(self.name):
-            return True
+            return False
 
         # Get MD5 value
         self.md5 = self.__download()
+        return True
     
     
     def validate(self):
@@ -98,7 +99,6 @@ class Sensor(object):
         target = os.path.join(SENSOR_DIR, self.name)
         
         if os.path.exists(target):
-            print 'removing sensor directory: ' + target
             shutil.rmtree(target, True)
         
         try:
@@ -111,15 +111,13 @@ class Sensor(object):
     
             if info.filename.endswith('/'):
                 try:
-                    print 'creating directory ' + info.filename
                     os.makedirs(target + info.filename)
-                except:
-                    print 'fail'
+                except Exception as e:
+                    print 'error while decompressing files %s' % (e)
                 continue
             
             cf = zf.read(info.filename)
-            
-            f = open(target + info.filename, "wb")
+            f = open(os.path.join(target, info.filename), "wb")
             f.write(cf)
             f.close()
             
@@ -131,6 +129,7 @@ class ProcessLoader(object):
         # create a new process 
         try:
             path = os.path.join(SENSOR_DIR, sensor.name + '/main.py')
+            print 'executing python %s' % (path)
             process = Popen(['python', path], stdout=PIPE, bufsize=1, universal_newlines=True)
             return process
         except Exception as e:
@@ -169,6 +168,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         # list of processes started by this watcher 
         self.processes = []
+        
+        # Start thread
+        self.start()
 
     
     def addSensor(self, sensor):
@@ -216,6 +218,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             self.lock.acquire()
             for i in range(0, len(data)):
                 sensor = self.sensors[i]
+                
+                print 'output'
                 
                 line = data[i]
                 line = line.readline()
@@ -275,6 +279,8 @@ class SensorHub(object):
         sensor = Sensor(sensorName, self.loggingClient, self.managementClient)
         launch = sensor.configure()
         self.sensors[sensorName] = sensor
+        
+        print 'Setting up sensor %s' % (sensorName)
         
         if launch:
             if sensor.sensorType() == Sensor.CONTINUOUSE:
