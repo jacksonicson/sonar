@@ -170,9 +170,6 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         # list of processes started by this watcher 
         self.processes = []
-        
-        # Start thread
-        self.start()
 
     
     def addSensor(self, sensor):
@@ -180,14 +177,14 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         process = self.newProcess(sensor)
         if process != None:
-            self.lock.acquire()
-            self.sensors.append(process)
+            # self.lock.acquire()
+            self.sensors.append(sensor)
             self.processes.append(process)
-            self.lock.release()
+            # self.lock.release()
 
 
     def shutdownSensor(self, sensor):
-        self.lock.acquire()
+        # self.lock.acquire()
         
         for i in range(0, len(self.sensors)):
             if self.sensors[i] == sensor:
@@ -198,18 +195,22 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 super(ProcessLoader, self).kill(self.processes[i])
                 del self.processes[i]
         
-        self.lock.release()
+        # self.lock.release()
         
         
     def run(self):
         while True:
             # Update streams list
             streams = []
-            self.lock.acquire()
+            
+            print 'iter start'
+            
+            # # self.lock.acquire()
             for process in self.processes:
                 streams.append(process.stdout)
-            self.lock.release()
-            
+            # # self.lock.release()
+        
+            print 'iteration %i' % len(streams)    
             if len(streams) == 0:
                 time.sleep(ContinuouseWatcher.SLEEP)
                 continue
@@ -217,7 +218,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             # Wait for receive and pick the stdout list
             data = select(streams, [], [], ContinuouseWatcher.SLEEP)[0] 
             
-            self.lock.acquire()
+            # self.lock.acquire()
             for i in range(0, len(data)):
                 sensor = self.sensors[i]
                 
@@ -229,7 +230,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 
                 sensor.receive(line)
                 
-            self.lock.release()
+            # self.lock.release()
     
     
 
@@ -245,6 +246,7 @@ class SensorHub(object):
         
         # Create watchers
         self.continuouseWatcher = ContinuouseWatcher(self.lock)
+        self.continuouseWatcher.start()
         self.discreteWatcher = DiscreteWatcher(self.lock, self.scheduler)
         
         # Watch
@@ -252,9 +254,9 @@ class SensorHub(object):
         
 
     def __regularUpdateWrapper(self):
-        self.lock.acquire()
+        # self.lock.acquire()
         self.__updateSensors()
-        self.lock.release()
+        # self.lock.release()
     
         self.scheduler.enter(5, 0, self.__updateSensors, [])
      
