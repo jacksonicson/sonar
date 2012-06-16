@@ -262,7 +262,7 @@ class SensorHub(object):
                 self.__disableSensor(test)
                 
         # Get all new sensors
-        toAdd = [item for item in sensors if item not in self.sensor]
+        toAdd = [item for item in sensors if item not in self.sensors]
         
         # Update configuration for the remaining sensors
         for sensor in toAdd:
@@ -283,7 +283,7 @@ class SensorHub(object):
         print 'disabling sensor %s' % (sensorName)
         print 'TODOTODOTODOTODOTODOTODOTODOTODOTODO'
         self.sensors.pop(sensorName)
-    
+
 
     def join(self):
         self.continuouseWatcher.join()
@@ -309,6 +309,9 @@ def main():
     # Open the transports
     trasportManagement.open();
     transportLogging.open(); 
+    
+    # Register this host
+    registerSensorHub(managementClient, HOSTNAME)
     
     # Setup thread lock
     lock = thread.allocate_lock()
@@ -344,6 +347,23 @@ def self_monitoring(client, s):
     client.logMetric(ids, value)
     
     s.enter(5, 1, self_monitoring, (client, s))    
+
+
+def registerSensorHub(managementClient, hostname):
+    # Ensure that the hostname is registered
+    print 'Adding host: %s' % (hostname)
+    managementClient.addHost(hostname); 
+    
+    # Setup the self-monitoring SENSORHUB sensor
+    sensor = managementClient.fetchSensor(SENSORHUB)
+    if len(sensor) == 0: 
+        print 'Deploying sensor: %s' % (SENSORHUB)
+        managementClient.deploySensor(SENSORHUB, '  ')
+        
+    # Enable sensor for hostname
+    print 'Enabling sensor: %s for host: %s' % (SENSORHUB, hostname)
+    managementClient.setSensor(hostname, SENSORHUB, True)
+
 
 # jump into the main method
 if __name__ == '__main__':
