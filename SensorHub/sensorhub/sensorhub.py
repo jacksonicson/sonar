@@ -209,10 +209,12 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         while True:
             # Update streams list
             streams = []
+            sensors = []
             
             self.lock.acquire()
-            for process in self.processes:
-                streams.append(process.stdout)
+            for i in range(0, len(self.processes)):
+                streams.append(self.processes[i].stdout)
+                sensors.append(self.sensors[i])
             self.lock.release()
         
             if len(streams) == 0:
@@ -224,7 +226,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             
             self.lock.acquire()
             for i in range(0, len(data)):
-                sensor = self.sensors[i]
+                sensor = sensors[i]
                 
                 line = data[i]
                 line = line.readline()
