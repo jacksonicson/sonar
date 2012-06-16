@@ -26,6 +26,7 @@ class Sensor(object):
         self.managementClient = managementClient
         self.name = name
         self.md5 = None
+        self.__configured = False
     
     def receive(self, line):
         # parsing line
@@ -51,7 +52,14 @@ class Sensor(object):
         print "value %f for sensor %s" % (float(line), self.name)
        
     def sensorType(self):
-        return Sensor.DISCRETE
+        if self.__configured == False:
+            print 'WARN: sensor is not configured, sensor type cannot be determined'
+            return Sensor.DISCRETE
+        
+        if self.settings.interval > 0: 
+            return Sensor.DISCRETE
+
+        return Sensor.CONTINUOUSE
         
     def __download(self):
         # Get the MD5 value of the binary
@@ -99,6 +107,10 @@ class Sensor(object):
 
         # Get MD5 value
         self.md5 = self.__download()
+        
+        # Update internal configured status
+        self.__configured = True
+        
         return True
     
     
