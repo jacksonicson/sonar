@@ -24,8 +24,10 @@ class Sensor(object):
         self.loggingClient = loggingClient
         self.managementClient = managementClient
         self.name = name
+        
+        self.configure()
     
-    def data(self, line):
+    def receive(self, line):
         ids = ttypes.Identifier();
         ids.timestamp = int(time.time())
         ids.sensor = self.name
@@ -68,11 +70,11 @@ class Sensor(object):
     def configure(self):
         # Do not enable self-monitoring sensor
         if self.name == SENSORHUB:
-            return
+            return False
         
         # Only accept sensors with binaries
         if not self.managementClient.hasBinary(self.name):
-            return
+            return True
 
         # Get MD5 value
         self.md5 = self.__download()
@@ -208,7 +210,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 time.sleep(ContinuouseWatcher.SLEEP)
                 continue
             
-            # Wait for data and pick the stdout list
+            # Wait for receive and pick the stdout list
             data = select(streams, [], [], ContinuouseWatcher.SLEEP)[0] 
             
             self.lock.acquire()
@@ -219,7 +221,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 line = line.readline()
                 line = line.strip().rstrip()
                 
-                sensor.data(line)
+                sensor.receive(line)
                 
             self.lock.release()
     
@@ -278,8 +280,10 @@ class SensorHub(object):
         elif sensor.type() == Sensor.DISCRETE:
             self.discreteWatcher.addSensor(sensor)
 
+
     def __disableSensor(self, sensorName):
         print 'disabling sensor %s' % (sensorName)
+        print 'TODOTODOTODOTODOTODOTODOTODOTODOTODO'
         self.sensors.pop(sensorName)
     
 
