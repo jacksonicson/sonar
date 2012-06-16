@@ -22,6 +22,7 @@ class Sensor(object):
         self.loggingClient = loggingClient
         self.managementClient = managementClient
         self.name = name
+        self.md5 = None
     
     def receive(self, line):
         ids = ttypes.Identifier();
@@ -45,9 +46,8 @@ class Sensor(object):
         testMd5 = self.managementClient.sensorHash(self.name)
         
         # Check if MD5 changed since the last fetch
-        if self.sensorConfiguration.has_key(self.name):
-            if self.md5 == testMd5:
-                return self.md5
+        if self.md5 == testMd5:
+            return self.md5
                 
         # Download sensor package
         if os.path.exists(self.name + ".zip"):
@@ -55,7 +55,7 @@ class Sensor(object):
             
         # Download sensor
         data = self.managementClient.fetchSensor(self.name)
-        z = open(self.sensor + ".zip", "wb")
+        z = open(self.name  + ".zip", "wb")
         z.write(data)
         z.close()
         
@@ -127,7 +127,7 @@ class Sensor(object):
 
 
 class ProcessLoader(object):
-    def execute(self, sensor):
+    def newProcess(self, sensor):
         # create a new process 
         try:
             path = os.path.join(SENSOR_DIR, sensor.name + '/main.py')
@@ -172,7 +172,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
 
     
     def addSensor(self, sensor):
-        process = super(ProcessLoader, self).execute(sensor)
+        print 'Continuouse watcher adding sensor: %s' % (sensor)
+        
+        process = self.newProcess(sensor)
         if process != None:
             self.lock.acquire()
             self.sensors.append(process)
@@ -272,7 +274,7 @@ class SensorHub(object):
     def __setupSensor(self, sensorName):
         sensor = Sensor(sensorName, self.loggingClient, self.managementClient)
         launch = sensor.configure()
-        self.sensors[sensorName]  = sensor
+        self.sensors[sensorName] = sensor
         
         if launch:
             if sensor.sensorType() == Sensor.CONTINUOUSE:
