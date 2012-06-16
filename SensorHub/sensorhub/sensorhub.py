@@ -55,7 +55,7 @@ class Sensor(object):
             
         # Download sensor
         data = self.managementClient.fetchSensor(self.name)
-        z = open(self.name  + ".zip", "wb")
+        z = open(self.name + ".zip", "wb")
         z.write(data)
         z.close()
         
@@ -161,6 +161,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     SLEEP = 0.5
     
     def __init__(self, lock):
+        super(ContinuouseWatcher, self).__init__()
+        
         self.lock = lock
         
         # list of sensors assigned to this watcher
