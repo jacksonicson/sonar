@@ -88,6 +88,8 @@ class Sensor(object):
         self.settings = bundledConfiguration.configuration
         self.labels = bundledConfiguration.labels
         
+        # Just for safety - this should never match because inactive sensors are
+        # handled by the synchronization process
         if bundledConfiguration.active == False:
             return False
 
