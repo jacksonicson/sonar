@@ -1,12 +1,10 @@
 from collector import CollectService, ManagementService, ttypes
 from constants import SENSOR_DIR, SENSOR_DIR, HOSTNAME, SENSORHUB
 from select import select
-from sensorhub.management import registerSensorHub
 from subprocess import Popen, PIPE
 from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
-import monitor
 import os
 import os
 import sched
@@ -228,7 +226,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
 
 class SensorHub(object):
-    def __init(self, lock, managementClient, loggingClient, scheduler):
+    def __init__(self, lock, managementClient, loggingClient, scheduler):
         self.lock = lock
         self.managementClient = managementClient
         self.loggingClient = loggingClient
@@ -297,8 +295,8 @@ def main():
     print 'Main thread id: %i' % (thread.get_ident())
     
     # Make socket
-    trasportManagement = TSocket.TSocket('169.254.102.106', 7931)
-    transportLogging = TSocket.TSocket("169.254.102.106", 7921)
+    trasportManagement = TSocket.TSocket('131.159.41.171', 7931)
+    transportLogging = TSocket.TSocket('131.159.41.171', 7921)
     
     # Buffering is critical. Raw sockets are very slow
     trasportManagement = TTransport.TBufferedTransport(trasportManagement)
