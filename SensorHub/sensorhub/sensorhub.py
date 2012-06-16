@@ -1,27 +1,25 @@
 from collector import CollectService, ManagementService, ttypes
+from constants import SENSOR_DIR, SENSOR_DIR, HOSTNAME, SENSORHUB
+from select import select
+from sensorhub.management import registerSensorHub
+from subprocess import Popen, PIPE
+from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
-import sched
-import time
 import monitor
 import os
 import os
-import zipfile
+import sched
 import shutil
-from constants import SENSOR_DIR
-
-import thread 
-from select import select
-from subprocess import Popen, PIPE
-from constants import SENSOR_DIR, HOSTNAME, SENSORHUB
-
-# difference thread and threading
-from threading import Thread
+import thread
+import time
+import zipfile
 
 class Sensor(object):
     
-    def __init__(self, loggingClient):
+    def __init__(self, loggingClient, managementClient):
         self.loggingClient = loggingClient
+        self.managementClient = managementClient
     
     def data(self, line):
         ids = ttypes.Identifier();
@@ -37,6 +35,44 @@ class Sensor(object):
             
         print "value %f for sensor %s" % (float(line), self.name)
         
+        
+    def __download(self):
+        # Get the MD5 value of the binary
+        testMd5 = self.managementClient.sensorHash(self.name)
+        
+        # Check if MD5 changed since the last fetch
+        if self.sensorConfiguration.has_key(self.name):
+            if self.md5 == testMd5:
+                return self.md5
+                
+        # Download sensor package
+        if os.path.exists(self.name + ".zip"):
+            os.remove(self.name + ".zip")
+            
+        # Download sensor
+        data = self.managementClient.fetchSensor(self.name)
+        z = open(self.sensor + ".zip", "wb")
+        z.write(data)
+        z.close()
+        
+        # Decompress sensor package            
+        self.__decompress()
+        
+        return testMd5
+        
+        
+    def configure(self):
+        # Do not enable self-monitoring sensor
+        if self.name == SENSORHUB:
+            return
+        
+        # Only accept sensors with binaries
+        if not self.managementClient.hasBinary(self.name):
+            return
+
+        # Get MD5 value
+        self.md5 = self.__download()
+    
     
     def validate(self):
         exists = False
@@ -52,10 +88,10 @@ class Sensor(object):
         return exists
 
     
-    def decompress(self):
-        zf = zipfile.ZipFile(sensor + ".zip")
+    def __decompress(self):
+        zf = zipfile.ZipFile(self.name + ".zip")
         
-        target = SENSOR_DIR + sensor + "/"
+        target = os.path.join(SENSOR_DIR, self.name)
         
         if os.path.exists(target):
             print 'removing sensor directory: ' + target
@@ -83,7 +119,7 @@ class Sensor(object):
             f.write(cf)
             f.close()
             
-    zf.close()
+        zf.close()
 
 
 class ProcessLoader(object):
@@ -104,12 +140,17 @@ class ProcessLoader(object):
             print 'error while killing process %s' % (e)
             
    
+class DiscreteWatcher(ProcessLoader):
+    
+    def __init__(self, lock, scheduler):
+        self.lock = lock
+        self.scheduler = scheduler
+   
 class ContinuouseWatcher(Thread, ProcessLoader):
     
     SLEEP = 0.5
     
     def __init__(self, lock):
-        # thread locking object
         self.lock = lock
         
         # list of sensors assigned to this watcher
@@ -173,76 +214,62 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
     
 
-def configureSensor(sensor):
-    # Do not enable self-monitoring sensor
-    if sensor == SENSORHUB:
-        return
-    
-    # Only accept sensors with binaries
-    if not managementClient.hasBinary(sensor):
-        return
-    
-    # Download sensor
-    md5 = downloadSensor(sensor)
-    
-    # Check if we see this sensor the first time
-    if not sensorConfiguration.has_key(sensor):
-        # Configure and schedule sensor
-        sensorConfiguration[sensor] = Sensor(sensor, loggingClient)
-        sensorConfiguration[sensor].configuration = managementClient.getBundledSensorConfiguration(sensor, HOSTNAME)
-        sensorConfiguration[sensor].md5 = md5
+class SensorHub(object):
+    def __init(self, lock, managementClient, loggingClient, scheduler):
+        self.lock = lock
+        self.managementClient = managementClient
+        self.loggingClient = loggingClient
+        self.scheduler = scheduler
         
-        print 'enabling sensor %s' % (sensor)
-        if sensorConfiguration[sensor].configuration.configuration.interval == 0:
-            sensorConfiguration[sensor].continuous = True
-        else:
-            sensorConfiguration[sensor].continuous = False
-            sensorScheduler.enter(sensorConfiguration[sensor].configuration.configuration.interval, 0, sensorConfiguration[sensor].execute, [sensorScheduler])
-    else:
-        # Updating sensor
-        sensorConfiguration[sensor].configuration = managementClient.getBundledSensorConfiguration(sensor, HOSTNAME)
-        sensorConfiguration[sensor].md5 = md5
+        # Map of all sensors (key = sensor name, value = instance of Sensor)
+        self.sensors = {}
+        
+        # Create watchers
+        self.continuouseWatcher = ContinuouseWatcher(self.lock)
+        self.discreteWatcher = DiscreteWatcher(self.lock, self.scheduler)
+        
+        # Watch
+        self.__regularUpdateWrapper()   
+        
 
+    def __regularUpdateWrapper(self):
+        self.lock.acquire()
+        self.__updateSensors()
+        self.lock.release()
+    
+        self.scheduler.enter(5, 0, self.__updateSensors, [])
+     
+     
+    def __updateSensors(self):
+        # Download all the sensors
+        sensors = self.managementClient.getSensors(HOSTNAME)
+    
+        # Remove sensors
+        sensorsMap = dict([(k, None) for k in sensors])
+        for test in self.sensors.keys():
+            if test not in sensorsMap:
+                self.__disableSensor(test)
+                
+        # Get all new sensors
+        toAdd = [item for item in sensors if item not in self.sensor]
+        
+        # Update configuration for the remaining sensors
+        for sensor in toAdd:
+            self.__seuptSensor(sensor)
+   
+    def __setupSensor(self, sensorName):
+        pass
+        
 
-def disableSensor(sensor):
-    print 'disabling sensor %s' % (sensor)
-
-    if sensorConfiguration[sensor].continuous == True:
-        if hasattr(sensorConfiguration[sensor], 'process'):
-            print 'terminating process %s ' % (sensor)
-            sensorConfiguration[sensor].process.kill()
-    
-    sensorConfiguration.pop(sensor)
+    def __disableSensor(self, sensorName):
+        print 'disabling sensor %s' % (sensorName)
+        self.sensors.pop(sensorName)
     
 
-def updateSensors():
-    global sensorConfiguration
-    
-    # Download all the sensors
-    sensors = managementClient.getSensors(HOSTNAME)
+    def join(self):
+        self.continuouseWatcher.join()
+        self.discreteWatcher.join()
 
-    # Remove sensors
-    sensorsMap = dict([(k, None) for k in sensors])
-    for test in sensorConfiguration.keys():
-        if test not in sensorsMap:
-            disableSensor(test)
-            
-    # Get all new sensors
-    toAdd = [item for item in sensors if item not in sensorConfiguration]
-    
-    # Update configuration for the remaining sensors
-    for sensor in toAdd:
-        configureSensor(sensor)
-
-  
-def regularUpdateWrapper(lock):
-    global sensorScheduler
-    
-    lock.acquire()
-    updateSensors()
-    lock.release()
-    
-    sensorScheduler.enter(7, 0, regularUpdateWrapper, [lock])
 
 def main():
     print 'Hostname of this machine: %s' % (HOSTNAME)
@@ -257,37 +284,30 @@ def main():
     transportLogging = TTransport.TBufferedTransport(transportLogging) 
     
     # Setup the clients
-    global managementClient
     managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(trasportManagement));
-    
-    global loggingClient
     loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
     
     # Open the transports
     trasportManagement.open();
     transportLogging.open(); 
     
-    # Register hostname and self-monitoring sensor
-    registerSensorHub(managementClient, HOSTNAME); 
-
-    # Setup thread
+    # Setup thread lock
     lock = thread.allocate_lock()
-    thread.start_new_thread(continuousThread, (lock, loggingClient))
-
+    
     # Setup sensorScheduler
-    global sensorScheduler;
     sensorScheduler = sched.scheduler(time.time, time.sleep)
     
-    # Fetch and configure sensors
-    sensorScheduler.enter(5, 1, monitor.self_monitoring, (loggingClient, sensorScheduler))
-    regularUpdateWrapper(lock)
+    # Setup sensorHub
+    sensorHub = SensorHub(lock, managementClient, loggingClient, sensorScheduler)
     
-    # Run sensorScheduler
+    # Scheduler self monitoring
+    sensorScheduler.enter(5, 1, monitor.self_monitoring, (loggingClient, sensorScheduler))
+    
+    # Wait for scheduler and continuouse thread
     sensorScheduler.run()
+    sensorHub.join()
+    
 
-
-
-
-
+# jump into the main method
 if __name__ == '__main__':
     main()
