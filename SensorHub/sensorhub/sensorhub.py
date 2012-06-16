@@ -39,7 +39,7 @@ class Sensor(object):
         print "value %f for sensor %s" % (float(line), self.name)
        
     def sensorType(self):
-        return Sensor.CONTINUOUSE
+        return Sensor.DISCRETE
         
     def __download(self):
         # Get the MD5 value of the binary
@@ -147,15 +147,31 @@ class DiscreteWatcher(ProcessLoader):
     
     def __init__(self, scheduler):
         self.scheduler = scheduler
-        
         self.sensors = []
-        
+
     
     def addSensor(self, sensor):
         self.sensors.append(sensor)
+        self.__callbackHandler(sensor)
 
-    def shutdownSensor(self):
-        pass
+    
+    def shutdownSensor(self, sensor):
+        self.sensors.remove(sensor)
+
+        
+    def __callbackHandler(self, sensor):
+        # Scheduler triggered an invalidated sensor
+        if sensor in self.sensors == False:
+            return
+        
+        # Start a new process for each sensor call
+        process = self.newProcess(sensor)
+        if process != None:
+            # get the stdout from the process
+            line = process.communicate()[0]
+            sensor.receive(line)
+        
+        self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
     
         
    
