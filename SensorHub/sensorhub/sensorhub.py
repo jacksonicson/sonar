@@ -86,6 +86,10 @@ class Sensor(object):
         # Download settings
         bundledConfiguration = self.managementClient.getBundledSensorConfiguration(HOSTNAME, self.name)
         self.settings = bundledConfiguration.configuration
+        self.labels = bundledConfiguration.labels
+        
+        if bundledConfiguration.active == False:
+            return False
 
         # Get MD5 value
         self.md5 = self.__download()
