@@ -545,8 +545,3 @@ def registerSensorHub(managementClient, hostname):
     # Enable sensor for hostname
     print 'Enabling sensor: %s for host: %s' % (SENSORHUB, hostname)
     managementClient.setSensor(hostname, SENSORHUB, True)
-
-
-# jump into the main method
-if __name__ == '__main__':
-    main()

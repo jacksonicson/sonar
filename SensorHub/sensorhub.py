@@ -1,2 +1,6 @@
 from sensorhub import sensorhub
-sensorhub.main()
+
+# jump into the main method
+if __name__ == '__main__':
+    sensorhub.main()
+
