@@ -301,8 +301,9 @@ public class TimeSeriesDatabase {
 					}
 
 					long value = Bytes.toLong(key);
-					long data = Bytes.toLong(familyMap.get(key));
-
+					double data = Bytes.toDouble(familyMap.get(key));
+				
+					
 					TimeSeriesPoint p = new TimeSeriesPoint();
 					p.setTimestamp(timestampHours + value);
 					p.setValue(data);

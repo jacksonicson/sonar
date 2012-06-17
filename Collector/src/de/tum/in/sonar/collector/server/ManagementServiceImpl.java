@@ -50,7 +50,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				TransferableTimeSeriesPoint tsPoint = new TransferableTimeSeriesPoint();
 				tsPoints.add(tsPoint);
 
-				logger.info("POINT: " + point.getTimestamp());
 				tsPoint.setTimestamp(point.getTimestamp());
 				tsPoint.setValue(point.getValue());
 				tsPoint.setLabels(point.getLabels());

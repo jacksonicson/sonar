@@ -21,7 +21,7 @@ public class MetricPoint {
 		this.value = value;
 	}
 
-	final long getValue() {
+	final double getValue() {
 		return value.getValue();
 	}
 

@@ -31,7 +31,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TransferableTimeSeriesPoint");
 
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
   private static final org.apache.thrift.protocol.TField LABELS_FIELD_DESC = new org.apache.thrift.protocol.TField("labels", org.apache.thrift.protocol.TType.SET, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -41,7 +41,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
   }
 
   public long timestamp; // required
-  public long value; // required
+  public double value; // required
   public Set<String> labels; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -118,7 +118,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.LABELS, new org.apache.thrift.meta_data.FieldMetaData("labels", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -131,7 +131,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
 
   public TransferableTimeSeriesPoint(
     long timestamp,
-    long value,
+    double value,
     Set<String> labels)
   {
     this();
@@ -168,7 +168,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
     setTimestampIsSet(false);
     this.timestamp = 0;
     setValueIsSet(false);
-    this.value = 0;
+    this.value = 0.0;
     this.labels = null;
   }
 
@@ -195,11 +195,11 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
     __isset_bit_vector.set(__TIMESTAMP_ISSET_ID, value);
   }
 
-  public long getValue() {
+  public double getValue() {
     return this.value;
   }
 
-  public TransferableTimeSeriesPoint setValue(long value) {
+  public TransferableTimeSeriesPoint setValue(double value) {
     this.value = value;
     setValueIsSet(true);
     return this;
@@ -271,7 +271,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
       if (value == null) {
         unsetValue();
       } else {
-        setValue((Long)value);
+        setValue((Double)value);
       }
       break;
 
@@ -292,7 +292,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
       return Long.valueOf(getTimestamp());
 
     case VALUE:
-      return Long.valueOf(getValue());
+      return Double.valueOf(getValue());
 
     case LABELS:
       return getLabels();
@@ -492,8 +492,8 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
             }
             break;
           case 2: // VALUE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.value = iprot.readI64();
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.value = iprot.readDouble();
               struct.setValueIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -536,7 +536,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(VALUE_FIELD_DESC);
-      oprot.writeI64(struct.value);
+      oprot.writeDouble(struct.value);
       oprot.writeFieldEnd();
       if (struct.labels != null) {
         oprot.writeFieldBegin(LABELS_FIELD_DESC);
@@ -582,7 +582,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
         oprot.writeI64(struct.timestamp);
       }
       if (struct.isSetValue()) {
-        oprot.writeI64(struct.value);
+        oprot.writeDouble(struct.value);
       }
       if (struct.isSetLabels()) {
         {
@@ -604,7 +604,7 @@ public class TransferableTimeSeriesPoint implements org.apache.thrift.TBase<Tran
         struct.setTimestampIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.value = iprot.readI64();
+        struct.value = iprot.readDouble();
         struct.setValueIsSet(true);
       }
       if (incoming.get(2)) {

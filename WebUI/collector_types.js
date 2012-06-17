@@ -114,8 +114,8 @@ MetricReading.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
-      if (ftype == Thrift.Type.I64) {
-        this.value = input.readI64();
+      if (ftype == Thrift.Type.DOUBLE) {
+        this.value = input.readDouble();
       } else {
         input.skip(ftype);
       }
@@ -152,8 +152,8 @@ MetricReading.prototype.read = function(input) {
 MetricReading.prototype.write = function(output) {
   output.writeStructBegin('MetricReading');
   if (this.value) {
-    output.writeFieldBegin('value', Thrift.Type.I64, 1);
-    output.writeI64(this.value);
+    output.writeFieldBegin('value', Thrift.Type.DOUBLE, 1);
+    output.writeDouble(this.value);
     output.writeFieldEnd();
   }
   if (this.labels) {
@@ -401,7 +401,13 @@ TransferableTimeSeriesPoint.prototype.read = function(input) {
     var ret = input.readFieldBegin();
     var fname = ret.fname;
     var ftype = ret.ftype;
+
+
+
     var fid = ret.fid;
+
+      console.log("name " + fname + " type " + fid)
+
     if (ftype == Thrift.Type.STOP) {
       break;
     }
@@ -415,8 +421,8 @@ TransferableTimeSeriesPoint.prototype.read = function(input) {
       }
       break;
       case 2:
-      if (ftype == Thrift.Type.I64) {
-        this.value = input.readI64();
+      if (ftype == Thrift.Type.DOUBLE) {
+        this.value = input.readDouble();
       } else {
         input.skip(ftype);
       }
@@ -458,8 +464,8 @@ TransferableTimeSeriesPoint.prototype.write = function(output) {
     output.writeFieldEnd();
   }
   if (this.value) {
-    output.writeFieldBegin('value', Thrift.Type.I64, 2);
-    output.writeI64(this.value);
+    output.writeFieldBegin('value', Thrift.Type.DOUBLE, 2);
+    output.writeDouble(this.value);
     output.writeFieldEnd();
   }
   if (this.labels) {
