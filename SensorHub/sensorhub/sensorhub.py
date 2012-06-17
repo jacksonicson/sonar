@@ -29,26 +29,53 @@ class Sensor(object):
         self.__configured = False
     
     def receive(self, line):
-        # parsing line
-        floatValue = None
+        # each line has the format
+        # timestamp, name, value
+        # timestamp = UNIX timestamp in seconds since epoch
+        # name = (string value | 'none')
+        # value = float value 
+        
+        # Check line structure
+        elements = string.split(line, ',')
+        if len(elements) != 3:
+            print 'invalid line received: %s' % (line)
+            return
+            
+        # Extract timestamp
+        timestamp = None
         try:
-            floatValue = long(float(line))
+            timestamp = long(elements[0]) 
         except ValueError as e:
-            print 'could not parse line %s' % (line)
+            print 'error while parsing timestamp %s' % (elements[0])
             return
         
+        # Extract and build name for the entry (combine with sensor name)
+        name = None
+        if elements[1] != 'none':
+            name = self.name + '.' + elements[1]
         
+        # Extract value
+        logValue = None
+        try:
+            logValue = float(elements[2])
+        except ValueError as e:
+            print 'error while parsing value %s: ' % (elements[2])
+            return
+            
+        # Create new entry    
         ids = ttypes.Identifier();
-        ids.timestamp = int(time.time())
-        ids.sensor = self.name
+        ids.timestamp = timestamp
+        ids.sensor = name
         ids.hostname = HOSTNAME
         
         value = ttypes.MetricReading();
-        value.value = floatValue
+        value.value = logValue
         value.labels = []
             
+        # Send message
         self.loggingClient.logMetric(ids, value)
-            
+        
+        # Debug output    
         print "value %f for sensor %s" % (float(line), self.name)
        
     def sensorType(self):
