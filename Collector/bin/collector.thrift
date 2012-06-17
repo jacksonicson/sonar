@@ -10,7 +10,7 @@ struct Identifier {
 }
 
 struct MetricReading {
-	1:long value,
+	1:double value,
 	3:set<string> labels,
 }
 
