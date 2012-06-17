@@ -44,7 +44,7 @@ class Sensor(object):
         # Extract timestamp
         timestamp = None
         try:
-            timestamp = float(elements[0]) 
+            timestamp = long(float(elements[0])) 
         except ValueError as e:
             print 'error while parsing timestamp %s' % (elements[0])
             return
