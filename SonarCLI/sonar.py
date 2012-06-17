@@ -8,7 +8,7 @@ def deploy(sensor, file):
     print 'deploying %s to sensor %s ...' % (file, sensor)
     
     # Make socket
-    transport = TSocket.TSocket('localhost', 7931)
+    transport = TSocket.TSocket('131.159.41.171', 7931)
     transport = TTransport.TBufferedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
     client = ManagementService.Client(protocol);
