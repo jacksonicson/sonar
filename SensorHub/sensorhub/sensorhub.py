@@ -9,6 +9,7 @@ import os
 import os
 import sched
 import shutil
+import signal
 import string
 import thread
 import time
@@ -219,7 +220,7 @@ class ProcessLoader(object):
             
             # configure executable and main file
             if executable is None:
-                executable = [path,]
+                executable = [path, ]
             else:
                 executable = [executable, path]
             
@@ -265,7 +266,10 @@ class DiscreteWatcher(ProcessLoader):
             sensor.receive(line)
         
         self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
+
     
+    def close(self):
+        pass
         
    
 class ContinuouseWatcher(Thread, ProcessLoader):
@@ -282,6 +286,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         # list of processes started by this watcher 
         self.processes = []
+        
+        # Alive flag
+        self.alive = True
         
         # Start the thread
         self.start()
@@ -315,7 +322,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         
     def run(self):
-        while True:
+        while self.alive:
             # Update streams list
             streams = []
             sensors = []
@@ -331,7 +338,11 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 continue
             
             # Wait for receive and pick the stdout list
-            data = select(streams, [], [], ContinuouseWatcher.SLEEP)[0] 
+            data = None
+            try:
+                data = select(streams, [], [], ContinuouseWatcher.SLEEP)[0]
+            except: 
+                break 
             
             self.lock.acquire()
             for i in range(0, len(data)):
@@ -343,6 +354,19 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 
                 sensor.receive(line)
             self.lock.release()
+
+        # TODO: Guarantee that no process can be started after terminating
+        print 'Continuouse thread terminates...'
+        self.lock.acquire()
+        for process in self.processes:
+            print 'Terminating process'
+            process.kill()
+        self.lock.release()
+    
+    
+    def close(self):
+        self.alive = False
+        self.join()
     
     
 
@@ -417,25 +441,32 @@ class SensorHub(object):
         self.continuouseWatcher.join()
         self.discreteWatcher.join()
 
+    
+    def close(self):
+        self.continuouseWatcher.close()
+        self.discreteWatcher.close()
+    
+    
+
 
 def main():
     print 'Hostname of this machine: %s' % (HOSTNAME)
     print 'Main thread id: %i' % (thread.get_ident())
     
     # Make socket
-    trasportManagement = TSocket.TSocket('131.159.41.171', 7931)
+    transportManagement = TSocket.TSocket('131.159.41.171', 7931)
     transportLogging = TSocket.TSocket('131.159.41.171', 7921)
     
     # Buffering is critical. Raw sockets are very slow
-    trasportManagement = TTransport.TBufferedTransport(trasportManagement)
+    transportManagement = TTransport.TBufferedTransport(transportManagement)
     transportLogging = TTransport.TBufferedTransport(transportLogging) 
     
     # Setup the clients
-    managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(trasportManagement));
+    managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
     loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
     
     # Open the transports
-    trasportManagement.open();
+    transportManagement.open();
     transportLogging.open(); 
     
     # Register this host
@@ -453,9 +484,32 @@ def main():
     # Scheduler self monitoring
     sensorScheduler.enter(5, 1, self_monitoring, (loggingClient, sensorScheduler))
     
+    def sigtermHandler(signum, frame):
+        print 'Shutting down SensorHub...'
+        print 'Cancel all events...'
+        for event in sensorScheduler.queue:
+            print event
+            sensorScheduler.cancel(event)
+#        for event in sensorScheduler.queue():
+
+#            sensorScheduler.cancel(event)
+            
+        print 'Closing SensorHub...'
+        sensorHub.close()
+            
+        print 'Closing transport channels...'
+        transportLogging.close()
+        transportManagement.close()
+    
+    # React to kill signals
+    print 'Handling sigterm and sigkill'
+    signal.signal(signal.SIGTERM, sigtermHandler)
+    
     # Wait for scheduler and continuouse thread
-    sensorScheduler.run()
-    sensorHub.join()
+    try:
+        sensorScheduler.run()
+    except KeyboardInterrupt:
+        sigtermHandler(0, 0)
 
 
 def self_monitoring(client, s):
