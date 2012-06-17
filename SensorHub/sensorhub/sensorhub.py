@@ -38,13 +38,13 @@ class Sensor(object):
         # Check line structure
         elements = string.split(line, ',')
         if len(elements) != 3:
-            print 'invalid line received: %s' % (line)
+            #print 'invalid line received: %s' % (line)
             return
             
         # Extract timestamp
         timestamp = None
         try:
-            timestamp = long(elements[0]) 
+            timestamp = float(elements[0]) 
         except ValueError as e:
             print 'error while parsing timestamp %s' % (elements[0])
             return
@@ -53,6 +53,8 @@ class Sensor(object):
         name = None
         if elements[1] != 'none':
             name = self.name + '.' + elements[1]
+        else:
+            name = self.name
         
         # Extract value
         logValue = None
@@ -76,7 +78,7 @@ class Sensor(object):
         self.loggingClient.logMetric(ids, value)
         
         # Debug output    
-        print "value %f for sensor %s" % (float(line), self.name)
+        print "value %s" % (line)
        
     def sensorType(self):
         if self.__configured == False:
