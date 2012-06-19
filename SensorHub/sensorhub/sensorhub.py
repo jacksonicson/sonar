@@ -448,6 +448,15 @@ class SensorHub(object):
         self.discreteWatcher.close()
     
     
+class WrapperLoggingClient(object):
+    def __init__(self, lc):
+        self.lc = lc
+        self.lock = thread.allocate_lock()
+        
+    def logMetric(self, ids, value):
+        self.lock.acquire()
+        self.lc.logMetric(ids, value)
+        self.lock.release()
 
 
 def main():
@@ -465,6 +474,8 @@ def main():
     # Setup the clients
     managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
     loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
+    
+    loggingClient = WrapperLoggingClient(loggingClient)
     
     # Open the transports
     while True:
