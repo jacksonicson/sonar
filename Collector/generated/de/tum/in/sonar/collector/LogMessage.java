@@ -33,6 +33,7 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
   private static final org.apache.thrift.protocol.TField LOG_LEVEL_FIELD_DESC = new org.apache.thrift.protocol.TField("logLevel", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField LOG_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("logMessage", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PROGRAM_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("programName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -43,12 +44,14 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
   public int logLevel; // required
   public String logMessage; // required
   public String programName; // required
+  public long timestamp; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     LOG_LEVEL((short)1, "logLevel"),
     LOG_MESSAGE((short)2, "logMessage"),
-    PROGRAM_NAME((short)3, "programName");
+    PROGRAM_NAME((short)3, "programName"),
+    TIMESTAMP((short)4, "timestamp");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -69,6 +72,8 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
           return LOG_MESSAGE;
         case 3: // PROGRAM_NAME
           return PROGRAM_NAME;
+        case 4: // TIMESTAMP
+          return TIMESTAMP;
         default:
           return null;
       }
@@ -110,7 +115,8 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
 
   // isset id assignments
   private static final int __LOGLEVEL_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
+  private static final int __TIMESTAMP_ISSET_ID = 1;
+  private BitSet __isset_bit_vector = new BitSet(2);
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -120,6 +126,8 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PROGRAM_NAME, new org.apache.thrift.meta_data.FieldMetaData("programName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LogMessage.class, metaDataMap);
   }
@@ -130,13 +138,16 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
   public LogMessage(
     int logLevel,
     String logMessage,
-    String programName)
+    String programName,
+    long timestamp)
   {
     this();
     this.logLevel = logLevel;
     setLogLevelIsSet(true);
     this.logMessage = logMessage;
     this.programName = programName;
+    this.timestamp = timestamp;
+    setTimestampIsSet(true);
   }
 
   /**
@@ -152,6 +163,7 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
     if (other.isSetProgramName()) {
       this.programName = other.programName;
     }
+    this.timestamp = other.timestamp;
   }
 
   public LogMessage deepCopy() {
@@ -164,6 +176,8 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
     this.logLevel = 0;
     this.logMessage = null;
     this.programName = null;
+    setTimestampIsSet(false);
+    this.timestamp = 0;
   }
 
   public int getLogLevel() {
@@ -237,6 +251,29 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
     }
   }
 
+  public long getTimestamp() {
+    return this.timestamp;
+  }
+
+  public LogMessage setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+    setTimestampIsSet(true);
+    return this;
+  }
+
+  public void unsetTimestamp() {
+    __isset_bit_vector.clear(__TIMESTAMP_ISSET_ID);
+  }
+
+  /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
+  public boolean isSetTimestamp() {
+    return __isset_bit_vector.get(__TIMESTAMP_ISSET_ID);
+  }
+
+  public void setTimestampIsSet(boolean value) {
+    __isset_bit_vector.set(__TIMESTAMP_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOG_LEVEL:
@@ -263,6 +300,14 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
       }
       break;
 
+    case TIMESTAMP:
+      if (value == null) {
+        unsetTimestamp();
+      } else {
+        setTimestamp((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -276,6 +321,9 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
 
     case PROGRAM_NAME:
       return getProgramName();
+
+    case TIMESTAMP:
+      return Long.valueOf(getTimestamp());
 
     }
     throw new IllegalStateException();
@@ -294,6 +342,8 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
       return isSetLogMessage();
     case PROGRAM_NAME:
       return isSetProgramName();
+    case TIMESTAMP:
+      return isSetTimestamp();
     }
     throw new IllegalStateException();
   }
@@ -335,6 +385,15 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
       if (!(this_present_programName && that_present_programName))
         return false;
       if (!this.programName.equals(that.programName))
+        return false;
+    }
+
+    boolean this_present_timestamp = true;
+    boolean that_present_timestamp = true;
+    if (this_present_timestamp || that_present_timestamp) {
+      if (!(this_present_timestamp && that_present_timestamp))
+        return false;
+      if (this.timestamp != that.timestamp)
         return false;
     }
 
@@ -384,6 +443,16 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetTimestamp()).compareTo(typedOther.isSetTimestamp());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTimestamp()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, typedOther.timestamp);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -422,6 +491,10 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
     } else {
       sb.append(this.programName);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("timestamp:");
+    sb.append(this.timestamp);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -491,6 +564,14 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // TIMESTAMP
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.timestamp = iprot.readI64();
+              struct.setTimestampIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -519,6 +600,9 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
         oprot.writeString(struct.programName);
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
+      oprot.writeI64(struct.timestamp);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -546,7 +630,10 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
       if (struct.isSetProgramName()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetTimestamp()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetLogLevel()) {
         oprot.writeI32(struct.logLevel);
       }
@@ -556,12 +643,15 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
       if (struct.isSetProgramName()) {
         oprot.writeString(struct.programName);
       }
+      if (struct.isSetTimestamp()) {
+        oprot.writeI64(struct.timestamp);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LogMessage struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.logLevel = iprot.readI32();
         struct.setLogLevelIsSet(true);
@@ -573,6 +663,10 @@ public class LogMessage implements org.apache.thrift.TBase<LogMessage, LogMessag
       if (incoming.get(2)) {
         struct.programName = iprot.readString();
         struct.setProgramNameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.timestamp = iprot.readI64();
+        struct.setTimestampIsSet(true);
       }
     }
   }

@@ -7,7 +7,7 @@
 		<property>
 			<name>hbase.zookeeper.quorum</name>
 			<!-- <value>192.168.110.108</value> -->
-			<value>monitor1.dfg</value>
+			<value>srv3</value>
 			<description>The directory shared by region servers.
 			</description>
 		</property>

@@ -1,0 +1,64 @@
+{% extends 'template.html' %}
+
+{% block jshead %}
+<script type="text/javascript" src="logs.js"></script>
+{% endblock%}
+
+{% block container %}
+<div class="row">
+    <div class="span4">
+        <form class="well" id="queryForm">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="hostname">Hostname</label>
+                    <div class="controls">
+                        <input type="text" class="input" placeholder="hotstname" id="hostname"
+                               name="hostname"/>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="sensor">Sensor</label>
+                    <div class="controls">
+                        <input type="text" class="input" placeholder="sensor" id="sensor"
+                               name="sensor"/>
+                    </div>
+                </div>
+				
+				<div class="control-group">
+                    <label class="control-label" for="startdate">Start</label>
+                    <div class="controls">
+                        <input type="text" class="input" value="" id="startdate" name="startdate">
+                        <input type="text" class="input dropdown-timepicker" id="starttime" name="starttime">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="stopdate">Stop</label>
+                    <div class="controls">
+                        <input type="text" class="input" value="" id="stopdate" name="stopdate">
+                        <input type="text" class="input dropdown-timepicker" id="stoptime" name="stoptime">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="addQuery">Query</button>
+                    <button class="btn">Cancel</button>
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="span8" id="container">
+    </div>
+</div>
+{% endblock %}
+
+{% block jsfoot %}
+<script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+{% endblock %}
+
+</body>
+</html>

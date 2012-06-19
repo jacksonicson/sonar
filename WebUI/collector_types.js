@@ -179,6 +179,7 @@ var LogMessage = module.exports.LogMessage = function(args) {
   this.logLevel = null;
   this.logMessage = null;
   this.programName = null;
+  this.timestamp = null;
   if (args) {
     if (args.logLevel !== undefined) {
       this.logLevel = args.logLevel;
@@ -188,6 +189,9 @@ var LogMessage = module.exports.LogMessage = function(args) {
     }
     if (args.programName !== undefined) {
       this.programName = args.programName;
+    }
+    if (args.timestamp !== undefined) {
+      this.timestamp = args.timestamp;
     }
   }
 };
@@ -226,6 +230,13 @@ LogMessage.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 4:
+      if (ftype == Thrift.Type.I64) {
+        this.timestamp = input.readI64();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -250,6 +261,109 @@ LogMessage.prototype.write = function(output) {
   if (this.programName) {
     output.writeFieldBegin('programName', Thrift.Type.STRING, 3);
     output.writeString(this.programName);
+    output.writeFieldEnd();
+  }
+  if (this.timestamp) {
+    output.writeFieldBegin('timestamp', Thrift.Type.I64, 4);
+    output.writeI64(this.timestamp);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var LogsQuery = module.exports.LogsQuery = function(args) {
+  this.startTime = null;
+  this.stopTime = null;
+  this.sensor = null;
+  this.hostname = null;
+  if (args) {
+    if (args.startTime !== undefined) {
+      this.startTime = args.startTime;
+    }
+    if (args.stopTime !== undefined) {
+      this.stopTime = args.stopTime;
+    }
+    if (args.sensor !== undefined) {
+      this.sensor = args.sensor;
+    }
+    if (args.hostname !== undefined) {
+      this.hostname = args.hostname;
+    }
+  }
+};
+LogsQuery.prototype = {};
+LogsQuery.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.I64) {
+        this.startTime = input.readI64();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.I64) {
+        this.stopTime = input.readI64();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.sensor = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.STRING) {
+        this.hostname = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+LogsQuery.prototype.write = function(output) {
+  output.writeStructBegin('LogsQuery');
+  if (this.startTime) {
+    output.writeFieldBegin('startTime', Thrift.Type.I64, 1);
+    output.writeI64(this.startTime);
+    output.writeFieldEnd();
+  }
+  if (this.stopTime) {
+    output.writeFieldBegin('stopTime', Thrift.Type.I64, 2);
+    output.writeI64(this.stopTime);
+    output.writeFieldEnd();
+  }
+  if (this.sensor) {
+    output.writeFieldBegin('sensor', Thrift.Type.STRING, 3);
+    output.writeString(this.sensor);
+    output.writeFieldEnd();
+  }
+  if (this.hostname) {
+    output.writeFieldBegin('hostname', Thrift.Type.STRING, 4);
+    output.writeString(this.hostname);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -401,13 +515,7 @@ TransferableTimeSeriesPoint.prototype.read = function(input) {
     var ret = input.readFieldBegin();
     var fname = ret.fname;
     var ftype = ret.ftype;
-
-
-
     var fid = ret.fid;
-
-      console.log("name " + fname + " type " + fid)
-
     if (ftype == Thrift.Type.STOP) {
       break;
     }
