@@ -164,8 +164,9 @@ class Sensor(object):
         
         try:
             os.makedirs(target)
-        except:
-            pass
+        except Exception as e:
+            print 'Error while creating target directory'
+            print e
         
         for info in zf.infolist():
             print info.filename
