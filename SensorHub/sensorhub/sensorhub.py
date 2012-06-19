@@ -467,13 +467,15 @@ def main():
     loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
     
     # Open the transports
-    try:
-        transportManagement.open();
-        transportLogging.open();
-    except Exception as e:
-        print 'Cannot connect!'
-        time.sleep(1)
-        print 'Retrying...'
+    while True:
+        try:
+            transportManagement.open();
+            transportLogging.open();
+            break
+        except Exception as e:
+            print 'Cannot connect!'
+            time.sleep(1)
+            print 'Retrying...'
     
     # Register this host
     registerSensorHub(managementClient, HOSTNAME)
