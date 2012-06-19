@@ -377,7 +377,7 @@ function tsdbHandler(req, resp) {
             var jsonObj = [];
 
             for (i in timeSeries) {
-                console.log("received feedback " + timeSeries[i]);
+                console.log("received feedback " + timeSeries[i].value);
                 var item = [timeSeries[i].timestamp * 1000, timeSeries[i].value];
                 jsonObj.push(item)
             }

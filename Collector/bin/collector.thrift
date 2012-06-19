@@ -29,7 +29,7 @@ struct File {
 
 struct TransferableTimeSeriesPoint {
 	1:long timestamp,
-	2:long value,
+	2:double value,
 	3:set<string> labels,
 }
 

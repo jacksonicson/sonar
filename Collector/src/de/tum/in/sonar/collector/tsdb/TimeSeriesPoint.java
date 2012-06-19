@@ -6,7 +6,7 @@ import java.util.Set;
 public class TimeSeriesPoint {
 
 	private long timestamp;
-	private long value;
+	private double value;
 	private Set<String> labels = new HashSet<String>();
 
 	public long getTimestamp() {
@@ -17,11 +17,11 @@ public class TimeSeriesPoint {
 		this.timestamp = timestamp;
 	}
 
-	public long getValue() {
+	public double getValue() {
 		return value;
 	}
 
-	public void setValue(long value) {
+	public void setValue(double value) {
 		this.value = value;
 	}
 

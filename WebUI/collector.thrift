@@ -10,7 +10,7 @@ struct Identifier {
 }
 
 struct MetricReading {
-	1:long value,
+	1:double value,
 	3:set<string> labels,
 }
 
@@ -29,7 +29,7 @@ struct File {
 
 struct TransferableTimeSeriesPoint {
 	1:long timestamp,
-	2:long value,
+	2:double value,
 	3:set<string> labels,
 }
 
@@ -69,6 +69,8 @@ service ManagementService {
 	
 	// Sensor Section
 	binary fetchSensor(1:string name),
+	
+	string sensorHash(1:string name),
 	
 	void deploySensor(1:string name, 2:binary file),
 	

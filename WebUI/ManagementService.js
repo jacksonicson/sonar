@@ -244,6 +244,112 @@ ManagementService_fetchSensor_result.prototype.write = function(output) {
   return;
 };
 
+var ManagementService_sensorHash_args = function(args) {
+  this.name = null;
+  if (args) {
+    if (args.name !== undefined) {
+      this.name = args.name;
+    }
+  }
+};
+ManagementService_sensorHash_args.prototype = {};
+ManagementService_sensorHash_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.name = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ManagementService_sensorHash_args.prototype.write = function(output) {
+  output.writeStructBegin('ManagementService_sensorHash_args');
+  if (this.name) {
+    output.writeFieldBegin('name', Thrift.Type.STRING, 1);
+    output.writeString(this.name);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var ManagementService_sensorHash_result = function(args) {
+  this.success = null;
+  if (args) {
+    if (args.success !== undefined) {
+      this.success = args.success;
+    }
+  }
+};
+ManagementService_sensorHash_result.prototype = {};
+ManagementService_sensorHash_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+      if (ftype == Thrift.Type.STRING) {
+        this.success = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ManagementService_sensorHash_result.prototype.write = function(output) {
+  output.writeStructBegin('ManagementService_sensorHash_result');
+  if (this.success) {
+    output.writeFieldBegin('success', Thrift.Type.STRING, 0);
+    output.writeString(this.success);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 var ManagementService_deploySensor_args = function(args) {
   this.name = null;
   this.file = null;
@@ -1909,6 +2015,40 @@ ManagementServiceClient.prototype.recv_fetchSensor = function(input,mtype,rseqid
   }
   return callback('fetchSensor failed: unknown result');
 };
+ManagementServiceClient.prototype.sensorHash = function(name, callback) {
+  this.seqid += 1;
+  this._reqs[this.seqid] = callback;
+  this.send_sensorHash(name);
+};
+
+ManagementServiceClient.prototype.send_sensorHash = function(name) {
+  var output = new this.pClass(this.output);
+  output.writeMessageBegin('sensorHash', Thrift.MessageType.CALL, this.seqid);
+  var args = new ManagementService_sensorHash_args();
+  args.name = name;
+  args.write(output);
+  output.writeMessageEnd();
+  return this.output.flush();
+};
+
+ManagementServiceClient.prototype.recv_sensorHash = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new ManagementService_sensorHash_result();
+  result.read(input);
+  input.readMessageEnd();
+
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('sensorHash failed: unknown result');
+};
 ManagementServiceClient.prototype.deploySensor = function(name, file, callback) {
   this.seqid += 1;
   this._reqs[this.seqid] = callback;
@@ -2440,6 +2580,20 @@ ManagementServiceProcessor.prototype.process_fetchSensor = function(seqid, input
   this._handler.fetchSensor(args.name, function (success) {
     result.success = success;
     output.writeMessageBegin("fetchSensor", Thrift.MessageType.REPLY, seqid);
+    result.write(output);
+    output.writeMessageEnd();
+    output.flush();
+  })
+}
+
+ManagementServiceProcessor.prototype.process_sensorHash = function(seqid, input, output) {
+  var args = new ManagementService_sensorHash_args();
+  args.read(input);
+  input.readMessageEnd();
+  var result = new ManagementService_sensorHash_result();
+  this._handler.sensorHash(args.name, function (success) {
+    result.success = success;
+    output.writeMessageBegin("sensorHash", Thrift.MessageType.REPLY, seqid);
     result.write(output);
     output.writeMessageEnd();
     output.flush();
