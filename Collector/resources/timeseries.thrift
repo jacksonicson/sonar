@@ -5,7 +5,7 @@ typedef i32 int
 
 struct CompactPoint {
 	1:long timestamp,
-	2:long value,
+	2:double value,
 }
 
 struct CompactTimeseries {

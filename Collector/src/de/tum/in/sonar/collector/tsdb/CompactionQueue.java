@@ -44,12 +44,10 @@ class CompactionQueue extends Thread {
 		delayQueue.add(rowKeyJob);
 	}
 
-	private void compact(byte[] key) throws IOException, TException,
-			InterruptedException {
+	private void compact(byte[] key) throws IOException, TException, InterruptedException {
 		Get get = new Get(key);
 		Result result = table.get(get);
-		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes
-				.toBytes(Const.FAMILY_TSDB_DATA));
+		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 
 		List<CompactPoint> points = new ArrayList<CompactPoint>();
 		List<Delete> deletes = new ArrayList<Delete>();
@@ -70,7 +68,7 @@ class CompactionQueue extends Thread {
 			CompactPoint point = new CompactPoint();
 			points.add(point);
 			point.setTimestamp(Bytes.toLong(quali));
-			point.setValue(Bytes.toLong(familyMap.get(quali)));
+			point.setValue(Bytes.toDouble(familyMap.get(quali)));
 
 			Delete del = new Delete(key);
 			del.deleteColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), quali);
@@ -87,8 +85,7 @@ class CompactionQueue extends Thread {
 
 		// Updating HBase
 		Put put = new Put(key);
-		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"),
-				buffer);
+		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
 		table.delete(deletes);
 		table.flushCommits();
@@ -96,8 +93,7 @@ class CompactionQueue extends Thread {
 
 	private boolean getCompactionCell(final byte[] row) throws IOException {
 		Get get = new Get(row);
-		get.addColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA),
-				Bytes.toBytes("data"));
+		get.addColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"));
 		Result result = table.get(get);
 		return !result.isEmpty();
 	}
@@ -108,8 +104,7 @@ class CompactionQueue extends Thread {
 		Result result = table.get(get);
 
 		List<Long> timestampList = new ArrayList<Long>();
-		Map<Long, byte[]> timestamps = result.getMap()
-				.get(Bytes.toBytes(Const.FAMILY_TSDB_DATA))
+		Map<Long, byte[]> timestamps = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA))
 				.get(Bytes.toBytes("data"));
 		timestampList.addAll(timestamps.keySet());
 

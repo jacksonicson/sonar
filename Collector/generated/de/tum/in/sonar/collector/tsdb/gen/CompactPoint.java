@@ -31,7 +31,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CompactPoint");
 
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -40,7 +40,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
   }
 
   public long timestamp; // required
-  public long value; // required
+  public double value; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -113,7 +113,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactPoint.class, metaDataMap);
   }
@@ -123,7 +123,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
 
   public CompactPoint(
     long timestamp,
-    long value)
+    double value)
   {
     this();
     this.timestamp = timestamp;
@@ -151,7 +151,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
     setTimestampIsSet(false);
     this.timestamp = 0;
     setValueIsSet(false);
-    this.value = 0;
+    this.value = 0.0;
   }
 
   public long getTimestamp() {
@@ -177,11 +177,11 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
     __isset_bit_vector.set(__TIMESTAMP_ISSET_ID, value);
   }
 
-  public long getValue() {
+  public double getValue() {
     return this.value;
   }
 
-  public CompactPoint setValue(long value) {
+  public CompactPoint setValue(double value) {
     this.value = value;
     setValueIsSet(true);
     return this;
@@ -214,7 +214,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
       if (value == null) {
         unsetValue();
       } else {
-        setValue((Long)value);
+        setValue((Double)value);
       }
       break;
 
@@ -227,7 +227,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
       return Long.valueOf(getTimestamp());
 
     case VALUE:
-      return Long.valueOf(getValue());
+      return Double.valueOf(getValue());
 
     }
     throw new IllegalStateException();
@@ -395,8 +395,8 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
             }
             break;
           case 2: // VALUE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.value = iprot.readI64();
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.value = iprot.readDouble();
               struct.setValueIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -421,7 +421,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(VALUE_FIELD_DESC);
-      oprot.writeI64(struct.value);
+      oprot.writeDouble(struct.value);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -452,7 +452,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
         oprot.writeI64(struct.timestamp);
       }
       if (struct.isSetValue()) {
-        oprot.writeI64(struct.value);
+        oprot.writeDouble(struct.value);
       }
     }
 
@@ -465,7 +465,7 @@ public class CompactPoint implements org.apache.thrift.TBase<CompactPoint, Compa
         struct.setTimestampIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.value = iprot.readI64();
+        struct.value = iprot.readDouble();
         struct.setValueIsSet(true);
       }
     }
