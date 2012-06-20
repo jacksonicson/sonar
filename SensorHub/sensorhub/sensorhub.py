@@ -252,12 +252,13 @@ class DiscreteWatcher(Thread, ProcessLoader):
         
         shutdownHandler.addHandler(self.shutdown)
         
+        self.running = True
         self.start()
 
     def run(self):
         self.scheduler = sched.scheduler(time.time, time.sleep)
         
-        while True:
+        while self.running:
             self.scheduler.run()
             time.sleep(1)
 
@@ -282,7 +283,9 @@ class DiscreteWatcher(Thread, ProcessLoader):
         self.sensors.remove(sensor)
     
     def shutdown(self):
-        pass
+        self.running = False
+        for i in self.scheduler.queue:
+            self.scheduler.cancel(i)
         
    
 class ContinuouseWatcher(Thread, ProcessLoader):
@@ -306,19 +309,21 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         # Register with shutdown events
         shutdownHandler.addHandler(self.shutdown)
 
+        # new Sensors
+        self.newSensors = []
+        
         # Start the thread
         self.start()
+        
 
     
     def addSensor(self, sensor):
         print 'Continuouse watcher adding sensor: %s' % (sensor)
         
-        process = self.newProcess(sensor)
-        if process != None:
-            self.lock.acquire()
-            self.sensors.append(sensor)
-            self.processes.append(process)
-            self.lock.release()
+        self.lock.acquire()
+        self.newSensors.append(sensor)
+            
+        self.lock.release()
 
 
     def shutdownSensor(self, sensor):
@@ -344,9 +349,19 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             sensors = []
             
             self.lock.acquire()
+            
+            for sensor in self.newSensors:
+                process = self.newProcess(sensor)
+                if process != None:
+                    self.sensors.append(sensor)
+                    self.processes.append(process)
+                    
+            self.newSensors = []
+            
             for i in range(0, len(self.processes)):
                 streams.append(self.processes[i].stdout)
                 sensors.append(self.sensors[i])
+                
             self.lock.release()
         
             if len(streams) == 0:
@@ -396,17 +411,17 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
 
 class SensorHub(Thread, object):
-    def __init__(self, shutdown, managementClient, loggingClient):
+    def __init__(self, shutdown):
         super(SensorHub, self).__init__()
+        
+        # Private variables
+        self.shutdown = shutdown
         
         # Connect
         self.__connect()
         
         # Register
         self.__registerSensorHub()
-        
-        # Register with shutdown
-        self.shutdown = shutdown
         
         # Map of all sensors (key = sensor name, value = instance of Sensor)
         self.sensors = {}
@@ -416,8 +431,15 @@ class SensorHub(Thread, object):
         self.discreteWatcher = DiscreteWatcher(shutdown)
         
         # Watch
+        self.running = True
         self.start()
+        
+        # shtudown
+        self.shutdown.addHandler(self.__shutdownHandler)
+        
       
+    def __shutdownHandler(self):
+        self.running = False
       
     def __connect(self):
         # Make socket
@@ -431,7 +453,7 @@ class SensorHub(Thread, object):
         # Setup the clients
         self.managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
         self.loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));
-        self.loggingClient = WrapperLoggingClient(self.loggingClient)  
+        self.loggingClient = WrapperLoggingClient(self.shutdown, self.loggingClient)  
         
         # Open the transports
         while True:
@@ -462,7 +484,7 @@ class SensorHub(Thread, object):
 
     def run(self):
         try:
-            while True:
+            while self.running:
                 self.__updateSensors()
                 time.sleep(5)
         except:
@@ -563,7 +585,8 @@ class ShutdownHandler(object):
 
         self.condition.release()
         
-        # Shutdown            
+        # Shutdown
+        print 'Shutting down now...'            
         for callback in self.callbacks:
             callback() 
             
