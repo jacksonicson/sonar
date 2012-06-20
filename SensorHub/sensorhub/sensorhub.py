@@ -523,21 +523,21 @@ def main():
     
     # Setup sensorScheduler
     sensorScheduler = sched.scheduler(time.time, time.sleep)
-    shutdown.addHandler(shutdownHandler)
     def shutdownHandler():
         print 'Shutting down SensorHub...'
         print 'Cancel all events...'
         for event in sensorScheduler.queue:
             sensorScheduler.cancel(event)
+    shutdown.addHandler(shutdownHandler)
     
     # Setup sensorHub
     SensorHub(lock, shutdown, managementClient, loggingClient, sensorScheduler)
     
     # React to kill signals
     print 'Handling sigterm and sigkill'
-    signal.signal(signal.SIGTERM, sigtermHandler)
     def sigtermHandler(signum, frame):
         shutdown.shutdown()
+    signal.signal(signal.SIGTERM, sigtermHandler)
     
     # Sleep in scheduler
     try:
