@@ -66,14 +66,6 @@ public class TimeSeriesDatabase {
 	}
 
 	byte[] buildKey(MetricPoint point) throws UnresolvableException, InvalidLabelException {
-
-		int labels = 0;
-		if(point.getLabels() != null)
-			labels = point.getLabels().size(); 
-		else
-			logger.error("Labels field was null"); 
-		
-		
 		int keyWidth = keyWidth(point.getLabels().size());
 		byte[] key = new byte[keyWidth];
 
