@@ -30,6 +30,7 @@ class Sensor(object):
         self.md5 = None
         self.__configured = False
     
+    # Threadsafe
     def receive(self, line):
         # each line has the format
         # timestamp, name, value
@@ -227,6 +228,9 @@ class ProcessLoader(object):
                 executable = [executable, path]
             
             process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
+            
+            print 'PID %i' % (process.pid)
+            
             return process
         except Exception as e:
             print 'error starting process %s' % (e)
@@ -242,29 +246,34 @@ class ProcessLoader(object):
 class DiscreteWatcher(Thread, ProcessLoader):
     
     def __init__(self, shutdownHandler):
+        super(DiscreteWatcher, self).__init__()
+        
         self.sensors = []
+        
         shutdownHandler.addHandler(self.shutdown)
         
         self.start()
 
     def run(self):
-        print 'Nees reimplementation of the scheduler'
-        pass
+        self.scheduler = sched.scheduler(time.time, time.sleep)
+        
+        while True:
+            self.scheduler.run()
+            time.sleep(1)
 
     
     def addSensor(self, sensor):
         self.sensors.append(sensor)
-        
-        # Scheduler triggered an invalidated sensor
-        if sensor in self.sensors == False:
-            return
-        
+        self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
+
+
+    def __processSensor(self, sensor):
         # Start a new process for each sensor call
         process = self.newProcess(sensor)
         if process != None:
-            # get the stdout from the process
+            # get the standard output from the process
             line = process.communicate()[0]
-            sensor.receive(line)
+            sensor.receive(line) 
         
         self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
 
@@ -386,26 +395,53 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         print 'continuouse watcher exited'
     
 
-class SensorHub(object):
-    def __init__(self, shutdownHandler, managementClient, loggingClient):
-        self.managementClient = managementClient
-        self.loggingClient = loggingClient
-
+class SensorHub(Thread, object):
+    def __init__(self, shutdown, managementClient, loggingClient):
+        super(SensorHub, self).__init__()
+        
+        # Connect
+        self.__connect()
+        
         # Register
         self.__registerSensorHub()
         
-        # Register with shutdownHandler
-        shutdownHandler.addHandler(self.shutdownHandler)
+        # Register with shutdown
+        self.shutdown = shutdown
         
         # Map of all sensors (key = sensor name, value = instance of Sensor)
         self.sensors = {}
         
         # Create watchers
-        self.continuouseWatcher = ContinuouseWatcher(shutdownHandler)
-        self.discreteWatcher = DiscreteWatcher(shutdownHandler, self.scheduler)
+        self.continuouseWatcher = ContinuouseWatcher(shutdown)
+        self.discreteWatcher = DiscreteWatcher(shutdown)
         
         # Watch
-        self.__regularUpdateWrapper()
+        self.start()
+      
+      
+    def __connect(self):
+        # Make socket
+        transportManagement = TSocket.TSocket('131.159.41.171', 7931)
+        transportLogging = TSocket.TSocket('131.159.41.171', 7921)
+        
+        # Buffering is critical. Raw sockets are very slow
+        transportManagement = TTransport.TBufferedTransport(transportManagement)
+        transportLogging = TTransport.TBufferedTransport(transportLogging) 
+        
+        # Setup the clients
+        self.managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
+        self.loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));
+        self.loggingClient = WrapperLoggingClient(self.loggingClient)  
+        
+        # Open the transports
+        while True:
+            try:
+                transportManagement.open();
+                transportLogging.open();
+                break
+            except Exception as e:
+                print 'Retrying connection...'
+                time.sleep(1)
         
         
     def __registerSensorHub(self):
@@ -424,10 +460,14 @@ class SensorHub(object):
         self.managementClient.setSensor(HOSTNAME, SENSORHUB, True)
 
 
-    def __regularUpdateWrapper(self):
-        self.__updateSensors()
-        self.scheduler.enter(5, 0, self.__regularUpdateWrapper, [])
-     
+    def run(self):
+        try:
+            while True:
+                self.__updateSensors()
+                time.sleep(5)
+        except:
+            self.shutdown.shutdown()
+
      
     def __updateSensors(self):
         # Download all the sensors
@@ -473,15 +513,15 @@ class SensorHub(object):
         self.sensors.pop(sensorName)
 
 
-    def shutdownHandler(self):
-        pass
     
     
-class WrapperLoggingClient(Thread, object):
+    
+class WrapperLoggingClient(object):
     
     def __init__(self, shutdown, client):
         self.shutdown = shutdown
         self.lc = client
+        self.lock = thread.allocate_lock()
         
     def logMetric(self, ids, value):
         self.lock.acquire()
@@ -493,69 +533,56 @@ class WrapperLoggingClient(Thread, object):
         self.lock.release()
 
 
+
 class ShutdownHandler(object):
     def __init__(self):
         self.callbacks = []
         self.condition = threading.Condition()
+        self.flag = False
 
     def addHandler(self, callback):
         self.callbacks.append(callback)
 
     def shutdown(self):
+        print 'shutdown received'
         self.condition.acquire()
+        self.flag = True
         self.condition.notify()
         self.condition.release()
             
-    def wait(self):
-        print 'Shutting down now...'
+    def run(self):
+        print 'Waiting for shutdown event...'
         self.condition.acquire()
         
-        self.condition.wait()
+        while self.flag == False:
+            try:
+                self.condition.wait(1)
+            except KeyboardInterrupt:
+                self.flag = True
+                continue
+
+        self.condition.release()
+        
+        # Shutdown            
         for callback in self.callbacks:
             callback() 
             
-        self.condition.release()
 
 
 def main():
     print 'Hostname of this machine: %s' % (HOSTNAME)
     print 'Main thread id: %i' % (thread.get_ident())
     
-    # Make socket
-    transportManagement = TSocket.TSocket('131.159.41.171', 7931)
-    transportLogging = TSocket.TSocket('131.159.41.171', 7921)
-    
-    # Buffering is critical. Raw sockets are very slow
-    transportManagement = TTransport.TBufferedTransport(transportManagement)
-    transportLogging = TTransport.TBufferedTransport(transportLogging) 
-    
-    # Setup the clients
-    managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
-    loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
-    
-    # Open the transports
-    while True:
-        try:
-            transportManagement.open();
-            transportLogging.open();
-            break
-        except Exception as e:
-            print 'Retrying connection...'
-            time.sleep(1)
-    
     # Setup
     shutdown = ShutdownHandler()
-    loggingClient = WrapperLoggingClient(shutdown, loggingClient)
-    SensorHub(shutdown, managementClient, loggingClient)
+    SensorHub(shutdown)
     
     # React to kill signals
-    print 'Handling sigterm and sigkill'
     def sigtermHandler(signum, frame):
         shutdown.shutdown()
+        
     signal.signal(signal.SIGTERM, sigtermHandler)
     
-    # Wait for shutdown
-    shutdown.wait()
-    
-
+    # Wait for signals
+    shutdown.run()
 
