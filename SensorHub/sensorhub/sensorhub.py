@@ -451,14 +451,8 @@ class SensorHub(object):
         self.sensors.pop(sensorName)
 
 
-    def join(self):
-        self.continuouseWatcher.join()
-        self.discreteWatcher.join()
-
-    
     def shutdownHandler(self):
-        self.continuouseWatcher.shutdown()
-        self.discreteWatcher.shutdown()
+        pass
     
     
 class WrapperLoggingClient(object):
