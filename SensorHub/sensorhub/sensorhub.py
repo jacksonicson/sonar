@@ -1,4 +1,4 @@
-    from collector import CollectService, ManagementService, ttypes
+from collector import CollectService, ManagementService, ttypes
 from constants import SENSOR_DIR, SENSOR_DIR, HOSTNAME, SENSORHUB
 from select import select
 from subprocess import Popen, PIPE
