@@ -4,7 +4,6 @@ import traceback
 # jump into the main method
 if __name__ == '__main__':
     try:
-        raise Exception("asdf")
         sensorhub.main()
     except Exception as e:
         print 'Exception in SensorHub, exiting'
