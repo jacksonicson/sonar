@@ -165,6 +165,7 @@ class Sensor(object):
             shutil.rmtree(target, True)
         
         try:
+            print 'creating dirs %s' % (target)
             os.makedirs(target)
         except Exception as e:
             print 'Error while creating target directory'
@@ -249,6 +250,7 @@ class DiscreteWatcher(Thread, ProcessLoader):
         super(DiscreteWatcher, self).__init__()
         
         self.sensors = []
+        self.lock = thread.allocate_lock()
         
         shutdownHandler.addHandler(self.shutdown)
         
@@ -256,19 +258,32 @@ class DiscreteWatcher(Thread, ProcessLoader):
         self.start()
 
     def run(self):
+        self.lock.acquire()
+        
         self.scheduler = sched.scheduler(time.time, time.sleep)
+        for sensor in self.sensors:
+            self.scheduler.enter(sensor.settings.interval, 0, self.__processSensor, [sensor])
+            
+        self.lock.release()
         
         while self.running:
             self.scheduler.run()
             time.sleep(1)
 
-    
     def addSensor(self, sensor):
+        self.lock.acquire()
+        
         self.sensors.append(sensor)
-        self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
-
+        if hasattr(self, 'scheduler') == True:
+            self.scheduler.enter(sensor.settings.interval, 0, self.__processSensor, [sensor])
+            
+        self.lock.release()
 
     def __processSensor(self, sensor):
+        # Filter removed sensors        
+        if sensor not in self.sensors:
+            return
+        
         # Start a new process for each sensor call
         process = self.newProcess(sensor)
         if process != None:
@@ -276,16 +291,25 @@ class DiscreteWatcher(Thread, ProcessLoader):
             line = process.communicate()[0]
             sensor.receive(line) 
         
-        self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
-
+        # Reschedule sensor
+        self.lock.acquire()
+        if self.running:
+            self.scheduler.enter(sensor.settings.interval, 0, self.__processSensor, [sensor])
+        self.lock.release()
     
     def shutdownSensor(self, sensor):
+        self.lock.acquire()
         self.sensors.remove(sensor)
+        self.lock.release()
     
     def shutdown(self):
+        self.lock.acquire()
+        
         self.running = False
         for i in self.scheduler.queue:
             self.scheduler.cancel(i)
+            
+        self.lock.release()
         
    
 class ContinuouseWatcher(Thread, ProcessLoader):
@@ -373,6 +397,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             try:
                 data = select(streams, [], [], ContinuouseWatcher.SLEEP)[0]
             except: 
+                print 'stopping continuouse because of error in select'
                 break 
             
             self.lock.acquire()
