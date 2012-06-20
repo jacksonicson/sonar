@@ -455,7 +455,11 @@ class WrapperLoggingClient(object):
         
     def logMetric(self, ids, value):
         self.lock.acquire()
-        self.lc.logMetric(ids, value)
+        try:
+            self.lc.logMetric(ids, value)
+        except:
+            print 'logging failed'
+            
         self.lock.release()
 
 
@@ -507,11 +511,7 @@ def main():
         print 'Shutting down SensorHub...'
         print 'Cancel all events...'
         for event in sensorScheduler.queue:
-            print event
             sensorScheduler.cancel(event)
-#        for event in sensorScheduler.queue():
-
-#            sensorScheduler.cancel(event)
             
         print 'Closing SensorHub...'
         sensorHub.close()
