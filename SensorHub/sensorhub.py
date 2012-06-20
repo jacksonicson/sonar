@@ -1,9 +1,11 @@
 from sensorhub import sensorhub
+import traceback
 
 # jump into the main method
 if __name__ == '__main__':
     try:
+        raise Exception("asdf")
         sensorhub.main()
-    except:
-        pass
-
+    except Exception as e:
+        print 'Exception in SensorHub, exiting'
+        print traceback.format_exc()

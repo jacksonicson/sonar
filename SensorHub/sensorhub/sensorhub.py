@@ -107,7 +107,7 @@ class Sensor(object):
         data = self.managementClient.fetchSensor(self.name)
         z = open(self.name + ".zip", "wb")
         z.write(data)
-        z.close()
+        z.shutdown()
         
         # Decompress sensor package            
         self.__decompress()
@@ -181,9 +181,9 @@ class Sensor(object):
             cf = zf.read(info.filename)
             f = open(os.path.join(target, info.filename), "wb")
             f.write(cf)
-            f.close()
+            f.shutdown()
             
-        zf.close()
+        zf.shutdown()
 
 
 class ProcessLoader(object):
@@ -240,9 +240,11 @@ class ProcessLoader(object):
    
 class DiscreteWatcher(ProcessLoader):
     
-    def __init__(self, scheduler):
+    def __init__(self, shutdownHandler, scheduler):
         self.scheduler = scheduler
         self.sensors = []
+        
+        shutdownHandler.addHandler(self.shutdown)
 
     
     def addSensor(self, sensor):
@@ -269,7 +271,7 @@ class DiscreteWatcher(ProcessLoader):
         self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
 
     
-    def close(self):
+    def shutdown(self):
         pass
         
    
@@ -277,7 +279,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
     SLEEP = 0.5
     
-    def __init__(self):
+    def __init__(self, shutdownHandler):
         super(ContinuouseWatcher, self).__init__()
         
         self.lock = thread.allocate_lock()
@@ -290,6 +292,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         # Alive flag
         self.alive = True
+
+        # Register with shutdown events
+        shutdownHandler.addHandler(self.shutdown())
         
         # Start the thread
         self.start()
@@ -354,6 +359,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 line = line.strip().rstrip()
                 
                 sensor.receive(line)
+                    
+                    
             self.lock.release()
 
         # TODO: Guarantee that no process can be started after terminating
@@ -365,25 +372,31 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         self.lock.release()
     
     
-    def close(self):
+    def shutdown(self):
+        # Exit main loop 
         self.alive = False
+        
+        # Wait until main loop is closing and taking all the processes with it
+        print 'Waiting for all processes to terminate' 
         self.join()
-    
     
 
 class SensorHub(object):
-    def __init__(self, lock, managementClient, loggingClient, scheduler):
+    def __init__(self, lock, shutdownHandler, managementClient, loggingClient, scheduler):
         self.lock = lock
         self.managementClient = managementClient
         self.loggingClient = loggingClient
         self.scheduler = scheduler
         
+        # Register with shutdownHandler
+        shutdownHandler.addHandler(self.shutdownHandler())
+        
         # Map of all sensors (key = sensor name, value = instance of Sensor)
         self.sensors = {}
         
         # Create watchers
-        self.continuouseWatcher = ContinuouseWatcher()
-        self.discreteWatcher = DiscreteWatcher(self.scheduler)
+        self.continuouseWatcher = ContinuouseWatcher(shutdownHandler)
+        self.discreteWatcher = DiscreteWatcher(shutdownHandler, self.scheduler)
         
         # Watch
         self.__regularUpdateWrapper()   
@@ -443,9 +456,9 @@ class SensorHub(object):
         self.discreteWatcher.join()
 
     
-    def close(self):
-        self.continuouseWatcher.close()
-        self.discreteWatcher.close()
+    def shutdownHandler(self):
+        self.continuouseWatcher.shutdown()
+        self.discreteWatcher.shutdown()
     
     
 class WrapperLoggingClient(object):
@@ -457,6 +470,18 @@ class WrapperLoggingClient(object):
         self.lock.acquire()
         self.lc.logMetric(ids, value)
         self.lock.release()
+
+
+class ShutdownHandler(object):
+    def __init__(self):
+        self.callbacks = []
+
+    def addHandler(self, callback):
+        self.callbacks.append(callback)
+
+    def shutdown(self):
+        for callback in self.callbacks:
+            callback() 
 
 
 def main():
@@ -484,9 +509,11 @@ def main():
             transportLogging.open();
             break
         except Exception as e:
-            print 'Cannot connect!'
+            print 'Retrying connection...'
             time.sleep(1)
-            print 'Retrying...'
+    
+    # Shutdown handler
+    shutdown = ShutdownHandler()
     
     # Register this host
     registerSensorHub(managementClient, HOSTNAME)
@@ -496,56 +523,29 @@ def main():
     
     # Setup sensorScheduler
     sensorScheduler = sched.scheduler(time.time, time.sleep)
-    
-    # Setup sensorHub
-    sensorHub = SensorHub(lock, managementClient, loggingClient, sensorScheduler)
-    
-    # Scheduler self monitoring
-    sensorScheduler.enter(5, 1, self_monitoring, (loggingClient, sensorScheduler))
-    
-    def sigtermHandler(signum, frame):
+    shutdown.addHandler(shutdownHandler)
+    def shutdownHandler():
         print 'Shutting down SensorHub...'
         print 'Cancel all events...'
         for event in sensorScheduler.queue:
             sensorScheduler.cancel(event)
-            
-        print 'Closing SensorHub...'
-        sensorHub.close()
-            
-        print 'Closing transport channels...'
-        transportLogging.close()
-        transportManagement.close()
+    
+    # Setup sensorHub
+    SensorHub(lock, shutdown, managementClient, loggingClient, sensorScheduler)
     
     # React to kill signals
     print 'Handling sigterm and sigkill'
     signal.signal(signal.SIGTERM, sigtermHandler)
+    def sigtermHandler(signum, frame):
+        shutdown.shutdown()
     
-    # Wait for scheduler and continuouse thread
+    # Sleep in scheduler
     try:
         sensorScheduler.run()
     except KeyboardInterrupt:
-        sigtermHandler(0, 0)
-    except:
-        pass
-
-
-def self_monitoring(client, s):
-    ids = ttypes.Identifier();
-    ids.timestamp = int(time.time())
-    ids.sensor = 'sensorhub'
-    ids.hostname = HOSTNAME 
-
-    value = ttypes.MetricReading();
-    value.value = 1
-    value.labels = []
-    
-    client.logMetric(ids, value)
-    
-    ids.timestamp = ids.timestamp + 1
-    value.value = 0
-    client.logMetric(ids, value)
-    
-    s.enter(5, 1, self_monitoring, (client, s))    
+        shutdown.shutdown()
+    except Exception:
+        shutdown.shutdown()
 
 
 def registerSensorHub(managementClient, hostname):
