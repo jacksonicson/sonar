@@ -1,0 +1,11 @@
+[Unit]
+Description=SensorHub Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/jack/work/sonar/sonar/SensorHub/
+ExecStart=/usr/bin/python /home/jack/work/sonar/sonar/SensorHub/sensorhub.py
+
+[Install]
+WantedBy=multi-user.target
