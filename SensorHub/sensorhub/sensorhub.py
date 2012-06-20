@@ -294,8 +294,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         self.alive = True
 
         # Register with shutdown events
-        shutdownHandler.addHandler(self.shutdown())
-        
+        shutdownHandler.addHandler(self.shutdown)
+
         # Start the thread
         self.start()
 
@@ -389,7 +389,7 @@ class SensorHub(object):
         self.scheduler = scheduler
         
         # Register with shutdownHandler
-        shutdownHandler.addHandler(self.shutdownHandler())
+        shutdownHandler.addHandler(self.shutdownHandler)
         
         # Map of all sensors (key = sensor name, value = instance of Sensor)
         self.sensors = {}
