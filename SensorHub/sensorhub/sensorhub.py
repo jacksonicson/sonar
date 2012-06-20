@@ -529,6 +529,8 @@ def main():
         sensorScheduler.run()
     except KeyboardInterrupt:
         sigtermHandler(0, 0)
+    except:
+        pass
 
 
 def self_monitoring(client, s):
