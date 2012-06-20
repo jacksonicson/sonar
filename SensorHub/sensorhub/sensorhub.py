@@ -12,6 +12,7 @@ import shutil
 import signal
 import string
 import thread
+import threading
 import time
 import zipfile
 
@@ -238,25 +239,22 @@ class ProcessLoader(object):
             print 'error while killing process %s' % (e)
             
    
-class DiscreteWatcher(ProcessLoader):
+class DiscreteWatcher(Thread, ProcessLoader):
     
-    def __init__(self, shutdownHandler, scheduler):
-        self.scheduler = scheduler
+    def __init__(self, shutdownHandler):
         self.sensors = []
-        
         shutdownHandler.addHandler(self.shutdown)
+        
+        self.start()
+
+    def run(self):
+        print 'Nees reimplementation of the scheduler'
+        pass
 
     
     def addSensor(self, sensor):
         self.sensors.append(sensor)
-        self.__callbackHandler(sensor)
-
-    
-    def shutdownSensor(self, sensor):
-        self.sensors.remove(sensor)
-
         
-    def __callbackHandler(self, sensor):
         # Scheduler triggered an invalidated sensor
         if sensor in self.sensors == False:
             return
@@ -270,6 +268,9 @@ class DiscreteWatcher(ProcessLoader):
         
         self.scheduler.enter(sensor.settings.interval, 0, self.__callbackHandler, [sensor])
 
+    
+    def shutdownSensor(self, sensor):
+        self.sensors.remove(sensor)
     
     def shutdown(self):
         pass
@@ -386,10 +387,12 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
 
 class SensorHub(object):
-    def __init__(self, lock, shutdownHandler, managementClient, loggingClient):
-        self.lock = lock
+    def __init__(self, shutdownHandler, managementClient, loggingClient):
         self.managementClient = managementClient
         self.loggingClient = loggingClient
+
+        # Register
+        self.__registerSensorHub()
         
         # Register with shutdownHandler
         shutdownHandler.addHandler(self.shutdownHandler)
@@ -402,8 +405,24 @@ class SensorHub(object):
         self.discreteWatcher = DiscreteWatcher(shutdownHandler, self.scheduler)
         
         # Watch
-        self.__regularUpdateWrapper()   
+        self.__regularUpdateWrapper()
         
+        
+    def __registerSensorHub(self):
+        # Ensure that the hostname is registered
+        print 'Adding host: %s' % (HOSTNAME)
+        self.managementClient.addHost(HOSTNAME); 
+        
+        # Setup the self-monitoring SENSORHUB sensor
+        sensor = self.managementClient.fetchSensor(SENSORHUB)
+        if len(sensor) == 0: 
+            print 'Deploying sensor: %s' % (SENSORHUB)
+            self.managementClient.deploySensor(SENSORHUB, '  ')
+            
+        # Enable sensor for hostname
+        print 'Enabling sensor: %s for host: %s' % (SENSORHUB, HOSTNAME)
+        self.managementClient.setSensor(HOSTNAME, SENSORHUB, True)
+
 
     def __regularUpdateWrapper(self):
         self.__updateSensors()
@@ -458,11 +477,11 @@ class SensorHub(object):
         pass
     
     
-class WrapperLoggingClient(object):
-    def __init__(self, shutdown, lc):
+class WrapperLoggingClient(Thread, object):
+    
+    def __init__(self, shutdown, client):
         self.shutdown = shutdown
-        self.lc = lc
-        self.lock = thread.allocate_lock()
+        self.lc = client
         
     def logMetric(self, ids, value):
         self.lock.acquire()
@@ -477,13 +496,25 @@ class WrapperLoggingClient(object):
 class ShutdownHandler(object):
     def __init__(self):
         self.callbacks = []
+        self.condition = threading.Condition()
 
     def addHandler(self, callback):
         self.callbacks.append(callback)
 
     def shutdown(self):
+        self.condition.acquire()
+        self.condition.notify()
+        self.condition.release()
+            
+    def wait(self):
+        print 'Shutting down now...'
+        self.condition.acquire()
+        
+        self.condition.wait()
         for callback in self.callbacks:
             callback() 
+            
+        self.condition.release()
 
 
 def main():
@@ -512,22 +543,10 @@ def main():
             print 'Retrying connection...'
             time.sleep(1)
     
-    # Shutdown handler
+    # Setup
     shutdown = ShutdownHandler()
-    
-    # Wrapped logging Client
     loggingClient = WrapperLoggingClient(shutdown, loggingClient)
-    
-    # Register this host
-    registerSensorHub(managementClient, HOSTNAME)
-    
-    # Setup thread lock
-    lock = thread.allocate_lock()
-    
-    shutdown.addHandler(shutdownHandler)
-    
-    # Setup sensorHub
-    SensorHub(lock, shutdown, managementClient, loggingClient, sensorScheduler)
+    SensorHub(shutdown, managementClient, loggingClient)
     
     # React to kill signals
     print 'Handling sigterm and sigkill'
@@ -535,26 +554,8 @@ def main():
         shutdown.shutdown()
     signal.signal(signal.SIGTERM, sigtermHandler)
     
-    # Sleep in scheduler
-    try:
-        sensorScheduler.run()
-    except KeyboardInterrupt:
-        shutdown.shutdown()
-    except Exception:
-        shutdown.shutdown()
-
-
-def registerSensorHub(managementClient, hostname):
-    # Ensure that the hostname is registered
-    print 'Adding host: %s' % (hostname)
-    managementClient.addHost(hostname); 
+    # Wait for shutdown
+    shutdown.wait()
     
-    # Setup the self-monitoring SENSORHUB sensor
-    sensor = managementClient.fetchSensor(SENSORHUB)
-    if len(sensor) == 0: 
-        print 'Deploying sensor: %s' % (SENSORHUB)
-        managementClient.deploySensor(SENSORHUB, '  ')
-        
-    # Enable sensor for hostname
-    print 'Enabling sensor: %s for host: %s' % (SENSORHUB, hostname)
-    managementClient.setSensor(hostname, SENSORHUB, True)
+
+
