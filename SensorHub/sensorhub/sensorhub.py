@@ -15,12 +15,12 @@ import thread
 import time
 import zipfile
 
-VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh')
 
 class Sensor(object):
 
     CONTINUOUSE = 0
-    DISCRETE = 1 
+    DISCRETE = 1
+    VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh') 
     
     def __init__(self, name, loggingClient, managementClient):
         self.loggingClient = loggingClient
@@ -107,7 +107,7 @@ class Sensor(object):
         data = self.managementClient.fetchSensor(self.name)
         z = open(self.name + ".zip", "wb")
         z.write(data)
-        z.shutdown()
+        z.close()
         
         # Decompress sensor package            
         self.__decompress()
@@ -147,7 +147,7 @@ class Sensor(object):
     def validate(self):
         exists = False
         
-        for main in VALID_MAINS:
+        for main in Sensor.VALID_MAINS:
             target = os.path.join(SENSOR_DIR, self.name, main)
             exists |= os.path.exists(target)
         
@@ -181,16 +181,16 @@ class Sensor(object):
             cf = zf.read(info.filename)
             f = open(os.path.join(target, info.filename), "wb")
             f.write(cf)
-            f.shutdown()
+            f.close()
             
-        zf.shutdown()
+        zf.close()
 
 
 class ProcessLoader(object):
     def newProcess(self, sensor):
         # determine the executable
         mainFile = None
-        for main in VALID_MAINS:
+        for main in Sensor.VALID_MAINS:
             target = os.path.join(SENSOR_DIR, sensor.name, main)
             if os.path.exists(target):
                 mainFile = main
@@ -366,8 +366,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         # TODO: Guarantee that no process can be started after terminating
         print 'Continuouse thread terminates...'
         self.lock.acquire()
-        for process in self.processes:
-            print 'Terminating process'
+        for i in range(0, len(self.processes)):
+            process = self.processes[i]
+            print 'Terminating process %s ' % (self.sensors[i].name)
             process.kill()
         self.lock.release()
     
@@ -377,16 +378,18 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         self.alive = False
         
         # Wait until main loop is closing and taking all the processes with it
-        print 'Waiting for all processes to terminate' 
-        self.join()
+        if self.isAlive():
+            print 'Waiting for all processes to terminate...'
+            self.join()
+            
+        print 'continuouse watcher exited'
     
 
 class SensorHub(object):
-    def __init__(self, lock, shutdownHandler, managementClient, loggingClient, scheduler):
+    def __init__(self, lock, shutdownHandler, managementClient, loggingClient):
         self.lock = lock
         self.managementClient = managementClient
         self.loggingClient = loggingClient
-        self.scheduler = scheduler
         
         # Register with shutdownHandler
         shutdownHandler.addHandler(self.shutdownHandler)
@@ -456,13 +459,18 @@ class SensorHub(object):
     
     
 class WrapperLoggingClient(object):
-    def __init__(self, lc):
+    def __init__(self, shutdown, lc):
+        self.shutdown = shutdown
         self.lc = lc
         self.lock = thread.allocate_lock()
         
     def logMetric(self, ids, value):
         self.lock.acquire()
-        self.lc.logMetric(ids, value)
+        try:
+            self.lc.logMetric(ids, value)
+        except:
+            self.shutdown.shutdown()
+            
         self.lock.release()
 
 
@@ -494,8 +502,6 @@ def main():
     managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
     loggingClient = CollectService.Client(TBinaryProtocol.TBinaryProtocol(transportLogging));  
     
-    loggingClient = WrapperLoggingClient(loggingClient)
-    
     # Open the transports
     while True:
         try:
@@ -509,19 +515,15 @@ def main():
     # Shutdown handler
     shutdown = ShutdownHandler()
     
+    # Wrapped logging Client
+    loggingClient = WrapperLoggingClient(shutdown, loggingClient)
+    
     # Register this host
     registerSensorHub(managementClient, HOSTNAME)
     
     # Setup thread lock
     lock = thread.allocate_lock()
     
-    # Setup sensorScheduler
-    sensorScheduler = sched.scheduler(time.time, time.sleep)
-    def shutdownHandler():
-        print 'Shutting down SensorHub...'
-        print 'Cancel all events...'
-        for event in sensorScheduler.queue:
-            sensorScheduler.cancel(event)
     shutdown.addHandler(shutdownHandler)
     
     # Setup sensorHub
