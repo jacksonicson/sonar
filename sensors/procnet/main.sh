@@ -18,7 +18,12 @@ function bytesPerSecond()
         ((vel = value_new - value_old))
         ((del = timestamp_new - timestamp_old))
         ((bps = vel / del / 1024))
-        echo $bps
+        
+        res_timestamp=$(date +%s)
+        res_name='procnet.recv'
+        res_value=$bps
+        line="$res_timestamp,$res_name,$res_value"
+        echo $line
 }
 
 # Handle startup
