@@ -21,7 +21,7 @@ def deploy(name, zipfile):
     client.deploySensor(name, ba); 
     
     transport.close();
-    print 'finished' 
+    print 'ok' 
     
     pass
 

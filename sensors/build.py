@@ -4,6 +4,7 @@ import string
 import cli
 
 def createSensor(name, path):
+    print 'creating zip...'
     shutil.make_archive(name, 'zip', path)
     return name + '.zip'
 
@@ -31,7 +32,6 @@ def main():
         sensorPath = os.path.join(path, subdir)
         package = createSensor(subdir, sensorPath)
         package = os.path.join(path, package)
-        print package
         deploy(subdir, package)
         
 if __name__ == '__main__':
