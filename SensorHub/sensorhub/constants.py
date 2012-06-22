@@ -1,5 +1,5 @@
 from socket import gethostname;
 
-SENSOR_DIR = '../sensors/'
+SENSOR_DIR = 'sensors'
 HOSTNAME = gethostname()
 SENSORHUB = 'sensorhub'

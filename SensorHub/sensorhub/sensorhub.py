@@ -216,7 +216,7 @@ class ProcessLoader(object):
                 executable = 'python'
                 main = 'main.py'
             elif ending == 'sh':
-                executable = None
+                executable = 'bash'
                 main = 'main.sh'
             elif ending == 'exe':
                 executable = None
@@ -296,6 +296,7 @@ class DiscreteWatcher(Thread, ProcessLoader):
         if process != None:
             # get the standard output from the process
             line = process.communicate()[0]
+            line = line.strip().rstrip()
             sensor.receive(line) 
         
         # Reschedule sensor
