@@ -21,6 +21,7 @@ class Sensor(object):
 
     CONTINUOUSE = 0
     DISCRETE = 1
+    INVALID = 2
     VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh') 
     
     def __init__(self, name, loggingClient, managementClient):
@@ -33,10 +34,11 @@ class Sensor(object):
     # Threadsafe
     def receive(self, line):
         # each line has the format
-        # timestamp, name, value
+        # sensor, timestamp, name, value
+        # sensor = The name of the sensor which is passed to the process as first argument
         # timestamp = UNIX timestamp in seconds since epoch
-        # name = (string value | 'none')
-        # value = float value 
+        # name = string value or 'none' if no subname for the sensor is given 
+        # value = float value which shall be logged
         
         # Check line structure
         elements = string.split(line, ',')
@@ -54,18 +56,16 @@ class Sensor(object):
         
         # Extract and build name for the entry (combine with sensor name)
         name = None
-        if elements[2] != 'none':
-            name = self.name + '.' + elements[2]
-        else:
+        if elements[2] == 'none':
             name = self.name
-        
-        print 'name %s' % (name)
+        else:
+            name = self.name + '.' + elements[2]
         
         # Extract value
         logValue = None
         try:
             logValue = float(elements[3])
-        except ValueError as e:
+        except ValueError:
             print 'error while parsing value %s: ' % (elements[3])
             return
             
@@ -85,15 +85,19 @@ class Sensor(object):
         # Debug output    
         print "value %s" % (line)
        
+       
     def sensorType(self):
         if self.__configured == False:
             print 'WARN: sensor is not configured, sensor type cannot be determined'
-            return Sensor.DISCRETE
+            return Sensor.INVALID
         
         if self.settings.interval > 0: 
             return Sensor.DISCRETE
-
-        return Sensor.CONTINUOUSE
+        elif self.settings.interval == 0:
+            return Sensor.CONTINUOUSE
+        
+        return Sensor.INVALID
+        
         
     def __download(self):
         # Get the MD5 value of the binary
@@ -103,29 +107,28 @@ class Sensor(object):
         if self.md5 == testMd5:
             return self.md5
                 
-        # Download sensor package
-        if os.path.exists(self.name + ".zip"):
-            os.remove(self.name + ".zip")
+        # Remove old sensor package
+        if os.path.exists(self.name + '.zip'):
+            os.remove(self.name + '.zip')
             
         # Download sensor
         data = self.managementClient.fetchSensor(self.name)
-        z = open(self.name + ".zip", "wb")
+        z = open(self.name + '.zip', 'wb')
         z.write(data)
         z.close()
         
-        # Decompress sensor package            
-        self.__decompress()
+        # Decompress sensor package      
+        status = self.__decompress()
+        if status == False:
+            return None
         
         return testMd5
         
         
     def configure(self):
-        # Do not enable self-monitoring sensor
-        if self.name == SENSORHUB:
-            return False
-        
         # Only accept sensors with binaries
         if not self.managementClient.hasBinary(self.name):
+            print 'Skipping sensor %s, missing binary' % (self.name)
             return False
 
         # Download settings
@@ -137,10 +140,12 @@ class Sensor(object):
         # handled by the synchronization process
         if bundledConfiguration.active == False:
             print 'WARN: configuration is not active'
-            # return False
 
         # Get MD5 value
         self.md5 = self.__download()
+        if self.md5 == None:
+            print 'ERR: while downloading and unzipping sensor'
+            return False
         
         # Update internal configured status
         self.__configured = True
@@ -167,11 +172,11 @@ class Sensor(object):
             shutil.rmtree(target, True)
         
         try:
-            print 'creating dirs %s' % (target)
+            print 'mkdir: %s' % (target)
             os.makedirs(target)
         except Exception as e:
             print 'Error while creating target directory'
-            print e
+            return False
         
         for info in zf.infolist():
             print info.filename
@@ -181,6 +186,8 @@ class Sensor(object):
                     os.makedirs(target + info.filename)
                 except Exception as e:
                     print 'error while decompressing files %s' % (e)
+                    return False
+                    
                 continue
             
             cf = zf.read(info.filename)
@@ -189,6 +196,8 @@ class Sensor(object):
             f.close()
             
         zf.close()
+        
+        return True
 
 
 class ProcessLoader(object):
@@ -238,11 +247,11 @@ class ProcessLoader(object):
             process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
             
             print 'PID %i' % (process.pid)
-            
             return process
         except Exception as e:
             print 'error starting process %s' % (e)
             return None
+    
     
     def kill(self, process):
         try:
@@ -264,13 +273,12 @@ class DiscreteWatcher(Thread, ProcessLoader):
         self.running = True
         self.start()
 
+
     def run(self):
         self.lock.acquire()
-        
         self.scheduler = sched.scheduler(time.time, time.sleep)
         for sensor in self.sensors:
             self.scheduler.enter(sensor.settings.interval, 0, self.__processSensor, [sensor])
-            
         self.lock.release()
         
         while self.running:
@@ -281,7 +289,7 @@ class DiscreteWatcher(Thread, ProcessLoader):
         self.lock.acquire()
         
         self.sensors.append(sensor)
-        if hasattr(self, 'scheduler') == True:
+        if hasattr(self, 'scheduler'):
             self.scheduler.enter(sensor.settings.interval, 0, self.__processSensor, [sensor])
             
         self.lock.release()
@@ -305,10 +313,12 @@ class DiscreteWatcher(Thread, ProcessLoader):
             self.scheduler.enter(sensor.settings.interval, 0, self.__processSensor, [sensor])
         self.lock.release()
     
+    
     def shutdownSensor(self, sensor):
         self.lock.acquire()
         self.sensors.remove(sensor)
         self.lock.release()
+    
     
     def shutdown(self):
         self.lock.acquire()
@@ -388,6 +398,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                     self.processes.append(process)
                 else:
                     print 'ERROR: Could not start process'
+                    
             del self.newSensors[0:len(self.newSensors)]
             
             for i in range(0, len(self.processes)):
@@ -397,7 +408,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             self.lock.release()
         
             if len(streams) == 0:
-                time.sleep(ContinuouseWatcher.SLEEP)
+                time.sleep(1)
                 continue
             
             # Wait for receive and pick the stdout list
@@ -410,6 +421,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             
             # Callback each sensor with the received data
             self.lock.acquire()
+            
             for i in range(0, len(data)):
                 line = data[i]
                 line = line.readline()
@@ -422,6 +434,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 name = line[0:index]
                 if name in tmpSensors:
                     tmpSensors[name].receive(line)
+                else:
+                    print 'no match'
                 
                     
             self.lock.release()
@@ -525,7 +539,7 @@ class SensorHub(Thread, object):
                 self.__updateSensors()
                 self.condition.wait(5)
             self.condition.release()  
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             self.shutdown.shutdown('exception while updating sensors')
 
@@ -573,9 +587,6 @@ class SensorHub(Thread, object):
         
         self.sensors.pop(sensorName)
 
-
-    
-    
     
 class WrapperLoggingClient(object):
     
@@ -592,7 +603,6 @@ class WrapperLoggingClient(object):
             self.shutdown.shutdown('exception while logging metric on collector')
             
         self.lock.release()
-
 
 
 class ShutdownHandler(object):
@@ -614,7 +624,8 @@ class ShutdownHandler(object):
     def run(self):
         print 'Waiting for shutdown event...'
         self.condition.acquire()
-        
+
+        # Spinning until shutdown signal is received        
         while self.flag == False:
             try:
                 self.condition.wait(1)
@@ -625,9 +636,10 @@ class ShutdownHandler(object):
         self.condition.release()
         
         # Shutdown
-        print 'Shutting down now...'            
+        print 'Shutting down now... ',             
         for callback in self.callbacks:
             callback() 
+        print 'OK'
             
 
 
