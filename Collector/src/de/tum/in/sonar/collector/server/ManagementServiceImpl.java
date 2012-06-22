@@ -388,7 +388,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (jedis.exists(key))
 			sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
 		else
-			sensorConfig.setInterval(0);
+			sensorConfig.setInterval(3);
 		config.setConfiguration(sensorConfig);
 
 		// Get all labels (aggregation of host and sensor)

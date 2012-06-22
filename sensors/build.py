@@ -26,7 +26,7 @@ def main():
     for subdir in os.listdir(path):
         if os.path.isfile(subdir):
             continue
-        elif subdir == 'src':
+        elif subdir == 'collector':
             continue
     
         sensorPath = os.path.join(path, subdir)
