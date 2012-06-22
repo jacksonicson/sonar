@@ -1,1 +1,4 @@
-interval:0
+interval: 0
+params:
+  dummy: 0
+  test: hello this is a value

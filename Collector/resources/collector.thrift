@@ -56,7 +56,7 @@ struct Parameter {
 
 struct SensorConfiguration {
 	1:long interval,
-	2:set<Parameter> parameters, 
+	2:list<Parameter> parameters, 
 }
 
 struct BundledSensorConfiguration {

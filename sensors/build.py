@@ -4,38 +4,40 @@ import string
 import cli
 import yaml
 from optparse import OptionParser
-from collector import CollectService, ManagementService, ttypes
-from thrift import Thrift
-from thrift.protocol import TBinaryProtocol
-from thrift.transport import TSocket, TTransport
+import connect
+from collector import ttypes
 
 def configure(sensor, path):
     conf = os.path.join(path, 'conf.yaml')
     if os.path.exists(conf):
+        # Reading yaml file
         yf = open(conf, 'r')
         content = yaml.load(yf)
         yf.close()
         
-        interval = 0
-        if hasattr(content, 'interval'):
-            interval = int(content.interval)
-        
-        transport = TSocket.TSocket('131.159.41.171', 7931)
-        transport = TTransport.TBufferedTransport(transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = ManagementService.Client(protocol);
-        transport.open();
-        
         config = ttypes.SensorConfiguration()
-        config.interval = interval
+        if 'interval' in content:
+            config.interval = int(content['interval'])
+            
+        parameters = []
+        if 'params' in content:
+            for key in content['params'].keys():
+                param = ttypes.Parameter()
+                param.key = key
+                param.value = str(content['params'][key])
+                parameters.append(param)
+        config.parameters = parameters
+        
+        # Connect with management interface
+        transport, client = connect.openClient()
+        
+        # Update configuration
         client.setSensorConfiguration(sensor, config)
         
-        transport.close()
-        print 'configuration applied'
+        # Close transport
+        connect.closeClient(transport)
         
-        print content
-        
-    pass
+        print 'Configuration applied'
 
 def createSensor(name, path):
     print 'creating zip...'

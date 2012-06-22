@@ -210,7 +210,7 @@ class logMessage_args:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'id', (Identifier, Identifier.thrift_spec), None, ), # 1
-    (2, TType.STRING, 'message', None, None, ), # 2
+    (2, TType.STRUCT, 'message', (LogMessage, LogMessage.thrift_spec), None, ), # 2
   )
 
   def __init__(self, id=None, message=None,):
@@ -233,8 +233,9 @@ class logMessage_args:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.STRING:
-          self.message = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.message = LogMessage()
+          self.message.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -252,8 +253,8 @@ class logMessage_args:
       self.id.write(oprot)
       oprot.writeFieldEnd()
     if self.message is not None:
-      oprot.writeFieldBegin('message', TType.STRING, 2)
-      oprot.writeString(self.message)
+      oprot.writeFieldBegin('message', TType.STRUCT, 2)
+      self.message.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
