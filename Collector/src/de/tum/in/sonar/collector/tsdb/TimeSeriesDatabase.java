@@ -46,7 +46,7 @@ public class TimeSeriesDatabase {
 		this.tsdbTablePool = new HTablePool();
 
 		this.compactionQueue = new CompactionQueue();
-		// this.compactionQueue.start();
+//		this.compactionQueue.start();
 	}
 
 	private int appendToKey(byte[] key, int index, long value) {
@@ -120,7 +120,7 @@ public class TimeSeriesDatabase {
 				HTableDescriptor desc = new HTableDescriptor(internalDesc.getName());
 				for (String family : internalDesc.getFamilies()) {
 					HColumnDescriptor meta = new HColumnDescriptor(family.getBytes());
-					meta.setMaxVersions(internalDesc.getVersions()); 
+					meta.setMaxVersions(internalDesc.getVersions());
 					desc.addFamily(meta);
 				}
 
@@ -296,19 +296,16 @@ public class TimeSeriesDatabase {
 						} catch (TException e) {
 							e.printStackTrace();
 						}
-						continue;
+
+					} else {
+						long quali = Bytes.toLong(key);
+						double value = Bytes.toDouble(familyMap.get(key));
+
+						TimeSeriesPoint p = new TimeSeriesPoint();
+						p.setTimestamp(timestampHours + quali);
+						p.setValue(value);
+						fragment.addPoint(p);
 					}
-
-					long value = Bytes.toLong(key);
-					double data = Bytes.toDouble(familyMap.get(key));
-				
-					
-					TimeSeriesPoint p = new TimeSeriesPoint();
-					p.setTimestamp(timestampHours + value);
-					p.setValue(data);
-					fragment.addPoint(p);
-
-					// logger.info("qualifier: " + value + " data: " + data);
 				}
 			}
 

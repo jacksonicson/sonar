@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.util.SafeEncoder;
 import de.tum.in.sonar.collector.BundledSensorConfiguration;
 import de.tum.in.sonar.collector.ManagementService;
@@ -35,7 +36,16 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	private TimeSeriesDatabase tsdb;
 
-	private JedisPool jedisPool = new JedisPool("srv2");
+	private JedisPool jedisPool;
+
+	public ManagementServiceImpl()
+	{
+		 JedisPoolConfig config = new JedisPoolConfig();
+		 config.setMaxActive(200);
+		 config.setMinIdle(10);
+		 config.setTestOnBorrow(false);
+		 this.jedisPool = new JedisPool(config, "srv2");
+	}
 
 	@Override
 	public List<TransferableTimeSeriesPoint> query(TimeSeriesQuery query) throws TException {
@@ -271,9 +281,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (!jedis.exists(key))
 			return Collections.emptySet();
 
+		logger.debug("test1");
+
 		Set<String> sensors = jedis.smembers(key);
 
 		jedisPool.returnResource(jedis);
+		logger.debug("done return");
 		return sensors;
 	}
 
@@ -388,7 +401,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (jedis.exists(key))
 			sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
 		else
-			sensorConfig.setInterval(3);
+			sensorConfig.setInterval(0);
 		config.setConfiguration(sensorConfig);
 
 		// Get all labels (aggregation of host and sensor)

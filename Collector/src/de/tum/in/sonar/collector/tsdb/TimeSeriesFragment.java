@@ -37,7 +37,6 @@ public class TimeSeriesFragment implements Iterable<TimeSeriesPoint> {
 			TimeSeriesPoint dp = new TimeSeriesPoint();
 			dp.setTimestamp(hoursSinceEpoch + point.getTimestamp());
 			dp.setValue(point.getValue());
-
 			dataPoints.add(dp);
 		}
 

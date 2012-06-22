@@ -41,8 +41,14 @@ struct TimeSeriesQuery {
 	4:optional string hostname,
 }
 
+struct Parameter {
+	1:string key,
+	2:string value
+} 
+
 struct SensorConfiguration {
 	1:long interval,
+	2:set<Parameter> parameters, 
 }
 
 struct BundledSensorConfiguration {

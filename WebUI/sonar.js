@@ -17,6 +17,11 @@ var thrift = require('thrift');
 var managementService = require('./ManagementService');
 var types = require("./collector_types");
 
+var connection = thrift.createConnection('localhost', 7932);
+connection.on("error", function (err) {
+    console.log("Could not connect with the Collector: " + err);
+});
+
 function plain(req, resp) {
     resp.end("hello world");
 }
@@ -169,11 +174,6 @@ function addSensorHandler(req, resp) {
 
     })
 }
-
-var connection = thrift.createConnection('localhost', 7932);
-connection.on("error", function (err) {
-    console.log("Could not connect with the Collector: " + err);
-});
 
 function hostsHandler(req, resp) {
 
