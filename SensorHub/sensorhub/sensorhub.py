@@ -311,12 +311,13 @@ class DiscreteWatcher(Thread, ProcessLoader):
     
     def shutdown(self):
         self.lock.acquire()
-        
         self.running = False
         for i in self.scheduler.queue:
             self.scheduler.cancel(i)
-            
         self.lock.release()
+        
+        self.join()
+        print 'joined: discrete watcher'
         
    
 class ContinuouseWatcher(Thread, ProcessLoader):
@@ -443,7 +444,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             print 'Waiting for all processes to terminate...'
             self.join()
             
-        print 'continuouse watcher exited'
+        print 'joined: continuouse watcher'
     
 
 class SensorHub(Thread, object):
@@ -476,6 +477,8 @@ class SensorHub(Thread, object):
       
     def __shutdownHandler(self):
         self.running = False
+        self.join()
+        print 'joined: sensorhub'
       
     def __connect(self):
         # Make socket
