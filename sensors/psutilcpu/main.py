@@ -2,12 +2,12 @@ import psutil
 import sys
 import time
 
-NAME = 'psutilcpu'
+NAME = sys.argv[1]
 
 while True:
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + ','
+    line += 'none' + ','
     
     value = str(psutil.cpu_percent(interval=3))
     line += value

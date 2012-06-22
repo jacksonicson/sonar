@@ -14,6 +14,7 @@ import thread
 import threading
 import time
 import zipfile
+import traceback
 
 
 class Sensor(object):
@@ -39,31 +40,33 @@ class Sensor(object):
         
         # Check line structure
         elements = string.split(line, ',')
-        if len(elements) != 3:
-            #print 'invalid line received: %s' % (line)
+        if len(elements) != 4:
+            print 'invalid line received: %s' % (line)
             return
             
         # Extract timestamp
         timestamp = None
         try:
-            timestamp = long(float(elements[0])) 
+            timestamp = long(float(elements[1])) 
         except ValueError as e:
             print 'error while parsing timestamp %s' % (elements[0])
             return
         
         # Extract and build name for the entry (combine with sensor name)
         name = None
-        if elements[1] != 'none':
-            name = self.name + '.' + elements[1]
+        if elements[2] != 'none':
+            name = self.name + '.' + elements[2]
         else:
             name = self.name
+        
+        print 'name %s' % (name)
         
         # Extract value
         logValue = None
         try:
-            logValue = float(elements[2])
+            logValue = float(elements[3])
         except ValueError as e:
-            print 'error while parsing value %s: ' % (elements[2])
+            print 'error while parsing value %s: ' % (elements[3])
             return
             
         # Create new entry    
@@ -355,7 +358,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     def shutdownSensor(self, sensor):
         self.lock.acquire()
         
-        for i in range(0, len(self.sensors)):
+        for i in reversed(range(0, len(self.sensors))):
             if self.sensors[i] == sensor:
                 # remove sensor
                 del self.sensors[i]
@@ -381,6 +384,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 if process != None:
                     self.sensors.append(sensor)
                     self.processes.append(process)
+                else:
+                    print 'ERROR: Could not start process'
             del self.newSensors[0:len(self.newSensors)]
             
             for i in range(0, len(self.processes)):
@@ -407,7 +412,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 line = data[i]
                 line = line.readline()
                 line = line.strip().rstrip()
-                
+
                 index = line.find(',')
                 if index == -1:
                     continue
@@ -502,15 +507,17 @@ class SensorHub(Thread, object):
         print 'Adding host: %s' % (HOSTNAME)
         self.managementClient.addHost(HOSTNAME); 
 
+    
     def run(self):
         try:
             while self.running:
                 self.__updateSensors()
                 time.sleep(5)
-        except:
-            self.shutdown.shutdown()
+        except Exception as e:
+            traceback.print_exc()
+            self.shutdown.shutdown('exception while updating sensors')
 
-     
+    
     def __updateSensors(self):
         # Download all the sensors
         sensors = self.managementClient.getSensors(HOSTNAME)
@@ -570,7 +577,7 @@ class WrapperLoggingClient(object):
         try:
             self.lc.logMetric(ids, value)
         except:
-            self.shutdown.shutdown()
+            self.shutdown.shutdown('exception while logging metric on collector')
             
         self.lock.release()
 
@@ -585,8 +592,8 @@ class ShutdownHandler(object):
     def addHandler(self, callback):
         self.callbacks.append(callback)
 
-    def shutdown(self):
-        print 'shutdown received'
+    def shutdown(self, msg='no reason'):
+        print 'shutdown received: %s' % (msg)
         self.condition.acquire()
         self.flag = True
         self.condition.notify()
@@ -622,7 +629,7 @@ def main():
     
     # React to kill signals
     def sigtermHandler(signum, frame):
-        shutdown.shutdown()
+        shutdown.shutdown('term signal received')
         
     signal.signal(signal.SIGTERM, sigtermHandler)
     
