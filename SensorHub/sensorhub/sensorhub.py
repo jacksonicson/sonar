@@ -6,7 +6,6 @@ from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import os
-import os
 import sched
 import shutil
 import signal
@@ -405,8 +404,6 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             # Callback each sensor with the received data
             self.lock.acquire()
             for i in range(0, len(data)):
-                sensor = tmpSensors[i]
-                
                 line = data[i]
                 line = line.readline()
                 line = line.strip().rstrip()
@@ -504,17 +501,6 @@ class SensorHub(Thread, object):
         # Ensure that the hostname is registered
         print 'Adding host: %s' % (HOSTNAME)
         self.managementClient.addHost(HOSTNAME); 
-        
-        # Setup the self-monitoring SENSORHUB sensor
-        sensor = self.managementClient.fetchSensor(SENSORHUB)
-        if len(sensor) == 0: 
-            print 'Deploying sensor: %s' % (SENSORHUB)
-            self.managementClient.deploySensor(SENSORHUB, '  ')
-            
-        # Enable sensor for hostname
-        print 'Enabling sensor: %s for host: %s' % (SENSORHUB, HOSTNAME)
-        self.managementClient.setSensor(HOSTNAME, SENSORHUB, True)
-
 
     def run(self):
         try:
