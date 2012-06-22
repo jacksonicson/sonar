@@ -46,7 +46,7 @@ public class TimeSeriesDatabase {
 		this.tsdbTablePool = new HTablePool();
 
 		this.compactionQueue = new CompactionQueue();
-		this.compactionQueue.start();
+		// this.compactionQueue.start();
 	}
 
 	private int appendToKey(byte[] key, int index, long value) {
