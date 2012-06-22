@@ -6,7 +6,6 @@ from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import os
-import os
 import sched
 import shutil
 import signal
@@ -15,6 +14,7 @@ import thread
 import threading
 import time
 import zipfile
+import traceback
 
 
 class Sensor(object):
@@ -40,31 +40,33 @@ class Sensor(object):
         
         # Check line structure
         elements = string.split(line, ',')
-        if len(elements) != 3:
-            #print 'invalid line received: %s' % (line)
+        if len(elements) != 4:
+            print 'invalid line received: %s' % (line)
             return
             
         # Extract timestamp
         timestamp = None
         try:
-            timestamp = long(float(elements[0])) 
+            timestamp = long(float(elements[1])) 
         except ValueError as e:
             print 'error while parsing timestamp %s' % (elements[0])
             return
         
         # Extract and build name for the entry (combine with sensor name)
         name = None
-        if elements[1] != 'none':
-            name = self.name + '.' + elements[1]
+        if elements[2] != 'none':
+            name = self.name + '.' + elements[2]
         else:
             name = self.name
+        
+        print 'name %s' % (name)
         
         # Extract value
         logValue = None
         try:
-            logValue = float(elements[2])
+            logValue = float(elements[3])
         except ValueError as e:
-            print 'error while parsing value %s: ' % (elements[2])
+            print 'error while parsing value %s: ' % (elements[3])
             return
             
         # Create new entry    
@@ -206,27 +208,32 @@ class ProcessLoader(object):
         
         # determine the executable (python, ..)
         executable = None
+        main = None
         try:    
             index = string.rindex(mainFile, '.')
             ending = mainFile[(index + 1):]
             if ending == 'py':
                 executable = 'python'
+                main = 'main.py'
             elif ending == 'sh':
                 executable = None
+                main = 'main.sh'
             elif ending == 'exe':
                 executable = None
+                main = 'main.exe'
         except ValueError:
             executable = None
+            main = None
         
         # create a new process 
         try:
-            path = os.path.join(SENSOR_DIR, sensor.name + '/main.py')
+            path = os.path.join(SENSOR_DIR, sensor.name, main)
             
             # configure executable and main file
             if executable is None:
-                executable = [path, ]
+                executable = [path, sensor.name]
             else:
-                executable = [executable, path]
+                executable = [executable, path, sensor.name]
             
             process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
             
@@ -304,12 +311,13 @@ class DiscreteWatcher(Thread, ProcessLoader):
     
     def shutdown(self):
         self.lock.acquire()
-        
         self.running = False
         for i in self.scheduler.queue:
             self.scheduler.cancel(i)
-            
         self.lock.release()
+        
+        self.join()
+        print 'joined: discrete watcher'
         
    
 class ContinuouseWatcher(Thread, ProcessLoader):
@@ -343,17 +351,15 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
     def addSensor(self, sensor):
         print 'Continuouse watcher adding sensor: %s' % (sensor)
-        
         self.lock.acquire()
         self.newSensors.append(sensor)
-            
         self.lock.release()
 
 
     def shutdownSensor(self, sensor):
         self.lock.acquire()
         
-        for i in range(0, len(self.sensors)):
+        for i in reversed(range(0, len(self.sensors))):
             if self.sensors[i] == sensor:
                 # remove sensor
                 del self.sensors[i]
@@ -370,7 +376,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         while self.alive:
             # Update streams list
             streams = []
-            sensors = []
+            tmpSensors = {}
             
             self.lock.acquire()
             
@@ -379,12 +385,13 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 if process != None:
                     self.sensors.append(sensor)
                     self.processes.append(process)
-                    
-            self.newSensors = []
+                else:
+                    print 'ERROR: Could not start process'
+            del self.newSensors[0:len(self.newSensors)]
             
             for i in range(0, len(self.processes)):
                 streams.append(self.processes[i].stdout)
-                sensors.append(self.sensors[i])
+                tmpSensors[self.sensors[i].name] = self.sensors[i]
                 
             self.lock.release()
         
@@ -400,16 +407,21 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 print 'stopping continuouse because of error in select'
                 break 
             
+            # Callback each sensor with the received data
             self.lock.acquire()
             for i in range(0, len(data)):
-                sensor = sensors[i]
-                
                 line = data[i]
                 line = line.readline()
                 line = line.strip().rstrip()
+
+                index = line.find(',')
+                if index == -1:
+                    continue
                 
-                sensor.receive(line)
-                    
+                name = line[0:index]
+                if name in tmpSensors:
+                    tmpSensors[name].receive(line)
+                
                     
             self.lock.release()
 
@@ -432,12 +444,15 @@ class ContinuouseWatcher(Thread, ProcessLoader):
             print 'Waiting for all processes to terminate...'
             self.join()
             
-        print 'continuouse watcher exited'
+        print 'joined: continuouse watcher'
     
 
 class SensorHub(Thread, object):
     def __init__(self, shutdown):
         super(SensorHub, self).__init__()
+        
+        # Synchronization condition
+        self.condition = threading.Condition()
         
         # Private variables
         self.shutdown = shutdown
@@ -465,6 +480,11 @@ class SensorHub(Thread, object):
       
     def __shutdownHandler(self):
         self.running = False
+        self.condition.acquire()
+        self.condition.notify()
+        self.condition.release()
+        self.join()
+        print 'joined: sensorhub'
       
     def __connect(self):
         # Make socket
@@ -495,27 +515,20 @@ class SensorHub(Thread, object):
         # Ensure that the hostname is registered
         print 'Adding host: %s' % (HOSTNAME)
         self.managementClient.addHost(HOSTNAME); 
-        
-        # Setup the self-monitoring SENSORHUB sensor
-        sensor = self.managementClient.fetchSensor(SENSORHUB)
-        if len(sensor) == 0: 
-            print 'Deploying sensor: %s' % (SENSORHUB)
-            self.managementClient.deploySensor(SENSORHUB, '  ')
-            
-        # Enable sensor for hostname
-        print 'Enabling sensor: %s for host: %s' % (SENSORHUB, HOSTNAME)
-        self.managementClient.setSensor(HOSTNAME, SENSORHUB, True)
 
-
+    
     def run(self):
         try:
+            self.condition.acquire()
             while self.running:
                 self.__updateSensors()
-                time.sleep(5)
-        except:
-            self.shutdown.shutdown()
+                self.condition.wait(5)
+            self.condition.release()  
+        except Exception as e:
+            traceback.print_exc()
+            self.shutdown.shutdown('exception while updating sensors')
 
-     
+    
     def __updateSensors(self):
         # Download all the sensors
         sensors = self.managementClient.getSensors(HOSTNAME)
@@ -575,7 +588,7 @@ class WrapperLoggingClient(object):
         try:
             self.lc.logMetric(ids, value)
         except:
-            self.shutdown.shutdown()
+            self.shutdown.shutdown('exception while logging metric on collector')
             
         self.lock.release()
 
@@ -590,8 +603,8 @@ class ShutdownHandler(object):
     def addHandler(self, callback):
         self.callbacks.append(callback)
 
-    def shutdown(self):
-        print 'shutdown received'
+    def shutdown(self, msg='no reason'):
+        print 'shutdown received: %s' % (msg)
         self.condition.acquire()
         self.flag = True
         self.condition.notify()
@@ -627,7 +640,7 @@ def main():
     
     # React to kill signals
     def sigtermHandler(signum, frame):
-        shutdown.shutdown()
+        shutdown.shutdown('term signal received')
         
     signal.signal(signal.SIGTERM, sigtermHandler)
     

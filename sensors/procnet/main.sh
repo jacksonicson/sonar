@@ -3,6 +3,8 @@
 startup=$1
 interface='eth0'
 
+sensor=$1
+
 timestamp_new=0
 value_new=0
 
@@ -20,9 +22,9 @@ function bytesPerSecond()
         ((bps = vel / del / 1024))
         
         res_timestamp=$(date +%s)
-        res_name='procnet.recv'
+        res_name='recv'
         res_value=$bps
-        line="$res_timestamp,$res_name,$res_value"
+        line="$sensor,$res_timestamp,$res_name,$res_value"
         echo $line
 }
 
