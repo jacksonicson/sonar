@@ -21,7 +21,7 @@ def deploy(name, package):
     cli.deploy(name, package)
 
 def main():
-    path = os.path.dirname(__file__)
+    path = os.getcwd() 
     clean(path)
     for subdir in os.listdir(path):
         if os.path.isfile(subdir):
