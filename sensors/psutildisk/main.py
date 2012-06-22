@@ -2,49 +2,49 @@ import psutil
 import sys
 import time
 
-NAME = 'psutilmem'
+NAME = sys.argv[1]
 
 while True:
     diskio = psutil.disk_io_counters(perdisk=False)
 
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.readcount' + ','
+    line += 'readcount' + ','
     value = str(diskio.read_count)
     line += value
     print (line)
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.writecount' + ','
+    line += 'writecount' + ','
     value = str(diskio.write_count)
     line += value
     print (line)
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.readbytes' + ','
+    line += 'readbytes' + ','
     value = str(diskio.read_bytes)
     line += value
     print (line)
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.writebytes' + ','
+    line += 'writebytes' + ','
     value = str(diskio.write_bytes)
     line += value
     print (line)
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.readtime' + ','
+    line += 'readtime' + ','
     value = str(diskio.read_time)
     line += value
     print (line)
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.writetime' + ','
+    line += 'writetime' + ','
     value = str(diskio.write_time)
     line += value
     print (line)

@@ -2,7 +2,7 @@ import psutil
 import sys
 import time
 
-NAME = 'psutilnet'
+NAME = sys.argv[1]
 
 last_bytes_sent = 0
 last_bytes_recv = 0
@@ -23,16 +23,16 @@ while True:
     last_bytes_recv = bytes_recv
     last_bytes_sent = bytes_sent
 
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.recv' + ','
+    line += 'recv' + ','
     value = str(delta_bytes_recv)
     line += value
     print (line)
 
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.sent' + ','
+    line += 'sent' + ','
     value = str(delta_bytes_sent)
     line += value
     print (line)

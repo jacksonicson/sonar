@@ -2,15 +2,15 @@ import psutil
 import sys
 import time
 
-NAME = 'psutilmem'
+NAME = sys.argv[1]
 
 while True:
     memusage = psutil.phymem_usage()
     memusage = memusage.percent
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.phymem' + ','
+    line += 'phymem' + ','
     value = str(memusage)
     line += value
     print (line)
@@ -18,9 +18,9 @@ while True:
     virtusage = psutil.virtmem_usage()
     virtusage = virtusage.percent
     
-    line = ''
+    line = NAME + ','
     line += str(time.time()) + ','
-    line += NAME + '.virtmem' + ','
+    line += 'virtmem' + ','
     value = str(virtusage)
     line += value
     print (line)
