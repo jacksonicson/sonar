@@ -45,6 +45,8 @@ class CompactionQueue extends Thread {
 	}
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
+		logger.debug("running compaction...");
+		
 		Get get = new Get(key);
 		Result result = table.get(get);
 		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
