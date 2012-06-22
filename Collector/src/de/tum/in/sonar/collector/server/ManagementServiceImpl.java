@@ -19,10 +19,14 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.util.SafeEncoder;
 import de.tum.in.sonar.collector.BundledSensorConfiguration;
+import de.tum.in.sonar.collector.LogMessage;
+import de.tum.in.sonar.collector.LogsQuery;
 import de.tum.in.sonar.collector.ManagementService;
 import de.tum.in.sonar.collector.SensorConfiguration;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
+import de.tum.in.sonar.collector.log.LogDatabase;
+import de.tum.in.sonar.collector.tsdb.InvalidLabelException;
 import de.tum.in.sonar.collector.tsdb.Query;
 import de.tum.in.sonar.collector.tsdb.QueryException;
 import de.tum.in.sonar.collector.tsdb.TimeSeries;
@@ -37,6 +41,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	private TimeSeriesDatabase tsdb;
 
 	private JedisPool jedisPool;
+
+	private LogDatabase logdb;
 
 	public ManagementServiceImpl()
 	{
@@ -430,5 +436,24 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
+	}
+
+	public void setLogdb(LogDatabase logdb) {
+		this.logdb = logdb;
+	}
+
+	public List<LogMessage> queryLogs(LogsQuery query) throws TException {
+		List<LogMessage> logMessages = null;
+		try {
+			logMessages = logdb.run(query);
+			return logMessages;
+		} catch (QueryException e) {
+			logger.error("Error while executing query", e);
+		} catch (UnresolvableException e) {
+			logger.error("Error while executing query", e);
+		} catch (InvalidLabelException e) {
+			logger.error("Error while executing query", e);
+		}
+		return new ArrayList<LogMessage>();
 	}
 }

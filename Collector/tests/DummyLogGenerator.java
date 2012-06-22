@@ -24,7 +24,7 @@ public class DummyLogGenerator {
 			for (int i = 0; i < 10; i++) {
 
 				Identifier id = new Identifier();
-				id.setTimestamp(System.currentTimeMillis() / 1000 + i);
+				id.setTimestamp(System.currentTimeMillis() / 1000 + i );
 				id.setSensor("TEST");
 				id.setHostname("jack");
 

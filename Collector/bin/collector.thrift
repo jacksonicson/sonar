@@ -18,6 +18,14 @@ struct LogMessage {
 	1: int logLevel,
 	2: string logMessage,
 	3: string programName,
+	4: i64 timestamp,
+}
+
+struct LogsQuery {
+	1:long startTime,
+	2:long stopTime,
+	3:string sensor,
+	4:string hostname, 
 }
 
 struct File {
@@ -68,6 +76,9 @@ service CollectService {
 }
 
 service ManagementService {
+
+	// query for logs
+	list<LogMessage> queryLogs(1:LogsQuery query),
 	
 	// Query Section
 	list<TransferableTimeSeriesPoint> query(1:TimeSeriesQuery query),

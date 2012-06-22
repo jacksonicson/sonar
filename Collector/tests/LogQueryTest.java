@@ -7,13 +7,13 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import de.tum.in.sonar.collector.LogMessage;
+import de.tum.in.sonar.collector.LogsQuery;
 import de.tum.in.sonar.collector.ManagementService;
-import de.tum.in.sonar.collector.TimeSeriesQuery;
-import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
 
-public class QueryTest {
+public class LogQueryTest {
 
-	public static void main(String arg[]) {
+	public static void main(String[] args) {
 
 		TTransport transport;
 		try {
@@ -21,19 +21,22 @@ public class QueryTest {
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);
-			ManagementService.Client client = new ManagementService.Client(protocol);
 
-			
-			TimeSeriesQuery query = new TimeSeriesQuery();
+			ManagementService.Client client = new ManagementService.Client(
+					protocol);
+
+			LogsQuery query = new LogsQuery();
+
 			query.setHostname("jack");
-			query.setSensor("CPU");
-			query.setStartTime(1340096400L);
-			query.setStopTime(Long.MAX_VALUE);
+			query.setSensor("TEST");
+			query.setStartTime(1340139600L);
+			query.setStopTime(1340097755L);
 
-			List<TransferableTimeSeriesPoint> tsPoints = client.query(query);
-			System.out.println("LENGTH " + tsPoints.size()); 
-			for (TransferableTimeSeriesPoint p : tsPoints) {
-				System.out.println("row: " + p.getTimestamp() + " : " + p.getValue());
+			List<LogMessage> logMessages = client.queryLogs(query);
+			System.out.println("Size :" + logMessages.size());
+
+			for (LogMessage p : logMessages) {
+				System.out.println(p);
 			}
 
 			transport.close();
@@ -45,4 +48,5 @@ public class QueryTest {
 		}
 
 	}
+
 }
