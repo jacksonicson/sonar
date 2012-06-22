@@ -2,6 +2,42 @@ import os
 import shutil
 import string
 import cli
+import yaml
+from optparse import OptionParser
+import connect
+from collector import ttypes
+
+def configure(sensor, path):
+    conf = os.path.join(path, 'conf.yaml')
+    if os.path.exists(conf):
+        # Reading yaml file
+        yf = open(conf, 'r')
+        content = yaml.load(yf)
+        yf.close()
+        
+        config = ttypes.SensorConfiguration()
+        if 'interval' in content:
+            config.interval = int(content['interval'])
+            
+        parameters = []
+        if 'params' in content:
+            for key in content['params'].keys():
+                param = ttypes.Parameter()
+                param.key = key
+                param.value = str(content['params'][key])
+                parameters.append(param)
+        config.parameters = parameters
+        
+        # Connect with management interface
+        transport, client = connect.openClient()
+        
+        # Update configuration
+        client.setSensorConfiguration(sensor, config)
+        
+        # Close transport
+        connect.closeClient(transport)
+        
+        print 'Configuration applied'
 
 def createSensor(name, path):
     print 'creating zip...'
@@ -33,6 +69,7 @@ def main():
         package = createSensor(subdir, sensorPath)
         package = os.path.join(path, package)
         deploy(subdir, package)
+        configure(subdir, sensorPath)
         
 if __name__ == '__main__':
     main() 

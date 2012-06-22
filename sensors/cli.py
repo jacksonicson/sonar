@@ -1,31 +1,22 @@
 from optparse import OptionParser
-from collector import CollectService, ManagementService, ttypes
-from thrift import Thrift
-from thrift.protocol import TBinaryProtocol
-from thrift.transport import TSocket, TTransport
+from collector import ttypes
+import connect
 
 def deploy(name, zipfile):
-    print 'deploying %s to sensor %s ...' % (zipfile, name)
+    print 'deploying %s to sensor %s ...' % (zipfile, name),
     
-    # Make socket
-    transport = TSocket.TSocket('131.159.41.171', 7931)
-    transport = TTransport.TBufferedTransport(transport)
-    protocol = TBinaryProtocol.TBinaryProtocol(transport)
-    client = ManagementService.Client(protocol);
-    transport.open();
-    
+    # Read file 
     f = open(zipfile, 'rb')
     ba = f.read()
     f.close()
-    
+
+    # Deploy sensor
+    transport, client = connect.openClient()    
     client.deploySensor(name, ba); 
+    connect.closeClient(transport)
     
-    transport.close();
-    print 'ok' 
+    print '[OK]'
     
-    pass
-
-
 if __name__ == '__main__':
     parser = OptionParser()
     

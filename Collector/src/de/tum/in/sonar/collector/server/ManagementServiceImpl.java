@@ -19,10 +19,15 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.util.SafeEncoder;
 import de.tum.in.sonar.collector.BundledSensorConfiguration;
+import de.tum.in.sonar.collector.LogMessage;
+import de.tum.in.sonar.collector.LogsQuery;
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.Parameter;
 import de.tum.in.sonar.collector.SensorConfiguration;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
+import de.tum.in.sonar.collector.log.LogDatabase;
+import de.tum.in.sonar.collector.tsdb.InvalidLabelException;
 import de.tum.in.sonar.collector.tsdb.Query;
 import de.tum.in.sonar.collector.tsdb.QueryException;
 import de.tum.in.sonar.collector.tsdb.TimeSeries;
@@ -38,13 +43,14 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	private JedisPool jedisPool;
 
-	public ManagementServiceImpl()
-	{
-		 JedisPoolConfig config = new JedisPoolConfig();
-		 config.setMaxActive(200);
-		 config.setMinIdle(10);
-		 config.setTestOnBorrow(false);
-		 this.jedisPool = new JedisPool(config, "srv2");
+	private LogDatabase logdb;
+
+	public ManagementServiceImpl() {
+		JedisPoolConfig config = new JedisPoolConfig();
+		config.setMaxActive(200);
+		config.setMinIdle(10);
+		config.setTestOnBorrow(false);
+		this.jedisPool = new JedisPool(config, "srv2");
 	}
 
 	@Override
@@ -356,6 +362,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		String key = key("sensor", sensor, "config");
 		jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
 
+		key = key(key, "properties");
+		for (Parameter param : configuration.getParameters())
+			jedis.set(key(key, param.key), param.value);
+
 		jedisPool.returnResource(jedis);
 	}
 
@@ -404,6 +414,18 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			sensorConfig.setInterval(0);
 		config.setConfiguration(sensorConfig);
 
+		// Get the properties
+		key = key("sensor", sensor, "config", "properties");
+		Set<String> parameters = jedis.keys(key + ":*");
+		for(String name : parameters)
+		{
+			String value = jedis.get(key(key, name)); 
+			Parameter param = new Parameter(); 
+			param.setKey(name); 
+			param.setValue(value);
+			sensorConfig.addToParameters(param); 
+		}
+		
 		// Get all labels (aggregation of host and sensor)
 		key = key("sensor", sensor, "labels");
 		Set<String> sensorLabels = null;
@@ -430,5 +452,24 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	public void setTsdb(TimeSeriesDatabase tsdb) {
 		this.tsdb = tsdb;
+	}
+
+	public void setLogdb(LogDatabase logdb) {
+		this.logdb = logdb;
+	}
+
+	public List<LogMessage> queryLogs(LogsQuery query) throws TException {
+		List<LogMessage> logMessages = null;
+		try {
+			logMessages = logdb.run(query);
+			return logMessages;
+		} catch (QueryException e) {
+			logger.error("Error while executing query", e);
+		} catch (UnresolvableException e) {
+			logger.error("Error while executing query", e);
+		} catch (InvalidLabelException e) {
+			logger.error("Error while executing query", e);
+		}
+		return new ArrayList<LogMessage>();
 	}
 }

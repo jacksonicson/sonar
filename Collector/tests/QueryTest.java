@@ -26,8 +26,8 @@ public class QueryTest {
 			
 			TimeSeriesQuery query = new TimeSeriesQuery();
 			query.setHostname("jack");
-			query.setSensor("TEST");
-			query.setStartTime(0);
+			query.setSensor("CPU");
+			query.setStartTime(1340096400L);
 			query.setStopTime(Long.MAX_VALUE);
 
 			List<TransferableTimeSeriesPoint> tsPoints = client.query(query);

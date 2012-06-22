@@ -32,7 +32,7 @@ public class DummyLoadGenerator {
 			for (int i = 0; i < 5; i++) {
 
 				Identifier id = new Identifier();
-				id.setTimestamp(time / 1000);
+				id.setTimestamp(time / 1000 + i);
 				id.setHostname("jack");
 				id.setSensor("CPU");
 
