@@ -451,6 +451,9 @@ class SensorHub(Thread, object):
     def __init__(self, shutdown):
         super(SensorHub, self).__init__()
         
+        # Synchronization condition
+        self.condition = threading.Condition()
+        
         # Private variables
         self.shutdown = shutdown
         
@@ -477,6 +480,9 @@ class SensorHub(Thread, object):
       
     def __shutdownHandler(self):
         self.running = False
+        self.condition.acquire()
+        self.condition.notify()
+        self.condition.release()
         self.join()
         print 'joined: sensorhub'
       
@@ -513,9 +519,11 @@ class SensorHub(Thread, object):
     
     def run(self):
         try:
+            self.condition.acquire()
             while self.running:
                 self.__updateSensors()
-                time.sleep(5)
+                self.condition.wait(5)
+            self.condition.release()  
         except Exception as e:
             traceback.print_exc()
             self.shutdown.shutdown('exception while updating sensors')
