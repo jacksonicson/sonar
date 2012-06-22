@@ -1,3 +1,2 @@
 #!/bin/bash
-
-thrift -out . --gen py collector.thrift
+thrift -out . --gen py ../Thrift/collector.thrift
