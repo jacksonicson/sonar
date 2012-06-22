@@ -24,14 +24,7 @@ public class ManagementTest {
 			ManagementService.Client client = new ManagementService.Client(
 					protocol);
 
-			TimeSeriesQuery query = new TimeSeriesQuery();
-			query.hostname = "jack";
-			query.sensor = " TEST";
-
-			query.startTime = 0;
-			query.stopTime = Long.MAX_VALUE;
-
-			client.query(query);
+			client.getAllSensors();
 
 			// String data = "Really new sensor version";
 			// byte[] ds = Bytes.toBytes(data);

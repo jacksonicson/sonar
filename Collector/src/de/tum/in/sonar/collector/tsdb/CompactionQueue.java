@@ -30,7 +30,7 @@ class CompactionQueue extends Thread {
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
 	// the delay time 30 minutes currently
-	private static final long TIME_DELAY = 5 * 60 * 1000;
+	private static final long TIME_DELAY = 10;
 
 	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
 
@@ -45,6 +45,8 @@ class CompactionQueue extends Thread {
 	}
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
+		logger.debug("running compaction...");
+		
 		Get get = new Get(key);
 		Result result = table.get(get);
 		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));

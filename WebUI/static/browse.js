@@ -17,6 +17,11 @@ function setupDatePickers() {
     $('#startdate').datepicker()
     $('#stopdate').datepicker()
 
+	var myDate = new Date();
+    var month = myDate.getMonth() + 1;
+    var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
+	$("#startdate").val(prettyDate);
+	$("#stopdate").val(prettyDate);
 
     $('.dropdown-timepicker').timepicker({
         defaultTime: 'current',
@@ -31,7 +36,16 @@ function setupHandlers() {
 }
 
 function setupCharts() {
-    chart = {
+	
+	// to set the timezone to the current timezone
+	Highcharts.setOptions({
+		global: {
+			useUTC: false
+		}
+	});
+	
+	chart = {
+		
         tooltip:{
             enabled:false
         },

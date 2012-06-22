@@ -17,6 +17,11 @@ var thrift = require('thrift');
 var managementService = require('./ManagementService');
 var types = require("./collector_types");
 
+var connection = thrift.createConnection('localhost', 7932);
+connection.on("error", function (err) {
+    console.log("Could not connect with the Collector: " + err);
+});
+
 function plain(req, resp) {
     resp.end("hello world");
 }
@@ -170,11 +175,6 @@ function addSensorHandler(req, resp) {
     })
 }
 
-var connection = thrift.createConnection('localhost', 7932);
-connection.on("error", function (err) {
-    console.log("Could not connect with the Collector: " + err);
-});
-
 function hostsHandler(req, resp) {
 
     var connection = thrift.createConnection('localhost', 7932);
@@ -317,6 +317,64 @@ function sensorsHandler(req, resp) {
     })
 }
 
+function logdbHandler(req, resp){
+
+	var body="";
+	if (req.method == 'GET') {
+        var jsonObj = [];
+        var ss = JSON.stringify(jsonObj);
+        console.log(ss);
+        resp.end(ss);
+
+        return;
+    }
+
+
+    req.on('data', function (data) {
+        body += data;
+    });
+
+    req.on('end', function () {
+        body = qs.parse(body);
+
+        var connection = thrift.createConnection('localhost', 7932);
+        var client = thrift.createClient(managementService, connection);
+
+        connection.on("error", function (err) {
+            console.log("Could not connect with the Collector: " + err);
+        });
+
+
+		var startDate = body.startdate + body.starttime;
+		var stopDate = body.stopdate + body.stoptime;;
+		
+        var startUnix = moment(startDate, "MM/DD/YYYY hh:mm a")/1000;
+        var endUnix = moment(stopDate, "MM/DD/YYYY hh:mm a")/1000;
+        var hostname = body.hostname;
+        var sensor = body.sensor;
+
+        console.log("hostname: " + hostname);
+        console.log("sensor: " + sensor);
+        console.log("startTime: " + startUnix);
+        console.log("endTime: " + endUnix);
+
+		var query = new types.LogsQuery({
+			startTime : startUnix,
+			stopTime : endUnix,
+			sensor : sensor,
+			hostname : hostname
+		});
+		
+        // Execute the query
+        client.queryLogs(query, function (err, logMessages) {
+			var ss = JSON.stringify(logMessages);
+            console.log(ss);
+            resp.end(ss);
+        });
+    });
+	
+}
+
 function tsdbHandler(req, resp) {
 
     var body = "";
@@ -348,11 +406,11 @@ function tsdbHandler(req, resp) {
         });
 
 
-        var startUnix = moment(body.startdate, "MM/DD/YYYY");
-        startUnix = startUnix.unix();
-
-        var endUnix = moment(body.stopdate, "MM/DD/YYYY");
-        endUnix = endUnix.unix() + 24 * 3600;
+        var startDate = body.startdate + body.starttime;
+		var stopDate = body.stopdate + body.stoptime;;
+		
+        var startUnix = moment(startDate, "MM/DD/YYYY hh:mm a")/1000;
+        var endUnix = moment(stopDate, "MM/DD/YYYY hh:mm a")/1000;
 
         var labels = body.labels;
         var hostname = body.hostname;
@@ -418,6 +476,13 @@ function browse(req, resp) {
     resp.end(rendered);
 }
 
+function logs(req, resp) {
+    var compiled = template.compileFile('logs.html');
+    var rendered = compiled.render({
+    });
+    resp.end(rendered);
+}
+
 function config(req, resp) {
     var compiled = template.compileFile('config.html');
     var rendered = compiled.render({
@@ -445,7 +510,8 @@ function configjs(req, resp) {
 var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('BROWSE', {url:'browse', handler:browse}, []),
     new router.UrlNode('CONFIG', {url:'config', handler:config}, []),
-
+	new router.UrlNode('LOGS', {url:'logs', handler:logs}, []),
+	
     new router.UrlNode('CONFIGJS', {url:'config.js', handler:configjs}, []),
 
     new router.UrlNode('INDEX', {url:'test', handler:plain}, []),
@@ -456,7 +522,8 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
     new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
-    new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, [])
+    new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, []),
+	new router.UrlNode('LOGDB', {url:'logdb', handler:logdbHandler}, []),
 ]);
 
 // dump url configuration
