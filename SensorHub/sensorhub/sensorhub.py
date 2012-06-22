@@ -206,27 +206,32 @@ class ProcessLoader(object):
         
         # determine the executable (python, ..)
         executable = None
+        main = None
         try:    
             index = string.rindex(mainFile, '.')
             ending = mainFile[(index + 1):]
             if ending == 'py':
                 executable = 'python'
+                main = 'main.py'
             elif ending == 'sh':
                 executable = None
+                main = 'main.sh'
             elif ending == 'exe':
                 executable = None
+                main = 'main.exe'
         except ValueError:
             executable = None
+            main = None
         
         # create a new process 
         try:
-            path = os.path.join(SENSOR_DIR, sensor.name + '/main.py')
+            path = os.path.join(SENSOR_DIR, sensor.name, main)
             
             # configure executable and main file
             if executable is None:
-                executable = [path, ]
+                executable = [path, sensor.name]
             else:
-                executable = [executable, path]
+                executable = [executable, path, sensor.name]
             
             process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
             
@@ -343,10 +348,8 @@ class ContinuouseWatcher(Thread, ProcessLoader):
     
     def addSensor(self, sensor):
         print 'Continuouse watcher adding sensor: %s' % (sensor)
-        
         self.lock.acquire()
         self.newSensors.append(sensor)
-            
         self.lock.release()
 
 
@@ -370,7 +373,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         while self.alive:
             # Update streams list
             streams = []
-            sensors = []
+            tmpSensors = {}
             
             self.lock.acquire()
             
@@ -379,12 +382,11 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 if process != None:
                     self.sensors.append(sensor)
                     self.processes.append(process)
-                    
-            self.newSensors = []
+            del self.newSensors[0:len(self.newSensors)]
             
             for i in range(0, len(self.processes)):
                 streams.append(self.processes[i].stdout)
-                sensors.append(self.sensors[i])
+                tmpSensors[self.sensors[i].name] = self.sensors[i]
                 
             self.lock.release()
         
@@ -400,16 +402,23 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 print 'stopping continuouse because of error in select'
                 break 
             
+            # Callback each sensor with the received data
             self.lock.acquire()
             for i in range(0, len(data)):
-                sensor = sensors[i]
+                sensor = tmpSensors[i]
                 
                 line = data[i]
                 line = line.readline()
                 line = line.strip().rstrip()
                 
-                sensor.receive(line)
-                    
+                index = line.find(',')
+                if index == -1:
+                    continue
+                
+                name = line[0:index]
+                if name in tmpSensors:
+                    tmpSensors[name].receive(line)
+                
                     
             self.lock.release()
 
