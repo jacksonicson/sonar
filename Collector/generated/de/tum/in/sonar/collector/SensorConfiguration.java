@@ -31,6 +31,7 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SensorConfiguration");
 
   private static final org.apache.thrift.protocol.TField INTERVAL_FIELD_DESC = new org.apache.thrift.protocol.TField("interval", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -39,10 +40,12 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
   }
 
   public long interval; // required
+  public List<Parameter> parameters; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    INTERVAL((short)1, "interval");
+    INTERVAL((short)1, "interval"),
+    PARAMETERS((short)2, "parameters");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -59,6 +62,8 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       switch(fieldId) {
         case 1: // INTERVAL
           return INTERVAL;
+        case 2: // PARAMETERS
+          return PARAMETERS;
         default:
           return null;
       }
@@ -106,6 +111,9 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.INTERVAL, new org.apache.thrift.meta_data.FieldMetaData("interval", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "long")));
+    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Parameter.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SensorConfiguration.class, metaDataMap);
   }
@@ -114,11 +122,13 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
   }
 
   public SensorConfiguration(
-    long interval)
+    long interval,
+    List<Parameter> parameters)
   {
     this();
     this.interval = interval;
     setIntervalIsSet(true);
+    this.parameters = parameters;
   }
 
   /**
@@ -128,6 +138,13 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.interval = other.interval;
+    if (other.isSetParameters()) {
+      List<Parameter> __this__parameters = new ArrayList<Parameter>();
+      for (Parameter other_element : other.parameters) {
+        __this__parameters.add(new Parameter(other_element));
+      }
+      this.parameters = __this__parameters;
+    }
   }
 
   public SensorConfiguration deepCopy() {
@@ -138,6 +155,7 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
   public void clear() {
     setIntervalIsSet(false);
     this.interval = 0;
+    this.parameters = null;
   }
 
   public long getInterval() {
@@ -163,6 +181,45 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     __isset_bit_vector.set(__INTERVAL_ISSET_ID, value);
   }
 
+  public int getParametersSize() {
+    return (this.parameters == null) ? 0 : this.parameters.size();
+  }
+
+  public java.util.Iterator<Parameter> getParametersIterator() {
+    return (this.parameters == null) ? null : this.parameters.iterator();
+  }
+
+  public void addToParameters(Parameter elem) {
+    if (this.parameters == null) {
+      this.parameters = new ArrayList<Parameter>();
+    }
+    this.parameters.add(elem);
+  }
+
+  public List<Parameter> getParameters() {
+    return this.parameters;
+  }
+
+  public SensorConfiguration setParameters(List<Parameter> parameters) {
+    this.parameters = parameters;
+    return this;
+  }
+
+  public void unsetParameters() {
+    this.parameters = null;
+  }
+
+  /** Returns true if field parameters is set (has been assigned a value) and false otherwise */
+  public boolean isSetParameters() {
+    return this.parameters != null;
+  }
+
+  public void setParametersIsSet(boolean value) {
+    if (!value) {
+      this.parameters = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case INTERVAL:
@@ -173,6 +230,14 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       }
       break;
 
+    case PARAMETERS:
+      if (value == null) {
+        unsetParameters();
+      } else {
+        setParameters((List<Parameter>)value);
+      }
+      break;
+
     }
   }
 
@@ -180,6 +245,9 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     switch (field) {
     case INTERVAL:
       return Long.valueOf(getInterval());
+
+    case PARAMETERS:
+      return getParameters();
 
     }
     throw new IllegalStateException();
@@ -194,6 +262,8 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     switch (field) {
     case INTERVAL:
       return isSetInterval();
+    case PARAMETERS:
+      return isSetParameters();
     }
     throw new IllegalStateException();
   }
@@ -217,6 +287,15 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       if (!(this_present_interval && that_present_interval))
         return false;
       if (this.interval != that.interval)
+        return false;
+    }
+
+    boolean this_present_parameters = true && this.isSetParameters();
+    boolean that_present_parameters = true && that.isSetParameters();
+    if (this_present_parameters || that_present_parameters) {
+      if (!(this_present_parameters && that_present_parameters))
+        return false;
+      if (!this.parameters.equals(that.parameters))
         return false;
     }
 
@@ -246,6 +325,16 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetParameters()).compareTo(typedOther.isSetParameters());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetParameters()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.parameters, typedOther.parameters);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -268,6 +357,14 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
 
     sb.append("interval:");
     sb.append(this.interval);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("parameters:");
+    if (this.parameters == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.parameters);
+    }
     first = false;
     sb.append(")");
     return sb.toString();
@@ -321,6 +418,25 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // PARAMETERS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                struct.parameters = new ArrayList<Parameter>(_list32.size);
+                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
+                {
+                  Parameter _elem34; // required
+                  _elem34 = new Parameter();
+                  _elem34.read(iprot);
+                  struct.parameters.add(_elem34);
+                }
+                iprot.readListEnd();
+              }
+              struct.setParametersIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -339,6 +455,18 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       oprot.writeFieldBegin(INTERVAL_FIELD_DESC);
       oprot.writeI64(struct.interval);
       oprot.writeFieldEnd();
+      if (struct.parameters != null) {
+        oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parameters.size()));
+          for (Parameter _iter35 : struct.parameters)
+          {
+            _iter35.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -360,19 +488,45 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       if (struct.isSetInterval()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetParameters()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetInterval()) {
         oprot.writeI64(struct.interval);
+      }
+      if (struct.isSetParameters()) {
+        {
+          oprot.writeI32(struct.parameters.size());
+          for (Parameter _iter36 : struct.parameters)
+          {
+            _iter36.write(oprot);
+          }
+        }
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SensorConfiguration struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.interval = iprot.readI64();
         struct.setIntervalIsSet(true);
+      }
+      if (incoming.get(1)) {
+        {
+          org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.parameters = new ArrayList<Parameter>(_list37.size);
+          for (int _i38 = 0; _i38 < _list37.size; ++_i38)
+          {
+            Parameter _elem39; // required
+            _elem39 = new Parameter();
+            _elem39.read(iprot);
+            struct.parameters.add(_elem39);
+          }
+        }
+        struct.setParametersIsSet(true);
       }
     }
   }

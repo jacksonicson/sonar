@@ -660,13 +660,13 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
           case 3: // LABELS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set32 = iprot.readSetBegin();
-                struct.labels = new HashSet<String>(2*_set32.size);
-                for (int _i33 = 0; _i33 < _set32.size; ++_i33)
+                org.apache.thrift.protocol.TSet _set40 = iprot.readSetBegin();
+                struct.labels = new HashSet<String>(2*_set40.size);
+                for (int _i41 = 0; _i41 < _set40.size; ++_i41)
                 {
-                  String _elem34; // required
-                  _elem34 = iprot.readString();
-                  struct.labels.add(_elem34);
+                  String _elem42; // required
+                  _elem42 = iprot.readString();
+                  struct.labels.add(_elem42);
                 }
                 iprot.readSetEnd();
               }
@@ -721,9 +721,9 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
         oprot.writeFieldBegin(LABELS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.labels.size()));
-          for (String _iter35 : struct.labels)
+          for (String _iter43 : struct.labels)
           {
-            oprot.writeString(_iter35);
+            oprot.writeString(_iter43);
           }
           oprot.writeSetEnd();
         }
@@ -780,9 +780,9 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       if (struct.isSetLabels()) {
         {
           oprot.writeI32(struct.labels.size());
-          for (String _iter36 : struct.labels)
+          for (String _iter44 : struct.labels)
           {
-            oprot.writeString(_iter36);
+            oprot.writeString(_iter44);
           }
         }
       }
@@ -808,13 +808,13 @@ public class BundledSensorConfiguration implements org.apache.thrift.TBase<Bundl
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TSet _set37 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.labels = new HashSet<String>(2*_set37.size);
-          for (int _i38 = 0; _i38 < _set37.size; ++_i38)
+          org.apache.thrift.protocol.TSet _set45 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.labels = new HashSet<String>(2*_set45.size);
+          for (int _i46 = 0; _i46 < _set45.size; ++_i46)
           {
-            String _elem39; // required
-            _elem39 = iprot.readString();
-            struct.labels.add(_elem39);
+            String _elem47; // required
+            _elem47 = iprot.readString();
+            struct.labels.add(_elem47);
           }
         }
         struct.setLabelsIsSet(true);

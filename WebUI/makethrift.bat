@@ -1,1 +1,1 @@
-thrift -out . --gen js:node collector.thrift
+thrift -out . --gen js:node ../Thrift/collector.thrift
