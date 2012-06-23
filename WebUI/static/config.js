@@ -346,6 +346,7 @@ function updateSensorList() {
 
 function editSensor(event){
 	var editSensor = event.target.id;
+    clearFormElements($('#newSensorForm'));
     editSenrorIntern(event, editSensor);
 }
 
