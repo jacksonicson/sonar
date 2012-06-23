@@ -123,7 +123,7 @@ function newHost(event) {
 
 function editHost(event) {
     var editHost = event.target.id;
-    editHostIntern(event, editHost)
+    editHostIntern(event, editHost);
 }
 
 function editHostIntern(event, editHost) {
@@ -285,7 +285,9 @@ function updateSensorList() {
                         $('<td>').append(
                             $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
                         ),
-                        $('<td>').text(sensor.name),
+						$('<td>').append(
+                            $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
+                        ),
                         $('<td>').text(sensor.binary),
                         $('<td>').text(labelString)
                     )
@@ -303,3 +305,37 @@ function updateSensorList() {
     });
 }
 
+function editSensor(event){
+	var editSensor = event.target.id;
+    editSenrorIntern(event, editSensor);
+}
+
+function editSenrorIntern(event, editSensor){
+	console.log("editing sensor" + editSensor);
+
+    $.ajax({
+        type:"GET",
+        url:'{{ROOT_SENSORS}}',
+        dataType:'json',
+
+        success:function (data) {
+
+            for (var i in data) {
+                var sensor = data[i];
+                console.log("checking sensor name: " + sensor.name + " against " + editSensor);
+				if(sensor.name == editSensor){
+					$('#sensorName').attr("value", sensor.name);
+						var labelString = '';
+					for (var j = 0; j < sensor.labels.length; j++) {
+						labelString += sensor.labels[j];
+						if (j < (sensor.labels.length - 1))
+							labelString += ","
+					}	
+					$('#newSensorDlg').modal('show');
+					break;
+				}
+			}
+        }
+    });
+
+}
