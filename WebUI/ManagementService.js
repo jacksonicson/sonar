@@ -86,19 +86,19 @@ ManagementService_queryLogs_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size40 = 0;
-        var _rtmp344;
+        var _size48 = 0;
+        var _rtmp352;
         this.success = [];
-        var _etype43 = 0;
-        _rtmp344 = input.readListBegin();
-        _etype43 = _rtmp344.etype;
-        _size40 = _rtmp344.size;
-        for (var _i45 = 0; _i45 < _size40; ++_i45)
+        var _etype51 = 0;
+        _rtmp352 = input.readListBegin();
+        _etype51 = _rtmp352.etype;
+        _size48 = _rtmp352.size;
+        for (var _i53 = 0; _i53 < _size48; ++_i53)
         {
-          var elem46 = null;
-          elem46 = new ttypes.LogMessage();
-          elem46.read(input);
-          this.success.push(elem46);
+          var elem54 = null;
+          elem54 = new ttypes.LogMessage();
+          elem54.read(input);
+          this.success.push(elem54);
         }
         input.readListEnd();
       } else {
@@ -122,12 +122,12 @@ ManagementService_queryLogs_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRUCT, this.success.length);
-    for (var iter47 in this.success)
+    for (var iter55 in this.success)
     {
-      if (this.success.hasOwnProperty(iter47))
+      if (this.success.hasOwnProperty(iter55))
       {
-        iter47 = this.success[iter47];
-        iter47.write(output);
+        iter55 = this.success[iter55];
+        iter55.write(output);
       }
     }
     output.writeListEnd();
@@ -216,19 +216,19 @@ ManagementService_query_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.LIST) {
-        var _size48 = 0;
-        var _rtmp352;
+        var _size56 = 0;
+        var _rtmp360;
         this.success = [];
-        var _etype51 = 0;
-        _rtmp352 = input.readListBegin();
-        _etype51 = _rtmp352.etype;
-        _size48 = _rtmp352.size;
-        for (var _i53 = 0; _i53 < _size48; ++_i53)
+        var _etype59 = 0;
+        _rtmp360 = input.readListBegin();
+        _etype59 = _rtmp360.etype;
+        _size56 = _rtmp360.size;
+        for (var _i61 = 0; _i61 < _size56; ++_i61)
         {
-          var elem54 = null;
-          elem54 = new ttypes.TransferableTimeSeriesPoint();
-          elem54.read(input);
-          this.success.push(elem54);
+          var elem62 = null;
+          elem62 = new ttypes.TransferableTimeSeriesPoint();
+          elem62.read(input);
+          this.success.push(elem62);
         }
         input.readListEnd();
       } else {
@@ -252,12 +252,12 @@ ManagementService_query_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.LIST, 0);
     output.writeListBegin(Thrift.Type.STRUCT, this.success.length);
-    for (var iter55 in this.success)
+    for (var iter63 in this.success)
     {
-      if (this.success.hasOwnProperty(iter55))
+      if (this.success.hasOwnProperty(iter63))
       {
-        iter55 = this.success[iter55];
-        iter55.write(output);
+        iter63 = this.success[iter63];
+        iter63.write(output);
       }
     }
     output.writeListEnd();
@@ -626,18 +626,18 @@ ManagementService_getAllSensors_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.SET) {
-        var _size56 = 0;
-        var _rtmp360;
+        var _size64 = 0;
+        var _rtmp368;
         this.success = [];
-        var _etype59 = 0;
-        _rtmp360 = input.readSetBegin();
-        _etype59 = _rtmp360.etype;
-        _size56 = _rtmp360.size;
-        for (var _i61 = 0; _i61 < _size56; ++_i61)
+        var _etype67 = 0;
+        _rtmp368 = input.readSetBegin();
+        _etype67 = _rtmp368.etype;
+        _size64 = _rtmp368.size;
+        for (var _i69 = 0; _i69 < _size64; ++_i69)
         {
-          var elem62 = null;
-          elem62 = input.readString();
-          this.success.push(elem62);
+          var elem70 = null;
+          elem70 = input.readString();
+          this.success.push(elem70);
         }
         input.readSetEnd();
       } else {
@@ -661,12 +661,12 @@ ManagementService_getAllSensors_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.SET, 0);
     output.writeSetBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter63 in this.success)
+    for (var iter71 in this.success)
     {
-      if (this.success.hasOwnProperty(iter63))
+      if (this.success.hasOwnProperty(iter71))
       {
-        iter63 = this.success[iter63];
-        output.writeString(iter63);
+        iter71 = this.success[iter71];
+        output.writeString(iter71);
       }
     }
     output.writeSetEnd();
@@ -860,18 +860,18 @@ ManagementService_getSensorLabels_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.SET) {
-        var _size64 = 0;
-        var _rtmp368;
+        var _size72 = 0;
+        var _rtmp376;
         this.success = [];
-        var _etype67 = 0;
-        _rtmp368 = input.readSetBegin();
-        _etype67 = _rtmp368.etype;
-        _size64 = _rtmp368.size;
-        for (var _i69 = 0; _i69 < _size64; ++_i69)
+        var _etype75 = 0;
+        _rtmp376 = input.readSetBegin();
+        _etype75 = _rtmp376.etype;
+        _size72 = _rtmp376.size;
+        for (var _i77 = 0; _i77 < _size72; ++_i77)
         {
-          var elem70 = null;
-          elem70 = input.readString();
-          this.success.push(elem70);
+          var elem78 = null;
+          elem78 = input.readString();
+          this.success.push(elem78);
         }
         input.readSetEnd();
       } else {
@@ -895,12 +895,12 @@ ManagementService_getSensorLabels_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.SET, 0);
     output.writeSetBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter71 in this.success)
+    for (var iter79 in this.success)
     {
-      if (this.success.hasOwnProperty(iter71))
+      if (this.success.hasOwnProperty(iter79))
       {
-        iter71 = this.success[iter71];
-        output.writeString(iter71);
+        iter79 = this.success[iter79];
+        output.writeString(iter79);
       }
     }
     output.writeSetEnd();
@@ -1027,18 +1027,18 @@ ManagementService_setSensorLabels_args.prototype.read = function(input) {
       break;
       case 3:
       if (ftype == Thrift.Type.SET) {
-        var _size72 = 0;
-        var _rtmp376;
+        var _size80 = 0;
+        var _rtmp384;
         this.labels = [];
-        var _etype75 = 0;
-        _rtmp376 = input.readSetBegin();
-        _etype75 = _rtmp376.etype;
-        _size72 = _rtmp376.size;
-        for (var _i77 = 0; _i77 < _size72; ++_i77)
+        var _etype83 = 0;
+        _rtmp384 = input.readSetBegin();
+        _etype83 = _rtmp384.etype;
+        _size80 = _rtmp384.size;
+        for (var _i85 = 0; _i85 < _size80; ++_i85)
         {
-          var elem78 = null;
-          elem78 = input.readString();
-          this.labels.push(elem78);
+          var elem86 = null;
+          elem86 = input.readString();
+          this.labels.push(elem86);
         }
         input.readSetEnd();
       } else {
@@ -1064,12 +1064,12 @@ ManagementService_setSensorLabels_args.prototype.write = function(output) {
   if (this.labels) {
     output.writeFieldBegin('labels', Thrift.Type.SET, 3);
     output.writeSetBegin(Thrift.Type.STRING, this.labels.length);
-    for (var iter79 in this.labels)
+    for (var iter87 in this.labels)
     {
-      if (this.labels.hasOwnProperty(iter79))
+      if (this.labels.hasOwnProperty(iter87))
       {
-        iter79 = this.labels[iter79];
-        output.writeString(iter79);
+        iter87 = this.labels[iter87];
+        output.writeString(iter87);
       }
     }
     output.writeSetEnd();
@@ -1336,18 +1336,18 @@ ManagementService_getAllHosts_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.SET) {
-        var _size80 = 0;
-        var _rtmp384;
+        var _size88 = 0;
+        var _rtmp392;
         this.success = [];
-        var _etype83 = 0;
-        _rtmp384 = input.readSetBegin();
-        _etype83 = _rtmp384.etype;
-        _size80 = _rtmp384.size;
-        for (var _i85 = 0; _i85 < _size80; ++_i85)
+        var _etype91 = 0;
+        _rtmp392 = input.readSetBegin();
+        _etype91 = _rtmp392.etype;
+        _size88 = _rtmp392.size;
+        for (var _i93 = 0; _i93 < _size88; ++_i93)
         {
-          var elem86 = null;
-          elem86 = input.readString();
-          this.success.push(elem86);
+          var elem94 = null;
+          elem94 = input.readString();
+          this.success.push(elem94);
         }
         input.readSetEnd();
       } else {
@@ -1371,12 +1371,12 @@ ManagementService_getAllHosts_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.SET, 0);
     output.writeSetBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter87 in this.success)
+    for (var iter95 in this.success)
     {
-      if (this.success.hasOwnProperty(iter87))
+      if (this.success.hasOwnProperty(iter95))
       {
-        iter87 = this.success[iter87];
-        output.writeString(iter87);
+        iter95 = this.success[iter95];
+        output.writeString(iter95);
       }
     }
     output.writeSetEnd();
@@ -1503,18 +1503,18 @@ ManagementService_setHostLabels_args.prototype.read = function(input) {
       break;
       case 2:
       if (ftype == Thrift.Type.SET) {
-        var _size88 = 0;
-        var _rtmp392;
+        var _size96 = 0;
+        var _rtmp3100;
         this.labels = [];
-        var _etype91 = 0;
-        _rtmp392 = input.readSetBegin();
-        _etype91 = _rtmp392.etype;
-        _size88 = _rtmp392.size;
-        for (var _i93 = 0; _i93 < _size88; ++_i93)
+        var _etype99 = 0;
+        _rtmp3100 = input.readSetBegin();
+        _etype99 = _rtmp3100.etype;
+        _size96 = _rtmp3100.size;
+        for (var _i101 = 0; _i101 < _size96; ++_i101)
         {
-          var elem94 = null;
-          elem94 = input.readString();
-          this.labels.push(elem94);
+          var elem102 = null;
+          elem102 = input.readString();
+          this.labels.push(elem102);
         }
         input.readSetEnd();
       } else {
@@ -1540,12 +1540,12 @@ ManagementService_setHostLabels_args.prototype.write = function(output) {
   if (this.labels) {
     output.writeFieldBegin('labels', Thrift.Type.SET, 2);
     output.writeSetBegin(Thrift.Type.STRING, this.labels.length);
-    for (var iter95 in this.labels)
+    for (var iter103 in this.labels)
     {
-      if (this.labels.hasOwnProperty(iter95))
+      if (this.labels.hasOwnProperty(iter103))
       {
-        iter95 = this.labels[iter95];
-        output.writeString(iter95);
+        iter103 = this.labels[iter103];
+        output.writeString(iter103);
       }
     }
     output.writeSetEnd();
@@ -1661,18 +1661,18 @@ ManagementService_getLabels_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.SET) {
-        var _size96 = 0;
-        var _rtmp3100;
+        var _size104 = 0;
+        var _rtmp3108;
         this.success = [];
-        var _etype99 = 0;
-        _rtmp3100 = input.readSetBegin();
-        _etype99 = _rtmp3100.etype;
-        _size96 = _rtmp3100.size;
-        for (var _i101 = 0; _i101 < _size96; ++_i101)
+        var _etype107 = 0;
+        _rtmp3108 = input.readSetBegin();
+        _etype107 = _rtmp3108.etype;
+        _size104 = _rtmp3108.size;
+        for (var _i109 = 0; _i109 < _size104; ++_i109)
         {
-          var elem102 = null;
-          elem102 = input.readString();
-          this.success.push(elem102);
+          var elem110 = null;
+          elem110 = input.readString();
+          this.success.push(elem110);
         }
         input.readSetEnd();
       } else {
@@ -1696,12 +1696,12 @@ ManagementService_getLabels_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.SET, 0);
     output.writeSetBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter103 in this.success)
+    for (var iter111 in this.success)
     {
-      if (this.success.hasOwnProperty(iter103))
+      if (this.success.hasOwnProperty(iter111))
       {
-        iter103 = this.success[iter103];
-        output.writeString(iter103);
+        iter111 = this.success[iter111];
+        output.writeString(iter111);
       }
     }
     output.writeSetEnd();
@@ -1899,18 +1899,18 @@ ManagementService_getSensors_result.prototype.read = function(input) {
     {
       case 0:
       if (ftype == Thrift.Type.SET) {
-        var _size104 = 0;
-        var _rtmp3108;
+        var _size112 = 0;
+        var _rtmp3116;
         this.success = [];
-        var _etype107 = 0;
-        _rtmp3108 = input.readSetBegin();
-        _etype107 = _rtmp3108.etype;
-        _size104 = _rtmp3108.size;
-        for (var _i109 = 0; _i109 < _size104; ++_i109)
+        var _etype115 = 0;
+        _rtmp3116 = input.readSetBegin();
+        _etype115 = _rtmp3116.etype;
+        _size112 = _rtmp3116.size;
+        for (var _i117 = 0; _i117 < _size112; ++_i117)
         {
-          var elem110 = null;
-          elem110 = input.readString();
-          this.success.push(elem110);
+          var elem118 = null;
+          elem118 = input.readString();
+          this.success.push(elem118);
         }
         input.readSetEnd();
       } else {
@@ -1934,12 +1934,12 @@ ManagementService_getSensors_result.prototype.write = function(output) {
   if (this.success) {
     output.writeFieldBegin('success', Thrift.Type.SET, 0);
     output.writeSetBegin(Thrift.Type.STRING, this.success.length);
-    for (var iter111 in this.success)
+    for (var iter119 in this.success)
     {
-      if (this.success.hasOwnProperty(iter111))
+      if (this.success.hasOwnProperty(iter119))
       {
-        iter111 = this.success[iter111];
-        output.writeString(iter111);
+        iter119 = this.success[iter119];
+        output.writeString(iter119);
       }
     }
     output.writeSetEnd();

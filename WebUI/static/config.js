@@ -5,12 +5,51 @@ jQuery(document).ready(function ($) {
     // Register event handlers
     $('#submitHost').click(submitHost);
     $('#btnNewHost').click(newHost);
+    $('#btnNewSensor').click(newSensor);
     $('#submitSensor').click(submitSensor);
+
+    jQuery(document).ready(function ($) {
+        $('#addButton').click(addRowToParamTable);
+        $('#sensorParamTable td img.delete').live('click', function() {
+            $(this).parent().parent().remove();
+        });
+    });
 
     // Load list data
     updateSensorList();
     updateHostsList();
 });
+
+function addRowToParamTable(){
+    $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." name="sensorParamKey"/></td><td><textarea rows="" cols="" name="sensorParamValue"  placeholder="Value.."></textarea></td><td><img src="images/delete.png" class="delete" border="0">');
+}
+function newSensor(event){
+    $('#sensorName').attr("value", "");
+    $('#sensorLabels').attr("value", "");
+    $('#sensorInterval').attr("value", "");
+    $('#newSensorDlg').modal('show');
+    $('#sensorParamTable tr:gt(0)').remove();
+    clearFormElements($('#newSensorForm'));
+}
+
+function clearFormElements(ele) {
+
+    $(ele).find(':input').each(function() {
+        switch(this.type) {
+            case 'password':
+            case 'select-multiple':
+            case 'select-one':
+            case 'text':
+            case 'textarea':
+                $(this).val('');
+                break;
+            case 'checkbox':
+            case 'radio':
+                this.checked = false;
+        }
+    });
+
+}
 
 function submitSensor(event) {
     var test = $("#newSensorForm").serialize();
@@ -330,12 +369,18 @@ function editSenrorIntern(event, editSensor){
 						labelString += sensor.labels[j];
 						if (j < (sensor.labels.length - 1))
 							labelString += ","
-					}	
+					}
+                    populateSensorConfiguration();
 					$('#newSensorDlg').modal('show');
 					break;
 				}
 			}
         }
     });
-
 }
+
+function populateSensorConfiguration(){
+    $('#sensorParamTable tr:gt(0)').remove();
+    // $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." value="testKey" name="sensorParamKey"/></td><td><textarea rows="" cols="" name="sensorParamValue"  placeholder="Value..">test value</textarea></td><td><img src="images/delete.png" class="delete" border="0">');
+}
+

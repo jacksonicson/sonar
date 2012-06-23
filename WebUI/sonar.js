@@ -157,7 +157,6 @@ function addSensorHandler(req, resp) {
 
         if (body.sensorName != null && body.sensorName.length >= 3) {
 
-
             client.deploySensor(body.sensorName, "null", function (err, ret) {
                     console.log("sensor registered");
 
@@ -165,7 +164,31 @@ function addSensorHandler(req, resp) {
                     var labels = body.sensorLabels.split(",");
                     console.log("labels " + labels);
                     client.setSensorLabels(body.sensorName, labels, function (err, ret) {
-                        resp.end("ok");
+                        // decompose the sensor configuration parameters and set it
+                        var sensorInterval = body.sensorInterval;
+                        var paramKeys = body.sensorParamKey;
+                        var paramValues = body.sensorParamValue;
+                        var parameters = new Array();
+
+                        // prepare the parameter array
+                        for(var index = 0; index < paramKeys.length ; index++){
+                            var parameter = new types.Parameter({
+                                key: paramKeys[index],
+                                value: paramValues[index]
+                            });
+                            parameters.push(parameter);
+                        }
+
+                        // prepare the sensor configuration object
+                        var sensorConfiguration = new types.SensorConfiguration({
+                            interval : sensorInterval,
+                            parameters : parameters
+                        });
+
+                        client.setSensorConfiguration(body.sensorName, sensorConfiguration, function (err, ret) {
+                            resp.end("ok");
+                        });
+
                     });
                 }
             )

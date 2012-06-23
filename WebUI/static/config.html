@@ -22,7 +22,7 @@
             <!-- Sensors -->
             <div class="tab-pane active" id="tabSensor">
 
-                <a class="btn" data-toggle="modal" href="#newSensorDlg">New Sensor</a>
+                <a class="btn" data-toggle="modal" href="#" id="btnNewSensor">New Sensor</a>
                 <table class="table" id="listSensors">
                     <thead>
                     <tr>
@@ -125,6 +125,24 @@
                                name="sensorLabels"/>
                     </div>
                 </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="sensorInterval">Interval:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="Sensor interval in seconds.." id="sensorInterval"
+                               name="sensorInterval"/>[seconds]
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <table style="width:98%" id="sensorParamTable" class="sensorParamTable">
+                        <tr>
+                            <th style="width:90%;" colspan="2">Sensor Parameters</th>
+                            <th style="width:10%;"><a href="#" class="btn btn-primary" id="addButton">Add</a></th>
+                        </tr>
+                    </table>
+                </div>
             </fieldset>
         </form>
     </div>
@@ -138,4 +156,5 @@
 {% endblock %}
 
 {% block jsfoot %}
+
 {% endblock %}
