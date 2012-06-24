@@ -15,6 +15,7 @@ import threading
 import time
 import zipfile
 import traceback
+import tempfile
 
 
 class Sensor(object):
@@ -107,13 +108,19 @@ class Sensor(object):
         if self.md5 == testMd5:
             return self.md5
                 
+        # Ensure that the temp directoy is there
+        tmpdir = os.path.join(tempfile.gettempdir(), 'sonar')
+        if os.path.exists(tmpdir) == False:
+            os.makedirs(tmpdir)        
+                
         # Remove old sensor package
-        if os.path.exists(self.name + '.zip'):
-            os.remove(self.name + '.zip')
+        tmpfile = os.path.join(tempfile.gettempdir(), 'sonar', self.name + '.zip')
+        if os.path.exists(tmpfile):
+            os.remove(tmpfile)
             
         # Download sensor
         data = self.managementClient.fetchSensor(self.name)
-        z = open(self.name + '.zip', 'wb')
+        z = open(tmpfile, 'wb')
         z.write(data)
         z.close()
         
@@ -164,9 +171,9 @@ class Sensor(object):
 
     
     def __decompress(self):
-        zf = zipfile.ZipFile(self.name + ".zip")
+        zf = zipfile.ZipFile(os.path.join(tempfile.gettempdir(), 'soanr', self.name + ".zip"))
         
-        target = os.path.join(SENSOR_DIR, self.name)
+        target = os.path.join(tempfile.gettempdir(), 'sonar', self.name)
         
         if os.path.exists(target):
             shutil.rmtree(target, True)
@@ -183,7 +190,7 @@ class Sensor(object):
     
             if info.filename.endswith('/'):
                 try:
-                    os.makedirs(target + info.filename)
+                    os.makedirs(os.path.join(target, info.filename))
                 except Exception as e:
                     print 'error while decompressing files %s' % (e)
                     return False
