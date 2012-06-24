@@ -171,7 +171,7 @@ class Sensor(object):
 
     
     def __decompress(self):
-        zf = zipfile.ZipFile(os.path.join(tempfile.gettempdir(), 'soanr', self.name + ".zip"))
+        zf = zipfile.ZipFile(os.path.join(tempfile.gettempdir(), 'sonar', self.name + ".zip"))
         
         target = os.path.join(tempfile.gettempdir(), 'sonar', self.name)
         
@@ -212,7 +212,7 @@ class ProcessLoader(object):
         # determine the executable
         mainFile = None
         for main in Sensor.VALID_MAINS:
-            target = os.path.join(tempfile.tempdir(), 'sonar', sensor.name, main)
+            target = os.path.join(tempfile.gettempdir(), 'sonar', sensor.name, main)
             if os.path.exists(target):
                 mainFile = main
                 break
@@ -243,7 +243,7 @@ class ProcessLoader(object):
         
         # create a new process 
         try:
-            path = os.path.join(tempfile.tempdir(), 'sonar', sensor.name, main)
+            path = os.path.join(tempfile.gettempdir(), 'sonar', sensor.name, main)
             
             # configure executable and main file
             if executable is None:
