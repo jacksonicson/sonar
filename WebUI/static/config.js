@@ -371,8 +371,7 @@ function editSenrorIntern(event, editSensor){
 						if (j < (sensor.labels.length - 1))
 							labelString += ","
 					}
-                    populateSensorConfiguration();
-					$('#newSensorDlg').modal('show');
+                    populateSensorConfiguration(sensor.name);
 					break;
 				}
 			}
@@ -380,8 +379,26 @@ function editSenrorIntern(event, editSensor){
     });
 }
 
-function populateSensorConfiguration(){
+function populateSensorConfiguration(sensorName){
     $('#sensorParamTable tr:gt(0)').remove();
-    // $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." value="testKey" name="sensorParamKey"/></td><td><textarea rows="" cols="" name="sensorParamValue"  placeholder="Value..">test value</textarea></td><td><img src="images/delete.png" class="delete" border="0">');
+    $.ajax({
+        type:"POST",
+        url:'{{ROOT_SENSORCONF}}',
+        dataType:'json',
+        data: "sensor=" + sensorName,
+        success: function(configData){
+            // get interval value
+            $('#sensorInterval').attr("value", configData.interval);
+
+            // get the parameters value
+            if(null != configData.parameters && configData.parameters.length > 0){
+            for(var count = 0; count < configData.parameters.length; count++){
+                var parameter = configData.parameters[count];
+                $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." value="' + parameter.key + '" name="sensorParamKey"/></td><td><textarea name="sensorParamValue"  placeholder="Value..">' + parameter.value +'</textarea></td><td><img src="images/delete.png" class="delete" border="0">');
+            }
+            }
+            $('#newSensorDlg').modal('show');
+        }
+    });
 }
 

@@ -103,6 +103,8 @@ service ManagementService {
 	
 	void setSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration),
 	
+	SensorConfiguration getSensorConfiguration(1: string sensor),
+	
 	
 	// Host Section
 	void addHost(1:string hostname),

@@ -6,12 +6,48 @@ var emptyData = [
 
 var chart;
 
+function getHostData(handleData) {
+    $.ajax({
+        type:"GET",
+        url:'/hosts',
+        dataType:'json',
+        success: function (results) {
+            handleData(results);
+        },
+        error: function(error){
+            console.log('oops');
+        }
+    });
+};
+
+
 // Document ready handler
 $(function () {
     setupDatePickers();
     setupHandlers();
     setupCharts();
+    getHostData(function(output){
+        var hosts;
+        hosts = new Array;
+        $.each(output, function(index, item){
+            hosts.push(item.hostname);
+
+        });
+        $('#hostname').typeahead({
+            source: hosts
+        });
+    });
+
+    $('#sensor').typeahead({
+        source: getSensors()
+    })
+
 });
+
+function getSensors(){
+    var sensors = new Array;
+    return sensors;
+}
 
 function setupDatePickers() {
     $('#startdate').datepicker()

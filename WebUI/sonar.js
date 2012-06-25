@@ -169,25 +169,47 @@ function addSensorHandler(req, resp) {
                         var paramKeys = body.sensorParamKey;
                         var paramValues = body.sensorParamValue;
                         var parameters = new Array();
+                        var config = false;
 
-                        // prepare the parameter array
-                        for(var index = 0; index < paramKeys.length ; index++){
-                            var parameter = new types.Parameter({
-                                key: paramKeys[index],
-                                value: paramValues[index]
-                            });
-                            parameters.push(parameter);
+                        // check if sensor configuration is specified
+                        // if not change it to default 0
+                        if(null != sensorInterval){
+                            config = true;
+                        } else {
+                            sensorInterval = 0;
                         }
 
-                        // prepare the sensor configuration object
-                        var sensorConfiguration = new types.SensorConfiguration({
-                            interval : sensorInterval,
-                            parameters : parameters
-                        });
+                        // prepare the parameter array
+                        if(null != paramKeys){
+                            config = true;
+                            if(paramKeys instanceof Array){
+                                for(var index = 0; index < paramKeys.length ; index++){
+                                    var parameter = new types.Parameter({
+                                        key: paramKeys[index],
+                                        value: paramValues[index]
+                                    });
+                                    parameters.push(parameter);
+                                }
+                            } else {
+                                var parameter = new types.Parameter({
+                                    key: paramKeys,
+                                    value: paramValues
+                                });
+                                parameters.push(parameter);
+                            }
+                        }
 
-                        client.setSensorConfiguration(body.sensorName, sensorConfiguration, function (err, ret) {
-                            resp.end("ok");
-                        });
+                        if(config == true){
+                            // prepare the sensor configuration object
+                            var sensorConfiguration = new types.SensorConfiguration({
+                                interval : sensorInterval,
+                                parameters : parameters
+                            });
+
+                            client.setSensorConfiguration(body.sensorName, sensorConfiguration, function (err, ret) {
+                                resp.end("ok");
+                            });
+                        }
 
                     });
                 }
@@ -470,6 +492,43 @@ function tsdbHandler(req, resp) {
     });
 }
 
+function sensorConfigHandler(req, resp){
+    var body = "";
+
+    if (req.method == 'GET') {
+        var jsonObj = [];
+        var ss = JSON.stringify(jsonObj);
+        console.log(ss);
+        resp.end(ss);
+        return;
+    }
+
+
+    req.on('data', function (data) {
+        body += data;
+    });
+
+    req.on('end', function () {
+        body = qs.parse(body);
+        var sensor = body.sensor;
+        console.log("Requesting configuration for sensor: " + body.sensor);
+
+        var connection = thrift.createConnection('localhost', 7932);
+        var client = thrift.createClient(managementService, connection);
+
+        connection.on("error", function (err) {
+            console.log("Could not connect with the Collector: " + err);
+        });
+
+        // Execute the query
+        client.getSensorConfiguration(sensor, function (err, configurationData) {
+            var ss = JSON.stringify(configurationData);
+            console.log(ss);
+            resp.end(ss);
+        });
+    });
+}
+
 // Getting started with monogdb
 // http://howtonode.org/node-js-and-mongodb-getting-started-with-mongojs
 
@@ -543,6 +602,7 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
+    new router.UrlNode('SENSORCONF', {url:'sensorConfig', handler:sensorConfigHandler}, []),
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
     new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
     new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, []),

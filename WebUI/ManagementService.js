@@ -1203,6 +1203,113 @@ ManagementService_setSensorConfiguration_result.prototype.write = function(outpu
   return;
 };
 
+var ManagementService_getSensorConfiguration_args = function(args) {
+  this.sensor = null;
+  if (args) {
+    if (args.sensor !== undefined) {
+      this.sensor = args.sensor;
+    }
+  }
+};
+ManagementService_getSensorConfiguration_args.prototype = {};
+ManagementService_getSensorConfiguration_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.sensor = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ManagementService_getSensorConfiguration_args.prototype.write = function(output) {
+  output.writeStructBegin('ManagementService_getSensorConfiguration_args');
+  if (this.sensor) {
+    output.writeFieldBegin('sensor', Thrift.Type.STRING, 1);
+    output.writeString(this.sensor);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var ManagementService_getSensorConfiguration_result = function(args) {
+  this.success = null;
+  if (args) {
+    if (args.success !== undefined) {
+      this.success = args.success;
+    }
+  }
+};
+ManagementService_getSensorConfiguration_result.prototype = {};
+ManagementService_getSensorConfiguration_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.success = new ttypes.SensorConfiguration();
+        this.success.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ManagementService_getSensorConfiguration_result.prototype.write = function(output) {
+  output.writeStructBegin('ManagementService_getSensorConfiguration_result');
+  if (this.success) {
+    output.writeFieldBegin('success', Thrift.Type.STRUCT, 0);
+    this.success.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 var ManagementService_addHost_args = function(args) {
   this.hostname = null;
   if (args) {
@@ -2441,6 +2548,40 @@ ManagementServiceClient.prototype.recv_setSensorConfiguration = function(input,m
 
   callback(null)
 };
+ManagementServiceClient.prototype.getSensorConfiguration = function(sensor, callback) {
+  this.seqid += 1;
+  this._reqs[this.seqid] = callback;
+  this.send_getSensorConfiguration(sensor);
+};
+
+ManagementServiceClient.prototype.send_getSensorConfiguration = function(sensor) {
+  var output = new this.pClass(this.output);
+  output.writeMessageBegin('getSensorConfiguration', Thrift.MessageType.CALL, this.seqid);
+  var args = new ManagementService_getSensorConfiguration_args();
+  args.sensor = sensor;
+  args.write(output);
+  output.writeMessageEnd();
+  return this.output.flush();
+};
+
+ManagementServiceClient.prototype.recv_getSensorConfiguration = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new ManagementService_getSensorConfiguration_result();
+  result.read(input);
+  input.readMessageEnd();
+
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('getSensorConfiguration failed: unknown result');
+};
 ManagementServiceClient.prototype.addHost = function(hostname, callback) {
   this.seqid += 1;
   this._reqs[this.seqid] = callback;
@@ -2870,6 +3011,20 @@ ManagementServiceProcessor.prototype.process_setSensorConfiguration = function(s
   this._handler.setSensorConfiguration(args.sensor, args.configuration, function (success) {
     result.success = success;
     output.writeMessageBegin("setSensorConfiguration", Thrift.MessageType.REPLY, seqid);
+    result.write(output);
+    output.writeMessageEnd();
+    output.flush();
+  })
+}
+
+ManagementServiceProcessor.prototype.process_getSensorConfiguration = function(seqid, input, output) {
+  var args = new ManagementService_getSensorConfiguration_args();
+  args.read(input);
+  input.readMessageEnd();
+  var result = new ManagementService_getSensorConfiguration_result();
+  this._handler.getSensorConfiguration(args.sensor, function (success) {
+    result.success = success;
+    output.writeMessageBegin("getSensorConfiguration", Thrift.MessageType.REPLY, seqid);
     result.write(output);
     output.writeMessageEnd();
     output.flush();
