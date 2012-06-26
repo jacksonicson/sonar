@@ -51,7 +51,7 @@ function clearFormElements(ele) {
 
 }
 
-function submitSensor(event) {
+function saveSensor(){
     var test = $("#newSensorForm").serialize();
     console.log("FORM: " + test);
 
@@ -74,6 +74,12 @@ function submitSensor(event) {
     });
 }
 
+function submitSensor(event) {
+    var test = $("#sensorName").val();
+    deleteSensorActual(test, saveSensor);
+
+}
+
 function deleteHost(event) {
     var host = event.target.id;
 
@@ -87,17 +93,18 @@ function deleteHost(event) {
     });
 }
 
-function deleteSensor(event) {
-    var sensor = event.target.id;
+function deleteSensor(event){
+    deleteSensorActual(event.target.id, function(){
+        updateSensorList();
+    });
+}
 
+function deleteSensorActual(sensor, target) {
     $.ajax({
         type:"GET",
         url:'{{ROOT_SENSORDEL}}?sensorName=' + sensor,
         dataType:'text',
-        success:function (data) {
-
-            updateSensorList();
-        }
+        success:target
     });
 }
 
