@@ -10,6 +10,7 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
@@ -314,6 +315,35 @@ public class TimeSeriesDatabase {
 		} catch (IOException e) {
 			throw new QueryException(e);
 		} catch (InvalidLabelException e) {
+			throw new QueryException(e);
+		}
+	}
+
+	public Set<String> getSensorNames() throws QueryException {
+		try {
+			Set<String> result = new HashSet<String>();
+			HBaseUtil util = new HBaseUtil();
+
+			HTable table = new HTable(util.getConfig(), Const.TABLE_UID);
+			Scan scan = new Scan();
+			ResultScanner scanner = table.getScanner(scan);
+
+			Result next;
+			while ((next = scanner.next()) != null) {
+				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_UID_FORWARD));
+
+				for (byte[] key : familyMap.keySet()) {
+					// when the data in the sensor is not null, that row key is
+					// the sensor
+					if (Bytes.toString(key).equals("sensor")) {
+						if (null != familyMap.get(key)) {
+							result.add(Bytes.toString(next.getRow()));
+						}
+					}
+				}
+			}
+			return result;
+		} catch (IOException e) {
 			throw new QueryException(e);
 		}
 	}

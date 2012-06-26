@@ -359,7 +359,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		logger.debug("setting sensor configuration: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 		String key = key("sensor", sensor, "config");
-		
+
 		if (configuration.getInterval() != 0) {
 			jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
 		}
@@ -487,5 +487,15 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	private String getKeyValueFromRedisKey(String key) {
 		return key.substring(key.lastIndexOf(":") + 1, key.length());
+	}
+
+	public Set<String> getSensorNames() throws TException {
+		Set<String> result = new HashSet<String>();
+		try {
+			result.addAll(tsdb.getSensorNames());
+		} catch (QueryException e) {
+			logger.error("Error while getting the list of configured sensors", e);
+		}
+		return result;
 	}
 }

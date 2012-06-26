@@ -55,6 +55,8 @@ public class ManagementService {
 
     public SensorConfiguration getSensorConfiguration(String sensor) throws org.apache.thrift.TException;
 
+    public Set<String> getSensorNames() throws org.apache.thrift.TException;
+
     public void addHost(String hostname) throws org.apache.thrift.TException;
 
     public Set<String> getAllHosts() throws org.apache.thrift.TException;
@@ -98,6 +100,8 @@ public class ManagementService {
     public void setSensorConfiguration(String sensor, SensorConfiguration configuration, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.setSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException;
 
     public void getSensorConfiguration(String sensor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getSensorConfiguration_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void getSensorNames(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getSensorNames_call> resultHandler) throws org.apache.thrift.TException;
 
     public void addHost(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addHost_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -401,6 +405,28 @@ public class ManagementService {
         return result.success;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getSensorConfiguration failed: unknown result");
+    }
+
+    public Set<String> getSensorNames() throws org.apache.thrift.TException
+    {
+      send_getSensorNames();
+      return recv_getSensorNames();
+    }
+
+    public void send_getSensorNames() throws org.apache.thrift.TException
+    {
+      getSensorNames_args args = new getSensorNames_args();
+      sendBase("getSensorNames", args);
+    }
+
+    public Set<String> recv_getSensorNames() throws org.apache.thrift.TException
+    {
+      getSensorNames_result result = new getSensorNames_result();
+      receiveBase(result, "getSensorNames");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getSensorNames failed: unknown result");
     }
 
     public void addHost(String hostname) throws org.apache.thrift.TException
@@ -986,6 +1012,35 @@ public class ManagementService {
       }
     }
 
+    public void getSensorNames(org.apache.thrift.async.AsyncMethodCallback<getSensorNames_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      getSensorNames_call method_call = new getSensorNames_call(resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class getSensorNames_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public getSensorNames_call(org.apache.thrift.async.AsyncMethodCallback<getSensorNames_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getSensorNames", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getSensorNames_args args = new getSensorNames_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Set<String> getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_getSensorNames();
+      }
+    }
+
     public void addHost(String hostname, org.apache.thrift.async.AsyncMethodCallback<addHost_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       addHost_call method_call = new addHost_call(hostname, resultHandler, this, ___protocolFactory, ___transport);
@@ -1276,6 +1331,7 @@ public class ManagementService {
       processMap.put("setSensorLabels", new setSensorLabels());
       processMap.put("setSensorConfiguration", new setSensorConfiguration());
       processMap.put("getSensorConfiguration", new getSensorConfiguration());
+      processMap.put("getSensorNames", new getSensorNames());
       processMap.put("addHost", new addHost());
       processMap.put("getAllHosts", new getAllHosts());
       processMap.put("delHost", new delHost());
@@ -1476,6 +1532,22 @@ public class ManagementService {
       protected getSensorConfiguration_result getResult(I iface, getSensorConfiguration_args args) throws org.apache.thrift.TException {
         getSensorConfiguration_result result = new getSensorConfiguration_result();
         result.success = iface.getSensorConfiguration(args.sensor);
+        return result;
+      }
+    }
+
+    private static class getSensorNames<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getSensorNames_args> {
+      public getSensorNames() {
+        super("getSensorNames");
+      }
+
+      protected getSensorNames_args getEmptyArgsInstance() {
+        return new getSensorNames_args();
+      }
+
+      protected getSensorNames_result getResult(I iface, getSensorNames_args args) throws org.apache.thrift.TException {
+        getSensorNames_result result = new getSensorNames_result();
+        result.success = iface.getSensorNames();
         return result;
       }
     }
@@ -10133,6 +10205,656 @@ public class ManagementService {
 
   }
 
+  public static class getSensorNames_args implements org.apache.thrift.TBase<getSensorNames_args, getSensorNames_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getSensorNames_args");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getSensorNames_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getSensorNames_argsTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getSensorNames_args.class, metaDataMap);
+    }
+
+    public getSensorNames_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getSensorNames_args(getSensorNames_args other) {
+    }
+
+    public getSensorNames_args deepCopy() {
+      return new getSensorNames_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getSensorNames_args)
+        return this.equals((getSensorNames_args)that);
+      return false;
+    }
+
+    public boolean equals(getSensorNames_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getSensorNames_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getSensorNames_args typedOther = (getSensorNames_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getSensorNames_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getSensorNames_argsStandardSchemeFactory implements SchemeFactory {
+      public getSensorNames_argsStandardScheme getScheme() {
+        return new getSensorNames_argsStandardScheme();
+      }
+    }
+
+    private static class getSensorNames_argsStandardScheme extends StandardScheme<getSensorNames_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getSensorNames_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getSensorNames_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getSensorNames_argsTupleSchemeFactory implements SchemeFactory {
+      public getSensorNames_argsTupleScheme getScheme() {
+        return new getSensorNames_argsTupleScheme();
+      }
+    }
+
+    private static class getSensorNames_argsTupleScheme extends TupleScheme<getSensorNames_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getSensorNames_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getSensorNames_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class getSensorNames_result implements org.apache.thrift.TBase<getSensorNames_result, getSensorNames_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getSensorNames_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.SET, (short)0);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getSensorNames_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getSensorNames_resultTupleSchemeFactory());
+    }
+
+    public Set<String> success; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getSensorNames_result.class, metaDataMap);
+    }
+
+    public getSensorNames_result() {
+    }
+
+    public getSensorNames_result(
+      Set<String> success)
+    {
+      this();
+      this.success = success;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getSensorNames_result(getSensorNames_result other) {
+      if (other.isSetSuccess()) {
+        Set<String> __this__success = new HashSet<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+    }
+
+    public getSensorNames_result deepCopy() {
+      return new getSensorNames_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<String> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(String elem) {
+      if (this.success == null) {
+        this.success = new HashSet<String>();
+      }
+      this.success.add(elem);
+    }
+
+    public Set<String> getSuccess() {
+      return this.success;
+    }
+
+    public getSensorNames_result setSuccess(Set<String> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Set<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getSensorNames_result)
+        return this.equals((getSensorNames_result)that);
+      return false;
+    }
+
+    public boolean equals(getSensorNames_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getSensorNames_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getSensorNames_result typedOther = (getSensorNames_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getSensorNames_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getSensorNames_resultStandardSchemeFactory implements SchemeFactory {
+      public getSensorNames_resultStandardScheme getScheme() {
+        return new getSensorNames_resultStandardScheme();
+      }
+    }
+
+    private static class getSensorNames_resultStandardScheme extends StandardScheme<getSensorNames_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getSensorNames_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+                {
+                  org.apache.thrift.protocol.TSet _set88 = iprot.readSetBegin();
+                  struct.success = new HashSet<String>(2*_set88.size);
+                  for (int _i89 = 0; _i89 < _set88.size; ++_i89)
+                  {
+                    String _elem90; // required
+                    _elem90 = iprot.readString();
+                    struct.success.add(_elem90);
+                  }
+                  iprot.readSetEnd();
+                }
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getSensorNames_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          {
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
+            for (String _iter91 : struct.success)
+            {
+              oprot.writeString(_iter91);
+            }
+            oprot.writeSetEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getSensorNames_resultTupleSchemeFactory implements SchemeFactory {
+      public getSensorNames_resultTupleScheme getScheme() {
+        return new getSensorNames_resultTupleScheme();
+      }
+    }
+
+    private static class getSensorNames_resultTupleScheme extends TupleScheme<getSensorNames_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getSensorNames_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSuccess()) {
+          {
+            oprot.writeI32(struct.success.size());
+            for (String _iter92 : struct.success)
+            {
+              oprot.writeString(_iter92);
+            }
+          }
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getSensorNames_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          {
+            org.apache.thrift.protocol.TSet _set93 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashSet<String>(2*_set93.size);
+            for (int _i94 = 0; _i94 < _set93.size; ++_i94)
+            {
+              String _elem95; // required
+              _elem95 = iprot.readString();
+              struct.success.add(_elem95);
+            }
+          }
+          struct.setSuccessIsSet(true);
+        }
+      }
+    }
+
+  }
+
   public static class addHost_args implements org.apache.thrift.TBase<addHost_args, addHost_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addHost_args");
 
@@ -11284,13 +12006,13 @@ public class ManagementService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set88 = iprot.readSetBegin();
-                  struct.success = new HashSet<String>(2*_set88.size);
-                  for (int _i89 = 0; _i89 < _set88.size; ++_i89)
+                  org.apache.thrift.protocol.TSet _set96 = iprot.readSetBegin();
+                  struct.success = new HashSet<String>(2*_set96.size);
+                  for (int _i97 = 0; _i97 < _set96.size; ++_i97)
                   {
-                    String _elem90; // required
-                    _elem90 = iprot.readString();
-                    struct.success.add(_elem90);
+                    String _elem98; // required
+                    _elem98 = iprot.readString();
+                    struct.success.add(_elem98);
                   }
                   iprot.readSetEnd();
                 }
@@ -11318,9 +12040,9 @@ public class ManagementService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (String _iter91 : struct.success)
+            for (String _iter99 : struct.success)
             {
-              oprot.writeString(_iter91);
+              oprot.writeString(_iter99);
             }
             oprot.writeSetEnd();
           }
@@ -11351,9 +12073,9 @@ public class ManagementService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter92 : struct.success)
+            for (String _iter100 : struct.success)
             {
-              oprot.writeString(_iter92);
+              oprot.writeString(_iter100);
             }
           }
         }
@@ -11365,13 +12087,13 @@ public class ManagementService {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set93 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new HashSet<String>(2*_set93.size);
-            for (int _i94 = 0; _i94 < _set93.size; ++_i94)
+            org.apache.thrift.protocol.TSet _set101 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashSet<String>(2*_set101.size);
+            for (int _i102 = 0; _i102 < _set101.size; ++_i102)
             {
-              String _elem95; // required
-              _elem95 = iprot.readString();
-              struct.success.add(_elem95);
+              String _elem103; // required
+              _elem103 = iprot.readString();
+              struct.success.add(_elem103);
             }
           }
           struct.setSuccessIsSet(true);
@@ -12372,13 +13094,13 @@ public class ManagementService {
             case 2: // LABELS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set96 = iprot.readSetBegin();
-                  struct.labels = new HashSet<String>(2*_set96.size);
-                  for (int _i97 = 0; _i97 < _set96.size; ++_i97)
+                  org.apache.thrift.protocol.TSet _set104 = iprot.readSetBegin();
+                  struct.labels = new HashSet<String>(2*_set104.size);
+                  for (int _i105 = 0; _i105 < _set104.size; ++_i105)
                   {
-                    String _elem98; // required
-                    _elem98 = iprot.readString();
-                    struct.labels.add(_elem98);
+                    String _elem106; // required
+                    _elem106 = iprot.readString();
+                    struct.labels.add(_elem106);
                   }
                   iprot.readSetEnd();
                 }
@@ -12411,9 +13133,9 @@ public class ManagementService {
           oprot.writeFieldBegin(LABELS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.labels.size()));
-            for (String _iter99 : struct.labels)
+            for (String _iter107 : struct.labels)
             {
-              oprot.writeString(_iter99);
+              oprot.writeString(_iter107);
             }
             oprot.writeSetEnd();
           }
@@ -12450,9 +13172,9 @@ public class ManagementService {
         if (struct.isSetLabels()) {
           {
             oprot.writeI32(struct.labels.size());
-            for (String _iter100 : struct.labels)
+            for (String _iter108 : struct.labels)
             {
-              oprot.writeString(_iter100);
+              oprot.writeString(_iter108);
             }
           }
         }
@@ -12468,13 +13190,13 @@ public class ManagementService {
         }
         if (incoming.get(1)) {
           {
-            org.apache.thrift.protocol.TSet _set101 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.labels = new HashSet<String>(2*_set101.size);
-            for (int _i102 = 0; _i102 < _set101.size; ++_i102)
+            org.apache.thrift.protocol.TSet _set109 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.labels = new HashSet<String>(2*_set109.size);
+            for (int _i110 = 0; _i110 < _set109.size; ++_i110)
             {
-              String _elem103; // required
-              _elem103 = iprot.readString();
-              struct.labels.add(_elem103);
+              String _elem111; // required
+              _elem111 = iprot.readString();
+              struct.labels.add(_elem111);
             }
           }
           struct.setLabelsIsSet(true);
@@ -13390,13 +14112,13 @@ public class ManagementService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set104 = iprot.readSetBegin();
-                  struct.success = new HashSet<String>(2*_set104.size);
-                  for (int _i105 = 0; _i105 < _set104.size; ++_i105)
+                  org.apache.thrift.protocol.TSet _set112 = iprot.readSetBegin();
+                  struct.success = new HashSet<String>(2*_set112.size);
+                  for (int _i113 = 0; _i113 < _set112.size; ++_i113)
                   {
-                    String _elem106; // required
-                    _elem106 = iprot.readString();
-                    struct.success.add(_elem106);
+                    String _elem114; // required
+                    _elem114 = iprot.readString();
+                    struct.success.add(_elem114);
                   }
                   iprot.readSetEnd();
                 }
@@ -13424,9 +14146,9 @@ public class ManagementService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (String _iter107 : struct.success)
+            for (String _iter115 : struct.success)
             {
-              oprot.writeString(_iter107);
+              oprot.writeString(_iter115);
             }
             oprot.writeSetEnd();
           }
@@ -13457,9 +14179,9 @@ public class ManagementService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter108 : struct.success)
+            for (String _iter116 : struct.success)
             {
-              oprot.writeString(_iter108);
+              oprot.writeString(_iter116);
             }
           }
         }
@@ -13471,13 +14193,13 @@ public class ManagementService {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set109 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new HashSet<String>(2*_set109.size);
-            for (int _i110 = 0; _i110 < _set109.size; ++_i110)
+            org.apache.thrift.protocol.TSet _set117 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashSet<String>(2*_set117.size);
+            for (int _i118 = 0; _i118 < _set117.size; ++_i118)
             {
-              String _elem111; // required
-              _elem111 = iprot.readString();
-              struct.success.add(_elem111);
+              String _elem119; // required
+              _elem119 = iprot.readString();
+              struct.success.add(_elem119);
             }
           }
           struct.setSuccessIsSet(true);
@@ -14945,13 +15667,13 @@ public class ManagementService {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
-                  org.apache.thrift.protocol.TSet _set112 = iprot.readSetBegin();
-                  struct.success = new HashSet<String>(2*_set112.size);
-                  for (int _i113 = 0; _i113 < _set112.size; ++_i113)
+                  org.apache.thrift.protocol.TSet _set120 = iprot.readSetBegin();
+                  struct.success = new HashSet<String>(2*_set120.size);
+                  for (int _i121 = 0; _i121 < _set120.size; ++_i121)
                   {
-                    String _elem114; // required
-                    _elem114 = iprot.readString();
-                    struct.success.add(_elem114);
+                    String _elem122; // required
+                    _elem122 = iprot.readString();
+                    struct.success.add(_elem122);
                   }
                   iprot.readSetEnd();
                 }
@@ -14979,9 +15701,9 @@ public class ManagementService {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.success.size()));
-            for (String _iter115 : struct.success)
+            for (String _iter123 : struct.success)
             {
-              oprot.writeString(_iter115);
+              oprot.writeString(_iter123);
             }
             oprot.writeSetEnd();
           }
@@ -15012,9 +15734,9 @@ public class ManagementService {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter116 : struct.success)
+            for (String _iter124 : struct.success)
             {
-              oprot.writeString(_iter116);
+              oprot.writeString(_iter124);
             }
           }
         }
@@ -15026,13 +15748,13 @@ public class ManagementService {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set117 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.success = new HashSet<String>(2*_set117.size);
-            for (int _i118 = 0; _i118 < _set117.size; ++_i118)
+            org.apache.thrift.protocol.TSet _set125 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashSet<String>(2*_set125.size);
+            for (int _i126 = 0; _i126 < _set125.size; ++_i126)
             {
-              String _elem119; // required
-              _elem119 = iprot.readString();
-              struct.success.add(_elem119);
+              String _elem127; // required
+              _elem127 = iprot.readString();
+              struct.success.add(_elem127);
             }
           }
           struct.setSuccessIsSet(true);

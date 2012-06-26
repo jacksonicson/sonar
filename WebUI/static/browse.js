@@ -6,21 +6,6 @@ var emptyData = [
 
 var chart;
 
-function getHostData(handleData) {
-    $.ajax({
-        type:"GET",
-        url:'/hosts',
-        dataType:'json',
-        success: function (results) {
-            handleData(results);
-        },
-        error: function(error){
-            console.log('oops');
-        }
-    });
-};
-
-
 // Document ready handler
 $(function () {
     setupDatePickers();
@@ -31,33 +16,53 @@ $(function () {
         hosts = new Array;
         $.each(output, function(index, item){
             hosts.push(item.hostname);
-
         });
+
         $('#hostname').typeahead({
             source: hosts
         });
     });
 
-    $('#sensor').typeahead({
-        source: getSensors()
-    })
-
+    getSensorData(function(output){
+        var sensors;
+        sensors = new Array;
+        $.each(output, function(index, item){
+            sensors.push(item.name);
+        });
+        $('#sensor').typeahead({
+            source: sensors
+        });
+    });
 });
 
 function getSensors(){
     var sensors = new Array;
+    $.ajax({
+        type:"GET",
+        url:'/sensornames',
+        dataType:'json',
+        success: function (results) {
+           for(var count = 0 ; count < results.length ; count++){
+               sensors.push(results[count].name);
+           }
+        },
+        error: function(error){
+            console.log('oops');
+        }
+    });
     return sensors;
 }
 
 function setupDatePickers() {
-    $('#startdate').datepicker()
-    $('#stopdate').datepicker()
 
-	var myDate = new Date();
+   	var myDate = new Date();
     var month = myDate.getMonth() + 1;
     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
 	$("#startdate").val(prettyDate);
 	$("#stopdate").val(prettyDate);
+
+    $('#startdate').datepicker();
+    $('#stopdate').datepicker();
 
     $('.dropdown-timepicker').timepicker({
         defaultTime: 'current',

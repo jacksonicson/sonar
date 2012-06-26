@@ -105,6 +105,8 @@ service ManagementService {
 	
 	SensorConfiguration getSensorConfiguration(1: string sensor),
 	
+	set<string> getSensorNames(),
+	
 	
 	// Host Section
 	void addHost(1:string hostname),

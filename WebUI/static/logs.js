@@ -5,20 +5,43 @@ $(function () {
 });
 
 function setupDatePickers() {
-    $('#startdate').datepicker();
-    $('#stopdate').datepicker();
-	
-	var myDate = new Date();
+    var myDate = new Date();
     var month = myDate.getMonth() + 1;
     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
 	$("#startdate").val(prettyDate);
 	$("#stopdate").val(prettyDate);
+
+    $('#startdate').datepicker();
+    $('#stopdate').datepicker();
 
     $('.dropdown-timepicker').timepicker({
         defaultTime: 'current',
         minuteStep: 15,
         disableFocus: false,
         template: 'dropdown'
+    });
+
+    getHostData(function(output){
+        var hosts;
+        hosts = new Array;
+        $.each(output, function(index, item){
+            hosts.push(item.hostname);
+        });
+
+        $('#hostname').typeahead({
+            source: hosts
+        });
+    });
+
+    getSensorData(function(output){
+        var sensors;
+        sensors = new Array;
+        $.each(output, function(index, item){
+            sensors.push(item.name);
+        });
+        $('#sensor').typeahead({
+            source: sensors
+        });
     });
 }
 

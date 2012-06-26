@@ -10,7 +10,7 @@ jQuery(document).ready(function ($) {
 
     jQuery(document).ready(function ($) {
         $('#addButton').click(addRowToParamTable);
-        $('#sensorParamTable td img.delete').live('click', function() {
+        $('#sensorParamTable td a.btn').live('click', function() {
             $(this).parent().parent().remove();
         });
     });
@@ -21,7 +21,7 @@ jQuery(document).ready(function ($) {
 });
 
 function addRowToParamTable(){
-    $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." name="sensorParamKey"/></td><td><textarea rows="" cols="" name="sensorParamValue"  placeholder="Value.."></textarea></td><td><img src="images/delete.png" class="delete" border="0">');
+    $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." name="sensorParamKey"/></td><td><textarea rows="" cols="" name="sensorParamValue"  placeholder="Value.."></textarea></td><td><a class="btn btn-primary" href="#"><i class="icon-trash icon-white"></i></a></td></tr>');
 }
 function newSensor(event){
     $('#sensorName').attr("value", "");
@@ -365,12 +365,13 @@ function editSenrorIntern(event, editSensor){
                 console.log("checking sensor name: " + sensor.name + " against " + editSensor);
 				if(sensor.name == editSensor){
 					$('#sensorName').attr("value", sensor.name);
-						var labelString = '';
+					var labelString = '';
 					for (var j = 0; j < sensor.labels.length; j++) {
 						labelString += sensor.labels[j];
 						if (j < (sensor.labels.length - 1))
 							labelString += ","
 					}
+                    $('#sensorLabels').attr("value", labelString);
                     populateSensorConfiguration(sensor.name);
 					break;
 				}
@@ -392,10 +393,10 @@ function populateSensorConfiguration(sensorName){
 
             // get the parameters value
             if(null != configData.parameters && configData.parameters.length > 0){
-            for(var count = 0; count < configData.parameters.length; count++){
-                var parameter = configData.parameters[count];
-                $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." value="' + parameter.key + '" name="sensorParamKey"/></td><td><textarea name="sensorParamValue"  placeholder="Value..">' + parameter.value +'</textarea></td><td><img src="images/delete.png" class="delete" border="0">');
-            }
+                for(var count = 0; count < configData.parameters.length; count++){
+                    var parameter = configData.parameters[count];
+                    $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." value="' + parameter.key + '" name="sensorParamKey"/></td><td><textarea name="sensorParamValue"  placeholder="Value..">' + parameter.value +'</textarea></td><td><a class="btn btn-primary" href="#"><i class="icon-trash icon-white"></i></a></td></tr>');
+                }
             }
             $('#newSensorDlg').modal('show');
         }
