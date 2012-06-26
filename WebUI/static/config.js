@@ -20,15 +20,40 @@ jQuery(document).ready(function ($) {
     updateHostsList();
 });
 
-function addRowToParamTable(){
-    $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." name="sensorParamKey"/></td><td><textarea rows="" cols="" name="sensorParamValue"  placeholder="Value.."></textarea></td><td><a class="btn btn-primary" href="#"><i class="icon-trash icon-white"></i></a></td></tr>');
+function addRowToParamTable(parameter){
+
+    if(null == parameter){
+        parameter = {
+            key:"",
+            value:""
+        }
+    }
+
+    var paramTable = $('#sensorParamTableBody');
+    paramTable.append(
+        $('<tr>').append(
+            $('<td>').append(
+                    $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").val(parameter.key)
+            ),
+            $('<td>').append(
+                $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").val(parameter.value)
+            ),
+            $('<td>').append(
+                $('<a>').addClass("btn").addClass("btn-primary").attr("href", "#").append($('<i>').addClass('icon-trash').addClass('icon-white'))
+            )
+        )
+    );
 }
+
 function newSensor(event){
     $('#sensorName').attr("value", "");
     $('#sensorLabels').attr("value", "");
     $('#sensorInterval').attr("value", "");
     $('#newSensorDlg').modal('show');
-    $('#sensorParamTable tr:gt(0)').remove();
+
+    var paramTable = $('#sensorParamTableBody');
+    paramTable.children('tr').remove();
+
     clearFormElements($('#newSensorForm'));
 }
 
@@ -280,7 +305,7 @@ function updateHostsList() {
                         .append(
                         $('<td>').text(i),
                         $('<td>').append(
-                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
+                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
                         ),
                         $('<td>').append(
                             $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
@@ -329,7 +354,7 @@ function updateSensorList() {
                         $('<td>').text(i),
 
                         $('<td>').append(
-                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
                         ),
 						$('<td>').append(
                             $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
@@ -388,7 +413,9 @@ function editSenrorIntern(event, editSensor){
 }
 
 function populateSensorConfiguration(sensorName){
-    $('#sensorParamTable tr:gt(0)').remove();
+    var paramTable = $('#sensorParamTableBody');
+    paramTable.children('tr').remove();
+
     $.ajax({
         type:"POST",
         url:'{{ROOT_SENSORCONF}}',
@@ -402,7 +429,7 @@ function populateSensorConfiguration(sensorName){
             if(null != configData.parameters && configData.parameters.length > 0){
                 for(var count = 0; count < configData.parameters.length; count++){
                     var parameter = configData.parameters[count];
-                    $('#sensorParamTable tr:last').after('<tr><td><input type="text" placeholder="Key.." value="' + parameter.key + '" name="sensorParamKey"/></td><td><textarea name="sensorParamValue"  placeholder="Value..">' + parameter.value +'</textarea></td><td><a class="btn btn-primary" href="#"><i class="icon-trash icon-white"></i></a></td></tr>');
+                    addRowToParamTable(parameter);
                 }
             }
             $('#newSensorDlg').modal('show');

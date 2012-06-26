@@ -50,6 +50,7 @@ function setupHandlers() {
 }
 
 function addQueryHandler(event) {
+    doAlert("Loading...");
     event.preventDefault();
 
     // Serialize the form
@@ -65,21 +66,74 @@ function addQueryHandler(event) {
         success:function (list) {
             // update the div
             renderLogs(list);
+            stopAlert();
+        },
+        error:function () {
+            console.log("ajax call failed");
+            stopAlert();
         }
     })
 }
 
 function renderLogs(list){
-	if(list.length == 0){
-		$('#container').text('No Logs Found');
-	}
-	else {
-		$('#container').text('');
-		for(var i = 0; i < list.length ; i++)
-		{
-			$('#container').append(formatLogMessage(list[i]));
-		}
-	}
+    var logTable = $('#logResultsTableBody');
+    logTable.children('tr').remove();
+
+    for(var i = 0; i < list.length ; i++)
+    {
+        var msg = list[i];
+        logTable.append(
+            $('<tr>').append(
+                $('<td>').append(
+                    $('<img>').attr("src", getLogLevelImage(msg.logLevel)).attr("alt", getLogLevelNames(msg.logLevel))
+                ),
+                $('<td>').text(getLogLevelNames(msg.logLevel)),
+                $('<td>').text(timeConverter(msg.timestamp)),
+                $('<td>').text(msg.programName),
+                $('<td>').text(msg.logMessage)
+            )
+        );
+    }
+}
+
+function getLogLevelNames(logLevel){
+    var level = parseInt(logLevel);
+    switch(level){
+        case 0:
+            return "Emergency";
+        case 1:
+            return "Alert";
+        case 2:
+            return "Critical";
+        case 3:
+            return "Error";
+        case 4:
+            return "Warning";
+        case 5:
+            return "Notice";
+        case 6:
+            return "Info";
+        case 7:
+            return "Debug";
+    }
+}
+
+function getLogLevelImage(logLevel){
+    var level = parseInt(logLevel);
+    switch(level){
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            return "images/error_level.png";
+        case 4:
+        case 5:
+            return "images/warn_level.png";
+        case 6:
+            return "images/info_level.png";
+        case 7:
+            return "images/debug_level.png";
+    }
 }
 
 function timeConverter(UNIX_timestamp){
@@ -94,14 +148,3 @@ function timeConverter(UNIX_timestamp){
     var time = date+','+month+' '+year+' '+hour+':'+min+':'+sec ;
     return time;
 }
-
-function formatLogMessage(logMessage){
-	var result = "<p>";
-	result += "[" + timeConverter(logMessage.timestamp) + "] ";
-	result += "[Sev: " + logMessage.logLevel + "] ";
-	result += "[" + logMessage.programName + "] ";
-	result += logMessage.logMessage;
-	result += "</p>";
-	return result;
-}
-
