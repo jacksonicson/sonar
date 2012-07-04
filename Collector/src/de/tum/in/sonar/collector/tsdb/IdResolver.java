@@ -105,11 +105,14 @@ public class IdResolver {
 	}
 
 	long scanNames(String name) throws UnresolvableException, InvalidLabelException {
+		logger.info("checking for name: " + name + " of type " + type);
+		
 		try {
 			HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
-			logger.info("checking for name: " + name + " of type " + type);
-
+			if(name == null)
+				throw new UnresolvableException("no name given"); 
+			
 			Get get = new Get(Bytes.toBytes(name));
 			Result result = uidTable.get(get);
 

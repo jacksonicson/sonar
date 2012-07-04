@@ -10,14 +10,44 @@
     <link href="bootstrap/css/timepicker.css" rel="stylesheet">
 
     <style type="text/css">
+
         body {
-            padding-top: 60px;
-            padding-bottom: 40px;
+            position: relative;
+            padding-top: 90px;
+        }
+
+        .navbar-fixed-top .brand {
+            padding-right: 0;
+            padding-left: 0;
+            margin-left: 20px;
+            float: right;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
+            -webkit-transition: all .2s linear;
+            -moz-transition: all .2s linear;
+            transition: all .2s linear;
+        }
+
+        .navbar-fixed-top .brand:hover {
+            text-decoration: none;
         }
 
         .sidebar-nav {
             padding: 9px 0;
         }
+
+        .footer {
+            margin-top: 45px;
+            padding: 35px 0 36px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .footer p {
+            margin-bottom: 0;
+            color: #555;
+        }
+
     </style>
 
     <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
@@ -63,12 +93,12 @@
     {% endblock %}
 
 </head>
-<body>
+<body data-offset="50">
 
 <!-- Navbar -->
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
-        <div class="container-fluid">
+        <div class="container">
             <a class="brand" href="#">Sonar</a>
 
             <div class="nav-collapse">
@@ -94,6 +124,15 @@
     {% block container %}
     <!-- this is the content area -->
     {% endblock %}
+</div>
+
+
+<div class="container">
+    <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+
+        <p><img alt="Sonar" src="images/sonar.png"></p>
+    </footer>
 </div>
 
 <!-- Le javascript

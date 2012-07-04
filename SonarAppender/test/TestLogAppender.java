@@ -7,9 +7,9 @@ public class TestLogAppender {
 
 	public static void main(String[] args) {
 		logger.error("Testing error log");
-		logger.info("Testing info log");
-		logger.warn("Testing warn log");
-		logger.debug("Testing debug log");
+//		logger.info("Testing info log");
+//		logger.warn("Testing warn log");
+//		logger.debug("Testing debug log");
 	}
 
 }

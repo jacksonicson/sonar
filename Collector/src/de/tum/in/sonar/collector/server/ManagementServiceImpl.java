@@ -1,5 +1,6 @@
 package de.tum.in.sonar.collector.server;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.thrift.TException;
@@ -50,7 +52,17 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		config.setMaxActive(200);
 		config.setMinIdle(10);
 		config.setTestOnBorrow(false);
-		this.jedisPool = new JedisPool(config, "srv2");
+
+		Properties prop = new Properties();
+		try {
+			prop.load(ManagementServiceImpl.class.getResourceAsStream("/redis.properties"));
+			String server = (String) prop.get("server");
+			logger.info("Using REDIS server: " + server);
+			this.jedisPool = new JedisPool(config, server);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	@Override
