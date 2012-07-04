@@ -15,6 +15,7 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import de.tum.in.sonar.collector.CollectService.AsyncClient;
 import de.tum.in.sonar.collector.CollectService.Client;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.LogMessage;
