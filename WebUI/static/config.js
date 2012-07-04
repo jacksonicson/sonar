@@ -5,14 +5,78 @@ jQuery(document).ready(function ($) {
     // Register event handlers
     $('#submitHost').click(submitHost);
     $('#btnNewHost').click(newHost);
+    $('#btnNewSensor').click(newSensor);
     $('#submitSensor').click(submitSensor);
+
+    jQuery(document).ready(function ($) {
+        $('#addButton').click(addRowToParamTable);
+        $('#sensorParamTable td a.btn').live('click', function() {
+            $(this).parent().parent().remove();
+        });
+    });
 
     // Load list data
     updateSensorList();
     updateHostsList();
 });
 
-function submitSensor(event) {
+function addRowToParamTable(parameter){
+
+    if(null == parameter){
+        parameter = {
+            key:"",
+            value:""
+        }
+    }
+
+    var paramTable = $('#sensorParamTableBody');
+    paramTable.append(
+        $('<tr>').append(
+            $('<td>').append(
+                    $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").val(parameter.key)
+            ),
+            $('<td>').append(
+                $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").val(parameter.value)
+            ),
+            $('<td>').append(
+                $('<a>').addClass("btn").addClass("btn-primary").attr("href", "#").append($('<i>').addClass('icon-trash').addClass('icon-white'))
+            )
+        )
+    );
+}
+
+function newSensor(event){
+    $('#sensorName').attr("value", "");
+    $('#sensorLabels').attr("value", "");
+    $('#sensorInterval').attr("value", "");
+    $('#newSensorDlg').modal('show');
+
+    var paramTable = $('#sensorParamTableBody');
+    paramTable.children('tr').remove();
+
+    clearFormElements($('#newSensorForm'));
+}
+
+function clearFormElements(ele) {
+
+    $(ele).find(':input').each(function() {
+        switch(this.type) {
+            case 'password':
+            case 'select-multiple':
+            case 'select-one':
+            case 'text':
+            case 'textarea':
+                $(this).val('');
+                break;
+            case 'checkbox':
+            case 'radio':
+                this.checked = false;
+        }
+    });
+
+}
+
+function saveSensor(){
     var test = $("#newSensorForm").serialize();
     console.log("FORM: " + test);
 
@@ -35,6 +99,12 @@ function submitSensor(event) {
     });
 }
 
+function submitSensor(event) {
+    var test = $("#sensorName").val();
+    deleteSensorActual(test, saveSensor);
+
+}
+
 function deleteHost(event) {
     var host = event.target.id;
 
@@ -48,17 +118,18 @@ function deleteHost(event) {
     });
 }
 
-function deleteSensor(event) {
-    var sensor = event.target.id;
+function deleteSensor(event){
+    deleteSensorActual(event.target.id, function(){
+        updateSensorList();
+    });
+}
 
+function deleteSensorActual(sensor, target) {
     $.ajax({
         type:"GET",
         url:'{{ROOT_SENSORDEL}}?sensorName=' + sensor,
         dataType:'text',
-        success:function (data) {
-
-            updateSensorList();
-        }
+        success:target
     });
 }
 
@@ -123,7 +194,7 @@ function newHost(event) {
 
 function editHost(event) {
     var editHost = event.target.id;
-    editHostIntern(event, editHost)
+    editHostIntern(event, editHost);
 }
 
 function editHostIntern(event, editHost) {
@@ -234,7 +305,7 @@ function updateHostsList() {
                         .append(
                         $('<td>').text(i),
                         $('<td>').append(
-                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
+                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
                         ),
                         $('<td>').append(
                             $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
@@ -283,9 +354,11 @@ function updateSensorList() {
                         $('<td>').text(i),
 
                         $('<td>').append(
-                            $('<a>').append($('<i>').addClass('ico-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
                         ),
-                        $('<td>').text(sensor.name),
+						$('<td>').append(
+                            $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
+                        ),
                         $('<td>').text(sensor.binary),
                         $('<td>').text(labelString)
                     )
@@ -299,6 +372,67 @@ function updateSensorList() {
         },
         error:function () {
             console.log("ajax call failed");
+        }
+    });
+}
+
+function editSensor(event){
+	var editSensor = event.target.id;
+    clearFormElements($('#newSensorForm'));
+    editSenrorIntern(event, editSensor);
+}
+
+function editSenrorIntern(event, editSensor){
+	console.log("editing sensor" + editSensor);
+
+    $.ajax({
+        type:"GET",
+        url:'{{ROOT_SENSORS}}',
+        dataType:'json',
+
+        success:function (data) {
+
+            for (var i in data) {
+                var sensor = data[i];
+                console.log("checking sensor name: " + sensor.name + " against " + editSensor);
+				if(sensor.name == editSensor){
+					$('#sensorName').attr("value", sensor.name);
+					var labelString = '';
+					for (var j = 0; j < sensor.labels.length; j++) {
+						labelString += sensor.labels[j];
+						if (j < (sensor.labels.length - 1))
+							labelString += ","
+					}
+                    $('#sensorLabels').attr("value", labelString);
+                    populateSensorConfiguration(sensor.name);
+					break;
+				}
+			}
+        }
+    });
+}
+
+function populateSensorConfiguration(sensorName){
+    var paramTable = $('#sensorParamTableBody');
+    paramTable.children('tr').remove();
+
+    $.ajax({
+        type:"POST",
+        url:'{{ROOT_SENSORCONF}}',
+        dataType:'json',
+        data: "sensor=" + sensorName,
+        success: function(configData){
+            // get interval value
+            $('#sensorInterval').attr("value", configData.interval);
+
+            // get the parameters value
+            if(null != configData.parameters && configData.parameters.length > 0){
+                for(var count = 0; count < configData.parameters.length; count++){
+                    var parameter = configData.parameters[count];
+                    addRowToParamTable(parameter);
+                }
+            }
+            $('#newSensorDlg').modal('show');
         }
     });
 }

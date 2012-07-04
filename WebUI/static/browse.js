@@ -11,17 +11,58 @@ $(function () {
     setupDatePickers();
     setupHandlers();
     setupCharts();
+    getHostData(function(output){
+        var hosts;
+        hosts = new Array;
+        $.each(output, function(index, item){
+            hosts.push(item.hostname);
+        });
+
+        $('#hostname').typeahead({
+            source: hosts
+        });
+    });
+
+    getSensorData(function(output){
+        var sensors;
+        sensors = new Array;
+        $.each(output, function(index, item){
+            sensors.push(item.name);
+        });
+        $('#sensor').typeahead({
+            source: sensors
+        });
+    });
 });
 
-function setupDatePickers() {
-    $('#startdate').datepicker()
-    $('#stopdate').datepicker()
+function getSensors(){
+    var sensors = new Array;
+    $.ajax({
+        type:"GET",
+        url:'/sensornames',
+        dataType:'json',
+        success: function (results) {
+           for(var count = 0 ; count < results.length ; count++){
+               sensors.push(results[count].name);
+           }
+        },
+        error: function(error){
+            console.log('oops');
+        }
+    });
+    return sensors;
+}
 
-	var myDate = new Date();
+function setupDatePickers() {
+
+   	var myDate = new Date();
     var month = myDate.getMonth() + 1;
     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
 	$("#startdate").val(prettyDate);
 	$("#stopdate").val(prettyDate);
+
+    $('#startdate').datepicker();
+    $('#stopdate').datepicker();
 
     $('.dropdown-timepicker').timepicker({
         defaultTime: 'current',

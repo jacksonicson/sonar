@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="167" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
     <ignored path="WebUI.iws" />
@@ -22,19 +25,46 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/sonar.js">
+      <file leaf-file-name="config.html" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/config.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="302" column="0" selection-start="9948" selection-end="9948" vertical-scroll-proportion="0.2860386">
+            <state line="138" column="58" selection-start="4889" selection-end="4889" vertical-scroll-proportion="0.62568307">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EcmaScript5.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/EcmaScript5.js">
+      <file leaf-file-name="config.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="54" column="7" selection-start="940" selection-end="940" vertical-scroll-proportion="0.0">
+            <state line="31" column="48" selection-start="727" selection-end="771" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sonar.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="279" column="43" selection-start="10046" selection-end="10046" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="logs.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/logs.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="104" column="27" selection-start="2598" selection-end="2598" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="logs.html" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/logs.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="58" column="30" selection-start="2311" selection-end="2325" vertical-scroll-proportion="-21.961538">
               <folding />
             </state>
           </provider>
@@ -50,30 +80,30 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js" />
-        <option value="$PROJECT_DIR$/static/configuration.js" />
-        <option value="$PROJECT_DIR$/static/highstocktest.html" />
-        <option value="$PROJECT_DIR$/xdate2.js" />
-        <option value="$PROJECT_DIR$/static/configuration.html" />
-        <option value="$PROJECT_DIR$/static/sonar.css" />
-        <option value="$PROJECT_DIR$/router.js" />
-        <option value="$PROJECT_DIR$/static/browse.js" />
-        <option value="$PROJECT_DIR$/static/config.html" />
-        <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/template.html" />
-        <option value="$PROJECT_DIR$/static/config.js" />
         <option value="$PROJECT_DIR$/collector_types.js" />
         <option value="$PROJECT_DIR$/node_modules/thrift/lib/thrift/protocol.js" />
-        <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/makethrift.bat" />
+        <option value="$PROJECT_DIR$/static/jquery/jq-ac-script.js" />
+        <option value="$PROJECT_DIR$/static/sonar.css" />
+        <option value="$PROJECT_DIR$/ManagementService.js" />
+        <option value="$PROJECT_DIR$/sonar.js" />
+        <option value="$PROJECT_DIR$/static/autocomplete.js" />
+        <option value="$PROJECT_DIR$/static/browse.html" />
+        <option value="$PROJECT_DIR$/static/bootstrap/js/bootstrap-datepicker.js" />
+        <option value="$PROJECT_DIR$/static/browse.js" />
+        <option value="$PROJECT_DIR$/static/config.js" />
+        <option value="$PROJECT_DIR$/static/logs.html" />
+        <option value="$PROJECT_DIR$/static/logs.js" />
+        <option value="$PROJECT_DIR$/static/config.html" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1672" />
+    <option name="x" value="-1608" />
     <option name="y" value="-8" />
-    <option name="width" value="1696" />
-    <option name="height" value="1066" />
+    <option name="width" value="1616" />
+    <option name="height" value="1176" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -120,6 +150,16 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -166,90 +206,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
+              <option name="myItemId" value="images" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="static" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="static" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bootstrap" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="node_modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WebUI" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="gen-nodejs" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -259,19 +217,19 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="options.lastSelected" value="preferences.editor" />
     <property name="recentsLimit" value="5" />
+    <property name="options.lastSelected" value="preferences.editor" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="F:\IDP\sonar2\sonar\WebUI\static\images" />
+      <recent name="F:\IDP\sonar2\sonar\WebUI\static\jquery" />
       <recent name="D:\work\dev\sonar\sonar\WebUI" />
       <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\css" />
       <recent name="D:\work\sonar\sonar\WebUI\static" />
-      <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\js" />
-      <recent name="D:\work\dev\sonar\sonar\WebUI\static" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\work\sonar\sonar\WebUI\static\bootstrap\less" />
@@ -351,23 +309,23 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1672" y="-8" width="1696" height="1066" extended-state="6" />
-    <editor active="false" />
+    <frame x="-1608" y="-8" width="1616" height="1176" extended-state="7" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.2100181" sideWeight="0.3048499" order="1" side_tool="true" content_ui="tabs" x="1740" y="382" width="417" height="497" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2094146" sideWeight="0.68378997" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22511096" sideWeight="0.7706693" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3580247" sideWeight="0.49788776" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2293307" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.31621003" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3289183" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -407,7 +365,7 @@
     <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
     <option name="CREATE_PATCH_EXPAND_DETAILS_DEFAULT" value="true" />
     <option name="SHOW_FILE_HISTORY_DETAILS" value="true" />
-    <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
+    <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
     <option name="LAST_COMMIT_MESSAGE" />
@@ -428,76 +386,100 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
+    <entry file="file://$USER_HOME$/Desktop/test.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="36" selection-start="2712" selection-end="2712" vertical-scroll-proportion="0.43965518" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="0" selection-start="2443" selection-end="2443" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="79" column="18" selection-start="1490" selection-end="1494" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/config.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="29" selection-start="946" selection-end="946" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/config.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="254" column="7" selection-start="7081" selection-end="7081" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="179" column="34" selection-start="7905" selection-end="7905" vertical-scroll-proportion="0.0" />
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ManagementService.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="12" selection-start="374" selection-end="374" vertical-scroll-proportion="0.0" />
+        <state line="1210" column="5" selection-start="29268" selection-end="29268" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/collector_types.js">
+    <entry file="file://$PROJECT_DIR$/static/bootstrap/js/bootstrap-typeahead.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="424" column="33" selection-start="10149" selection-end="10149" vertical-scroll-proportion="0.0" />
+        <state line="244" column="5" selection-start="6140" selection-end="6140" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/template.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="100" column="39" selection-start="2709" selection-end="2709" vertical-scroll-proportion="0.41595092" />
+        <state line="7" column="39" selection-start="204" selection-end="213" vertical-scroll-proportion="-0.65384614" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/protocol.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="282" column="19" selection-start="7307" selection-end="7307" vertical-scroll-proportion="0.08085612" />
+    <entry file="file://$PROJECT_DIR$/static/bootstrap/img/glyphicons-halflings.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/router.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="64" column="33" selection-start="1445" selection-end="1445" vertical-scroll-proportion="0.0" />
+    <entry file="file://$PROJECT_DIR$/static/bootstrap/img/glyphicons-halflings-white.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/makethrift.bat">
+    <entry file="file://$PROJECT_DIR$/static/bootstrap/css/bootstrap.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="0" selection-start="55" selection-end="55" vertical-scroll-proportion="0.020858895" />
+        <state line="1849" column="11" selection-start="29503" selection-end="29508" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/EcmaScript5.js">
+    <entry file="file://$PROJECT_DIR$/static/autocomplete.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="7" selection-start="940" selection-end="940" vertical-scroll-proportion="0.0">
+        <state line="27" column="1" selection-start="572" selection-end="572" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/browse.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="62" selection-start="50" selection-end="112" vertical-scroll-proportion="-1.9615384">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/bootstrap/js/bootstrap-datepicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/browse.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="49" column="26" selection-start="1084" selection-end="1084" vertical-scroll-proportion="1.1018518">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="31" column="48" selection-start="727" selection-end="771" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="302" column="0" selection-start="9948" selection-end="9948" vertical-scroll-proportion="0.2860386">
+        <state line="279" column="43" selection-start="10046" selection-end="10046" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/logs.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="58" column="30" selection-start="2311" selection-end="2325" vertical-scroll-proportion="-21.961538">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/logs.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="104" column="27" selection-start="2598" selection-end="2598" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/config.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="138" column="58" selection-start="4889" selection-end="4889" vertical-scroll-proportion="0.62568307">
           <folding />
         </state>
       </provider>

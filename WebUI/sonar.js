@@ -157,7 +157,6 @@ function addSensorHandler(req, resp) {
 
         if (body.sensorName != null && body.sensorName.length >= 3) {
 
-
             client.deploySensor(body.sensorName, "null", function (err, ret) {
                     console.log("sensor registered");
 
@@ -165,7 +164,53 @@ function addSensorHandler(req, resp) {
                     var labels = body.sensorLabels.split(",");
                     console.log("labels " + labels);
                     client.setSensorLabels(body.sensorName, labels, function (err, ret) {
-                        resp.end("ok");
+                        // decompose the sensor configuration parameters and set it
+                        var sensorInterval = body.sensorInterval;
+                        var paramKeys = body.sensorParamKey;
+                        var paramValues = body.sensorParamValue;
+                        var parameters = new Array();
+                        var config = false;
+
+                        // check if sensor configuration is specified
+                        // if not change it to default 0
+                        if(null != sensorInterval){
+                            config = true;
+                        } else {
+                            sensorInterval = 0;
+                        }
+
+                        // prepare the parameter array
+                        if(null != paramKeys){
+                            config = true;
+                            if(paramKeys instanceof Array){
+                                for(var index = 0; index < paramKeys.length ; index++){
+                                    var parameter = new types.Parameter({
+                                        key: paramKeys[index],
+                                        value: paramValues[index]
+                                    });
+                                    parameters.push(parameter);
+                                }
+                            } else {
+                                var parameter = new types.Parameter({
+                                    key: paramKeys,
+                                    value: paramValues
+                                });
+                                parameters.push(parameter);
+                            }
+                        }
+
+                        if(config == true){
+                            // prepare the sensor configuration object
+                            var sensorConfiguration = new types.SensorConfiguration({
+                                interval : sensorInterval,
+                                parameters : parameters
+                            });
+
+                            client.setSensorConfiguration(body.sensorName, sensorConfiguration, function (err, ret) {
+                                resp.end("ok");
+                            });
+                        }
+
                     });
                 }
             )
@@ -447,6 +492,62 @@ function tsdbHandler(req, resp) {
     });
 }
 
+function sensorConfigHandler(req, resp){
+    var body = "";
+
+    req.on('data', function (data) {
+        body += data;
+    });
+
+    req.on('end', function () {
+        body = qs.parse(body);
+        var sensor = body.sensor;
+        console.log("Requesting configuration for sensor: " + body.sensor);
+
+        var connection = thrift.createConnection('localhost', 7932);
+        var client = thrift.createClient(managementService, connection);
+
+        connection.on("error", function (err) {
+            console.log("Could not connect with the Collector: " + err);
+        });
+
+        // Execute the query
+        client.getSensorConfiguration(sensor, function (err, configurationData) {
+            var ss = JSON.stringify(configurationData);
+            console.log(ss);
+            resp.end(ss);
+        });
+    });
+}
+
+function sensorNamesHandler(req, resp){
+
+    req.on('end', function () {
+        console.log("Requesting all sensors");
+
+        var connection = thrift.createConnection('localhost', 7932);
+        var client = thrift.createClient(managementService, connection);
+        var sensorData = []
+        connection.on("error", function (err) {
+            console.log("Could not connect with the Collector: " + err);
+        });
+
+        // Execute the query
+        client.getSensorNames(function (err, sensorNames) {
+
+            for(var count = 0; count < sensorNames.length; count++){
+                var sensorInfo = {
+                    name:sensorNames[count]
+                }
+                sensorData.push(sensorInfo);
+            }
+            var ss = JSON.stringify(sensorData);
+            console.log(ss);
+            resp.end(ss);
+        });
+    });
+}
+
 // Getting started with monogdb
 // http://howtonode.org/node-js-and-mongodb-getting-started-with-mongojs
 
@@ -520,10 +621,12 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORS', {url:'sensors', handler:sensorsHandler}, []),
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
+    new router.UrlNode('SENSORCONF', {url:'sensorConfig', handler:sensorConfigHandler}, []),
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
     new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
     new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, []),
 	new router.UrlNode('LOGDB', {url:'logdb', handler:logdbHandler}, []),
+    new router.UrlNode('SENSORNAMES', {url:'sensornames', handler:sensorNamesHandler}, [])
 ]);
 
 // dump url configuration

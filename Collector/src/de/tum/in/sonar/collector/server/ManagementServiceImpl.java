@@ -358,14 +358,18 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
 		logger.debug("setting sensor configuration: " + sensor);
 		Jedis jedis = jedisPool.getResource();
-
 		String key = key("sensor", sensor, "config");
-		jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
 
-		key = key(key, "properties");
-		for (Parameter param : configuration.getParameters())
-			jedis.set(key(key, param.key), param.value);
+		if (configuration.getInterval() != 0) {
+			jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
+		}
 
+		if (null != configuration.getParameters() && configuration.getParameters().size() > 0) {
+			key = key(key, "properties");
+			for (Parameter param : configuration.getParameters()) {
+				jedis.set(key(key, param.key), param.value);
+			}
+		}
 		jedisPool.returnResource(jedis);
 	}
 
@@ -406,26 +410,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 
 		// Get sensor configuration
-		SensorConfiguration sensorConfig = new SensorConfiguration();
-		key = key("sensor", sensor, "config");
-		if (jedis.exists(key))
-			sensorConfig.setInterval(Long.parseLong(key(key, "interval")));
-		else
-			sensorConfig.setInterval(0);
+		SensorConfiguration sensorConfig = getSensorConfiguration(sensor);
 		config.setConfiguration(sensorConfig);
 
-		// Get the properties
-		key = key("sensor", sensor, "config", "properties");
-		Set<String> parameters = jedis.keys(key + ":*");
-		for(String name : parameters)
-		{
-			String value = jedis.get(key(key, name)); 
-			Parameter param = new Parameter(); 
-			param.setKey(name); 
-			param.setValue(value);
-			sensorConfig.addToParameters(param); 
-		}
-		
 		// Get all labels (aggregation of host and sensor)
 		key = key("sensor", sensor, "labels");
 		Set<String> sensorLabels = null;
@@ -471,5 +458,44 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Error while executing query", e);
 		}
 		return new ArrayList<LogMessage>();
+	}
+
+	public SensorConfiguration getSensorConfiguration(String sensor) throws TException {
+		logger.debug("reading sensor configuration for sensor: " + sensor);
+		Jedis jedis = jedisPool.getResource();
+
+		SensorConfiguration sensorConfig = new SensorConfiguration();
+		String key = key("sensor", sensor, "config");
+		if (jedis.exists(key(key, "interval")))
+			sensorConfig.setInterval(Long.parseLong(jedis.get(key(key, "interval"))));
+		else
+			sensorConfig.setInterval(0);
+
+		logger.debug("Interval value :" + sensorConfig.getInterval());
+		// Get the properties
+		key = key("sensor", sensor, "config", "properties");
+		Set<String> parameters = jedis.keys(key + ":*");
+		for (String name : parameters) {
+			String value = jedis.get(name);
+			Parameter param = new Parameter();
+			param.setKey(getKeyValueFromRedisKey(name));
+			param.setValue(value);
+			sensorConfig.addToParameters(param);
+		}
+		return sensorConfig;
+	}
+
+	private String getKeyValueFromRedisKey(String key) {
+		return key.substring(key.lastIndexOf(":") + 1, key.length());
+	}
+
+	public Set<String> getSensorNames() throws TException {
+		Set<String> result = new HashSet<String>();
+		try {
+			result.addAll(tsdb.getSensorNames());
+		} catch (QueryException e) {
+			logger.error("Error while getting the list of configured sensors", e);
+		}
+		return result;
 	}
 }

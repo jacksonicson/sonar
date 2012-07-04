@@ -731,11 +731,81 @@ TimeSeriesQuery.prototype.write = function(output) {
   return;
 };
 
+var Parameter = module.exports.Parameter = function(args) {
+  this.key = null;
+  this.value = null;
+  if (args) {
+    if (args.key !== undefined) {
+      this.key = args.key;
+    }
+    if (args.value !== undefined) {
+      this.value = args.value;
+    }
+  }
+};
+Parameter.prototype = {};
+Parameter.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.key = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.value = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Parameter.prototype.write = function(output) {
+  output.writeStructBegin('Parameter');
+  if (this.key) {
+    output.writeFieldBegin('key', Thrift.Type.STRING, 1);
+    output.writeString(this.key);
+    output.writeFieldEnd();
+  }
+  if (this.value) {
+    output.writeFieldBegin('value', Thrift.Type.STRING, 2);
+    output.writeString(this.value);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 var SensorConfiguration = module.exports.SensorConfiguration = function(args) {
   this.interval = null;
+  this.parameters = null;
   if (args) {
     if (args.interval !== undefined) {
       this.interval = args.interval;
+    }
+    if (args.parameters !== undefined) {
+      this.parameters = args.parameters;
     }
   }
 };
@@ -760,9 +830,27 @@ SensorConfiguration.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 0:
+      case 2:
+      if (ftype == Thrift.Type.LIST) {
+        var _size32 = 0;
+        var _rtmp336;
+        this.parameters = [];
+        var _etype35 = 0;
+        _rtmp336 = input.readListBegin();
+        _etype35 = _rtmp336.etype;
+        _size32 = _rtmp336.size;
+        for (var _i37 = 0; _i37 < _size32; ++_i37)
+        {
+          var elem38 = null;
+          elem38 = new ttypes.Parameter();
+          elem38.read(input);
+          this.parameters.push(elem38);
+        }
+        input.readListEnd();
+      } else {
         input.skip(ftype);
-        break;
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -777,6 +865,20 @@ SensorConfiguration.prototype.write = function(output) {
   if (this.interval) {
     output.writeFieldBegin('interval', Thrift.Type.I64, 1);
     output.writeI64(this.interval);
+    output.writeFieldEnd();
+  }
+  if (this.parameters) {
+    output.writeFieldBegin('parameters', Thrift.Type.LIST, 2);
+    output.writeListBegin(Thrift.Type.STRUCT, this.parameters.length);
+    for (var iter39 in this.parameters)
+    {
+      if (this.parameters.hasOwnProperty(iter39))
+      {
+        iter39 = this.parameters[iter39];
+        iter39.write(output);
+      }
+    }
+    output.writeListEnd();
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -838,18 +940,18 @@ BundledSensorConfiguration.prototype.read = function(input) {
       break;
       case 3:
       if (ftype == Thrift.Type.SET) {
-        var _size32 = 0;
-        var _rtmp336;
+        var _size40 = 0;
+        var _rtmp344;
         this.labels = [];
-        var _etype35 = 0;
-        _rtmp336 = input.readSetBegin();
-        _etype35 = _rtmp336.etype;
-        _size32 = _rtmp336.size;
-        for (var _i37 = 0; _i37 < _size32; ++_i37)
+        var _etype43 = 0;
+        _rtmp344 = input.readSetBegin();
+        _etype43 = _rtmp344.etype;
+        _size40 = _rtmp344.size;
+        for (var _i45 = 0; _i45 < _size40; ++_i45)
         {
-          var elem38 = null;
-          elem38 = input.readString();
-          this.labels.push(elem38);
+          var elem46 = null;
+          elem46 = input.readString();
+          this.labels.push(elem46);
         }
         input.readSetEnd();
       } else {
@@ -895,12 +997,12 @@ BundledSensorConfiguration.prototype.write = function(output) {
   if (this.labels) {
     output.writeFieldBegin('labels', Thrift.Type.SET, 3);
     output.writeSetBegin(Thrift.Type.STRING, this.labels.length);
-    for (var iter39 in this.labels)
+    for (var iter47 in this.labels)
     {
-      if (this.labels.hasOwnProperty(iter39))
+      if (this.labels.hasOwnProperty(iter47))
       {
-        iter39 = this.labels[iter39];
-        output.writeString(iter39);
+        iter47 = this.labels[iter47];
+        output.writeString(iter47);
       }
     }
     output.writeSetEnd();
