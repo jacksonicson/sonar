@@ -42,13 +42,15 @@ public class LogDatabase {
 	private IdResolver labelResolver;
 	private IdResolver hostnameResolver;
 	private IdResolver sensorResolver;
-	private HTablePool tsdbTablePool;
+	private HTablePool tablePool;
+	private long internalCounter = 0; 
 
 	public LogDatabase() {
 		this.labelResolver = new IdResolver("label");
 		this.hostnameResolver = new IdResolver("hostname");
 		this.sensorResolver = new IdResolver("sensor");
-		this.tsdbTablePool = new HTablePool();
+		
+		this.tablePool = new HTablePool();
 	}
 
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {
@@ -80,6 +82,7 @@ public class LogDatabase {
 		index += appendToKey(key, index, sensorResolver.resolveName(id.getSensor()));
 		index += appendToKey(key, index, hostnameResolver.resolveName(id.getHostname()));
 		index += appendToKey(key, index, id.getTimestamp());
+		
 		return key;
 	}
 
@@ -87,17 +90,22 @@ public class LogDatabase {
 
 		try {
 			byte[] key = buildKey(id);
-			HTableInterface table = this.tsdbTablePool.getTable(LogConstants.TABLE_LOG);
+			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
+			
 			// Create a new row in this case
-			if (message.getTimestamp() == 0) {
+			if (message.getTimestamp() == 0)
 				message.setTimestamp(id.getTimestamp());
-			}
-			Put put = new Put(key);
+			
 			TSerializer serializer = new TSerializer();
-			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(LogConstants.QUALIFIER_LOG_DATA),
+			
+			// Hack - if this is not applied log messages with the same timestamp overwrite each other!
+			internalCounter++; 
+			
+			Put put = new Put(key);
+			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(id.getHostname() + internalCounter),
 					serializer.serialize(message));
-
 			table.put(put);
+			
 		} catch (IOException e) {
 			logger.error("could not write tsdb to hbase", e);
 		} catch (UnresolvableException e) {
@@ -107,57 +115,55 @@ public class LogDatabase {
 		} catch (InvalidLabelException e) {
 			logger.error("invalid label used", e);
 		}
-
-		logger.info("writing data ");
 	}
 
-	public List<LogMessage> run(LogsQuery logQuery) throws QueryException, UnresolvableException, InvalidLabelException {
+	public List<LogMessage> run(LogsQuery logQuery) throws QueryException, UnresolvableException,
+			InvalidLabelException {
 		List<LogMessage> logMessages = null;
 		try {
 
-			HTableInterface table = this.tsdbTablePool.getTable(LogConstants.TABLE_LOG);
+			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
 			Scan scan = new Scan();
 
 			// set the range
+			
 			byte[] startRow = new byte[keyWidth()];
 			int index = 0;
 			index += appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
 			index += appendToKey(startRow, index, Bytes.toBytes(hostnameResolver.resolveName(logQuery.getHostname())));
 			index += appendToKey(startRow, index, logQuery.getStartTime());
-
 			scan.setStartRow(startRow);
 
-			byte[] endROw = new byte[keyWidth()];
-
+			byte[] endRow = new byte[keyWidth()];
 			index = 0;
-			index += appendToKey(endROw, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
-			index += appendToKey(endROw, index, Bytes.toBytes(hostnameResolver.resolveName(logQuery.getHostname())));
-			index += appendToKey(endROw, index, logQuery.getStopTime());
-
-			for (; index < endROw.length; index++)
-				endROw[index] = (byte) 0xFF;
-
-			scan.setStopRow(endROw);
+			index += appendToKey(endRow, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
+			index += appendToKey(endRow, index, Bytes.toBytes(hostnameResolver.resolveName(logQuery.getHostname())));
+			index += appendToKey(endRow, index, logQuery.getStopTime());
+			System.out.println(logQuery.getStopTime());
+			System.out.println(System.currentTimeMillis()); 
+			scan.setStopRow(endRow);
+			
 			ResultScanner scanner = table.getScanner(scan);
 
 			logMessages = new ArrayList<LogMessage>();
 
 			Result next;
+			int crt = 0;
 			while ((next = scanner.next()) != null) {
 
 				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA));
 
-				for (byte[] key : familyMap.keySet()) {
+				for (byte[] qualifier : familyMap.keySet()) {
+					byte[] data = familyMap.get(qualifier); 
+					if (data == null)
+						continue;
 
-					if (Bytes.toString(key).equals("data")) {
-						try {
-							TDeserializer deserializer = new TDeserializer();
-							LogMessage logMsg = new LogMessage();
-							deserializer.deserialize(logMsg, familyMap.get(key));
-							logMessages.add(logMsg);
-						} catch (TException e) {
-							e.printStackTrace();
-						}
+					TDeserializer deserializer = new TDeserializer();
+					LogMessage logMsg = new LogMessage();
+					try {
+						deserializer.deserialize(logMsg, data);
+						logMessages.add(logMsg);
+					} catch (TException e) {
 						continue;
 					}
 				}

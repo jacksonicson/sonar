@@ -48,9 +48,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	@Override
 	protected synchronized void append(LoggingEvent event) {
-
 		boolean connected = connectIfNeeded();
-
 		if (!connected) {
 			getErrorHandler().error("No connection to the client");
 			return;
@@ -67,6 +65,8 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		message.setLogLevel(event.getLevel().getSyslogEquivalent());
 		message.setLogMessage(event.getMessage().toString());
 		message.setProgramName(event.getLoggerName());
+		message.setTimestamp(event.getTimeStamp() / 1000);
+
 		try {
 			client.logMessage(id, message);
 		} catch (TException e) {
@@ -81,9 +81,8 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	@Override
 	public synchronized void close() {
-		if (isConnected()) {
+		if (isConnected())
 			transport.close();
-		}
 	}
 
 	/**
@@ -103,7 +102,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	private void establishConnection() throws TTransportException, UnknownHostException, IOException {
 		final TSocket socket = new TSocket(getServer(), getPort());
-		TTransport transport = new TFramedTransport(socket);
+		transport = new TFramedTransport(socket);
 		transport.open();
 
 		TProtocol protocol = new TBinaryProtocol(transport);
@@ -117,14 +116,12 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 * @return
 	 */
 	private boolean connectIfNeeded() {
-		if (isConnected()) {
+		if (isConnected())
 			return true;
-		}
 
 		// connection was dropped, establish new connection
-		if (transport != null && !transport.isOpen()) {
+		if (transport != null && !transport.isOpen())
 			transport.close();
-		}
 
 		try {
 			establishConnection();
@@ -138,6 +135,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		} catch (Exception e) {
 			handleError("Unhandled Exception on connect", e);
 		}
+
 		return false;
 	}
 
@@ -146,7 +144,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 * 
 	 * @return true if connected false if not connected
 	 */
-	public synchronized boolean isConnected() {
+	synchronized boolean isConnected() {
 		return transport != null && transport.isOpen();
 	}
 
@@ -156,7 +154,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 * @param failure
 	 * @param e
 	 */
-	private void handleError(final String failure, final Exception e) {
+	void handleError(final String failure, final Exception e) {
 		getErrorHandler().error(
 				"Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=["
 						+ e.getMessage() + "]");
@@ -203,11 +201,5 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	public void setSensor(String sensor) {
 		Validator.notEmptyString(sensor, "Sensor field cannot be empty");
 		this.sensor = sensor;
-	}
-
-	@Override
-	public void finalize() {
-		close();
-		super.finalize();
 	}
 }
