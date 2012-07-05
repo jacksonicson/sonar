@@ -432,7 +432,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                 break 
             
             # Callback each sensor with the received data
-            self.lock.acquire()
+            #self.lock.acquire()
             
             for i in range(0, len(data)):
                 line = data[i]
@@ -450,7 +450,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
                     print 'no match'
                 
                     
-            self.lock.release()
+            #self.lock.release()
 
         # TODO: Guarantee that no process can be started after terminating
         print 'Continuouse thread terminates...'
@@ -550,19 +550,22 @@ class SensorHub(Thread, object):
 
     
     def run(self):
-        try:
-            self.condition.acquire()
-            while self.running:
+        self.condition.acquire()
+        
+        while self.running:
+            try:
                 self.__updateSensors()
                 self.condition.wait(5)
-            self.condition.release()
-              
-        except Exception:
-            self.condition.release()
+            except Exception:
+                self.condition.release()
+                
+                traceback.print_exc()
+                self.shutdown.shutdown('exception while updating sensors')
+                
+                return
             
-            traceback.print_exc()
-            self.shutdown.shutdown('exception while updating sensors')
-
+        self.condition.release()
+    
     
     def __updateSensors(self):
         # Download all the sensors
