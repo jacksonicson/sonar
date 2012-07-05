@@ -41,15 +41,16 @@ public class Collector {
 			System.exit(1);
 		}
 
+		
 		CollectServiceImpl collectService = new CollectServiceImpl();
 		collectService.setTsdb(tsdb);
 		collectService.setLogdb(logdb);
+		
+		NotificationServiceImpl notificationService = new NotificationServiceImpl();
 
 		ManagementServiceImpl managementService = new ManagementServiceImpl();
 		managementService.setTsdb(tsdb);
 		managementService.setLogdb(logdb);
-
-		NotificationServiceImpl notificationService = new NotificationServiceImpl();
 
 		ServerBootstrap dataSinkServer = new ServerBootstrap();
 		dataSinkServer.setCollectServiceImpl(collectService);
