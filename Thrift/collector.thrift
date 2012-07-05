@@ -67,12 +67,32 @@ struct BundledSensorConfiguration {
 	5:bool active,
 }
 
+struct SensorToWatch {
+	1:string hostname,
+	2:string sensor
+}
+
+struct NotificationData {
+	1:Identifier id,
+	2:MetricReading reading,
+}
+
 service CollectService {
 	void logMessage(1:Identifier id, 2:LogMessage message),
 	 	
 	void logMetric(1:Identifier id, 2:MetricReading value),
 	 
 	void logResults(1:Identifier id, 2:File file),
+}
+
+service NotificationService {
+	void subscribe(1:string ip, 2:int port, 3:set<SensorToWatch> sensors),
+	
+	void unsubscribe(1:string ip),
+}
+
+service NotificationClient {
+	void receive(1:set<NotificationData> data)
 }
 
 service ManagementService {
