@@ -15,7 +15,12 @@ public class Receiver implements NotificationClient.Iface {
 
 	@Override
 	public void receive(Set<NotificationData> data) throws TException {
-		logger.info("Received notification!");
+		
+		for(NotificationData d : data){
+			logger.info("Received notification! " + d.reading.getValue());
+		}
+		
+		
 	}
 
 }

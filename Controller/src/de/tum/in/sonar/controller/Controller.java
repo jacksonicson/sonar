@@ -23,6 +23,8 @@ public class Controller {
 
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
+	int port = 8003;
+	
 	class ReceiverThread extends Thread {
 
 		private Receiver receiver;
@@ -37,7 +39,7 @@ public class Controller {
 				NotificationClient.Processor processor = new NotificationClient.Processor(this.receiver);
 
 				// Transport
-				TServerTransport serverTransport = new TServerSocket(8000);
+				TServerTransport serverTransport = new TServerSocket(port);
 
 				// Server (connects transport and processor)
 				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
@@ -71,7 +73,7 @@ public class Controller {
 			NotificationService.Client client = new NotificationService.Client(protocol);
 
 			String ip = "localhost";
-			int port = 8000;
+			
 
 			Set<SensorToWatch> watchlist = new HashSet<SensorToWatch>();
 			SensorToWatch watch = new SensorToWatch();
@@ -79,9 +81,11 @@ public class Controller {
 			watch.setSensor("procpu");
 			watchlist.add(watch);
 
-			client.subscribe("localhost", 8000, watchlist);
-
+			logger.info("Subscription");
+			client.subscribe("localhost", port, watchlist);
 			logger.info("Subscription finished");
+			
+			transport.close();
 
 			// Wait for thread to join
 			thread.join();

@@ -28,7 +28,6 @@ public class Connection {
 
 	public Connection(Subscription subscription) {
 		this.subscription = subscription;
-		establish();
 	}
 
 	void close() {
@@ -39,6 +38,9 @@ public class Connection {
 	}
 
 	private boolean establish() {
+		if(transport != null && transport.isOpen())
+			return true;
+		
 		transport = new TSocket(subscription.getIp(), subscription.getPort());
 		try {
 			transport.open();
@@ -70,6 +72,7 @@ public class Connection {
 
 	private void send(Set<NotificationData> data) throws DeadSubscriptionException {
 		try {
+			establish(); 
 			logger.debug("Sending data through the callback channel");
 			client.receive(data);
 		} catch (TException e) {
