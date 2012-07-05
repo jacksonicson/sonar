@@ -10,14 +10,15 @@ import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.LogMessage;
 import de.tum.in.sonar.collector.MetricReading;
 import de.tum.in.sonar.collector.log.LogDatabase;
+import de.tum.in.sonar.collector.notification.NotificationManager;
 import de.tum.in.sonar.collector.tsdb.MetricPoint;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 
 public class CollectServiceImpl implements CollectService.Iface {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(CollectServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CollectServiceImpl.class);
 
+	private NotificationManager notifyManager;
 	private TimeSeriesDatabase tsdb;
 	private LogDatabase logdb;
 
@@ -25,8 +26,18 @@ public class CollectServiceImpl implements CollectService.Iface {
 	public void logMetric(Identifier id, MetricReading value) throws TException {
 		logger.debug("log metric");
 
+		// Create a new metric point
 		MetricPoint dp = new MetricPoint(id, value);
+
+		// Write it to the TSDB
 		tsdb.writeData(dp);
+
+		// Notify clients
+		try {
+			notifyManager.notify(id.getHostname(), id.getSensor(), dp);
+		} catch (InterruptedException e) {
+			logger.error("Error while notifing clients", e);
+		}
 	}
 
 	@Override
@@ -51,6 +62,10 @@ public class CollectServiceImpl implements CollectService.Iface {
 
 	public void setLogdb(LogDatabase logdb) {
 		this.logdb = logdb;
+	}
+
+	public void setNotificationManager(NotificationManager notifyManager) {
+		this.notifyManager = notifyManager;
 	}
 
 }

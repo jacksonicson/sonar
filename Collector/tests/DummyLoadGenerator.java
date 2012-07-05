@@ -29,7 +29,7 @@ public class DummyLoadGenerator {
 			Random rand = new Random();
 			long time = System.currentTimeMillis();
 			System.out.println("current timestamp: " + time);
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 1; i++) {
 
 				Identifier id = new Identifier();
 				id.setTimestamp(time / 1000 + i);

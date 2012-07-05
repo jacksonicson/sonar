@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.tum.in.sonar.collector.log.LogDatabase;
+import de.tum.in.sonar.collector.notification.NotificationManager;
 import de.tum.in.sonar.collector.server.CollectServiceImpl;
 import de.tum.in.sonar.collector.server.ManagementServiceImpl;
 import de.tum.in.sonar.collector.server.NotificationServiceImpl;
@@ -41,11 +42,14 @@ public class Collector {
 			System.exit(1);
 		}
 
-		
+		NotificationManager notifyManager = new NotificationManager();
+		notifyManager.start(); 
+
 		CollectServiceImpl collectService = new CollectServiceImpl();
 		collectService.setTsdb(tsdb);
 		collectService.setLogdb(logdb);
-		
+		collectService.setNotificationManager(notifyManager);
+
 		NotificationServiceImpl notificationService = new NotificationServiceImpl();
 
 		ManagementServiceImpl managementService = new ManagementServiceImpl();
