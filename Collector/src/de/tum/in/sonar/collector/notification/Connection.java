@@ -43,7 +43,7 @@ public class Connection {
 		try {
 			transport.open();
 		} catch (TTransportException e) {
-			logger.error("Error while creating callback transport object", e);
+			logger.info("Error while creating callback transport object", e);
 			return false;
 		}
 
@@ -55,18 +55,16 @@ public class Connection {
 
 	private void checkConnection() throws DeadSubscriptionException {
 		if (transport != null) {
-			if (!transport.isOpen()) {
+				transport.close(); 
+			
 				logger.info("Reestablishing connection with receiver");
-
+				
 				connectionRetries++;
 				if (connectionRetries > 3) {
 					throw new DeadSubscriptionException(subscription);
 				}
-
-				transport = null;
-				client = null;
+				
 				establish();
-			}
 		}
 	}
 
