@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import de.tum.in.sonar.collector.log.LogDatabase;
 import de.tum.in.sonar.collector.server.CollectServiceImpl;
 import de.tum.in.sonar.collector.server.ManagementServiceImpl;
+import de.tum.in.sonar.collector.server.NotificationServiceImpl;
 import de.tum.in.sonar.collector.server.ServerBootstrap;
 import de.tum.in.sonar.collector.tsdb.TableCreationException;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
@@ -48,9 +49,12 @@ public class Collector {
 		managementService.setTsdb(tsdb);
 		managementService.setLogdb(logdb);
 
+		NotificationServiceImpl notificationService = new NotificationServiceImpl();
+
 		ServerBootstrap dataSinkServer = new ServerBootstrap();
 		dataSinkServer.setCollectServiceImpl(collectService);
 		dataSinkServer.setManagementServiceImpl(managementService);
+		dataSinkServer.setNotificationServiceImpl(notificationService);
 
 		logger.info("Starting severs...");
 		Thread[] threads = dataSinkServer.start();

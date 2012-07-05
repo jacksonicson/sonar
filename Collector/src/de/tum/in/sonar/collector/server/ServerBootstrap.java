@@ -158,4 +158,8 @@ public class ServerBootstrap {
 		this.managementServiceImpl = managementServiceImpl;
 	}
 
+	public void setNotificationServiceImpl(NotificationServiceImpl notificationServiceImpl) {
+		this.notificationServiceImpl = notificationServiceImpl;
+	}
+
 }

@@ -31,7 +31,7 @@ public class NotificationService {
 
   public interface Iface {
 
-    public void subscribe(String ip, int port, Set<SensorToWatch> sensors) throws org.apache.thrift.TException;
+    public void subscribe(String ip, int port, Set<SensorToWatch> watchlist) throws org.apache.thrift.TException;
 
     public void unsubscribe(String ip) throws org.apache.thrift.TException;
 
@@ -39,7 +39,7 @@ public class NotificationService {
 
   public interface AsyncIface {
 
-    public void subscribe(String ip, int port, Set<SensorToWatch> sensors, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.subscribe_call> resultHandler) throws org.apache.thrift.TException;
+    public void subscribe(String ip, int port, Set<SensorToWatch> watchlist, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.subscribe_call> resultHandler) throws org.apache.thrift.TException;
 
     public void unsubscribe(String ip, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.unsubscribe_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -65,18 +65,18 @@ public class NotificationService {
       super(iprot, oprot);
     }
 
-    public void subscribe(String ip, int port, Set<SensorToWatch> sensors) throws org.apache.thrift.TException
+    public void subscribe(String ip, int port, Set<SensorToWatch> watchlist) throws org.apache.thrift.TException
     {
-      send_subscribe(ip, port, sensors);
+      send_subscribe(ip, port, watchlist);
       recv_subscribe();
     }
 
-    public void send_subscribe(String ip, int port, Set<SensorToWatch> sensors) throws org.apache.thrift.TException
+    public void send_subscribe(String ip, int port, Set<SensorToWatch> watchlist) throws org.apache.thrift.TException
     {
       subscribe_args args = new subscribe_args();
       args.setIp(ip);
       args.setPort(port);
-      args.setSensors(sensors);
+      args.setWatchlist(watchlist);
       sendBase("subscribe", args);
     }
 
@@ -125,9 +125,9 @@ public class NotificationService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void subscribe(String ip, int port, Set<SensorToWatch> sensors, org.apache.thrift.async.AsyncMethodCallback<subscribe_call> resultHandler) throws org.apache.thrift.TException {
+    public void subscribe(String ip, int port, Set<SensorToWatch> watchlist, org.apache.thrift.async.AsyncMethodCallback<subscribe_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      subscribe_call method_call = new subscribe_call(ip, port, sensors, resultHandler, this, ___protocolFactory, ___transport);
+      subscribe_call method_call = new subscribe_call(ip, port, watchlist, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -135,12 +135,12 @@ public class NotificationService {
     public static class subscribe_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String ip;
       private int port;
-      private Set<SensorToWatch> sensors;
-      public subscribe_call(String ip, int port, Set<SensorToWatch> sensors, org.apache.thrift.async.AsyncMethodCallback<subscribe_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private Set<SensorToWatch> watchlist;
+      public subscribe_call(String ip, int port, Set<SensorToWatch> watchlist, org.apache.thrift.async.AsyncMethodCallback<subscribe_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.ip = ip;
         this.port = port;
-        this.sensors = sensors;
+        this.watchlist = watchlist;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -148,7 +148,7 @@ public class NotificationService {
         subscribe_args args = new subscribe_args();
         args.setIp(ip);
         args.setPort(port);
-        args.setSensors(sensors);
+        args.setWatchlist(watchlist);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -224,7 +224,7 @@ public class NotificationService {
 
       protected subscribe_result getResult(I iface, subscribe_args args) throws org.apache.thrift.TException {
         subscribe_result result = new subscribe_result();
-        iface.subscribe(args.ip, args.port, args.sensors);
+        iface.subscribe(args.ip, args.port, args.watchlist);
         return result;
       }
     }
@@ -252,7 +252,7 @@ public class NotificationService {
 
     private static final org.apache.thrift.protocol.TField IP_FIELD_DESC = new org.apache.thrift.protocol.TField("ip", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)2);
-    private static final org.apache.thrift.protocol.TField SENSORS_FIELD_DESC = new org.apache.thrift.protocol.TField("sensors", org.apache.thrift.protocol.TType.SET, (short)3);
+    private static final org.apache.thrift.protocol.TField WATCHLIST_FIELD_DESC = new org.apache.thrift.protocol.TField("watchlist", org.apache.thrift.protocol.TType.SET, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -262,13 +262,13 @@ public class NotificationService {
 
     public String ip; // required
     public int port; // required
-    public Set<SensorToWatch> sensors; // required
+    public Set<SensorToWatch> watchlist; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       IP((short)1, "ip"),
       PORT((short)2, "port"),
-      SENSORS((short)3, "sensors");
+      WATCHLIST((short)3, "watchlist");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -287,8 +287,8 @@ public class NotificationService {
             return IP;
           case 2: // PORT
             return PORT;
-          case 3: // SENSORS
-            return SENSORS;
+          case 3: // WATCHLIST
+            return WATCHLIST;
           default:
             return null;
         }
@@ -338,7 +338,7 @@ public class NotificationService {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.PORT, new org.apache.thrift.meta_data.FieldMetaData("port", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
-      tmpMap.put(_Fields.SENSORS, new org.apache.thrift.meta_data.FieldMetaData("sensors", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.WATCHLIST, new org.apache.thrift.meta_data.FieldMetaData("watchlist", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SensorToWatch.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -351,13 +351,13 @@ public class NotificationService {
     public subscribe_args(
       String ip,
       int port,
-      Set<SensorToWatch> sensors)
+      Set<SensorToWatch> watchlist)
     {
       this();
       this.ip = ip;
       this.port = port;
       setPortIsSet(true);
-      this.sensors = sensors;
+      this.watchlist = watchlist;
     }
 
     /**
@@ -370,12 +370,12 @@ public class NotificationService {
         this.ip = other.ip;
       }
       this.port = other.port;
-      if (other.isSetSensors()) {
-        Set<SensorToWatch> __this__sensors = new HashSet<SensorToWatch>();
-        for (SensorToWatch other_element : other.sensors) {
-          __this__sensors.add(new SensorToWatch(other_element));
+      if (other.isSetWatchlist()) {
+        Set<SensorToWatch> __this__watchlist = new HashSet<SensorToWatch>();
+        for (SensorToWatch other_element : other.watchlist) {
+          __this__watchlist.add(new SensorToWatch(other_element));
         }
-        this.sensors = __this__sensors;
+        this.watchlist = __this__watchlist;
       }
     }
 
@@ -388,7 +388,7 @@ public class NotificationService {
       this.ip = null;
       setPortIsSet(false);
       this.port = 0;
-      this.sensors = null;
+      this.watchlist = null;
     }
 
     public String getIp() {
@@ -438,42 +438,42 @@ public class NotificationService {
       __isset_bit_vector.set(__PORT_ISSET_ID, value);
     }
 
-    public int getSensorsSize() {
-      return (this.sensors == null) ? 0 : this.sensors.size();
+    public int getWatchlistSize() {
+      return (this.watchlist == null) ? 0 : this.watchlist.size();
     }
 
-    public java.util.Iterator<SensorToWatch> getSensorsIterator() {
-      return (this.sensors == null) ? null : this.sensors.iterator();
+    public java.util.Iterator<SensorToWatch> getWatchlistIterator() {
+      return (this.watchlist == null) ? null : this.watchlist.iterator();
     }
 
-    public void addToSensors(SensorToWatch elem) {
-      if (this.sensors == null) {
-        this.sensors = new HashSet<SensorToWatch>();
+    public void addToWatchlist(SensorToWatch elem) {
+      if (this.watchlist == null) {
+        this.watchlist = new HashSet<SensorToWatch>();
       }
-      this.sensors.add(elem);
+      this.watchlist.add(elem);
     }
 
-    public Set<SensorToWatch> getSensors() {
-      return this.sensors;
+    public Set<SensorToWatch> getWatchlist() {
+      return this.watchlist;
     }
 
-    public subscribe_args setSensors(Set<SensorToWatch> sensors) {
-      this.sensors = sensors;
+    public subscribe_args setWatchlist(Set<SensorToWatch> watchlist) {
+      this.watchlist = watchlist;
       return this;
     }
 
-    public void unsetSensors() {
-      this.sensors = null;
+    public void unsetWatchlist() {
+      this.watchlist = null;
     }
 
-    /** Returns true if field sensors is set (has been assigned a value) and false otherwise */
-    public boolean isSetSensors() {
-      return this.sensors != null;
+    /** Returns true if field watchlist is set (has been assigned a value) and false otherwise */
+    public boolean isSetWatchlist() {
+      return this.watchlist != null;
     }
 
-    public void setSensorsIsSet(boolean value) {
+    public void setWatchlistIsSet(boolean value) {
       if (!value) {
-        this.sensors = null;
+        this.watchlist = null;
       }
     }
 
@@ -495,11 +495,11 @@ public class NotificationService {
         }
         break;
 
-      case SENSORS:
+      case WATCHLIST:
         if (value == null) {
-          unsetSensors();
+          unsetWatchlist();
         } else {
-          setSensors((Set<SensorToWatch>)value);
+          setWatchlist((Set<SensorToWatch>)value);
         }
         break;
 
@@ -514,8 +514,8 @@ public class NotificationService {
       case PORT:
         return Integer.valueOf(getPort());
 
-      case SENSORS:
-        return getSensors();
+      case WATCHLIST:
+        return getWatchlist();
 
       }
       throw new IllegalStateException();
@@ -532,8 +532,8 @@ public class NotificationService {
         return isSetIp();
       case PORT:
         return isSetPort();
-      case SENSORS:
-        return isSetSensors();
+      case WATCHLIST:
+        return isSetWatchlist();
       }
       throw new IllegalStateException();
     }
@@ -569,12 +569,12 @@ public class NotificationService {
           return false;
       }
 
-      boolean this_present_sensors = true && this.isSetSensors();
-      boolean that_present_sensors = true && that.isSetSensors();
-      if (this_present_sensors || that_present_sensors) {
-        if (!(this_present_sensors && that_present_sensors))
+      boolean this_present_watchlist = true && this.isSetWatchlist();
+      boolean that_present_watchlist = true && that.isSetWatchlist();
+      if (this_present_watchlist || that_present_watchlist) {
+        if (!(this_present_watchlist && that_present_watchlist))
           return false;
-        if (!this.sensors.equals(that.sensors))
+        if (!this.watchlist.equals(that.watchlist))
           return false;
       }
 
@@ -614,12 +614,12 @@ public class NotificationService {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetSensors()).compareTo(typedOther.isSetSensors());
+      lastComparison = Boolean.valueOf(isSetWatchlist()).compareTo(typedOther.isSetWatchlist());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSensors()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sensors, typedOther.sensors);
+      if (isSetWatchlist()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.watchlist, typedOther.watchlist);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -656,11 +656,11 @@ public class NotificationService {
       sb.append(this.port);
       first = false;
       if (!first) sb.append(", ");
-      sb.append("sensors:");
-      if (this.sensors == null) {
+      sb.append("watchlist:");
+      if (this.watchlist == null) {
         sb.append("null");
       } else {
-        sb.append(this.sensors);
+        sb.append(this.watchlist);
       }
       first = false;
       sb.append(")");
@@ -723,21 +723,21 @@ public class NotificationService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // SENSORS
+            case 3: // WATCHLIST
               if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
                 {
                   org.apache.thrift.protocol.TSet _set48 = iprot.readSetBegin();
-                  struct.sensors = new HashSet<SensorToWatch>(2*_set48.size);
+                  struct.watchlist = new HashSet<SensorToWatch>(2*_set48.size);
                   for (int _i49 = 0; _i49 < _set48.size; ++_i49)
                   {
                     SensorToWatch _elem50; // required
                     _elem50 = new SensorToWatch();
                     _elem50.read(iprot);
-                    struct.sensors.add(_elem50);
+                    struct.watchlist.add(_elem50);
                   }
                   iprot.readSetEnd();
                 }
-                struct.setSensorsIsSet(true);
+                struct.setWatchlistIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -765,11 +765,11 @@ public class NotificationService {
         oprot.writeFieldBegin(PORT_FIELD_DESC);
         oprot.writeI32(struct.port);
         oprot.writeFieldEnd();
-        if (struct.sensors != null) {
-          oprot.writeFieldBegin(SENSORS_FIELD_DESC);
+        if (struct.watchlist != null) {
+          oprot.writeFieldBegin(WATCHLIST_FIELD_DESC);
           {
-            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.sensors.size()));
-            for (SensorToWatch _iter51 : struct.sensors)
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.watchlist.size()));
+            for (SensorToWatch _iter51 : struct.watchlist)
             {
               _iter51.write(oprot);
             }
@@ -801,7 +801,7 @@ public class NotificationService {
         if (struct.isSetPort()) {
           optionals.set(1);
         }
-        if (struct.isSetSensors()) {
+        if (struct.isSetWatchlist()) {
           optionals.set(2);
         }
         oprot.writeBitSet(optionals, 3);
@@ -811,10 +811,10 @@ public class NotificationService {
         if (struct.isSetPort()) {
           oprot.writeI32(struct.port);
         }
-        if (struct.isSetSensors()) {
+        if (struct.isSetWatchlist()) {
           {
-            oprot.writeI32(struct.sensors.size());
-            for (SensorToWatch _iter52 : struct.sensors)
+            oprot.writeI32(struct.watchlist.size());
+            for (SensorToWatch _iter52 : struct.watchlist)
             {
               _iter52.write(oprot);
             }
@@ -837,16 +837,16 @@ public class NotificationService {
         if (incoming.get(2)) {
           {
             org.apache.thrift.protocol.TSet _set53 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.sensors = new HashSet<SensorToWatch>(2*_set53.size);
+            struct.watchlist = new HashSet<SensorToWatch>(2*_set53.size);
             for (int _i54 = 0; _i54 < _set53.size; ++_i54)
             {
               SensorToWatch _elem55; // required
               _elem55 = new SensorToWatch();
               _elem55.read(iprot);
-              struct.sensors.add(_elem55);
+              struct.watchlist.add(_elem55);
             }
           }
-          struct.setSensorsIsSet(true);
+          struct.setWatchlistIsSet(true);
         }
       }
     }

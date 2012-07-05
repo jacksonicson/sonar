@@ -86,7 +86,7 @@ service CollectService {
 }
 
 service NotificationService {
-	void subscribe(1:string ip, 2:int port, 3:set<SensorToWatch> sensors),
+	void subscribe(1:string ip, 2:int port, 3:set<SensorToWatch> watchlist),
 	
 	void unsubscribe(1:string ip),
 }

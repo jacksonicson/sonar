@@ -14,15 +14,12 @@ public class NotificationServiceImpl implements NotificationService.Iface {
 	private static final Logger logger = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
 	@Override
-	public void subscribe(String ip, int port, Set<SensorToWatch> sensors) throws TException {
+	public void subscribe(String ip, int port, Set<SensorToWatch> watchlist) throws TException {
 		logger.info("New subscription");
-
 	}
 
 	@Override
 	public void unsubscribe(String ip) throws TException {
 		logger.info("Unsubscribing");
-
 	}
-
 }
