@@ -51,6 +51,7 @@ public class Collector {
 		collectService.setNotificationManager(notifyManager);
 
 		NotificationServiceImpl notificationService = new NotificationServiceImpl();
+		notificationService.setNotificationManager(notifyManager); 
 
 		ManagementServiceImpl managementService = new ManagementServiceImpl();
 		managementService.setTsdb(tsdb);

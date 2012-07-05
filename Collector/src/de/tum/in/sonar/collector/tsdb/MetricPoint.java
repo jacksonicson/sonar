@@ -21,6 +21,14 @@ public class MetricPoint {
 		this.value = value;
 	}
 
+	final public Identifier getIdentifier() {
+		return id;
+	}
+
+	final public MetricReading getMetricReading() {
+		return value;
+	}
+
 	final double getValue() {
 		return value.getValue();
 	}
@@ -36,8 +44,8 @@ public class MetricPoint {
 	final Set<String> getLabels() {
 		return value.getLabels();
 	}
-	
+
 	final long getTimestamp() {
-		return id.getTimestamp(); 
+		return id.getTimestamp();
 	}
 }

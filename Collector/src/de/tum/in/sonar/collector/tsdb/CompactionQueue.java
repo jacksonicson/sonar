@@ -29,7 +29,6 @@ class CompactionQueue extends Thread {
 	// Logger
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
-	// the delay time 30 minutes currently
 	private static final long TIME_DELAY = 10;
 
 	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
@@ -38,15 +37,19 @@ class CompactionQueue extends Thread {
 
 	public void schedule(byte[] key) {
 		RowKeyJob rowKeyJob = new RowKeyJob(TIME_DELAY, key);
-		if (delayQueue.contains(rowKeyJob))
+		if (delayQueue.contains(rowKeyJob)) {
+			logger.debug("Removing: " + key);
 			delayQueue.remove(rowKeyJob);
+		}
 
+		logger.debug("Adding: " + key );
 		delayQueue.add(rowKeyJob);
-	}
+		logger.debug("length: " + delayQueue.size());
+	} 
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
 		logger.debug("running compaction...");
-		
+
 		Get get = new Get(key);
 		Result result = table.get(get);
 		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
@@ -139,8 +142,8 @@ class CompactionQueue extends Thread {
 						compact(data.getRowKey());
 					} else {
 						// Reschedule
-						logger.debug("reschedule compaction because compaction field changed");
-						delayQueue.add(data);
+						logger.debug("reschedule compaction because compaction field changed: " + data.getRowKey());
+						schedule(data.getRowKey());
 					}
 
 				}
