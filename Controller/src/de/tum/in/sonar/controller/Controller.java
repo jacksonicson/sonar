@@ -23,8 +23,8 @@ public class Controller {
 
 	private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
-	int port = 8003;
-	
+	int port = 8005;
+
 	class ReceiverThread extends Thread {
 
 		private Receiver receiver;
@@ -73,7 +73,6 @@ public class Controller {
 			NotificationService.Client client = new NotificationService.Client(protocol);
 
 			String ip = "localhost";
-			
 
 			Set<SensorToWatch> watchlist = new HashSet<SensorToWatch>();
 			SensorToWatch watch = new SensorToWatch();
@@ -84,7 +83,8 @@ public class Controller {
 			logger.info("Subscription");
 			client.subscribe("localhost", port, watchlist);
 			logger.info("Subscription finished");
-			
+
+			// Close the connection
 			transport.close();
 
 			// Wait for thread to join
