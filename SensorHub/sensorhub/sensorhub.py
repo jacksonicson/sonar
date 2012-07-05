@@ -279,6 +279,7 @@ class DiscreteWatcher(Thread, ProcessLoader):
         
         self.running = True
         self.start()
+        print 'forged: discrete watcher'
 
 
     def run(self):
@@ -334,7 +335,10 @@ class DiscreteWatcher(Thread, ProcessLoader):
             self.scheduler.cancel(i)
         self.lock.release()
         
-        self.join()
+        while self.isAlive():
+            self.join(timeout=3)
+            print 'waiting for: discrete watcher'
+        
         print 'joined: discrete watcher'
         
    
@@ -364,6 +368,7 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         
         # Start the thread
         self.start()
+        print 'forged: continouse watcher'
         
 
     
@@ -462,9 +467,9 @@ class ContinuouseWatcher(Thread, ProcessLoader):
         self.alive = False
         
         # Wait until main loop is closing and taking all the processes with it
-        if self.isAlive():
-            print 'Waiting for all processes to terminate...'
-            self.join()
+        while self.isAlive():
+            self.join(timeout=3)
+            print 'waiting for: continuouse watcher'
             
         print 'joined: continuouse watcher'
     
@@ -494,6 +499,7 @@ class SensorHub(Thread, object):
         
         # Watch
         self.running = True
+        print 'forked: sensorhub'
         self.start()
         
         # shtudown
@@ -505,7 +511,11 @@ class SensorHub(Thread, object):
         self.condition.acquire()
         self.condition.notify()
         self.condition.release()
-        self.join()
+        
+        while self.isAlive():
+            self.join(timeout=3)
+            print 'waiting for: sensorhub'
+            
         print 'joined: sensorhub'
       
     def __connect(self):
@@ -545,8 +555,11 @@ class SensorHub(Thread, object):
             while self.running:
                 self.__updateSensors()
                 self.condition.wait(5)
-            self.condition.release()  
+            self.condition.release()
+              
         except Exception:
+            self.condition.release()
+            
             traceback.print_exc()
             self.shutdown.shutdown('exception while updating sensors')
 
