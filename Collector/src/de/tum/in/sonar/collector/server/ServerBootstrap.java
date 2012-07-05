@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import de.tum.in.sonar.collector.CollectService;
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.NotificationService;
 
 public class ServerBootstrap {
 
@@ -19,6 +20,28 @@ public class ServerBootstrap {
 
 	private CollectServiceImpl collectServiceImpl;
 	private ManagementServiceImpl managementServiceImpl;
+	private NotificationServiceImpl notificationServiceImpl;
+
+	class NotificationServiceThread extends Thread {
+		public void run() {
+			try {
+				// Service Processor
+				NotificationService.Processor processor = new NotificationService.Processor(notificationServiceImpl);
+
+				// Transport
+				TServerTransport serverTransport = new TServerSocket(7911);
+
+				// Server (connects transport and processor)
+				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
+
+				logger.info("Starting NotificationService ...");
+				server.serve();
+
+			} catch (TTransportException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	class CollectServiceThread extends Thread {
 		public void run() {
@@ -106,7 +129,8 @@ public class ServerBootstrap {
 
 	public Thread[] start() {
 		Thread[] threads = new Thread[] { new ManagementServiceThread(), new CollectServiceThread(),
-				new ManagementNonblockingServiceThread(), new CollectNonblockingServiceThread() };
+				new ManagementNonblockingServiceThread(), new CollectNonblockingServiceThread(),
+				new NotificationServiceThread() };
 
 		for (Thread thread : threads) {
 			thread.start();
