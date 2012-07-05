@@ -3,6 +3,7 @@ package de.tum.in.sonar.collector.server;
 import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
+import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
@@ -32,7 +33,7 @@ public class ServerBootstrap {
 				TServerTransport serverTransport = new TServerSocket(7911);
 
 				// Server (connects transport and processor)
-				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
+				TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
 				logger.info("Starting NotificationService ...");
 				server.serve();
@@ -53,7 +54,7 @@ public class ServerBootstrap {
 				TServerTransport serverTransport = new TServerSocket(7921);
 
 				// Server (connects transport and processor)
-				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
+				TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
 				logger.info("Starting CollectionService ...");
 				server.serve();
@@ -95,7 +96,7 @@ public class ServerBootstrap {
 				// Nonblocking transport
 				TServerSocket serverTransport = new TServerSocket(7931);
 
-				TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
+				TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
 				logger.info("Starting blocking ManagementService ...");
 				server.serve();

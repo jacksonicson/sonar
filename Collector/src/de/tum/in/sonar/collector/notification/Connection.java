@@ -28,7 +28,6 @@ public class Connection {
 
 	public Connection(Subscription subscription) {
 		this.subscription = subscription;
-		establish();
 	}
 
 	void close() {
@@ -39,11 +38,14 @@ public class Connection {
 	}
 
 	private boolean establish() {
+		if(transport != null && transport.isOpen())
+			return true;
+		
 		transport = new TSocket(subscription.getIp(), subscription.getPort());
 		try {
 			transport.open();
 		} catch (TTransportException e) {
-			logger.error("Error while creating callback transport object", e);
+			logger.info("Error while creating callback transport object", e);
 			return false;
 		}
 
@@ -55,23 +57,22 @@ public class Connection {
 
 	private void checkConnection() throws DeadSubscriptionException {
 		if (transport != null) {
-			if (!transport.isOpen()) {
+				transport.close(); 
+			
 				logger.info("Reestablishing connection with receiver");
-
+				
 				connectionRetries++;
 				if (connectionRetries > 3) {
 					throw new DeadSubscriptionException(subscription);
 				}
-
-				transport = null;
-				client = null;
+				
 				establish();
-			}
 		}
 	}
 
 	private void send(Set<NotificationData> data) throws DeadSubscriptionException {
 		try {
+			establish(); 
 			logger.debug("Sending data through the callback channel");
 			client.receive(data);
 		} catch (TException e) {

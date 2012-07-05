@@ -1,6 +1,7 @@
 package de.tum.in.sonar.collector.notification;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,12 +31,15 @@ public class NotificationManager extends Thread {
 	}
 
 	private void deliver(Notification notification) {
-		for (Connection connection : this.connections)
+		for (Iterator<Connection> it = this.connections.iterator(); it.hasNext();) {
+			Connection connection = it.next();
 			try {
 				connection.send(notification);
 			} catch (DeadSubscriptionException e) {
-				this.connections.remove(connection);
+				logger.info("removing dead connection");
+				it.remove();
 			}
+		}
 	}
 
 	public void run() {

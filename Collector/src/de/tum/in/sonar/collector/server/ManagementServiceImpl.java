@@ -53,16 +53,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		config.setMinIdle(10);
 		config.setTestOnBorrow(false);
 
-		Properties prop = new Properties();
-		try {
-			prop.load(ManagementServiceImpl.class.getResourceAsStream("/redis.properties"));
-			String server = (String) prop.get("server");
-			logger.info("Using REDIS server: " + server);
-			this.jedisPool = new JedisPool(config, server);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		this.jedisPool = new JedisPool(config, getRedisServer());
 	}
 
 	@Override
@@ -121,7 +112,17 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	private final String getRedisServer() {
-		return "srv2";
+		Properties prop = new Properties();
+		try {
+			prop.load(ManagementServiceImpl.class.getResourceAsStream("/redis.properties"));
+			String server = (String) prop.get("server");
+			return server;
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		return null;
 	}
 
 	@Override
