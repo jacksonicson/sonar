@@ -52,11 +52,17 @@ struct TimeSeriesQuery {
 struct Parameter {
 	1:string key,
 	2:string value
-} 
+}
+
+enum SensorType {
+  METRIC = 0,
+  LOG = 1
+}
 
 struct SensorConfiguration {
 	1:long interval,
 	2:list<Parameter> parameters, 
+	3:SensorType sensorType
 }
 
 struct BundledSensorConfiguration {

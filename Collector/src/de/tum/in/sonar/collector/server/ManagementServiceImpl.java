@@ -26,6 +26,7 @@ import de.tum.in.sonar.collector.LogsQuery;
 import de.tum.in.sonar.collector.ManagementService;
 import de.tum.in.sonar.collector.Parameter;
 import de.tum.in.sonar.collector.SensorConfiguration;
+import de.tum.in.sonar.collector.SensorType;
 import de.tum.in.sonar.collector.TimeSeriesQuery;
 import de.tum.in.sonar.collector.TransferableTimeSeriesPoint;
 import de.tum.in.sonar.collector.log.LogDatabase;
@@ -375,6 +376,13 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (configuration.getInterval() != 0) {
 			jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
 		}
+		// set the sensor type
+		logger.debug("Sensor type to set to : " + configuration.getSensorType());
+		if (configuration.getSensorType() != null) {
+			jedis.set(key(key, "sensorType"), configuration.getSensorType().toString());
+		} else {
+			jedis.set(key(key, "sensorType"), SensorType.METRIC.toString());
+		}
 
 		if (null != configuration.getParameters() && configuration.getParameters().size() > 0) {
 			key = key(key, "properties");
@@ -483,7 +491,15 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		else
 			sensorConfig.setInterval(0);
 
+		// get the sensor type
+		if (jedis.exists(key(key, "sensorType"))) {
+			sensorConfig.setSensorType(SensorType.valueOf(jedis.get(key(key, "sensorType"))));
+		} else {
+			sensorConfig.setSensorType(SensorType.METRIC);
+		}
+
 		logger.debug("Interval value :" + sensorConfig.getInterval());
+		logger.debug("Sensor type value :" + sensorConfig.getSensorType());
 		// Get the properties
 		key = key("sensor", sensor, "config", "properties");
 		Set<String> parameters = jedis.keys(key + ":*");
@@ -509,5 +525,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Error while getting the list of configured sensors", e);
 		}
 		return result;
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(SensorType.LOG.ordinal());
+		System.out.println(SensorType.valueOf("METRIC").ordinal());
 	}
 }

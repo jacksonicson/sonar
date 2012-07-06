@@ -166,6 +166,7 @@ function addSensorHandler(req, resp) {
                     client.setSensorLabels(body.sensorName, labels, function (err, ret) {
                         // decompose the sensor configuration parameters and set it
                         var sensorInterval = body.sensorInterval;
+                        var sensorType = body.sensorType;
                         var paramKeys = body.sensorParamKey;
                         var paramValues = body.sensorParamValue;
                         var parameters = new Array();
@@ -178,6 +179,17 @@ function addSensorHandler(req, resp) {
                         } else {
                             sensorInterval = 0;
                         }
+
+                        var enumSensorType = null;
+                        if(null == sensorType){
+                            enumSensorType =  0;
+                        } else if(sensorType == '0'){
+                            enumSensorType = 0;
+                        } else if(sensorType == '1'){
+                            enumSensorType = 1;
+                        }
+
+                        console.log("Sensor type value: " + enumSensorType);
 
                         // prepare the parameter array
                         if(null != paramKeys){
@@ -203,7 +215,8 @@ function addSensorHandler(req, resp) {
                             // prepare the sensor configuration object
                             var sensorConfiguration = new types.SensorConfiguration({
                                 interval : sensorInterval,
-                                parameters : parameters
+                                parameters : parameters,
+                                sensorType: enumSensorType
                             });
 
                             client.setSensorConfiguration(body.sensorName, sensorConfiguration, function (err, ret) {

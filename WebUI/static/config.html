@@ -135,6 +135,18 @@
                     </div>
                 </div>
 
+                <div class="control-group" for="sensorType">
+                    <label class="control-label">Sensor Type:</label>
+
+                    <div class="controls">
+                        <div class="btn-group" data-toggle-name="sensorType" data-toggle="buttons-radio" >
+                            <button type="button" value="0" id="metricButton" class="btn" data-toggle="button">Metric</button>
+                            <button type="button" value="1" id="logButton" class="btn" data-toggle="button">Log</button>
+                        </div>
+                        <input type="hidden" name="sensorType" id="sensorType" value="0" />
+                    </div>
+                </div>
+
                 <div class="control-group">
                     <table class="table" style="width:98%" id="sensorParamTable">
                         <thead>
