@@ -30,103 +30,13 @@ class Sensor(object):
         self.managementClient = managementClient
         self.name = name
         self.md5 = None
+        self.settings = settings
         self.__configured = False
     
     # Threadsafe
     def receive(self, line):
-        # each line has the format
-        # sensor, timestamp, name, value
-        # sensor = The name of the sensor which is passed to the process as first argument
-        # timestamp = UNIX timestamp in seconds since epoch
-        # name = string value or 'none' if no subname for the sensor is given 
-        # value = float value which shall be logged
-
-        if self.settings.sensorType == ttypes.SensorType.METRIC:
-
-            # Check line structure
-            elements = string.split(line, ',')
-            if len(elements) != 4:
-                print 'invalid line received: %s' % (line)
-                return
-                
-            # Extract timestamp
-            timestamp = None
-            try:
-                timestamp = long(float(elements[1])) 
-            except ValueError as e:
-                print 'error while parsing timestamp %s' % (elements[0])
-                return
-            
-            # Extract and build name for the entry (combine with sensor name)
-            name = None
-            if elements[2] == 'none':
-                name = self.name
-            else:
-                name = self.name + '.' + elements[2]
-            
-            # Extract value
-            logValue = None
-            try:
-                logValue = float(elements[3])
-            except ValueError:
-                print 'error while parsing value %s: ' % (elements[3])
-                return
-                
-            # Create new entry    
-            ids = ttypes.Identifier();
-            ids.timestamp = timestamp
-            ids.sensor = name
-            ids.hostname = HOSTNAME
-            
-            value = ttypes.MetricReading();
-            value.value = logValue
-            value.labels = []
-                
-            # Send message
-            self.loggingClient.logMetric(ids, value)
-
-        else :
-            elements = string.split(line, ',')
-
-            # Extract timestamp
-            timestamp = None
-            try:
-                timestamp = long(float(elements[1])) 
-            except ValueError as e:
-                print 'error while parsing timestamp %s' % (elements[0])
-                return
-            
-            # sensor name
-            name = self.name
-           
-            # Extract value
-            logValue = None
-            try:
-                logValue = elements[2]
-            except ValueError:
-                print 'error while parsing value %s: ' % (elements[2])
-                return
-                
-            # Create new entry    
-            ids = ttypes.Identifier()
-            ids.timestamp = timestamp
-            ids.sensor = name
-            ids.hostname = HOSTNAME
-            
-            value = ttypes.LogMessage()
-            value.logLevel = 5
-            value.logMessage = logValue
-            value.programName = name
-            value.timestamp = timestamp
-                
-            # Send message
-            self.loggingClient.logMessage(ids, value)
-
-            
-        # Debug output    
-        print "value %s" % (line)
-       
-       
+       raise NotImplementedError("Please Implement this method")
+              
     def sensorType(self):
         if self.__configured == False:
             print 'WARN: sensor is not configured, sensor type cannot be determined'
@@ -246,6 +156,118 @@ class Sensor(object):
         
         return True
 
+class LogSensor(Sensor):
+    def __init__(self, name, loggingClient, managementClient):
+        super().__init__(self, name, loggingClient, managementClient)
+
+    # Threadsafe
+    def receive(self, line):
+        # each line has the format
+        # sensor, timestamp, programName, logMessage
+        # sensor = The name of the sensor which is passed to the process as first argument
+        # timestamp = UNIX timestamp in seconds since epoch
+        # programName = name of the program generating the logs 
+        # logMessage = the log message itself
+
+        
+        elements = string.split(line, ',')
+
+        # Extract timestamp
+        timestamp = None
+        try:
+            timestamp = long(float(elements[1])) 
+        except ValueError as e:
+            print 'error while parsing timestamp %s' % (elements[0])
+            return
+            
+        # sensor name
+        name = self.name
+           
+        # Extract value
+        logValue = None
+        try:
+            logValue = elements[2]
+        except ValueError:
+            print 'error while parsing value %s: ' % (elements[2])
+            return
+                
+        # Create new entry    
+        ids = ttypes.Identifier()
+        ids.timestamp = timestamp
+        ids.sensor = name
+        ids.hostname = HOSTNAME
+            
+        value = ttypes.LogMessage()
+        value.logLevel = 5
+        value.logMessage = logValue
+        value.programName = name
+        value.timestamp = timestamp
+                
+        # Send message
+        self.loggingClient.logMessage(ids, value)
+
+        # Debug output    
+        print "value %s" % (line)
+
+        
+    
+class MetricSensor(Sensor):
+    def __init__(self, name, loggingClient, managementClient):
+        super().__init__(self, name, loggingClient, managementClient)
+
+    # Threadsafe
+    def receive(self, line):
+        # each line has the format
+        # sensor, timestamp, name, value
+        # sensor = The name of the sensor which is passed to the process as first argument
+        # timestamp = UNIX timestamp in seconds since epoch
+        # name = string value or 'none' if no subname for the sensor is given 
+        # value = float value which shall be logged
+        
+        # Check line structure
+        elements = string.split(line, ',')
+        if len(elements) != 4:
+            print 'invalid line received: %s' % (line)
+            return
+                    
+        # Extract timestamp
+        timestamp = None
+        try:
+            timestamp = long(float(elements[1])) 
+        except ValueError as e:
+            print 'error while parsing timestamp %s' % (elements[0])
+            return
+                
+        # Extract and build name for the entry (combine with sensor name)
+        name = None
+        if elements[2] == 'none':
+            name = self.name
+        else:
+            name = self.name + '.' + elements[2]
+                
+        # Extract value
+        logValue = None
+        try:
+            logValue = float(elements[3])
+        except ValueError:
+            print 'error while parsing value %s: ' % (elements[3])
+            return
+                    
+        # Create new entry    
+        ids = ttypes.Identifier();
+        ids.timestamp = timestamp
+        ids.sensor = name
+        ids.hostname = HOSTNAME
+                
+        value = ttypes.MetricReading();
+        value.value = logValue
+        value.labels = []
+                    
+        # Send message
+        self.loggingClient.logMetric(ids, value)
+
+        # Debug output    
+        print "value %s" % (line)
 
 class ProcessLoader(object):
     def newProcess(self, sensor):
@@ -610,7 +632,14 @@ class SensorHub(Thread, object):
    
    
     def __setupSensor(self, sensorName):
-        sensor = Sensor(sensorName, self.loggingClient, self.managementClient)
+        sensorConfig = self.managementClient.getSensorConfiguration(sensorName)
+
+        sensor = None
+        if sensorConfig.sensorType == ttypes.SensorType.METRIC:
+            sensor = MetricSensor(sensorName, self.loggingClient, self.managementClient)
+        elif sensorConfig.sensorType == ttypes.SensorType.LOG::
+            sensor = LogSensor(sensorName, self.loggingClient, self.managementClient)
+
         launch = sensor.configure()
         self.sensors[sensorName] = sensor
         
