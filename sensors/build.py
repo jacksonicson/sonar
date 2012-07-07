@@ -18,6 +18,11 @@ def configure(sensor, path):
         config = ttypes.SensorConfiguration()
         if 'interval' in content:
             config.interval = int(content['interval'])
+
+        if 'sensorType' in content:
+            config.sensorType = ttypes.SensorType._NAMES_TO_VALUES[content['sensorType']]
+        else:
+            config.sensorType = ttypes.SensorType._NAMES_TO_VALUES['METRIC']
             
         parameters = []
         if 'params' in content:
