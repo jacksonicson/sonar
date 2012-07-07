@@ -122,7 +122,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	private final String getRedisServer() {
-		return "srv2";
+		return "vm22.dfg";
 	}
 
 	@Override

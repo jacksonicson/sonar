@@ -16,6 +16,20 @@ except:
   fastbinary = None
 
 
+class SensorType:
+  METRIC = 0
+  LOG = 1
+
+  _VALUES_TO_NAMES = {
+    0: "METRIC",
+    1: "LOG",
+  }
+
+  _NAMES_TO_VALUES = {
+    "METRIC": 0,
+    "LOG": 1,
+  }
+
 
 class Identifier:
   """
@@ -763,17 +777,20 @@ class SensorConfiguration:
   Attributes:
    - interval
    - parameters
+   - sensorType
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'interval', None, None, ), # 1
     (2, TType.LIST, 'parameters', (TType.STRUCT,(Parameter, Parameter.thrift_spec)), None, ), # 2
+    (3, TType.I32, 'sensorType', None, None, ), # 3
   )
 
-  def __init__(self, interval=None, parameters=None,):
+  def __init__(self, interval=None, parameters=None, sensorType=None,):
     self.interval = interval
     self.parameters = parameters
+    self.sensorType = sensorType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -800,6 +817,11 @@ class SensorConfiguration:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.sensorType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -820,6 +842,10 @@ class SensorConfiguration:
       for iter34 in self.parameters:
         iter34.write(oprot)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.sensorType is not None:
+      oprot.writeFieldBegin('sensorType', TType.I32, 3)
+      oprot.writeI32(self.sensorType)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

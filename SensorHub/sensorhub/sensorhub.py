@@ -40,49 +40,89 @@ class Sensor(object):
         # timestamp = UNIX timestamp in seconds since epoch
         # name = string value or 'none' if no subname for the sensor is given 
         # value = float value which shall be logged
-        
-        # Check line structure
-        elements = string.split(line, ',')
-        if len(elements) != 4:
-            print 'invalid line received: %s' % (line)
-            return
+
+        if self.settings.sensorType == ttypes.SensorType.METRIC:
+
+            # Check line structure
+            elements = string.split(line, ',')
+            if len(elements) != 4:
+                print 'invalid line received: %s' % (line)
+                return
+                
+            # Extract timestamp
+            timestamp = None
+            try:
+                timestamp = long(float(elements[1])) 
+            except ValueError as e:
+                print 'error while parsing timestamp %s' % (elements[0])
+                return
             
-        # Extract timestamp
-        timestamp = None
-        try:
-            timestamp = long(float(elements[1])) 
-        except ValueError as e:
-            print 'error while parsing timestamp %s' % (elements[0])
-            return
-        
-        # Extract and build name for the entry (combine with sensor name)
-        name = None
-        if elements[2] == 'none':
+            # Extract and build name for the entry (combine with sensor name)
+            name = None
+            if elements[2] == 'none':
+                name = self.name
+            else:
+                name = self.name + '.' + elements[2]
+            
+            # Extract value
+            logValue = None
+            try:
+                logValue = float(elements[3])
+            except ValueError:
+                print 'error while parsing value %s: ' % (elements[3])
+                return
+                
+            # Create new entry    
+            ids = ttypes.Identifier();
+            ids.timestamp = timestamp
+            ids.sensor = name
+            ids.hostname = HOSTNAME
+            
+            value = ttypes.MetricReading();
+            value.value = logValue
+            value.labels = []
+                
+            # Send message
+            self.loggingClient.logMetric(ids, value)
+
+        else :
+            elements = string.split(line, ',')
+
+            # Extract timestamp
+            timestamp = None
+            try:
+                timestamp = long(float(elements[1])) 
+            except ValueError as e:
+                print 'error while parsing timestamp %s' % (elements[0])
+                return
+            
+            # sensor name
             name = self.name
-        else:
-            name = self.name + '.' + elements[2]
-        
-        # Extract value
-        logValue = None
-        try:
-            logValue = float(elements[3])
-        except ValueError:
-            print 'error while parsing value %s: ' % (elements[3])
-            return
+           
+            # Extract value
+            logValue = None
+            try:
+                logValue = elements[2]
+            except ValueError:
+                print 'error while parsing value %s: ' % (elements[2])
+                return
+                
+            # Create new entry    
+            ids = ttypes.Identifier()
+            ids.timestamp = timestamp
+            ids.sensor = name
+            ids.hostname = HOSTNAME
             
-        # Create new entry    
-        ids = ttypes.Identifier();
-        ids.timestamp = timestamp
-        ids.sensor = name
-        ids.hostname = HOSTNAME
-        
-        value = ttypes.MetricReading();
-        value.value = logValue
-        value.labels = []
+            value = ttypes.LogMessage()
+            value.logLevel = 5
+            value.logMessage = logValue
+            value.programName = name
+            value.timestamp = timestamp
+                
+            # Send message
+            self.loggingClient.logMessage(ids, value)
+
             
-        # Send message
-        self.loggingClient.logMetric(ids, value)
-        
         # Debug output    
         print "value %s" % (line)
        
@@ -139,7 +179,7 @@ class Sensor(object):
             return False
 
         # Download settings
-        bundledConfiguration = self.managementClient.getBundledSensorConfiguration(HOSTNAME, self.name)
+        bundledConfiguration = self.managementClient.getBundledSensorConfiguration(self.name, HOSTNAME)
         self.settings = bundledConfiguration.configuration
         self.labels = bundledConfiguration.labels
         
@@ -610,6 +650,16 @@ class WrapperLoggingClient(object):
             self.shutdown.shutdown('exception while logging metric on collector')
             
         self.lock.release()
+
+    def logMessage(self, ids, value):
+        self.lock.acquire()
+        try:
+            self.lc.logMessage(ids, value)
+        except:
+            self.shutdown.shutdown('exception while logging metric on collector')
+            
+        self.lock.release()
+
 
 
 class ShutdownHandler(object):
