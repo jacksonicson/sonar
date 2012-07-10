@@ -30,7 +30,6 @@ class Sensor(object):
         self.managementClient = managementClient
         self.name = name
         self.md5 = None
-        self.settings = settings
         self.__configured = False
     
     # Threadsafe
@@ -158,7 +157,7 @@ class Sensor(object):
 
 class LogSensor(Sensor):
     def __init__(self, name, loggingClient, managementClient):
-        super().__init__(self, name, loggingClient, managementClient)
+        super(LogSensor, self).__init__(name, loggingClient, managementClient)
 
     # Threadsafe
     def receive(self, line):
@@ -182,11 +181,19 @@ class LogSensor(Sensor):
             
         # sensor name
         name = self.name
+
+        # program name
+        programName = None
+        try:
+            programName = elements[2]
+        except ValueError as e:
+            print 'error while parsing programname %s' % (elements[1])
+            return
            
         # Extract value
         logValue = None
         try:
-            logValue = elements[2]
+            logValue = elements[3]
         except ValueError:
             print 'error while parsing value %s: ' % (elements[2])
             return
@@ -200,20 +207,20 @@ class LogSensor(Sensor):
         value = ttypes.LogMessage()
         value.logLevel = 5
         value.logMessage = logValue
-        value.programName = name
+        value.programName = programName
         value.timestamp = timestamp
                 
         # Send message
         self.loggingClient.logMessage(ids, value)
 
         # Debug output    
-        print "value %s" % (line)
+        print "value is %s" % (line)
 
         
     
 class MetricSensor(Sensor):
     def __init__(self, name, loggingClient, managementClient):
-        super().__init__(self, name, loggingClient, managementClient)
+        super(MetricSensor, self).__init__(name, loggingClient, managementClient)
 
     # Threadsafe
     def receive(self, line):
@@ -312,7 +319,15 @@ class ProcessLoader(object):
                 executable = [path, sensor.name]
             else:
                 executable = [executable, path, sensor.name]
-            
+
+            # check if the sensor configuration has parameters
+            paramLen = len(sensor.settings.parameters)
+	    	if paramLen > 0:
+                print 'sensor parameter exists, appending same as command line arguments'
+                for parameter in sensor.settings.parameters:
+                    paramValue = parameter.key + '=' + parameter.value
+                    executable.append(paramValue) 
+
             process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
             
             print 'PID %i' % (process.pid)
@@ -637,7 +652,7 @@ class SensorHub(Thread, object):
         sensor = None
         if sensorConfig.sensorType == ttypes.SensorType.METRIC:
             sensor = MetricSensor(sensorName, self.loggingClient, self.managementClient)
-        elif sensorConfig.sensorType == ttypes.SensorType.LOG::
+        elif sensorConfig.sensorType == ttypes.SensorType.LOG:
             sensor = LogSensor(sensorName, self.loggingClient, self.managementClient)
 
         launch = sensor.configure()

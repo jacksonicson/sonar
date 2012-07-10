@@ -122,7 +122,18 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	private final String getRedisServer() {
-		return "vm22.dfg";
+		String result = null;
+		Properties prop = new Properties();
+		try {
+			prop.load(ManagementServiceImpl.class.getResourceAsStream("/redis.properties"));
+			String server = (String) prop.get("server");
+			logger.info("Using REDIS server: " + server);
+			result = server;
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return result;
 	}
 
 	@Override
@@ -526,7 +537,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 		return result;
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println(SensorType.LOG.ordinal());
 		System.out.println(SensorType.valueOf("METRIC").ordinal());
