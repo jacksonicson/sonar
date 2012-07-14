@@ -3,6 +3,7 @@ package de.tum.in.sonar.log4j.appender;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -15,7 +16,6 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import de.tum.in.sonar.collector.CollectService.AsyncClient;
 import de.tum.in.sonar.collector.CollectService.Client;
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.LogMessage;
@@ -37,6 +37,9 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	// the host name of the machine from whcih logs are generated
 	private String hostname = null;
 
+	// number of messages to be held in the processing queue
+	private int bufferSize = 3024;
+
 	// name of the sensor to be logged to
 	private String sensor = null;
 
@@ -44,36 +47,97 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	private TTransport transport = null;
 	private Client client = null;
 
+	private ArrayBlockingQueue<Object> messageQueue = null;
+
+	private Runnable messageProcessor = null;
+
 	/**
 	 * Send a log message to the Sonar Log Server.
 	 */
 	@Override
 	protected synchronized void append(LoggingEvent event) {
-		boolean connected = connectIfNeeded();
-		if (!connected) {
-			getErrorHandler().error("No connection to the client");
-			return;
-		}
+		initializeMessageQueueIfRequired();
+		startConsumerThread();
 
 		Identifier id = new Identifier();
-
 		// convert timestamp to unix timestamp
-		id.setTimestamp(event.getTimeStamp() / 1000);
+		long timestamp = event.getTimeStamp() / 1000;
+		id.setTimestamp(timestamp);
 		id.setSensor(getSensor());
 		id.setHostname(getHostname());
 
+		// get the log message and level from the logging event
+		// we can get the syslog equivalent log level for putting the log level
+		// into the server
 		LogMessage message = new LogMessage();
 		message.setLogLevel(event.getLevel().getSyslogEquivalent());
 		message.setLogMessage(event.getMessage().toString());
 		message.setProgramName(event.getLoggerName());
-		message.setTimestamp(event.getTimeStamp() / 1000);
+		message.setTimestamp(timestamp);
 
-		try {
-			client.logMessage(id, message);
-		} catch (TException e) {
-			handleError("TException occured while logging", e);
-		} catch (Exception e) {
-			handleError("Exception occured while logging", e);
+		LogPayload payload = new LogPayload(id, message);
+		messageQueue.offer(payload);
+	}
+
+	private void initializeMessageQueueIfRequired() {
+		if (null == messageQueue) {
+			messageQueue = new ArrayBlockingQueue<Object>(bufferSize);
+		}
+	}
+
+	private void startConsumerThread() {
+		if (null == messageProcessor) {
+			messageProcessor = new Runnable() {
+				@Override
+				public void run() {
+					System.out.println("Thread started");
+					while (true) {
+						try {
+							Object payload = messageQueue.take();
+							// check the type of payload
+							if (payload instanceof LogPayload) {
+								LogPayload logPayload = (LogPayload) payload;
+								// check if it is needed to connect or the old
+								// connection has been
+								// retained
+								boolean connected = connectIfNeeded();
+								if (!connected) {
+									getErrorHandler().error("No connection to the client");
+									return;
+								}
+
+								try {
+									client.logMessage(logPayload.getId(), logPayload.getMessage());
+								} catch (TException e) {
+									handleError("TException occured while logging", e);
+								} catch (Exception e) {
+									handleError("Exception occured while logging", e);
+								}
+							} else if (payload instanceof PoisonPill) {
+
+								// if a posion pill payload has been received,
+								// it means that we can close the transport
+								// connections and shutdown the thread
+								if (isConnected()) {
+									transport.close();
+								}
+								return;
+							}
+
+						} catch (InterruptedException e) {
+							handleError("InterruptedException occured while logging", e);
+						}
+					}
+				}
+
+				protected void finalize() throws Throwable {
+					// when garbage collected
+					if (isConnected())
+						transport.close();
+				};
+			};
+			Thread consumer = new Thread(messageProcessor);
+			consumer.start();
 		}
 	}
 
@@ -82,8 +146,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	@Override
 	public synchronized void close() {
-		if (isConnected())
-			transport.close();
+		messageQueue.offer(new PoisonPill());
 	}
 
 	/**
@@ -161,24 +224,49 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 						+ e.getMessage() + "]");
 	}
 
+	/**
+	 * Get the server hostname / ip address
+	 * 
+	 * @return The server hostname / ip
+	 */
 	public String getServer() {
 		return server;
 	}
 
+	/**
+	 * Set the server address
+	 * 
+	 * @param server
+	 */
 	public void setServer(String server) {
 		Validator.notEmptyString(server, "Server field cannot be empty");
 		this.server = server;
 	}
 
+	/**
+	 * Get Sonar server port
+	 * 
+	 * @return
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * Set the Sonar server port
+	 * 
+	 * @param port
+	 */
 	public void setPort(int port) {
 		Validator.positiveInteger(port, "Port number should be a possitive integer");
 		this.port = port;
 	}
 
+	/**
+	 * Get the host name of the local machine
+	 * 
+	 * @return
+	 */
 	public String getHostname() {
 		if (hostname == null) {
 			try {
@@ -191,16 +279,41 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		return hostname;
 	}
 
+	/**
+	 * Setter method for host name
+	 * 
+	 * @param hostname
+	 */
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
 
+	/**
+	 * Get the sensor name
+	 * 
+	 * @return
+	 */
 	public String getSensor() {
 		return sensor;
 	}
 
+	/**
+	 * Set the sensor name
+	 * 
+	 * @param sensor
+	 */
 	public void setSensor(String sensor) {
 		Validator.notEmptyString(sensor, "Sensor field cannot be empty");
 		this.sensor = sensor;
+	}
+
+	/**
+	 * A dummy class to identify if the thread has to be stopped
+	 * 
+	 * @author User
+	 * 
+	 */
+	class PoisonPill {
+
 	}
 }
