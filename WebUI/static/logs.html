@@ -3,6 +3,14 @@
 {% block jshead %}
 <script type="text/javascript" src="autocomplete.js"></script>
 <script type="text/javascript" src="logs.js"></script>
+<style type="text/css">
+    .top{cursor: pointer;}
+
+    .mid{
+        cursor: pointer;
+    }
+</style>
+
 {% endblock%}
 
 {% block container %}
@@ -52,14 +60,12 @@
     </div>
 
     <div class="span8" id="container">
-        <table class="table" id="logResultsTable">
+        <table class="table" style="width: 900px;" id="logResultsTable">
             <thead>
             <tr>
-                <th>&nbsp;</th>
-                <th>Level</th>
-                <th>Date/Time</th>
-                <th>Program</th>
-                <th>Message</th>
+                <th style="width:10%">&nbsp;</th>
+                <th style="width:5%">&nbsp;</th>
+                <th style="width:85%">&nbsp;</th>
             </tr>
             </thead>
             <tbody id='logResultsTableBody'>

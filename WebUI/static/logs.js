@@ -5,6 +5,7 @@ $(function () {
 });
 
 function setupDatePickers() {
+
     var myDate = new Date();
     var month = myDate.getMonth() + 1;
     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
@@ -42,6 +43,14 @@ function setupDatePickers() {
         $('#sensor').typeahead({
             source: sensors
         });
+    });
+
+    $(".top").live('click', function(){
+        if($(this).children(".mid").is(':visible')){
+            $(this).children(".mid").slideUp();
+        } else {
+            $(this).children(".mid").slideDown();
+        }
     });
 }
 
@@ -82,15 +91,22 @@ function renderLogs(list){
     for(var i = 0; i < list.length ; i++)
     {
         var msg = list[i];
+        var heading = null;
+        heading =  msg.logMessage.replace(/(\r\n|\n|\r)/gm, "");
+        if(msg.logMessage.length > 60){
+            heading = heading.substr(0, 60) + "...";
+        }
         logTable.append(
             $('<tr>').append(
-                $('<td>').append(
-                    $('<img>').attr("src", getLogLevelImage(msg.logLevel)).attr("alt", getLogLevelNames(msg.logLevel))
-                ),
-                $('<td>').text(getLogLevelNames(msg.logLevel)),
-                $('<td>').text(timeConverter(msg.timestamp)),
                 $('<td>').text(msg.programName),
-                $('<td>').text(msg.logMessage)
+                $('<td>').append(
+                    $('<img>').attr({ src: getLogLevelImage(msg.logLevel), title: getLogLevelNames(msg.logLevel)})
+                ),
+                $('<td>').append(
+                    $('<div>').attr({class: "top"}).html(heading).append(
+                        $('<div>').css({"display":"none", "word-wrap": "break-word","padding-left":"10px","padding-right":"10px" ,"background-color":"#E6E6E6", "border-radius":"3px","moz-border-radius":"3px"}).width(450).attr({class: "mid"}).html(msg.logMessage + "<br/>Date: " + timeConverter(msg.timestamp))
+                    )
+                )
             )
         );
     }
