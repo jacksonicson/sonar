@@ -1,9 +1,7 @@
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
-from thrift.server import TServer
-from thrift.server import TNonblockingServer
 from relay import *
+from thrift.protocol import TBinaryProtocol
+from thrift.server import TNonblockingServer, TServer
+from thrift.transport import TSocket, TTransport
 
 # sys.path.append('../gen-py')
 
@@ -26,16 +24,13 @@ class RelayHandler(object):
 def main():
     print 'ok'
     
-    handler = RelayHandler()
-    
-    processor = RelayService.Processor(handler)
+    handler = CalculatorHandler()
+    processor = Calculator.Processor(handler)
     transport = TSocket.TServerSocket(port=9191)
-    
-    # tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
-    
-    server = TNonblockingServer.TNonblockingServer(processor,  transport)
+    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
     
     server.serve()
     
