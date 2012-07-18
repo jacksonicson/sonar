@@ -25,8 +25,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Functions:'
   print '  void execute(string code)'
   print '  int launch(string data, string name)'
-  print '   getPids()'
-  print '  void kill(int pid)'
   print ''
   sys.exit(0)
 
@@ -89,18 +87,6 @@ elif cmd == 'launch':
     print 'launch requires 2 args'
     sys.exit(1)
   pp.pprint(client.launch(args[0],args[1],))
-
-elif cmd == 'getPids':
-  if len(args) != 0:
-    print 'getPids requires 0 args'
-    sys.exit(1)
-  pp.pprint(client.getPids())
-
-elif cmd == 'kill':
-  if len(args) != 1:
-    print 'kill requires 1 args'
-    sys.exit(1)
-  pp.pprint(client.kill(eval(args[0]),))
 
 else:
   print 'Unrecognized method %s' % cmd
