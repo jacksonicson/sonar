@@ -15,6 +15,22 @@ jQuery(document).ready(function ($) {
         });
     });
 
+    $('div.btn-group[data-toggle-name=*]').each(function(){
+        var group   = $(this);
+        var form    = group.parents('form').eq(0);
+        var name    = group.attr('data-toggle-name');
+        var hidden  = $('input[name="' + name + '"]', form);
+        $('button', group).each(function(){
+            var button = $(this);
+            button.live('click', function(){
+                hidden.val($(this).val());
+            });
+            if(button.val() == hidden.val()) {
+                button.addClass('active');
+            }
+        });
+    });
+
     // Load list data
     updateSensorList();
     updateHostsList();
@@ -49,6 +65,8 @@ function newSensor(event){
     $('#sensorName').attr("value", "");
     $('#sensorLabels').attr("value", "");
     $('#sensorInterval').attr("value", "");
+    $('#sensorType').attr("value","0");
+    $('#metricButton').button('toggle');
     $('#newSensorDlg').modal('show');
 
     var paramTable = $('#sensorParamTableBody');
@@ -432,6 +450,15 @@ function populateSensorConfiguration(sensorName){
                     addRowToParamTable(parameter);
                 }
             }
+
+            if(configData.sensorType == 0){
+                $('#sensorType').attr("value","0");
+                $('#metricButton').button('toggle');
+            } else if(configData.sensorType == 1){
+                $('#sensorType').attr("value","1");
+                $('#logButton').button('toggle');
+            }
+
             $('#newSensorDlg').modal('show');
         }
     });

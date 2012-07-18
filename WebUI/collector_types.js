@@ -5,6 +5,10 @@
 //
 var Thrift = require('thrift').Thrift;
 var ttypes = module.exports = {};
+ttypes.SensorType = {
+'METRIC' : 0,
+'LOG' : 1
+};
 var Identifier = module.exports.Identifier = function(args) {
   this.timestamp = null;
   this.sensor = null;
@@ -800,12 +804,16 @@ Parameter.prototype.write = function(output) {
 var SensorConfiguration = module.exports.SensorConfiguration = function(args) {
   this.interval = null;
   this.parameters = null;
+  this.sensorType = null;
   if (args) {
     if (args.interval !== undefined) {
       this.interval = args.interval;
     }
     if (args.parameters !== undefined) {
       this.parameters = args.parameters;
+    }
+    if (args.sensorType !== undefined) {
+      this.sensorType = args.sensorType;
     }
   }
 };
@@ -851,6 +859,13 @@ SensorConfiguration.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.I32) {
+        this.sensorType = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -879,6 +894,11 @@ SensorConfiguration.prototype.write = function(output) {
       }
     }
     output.writeListEnd();
+    output.writeFieldEnd();
+  }
+  if (this.sensorType) {
+    output.writeFieldBegin('sensorType', Thrift.Type.I32, 3);
+    output.writeI32(this.sensorType);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
