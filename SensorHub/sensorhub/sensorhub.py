@@ -10,12 +10,12 @@ import sched
 import shutil
 import signal
 import string
+import tempfile
 import thread
 import threading
 import time
-import zipfile
 import traceback
-import tempfile
+import zipfile
 
 
 class Sensor(object):

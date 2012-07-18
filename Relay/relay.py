@@ -1,31 +1,186 @@
-from relay import *
+from relay import RelayService
+from subprocess import Popen, PIPE
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TNonblockingServer, TServer
 from thrift.transport import TSocket, TTransport
+import os
+import shutil
+import string
+import tempfile
+import zipfile
 
-# sys.path.append('../gen-py')
+class ProcessLoader(object):
+    
+    def decompress(self, data, name):
+        # Create paths
+        target = os.path.join(tempfile.gettempdir(), 'relay', name)
+        targetFile = os.path.join(tempfile.gettempdir(), 'relay', name + '.zip')
+        
+        # Write zip file
+        print 'writing zip file to disk...'
+        targetFileHandle = open(targetFile, 'wb')
+        targetFileHandle.write(data)
+        targetFileHandle.close()
+        
+        # Extract zip file
+        if os.path.exists(target):
+            shutil.rmtree(target, True)
+        try:
+            print 'mkdir: %s' % (target)
+            os.makedirs(target)
+        except Exception as e:
+            print 'Error while creating target directory'
+            return False
+        
+        zf = zipfile.ZipFile(targetFile)
+        for info in zf.infolist():
+            print info.filename
+    
+            if info.filename.endswith('/'):
+                try:
+                    os.makedirs(os.path.join(target, info.filename))
+                except Exception as e:
+                    print 'error while decompressing files %s' % (e)
+                    return False
+                    
+                continue
+            
+            cf = zf.read(info.filename)
+            f = open(os.path.join(target, info.filename), "wb")
+            f.write(cf)
+            f.close()
+            
+        zf.close()
+        
+        return True
+    
+    def newProcess(self, name):
+        # determine the executable
+        mainFile = None
+        main = 'main.sh'
+        target = os.path.join(tempfile.gettempdir(), 'relay', name, main)
+        if os.path.exists(target):
+            mainFile = main
+        else:
+            return None
+            
+            
+        # break if there is no main file
+        if mainFile == None:
+            print 'missing main file for sensor %s' % (name)
+            return
+        
+        # determine the executable (python, ..)
+        executable = None
+        main = None
+        try:    
+            index = string.rindex(mainFile, '.')
+            ending = mainFile[(index + 1):]
+            if ending == 'py':
+                executable = 'python'
+                main = 'main.py'
+            elif ending == 'sh':
+                executable = 'bash'
+                main = 'main.sh'
+            elif ending == 'exe':
+                executable = None
+                main = 'main.exe'
+        except ValueError:
+            executable = None
+            main = None
+        
+        # create a new process 
+        try:
+            path = os.path.join(tempfile.gettempdir(), 'relay', name, main)
+            
+            # configure executable and main file
+            if executable is None:
+                executable = [path, name]
+            else:
+                executable = [executable, path, name]
+            
+            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
+            
+            print 'PID %i' % (process.pid)
+            return process
+        except Exception as e:
+            print 'error starting process %s' % (e)
+            return None
 
-class RelayHandler(object):
+
+    def waitFor(self, process):
+        process.wait()
+
+    
+    def kill(self, process):
+        try:
+            process.kill()
+            return True
+        except Exception as e:
+            print 'error while killing process %s' % (e)
+            return False
+
+
+class ProcessManager(object):
     def __init__(self):
-        pass
+        self.processLoader = ProcessLoader()
+        self.pidMapping = {}
     
-    
-    def execute(self, code):
-        print 'executing'
-        pass
-    
-    def getPids(self):
-        pass
+    def launch(self, data, name):
+        status = self.processLoader.decompress(data, name)
+        if status == True:
+            print 'Decomression successful'
+            
+        print 'Launching...'
+        process = self.processLoader.newProcess(name)
+        if process is None:
+            print 'Error while launching process'
+            return -1
+        
+        print 'Waiting..'
+        self.processLoader.waitFor(process)
+        print 'Finished'
     
     def kill(self, pid):
-        pass
+        process = self.pidMapping[pid]
+        if process is None:
+            return False
+        
+        return self.processLoader.kill(process)    
+    
+    def getPids(self):
+        return []
+
+
+class RelayHandler(object):
+    
+    def __init__(self):
+        self.processManager = ProcessManager()
+    
+    def execute(self, code):
+        print 'executing %s' % (code)
+        context = {
+                   'processManager' : self.processManager
+                   }
+        exec code in context
+    
+    def launch(self, binary, name):
+        print 'launching package'
+        self.processManager.launch(binary, name)
+        return 0
+
+    def getPids(self):
+        return self.processManager.getPids()
+    
+    def kill(self, pid):
+        return self.processManager.kill(pid)
     
     
 def main():
     print 'ok'
     
-    handler = CalculatorHandler()
-    processor = Calculator.Processor(handler)
+    handler = RelayHandler()
+    processor = RelayService.Processor(handler)
     transport = TSocket.TServerSocket(port=9191)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
