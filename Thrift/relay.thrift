@@ -8,5 +8,8 @@ service RelayService {
 	void execute(1:string code);
 	
 	int launch(1:binary data, 2:string name)
+
+	int launchNoWait(1:binary data, 2:string name)	
 	
+	bool kill(1:int pid)
 }

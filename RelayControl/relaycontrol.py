@@ -19,7 +19,15 @@ def main():
     data = file.read()
     file.close()
     
-    client.launch(data, "test")
+    res = client.launch(data, "test")
+    print res
+    
+    pid = client.launchNoWait(data, "test")
+    print 'pid is %i' % (pid)
+    
+    res = client.kill(pid)
+    print res
+    
 
 
 if __name__ == '__main__':

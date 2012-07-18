@@ -126,31 +126,34 @@ class ProcessManager(object):
         self.processLoader = ProcessLoader()
         self.pidMapping = {}
     
-    def launch(self, data, name):
+    def launch(self, data, name, wait=True):
         status = self.processLoader.decompress(data, name)
         if status == True:
             print 'Decomression successful'
             
         print 'Launching...'
         process = self.processLoader.newProcess(name)
+        self.pidMapping[process.pid] = process
         if process is None:
             print 'Error while launching process'
             return -1
         
-        print 'Waiting..'
-        self.processLoader.waitFor(process)
-        print 'Finished'
+        if wait:
+            print 'Waiting..'
+            self.processLoader.waitFor(process)
+            print 'Finished'
+            del self.pidMapping[process.pid]
+            
+        return process.pid
     
     def kill(self, pid):
-        process = self.pidMapping[pid]
-        if process is None:
+        if pid not in self.pidMapping:
+            print 'No process with the given pid %i found' % (pid)
             return False
-        
-        return self.processLoader.kill(process)    
-    
-    def getPids(self):
-        return []
 
+        process = self.pidMapping[pid]        
+        return self.processLoader.kill(process)
+    
 
 class RelayHandler(object):
     
@@ -169,8 +172,10 @@ class RelayHandler(object):
         self.processManager.launch(binary, name)
         return 0
 
-    def getPids(self):
-        return self.processManager.getPids()
+    def launchNoWait(self, data, name):
+        print 'Launching package without waiting for it!'
+        pid = self.processManager.launch(data, name, False)
+        return pid    
     
     def kill(self, pid):
         return self.processManager.kill(pid)
