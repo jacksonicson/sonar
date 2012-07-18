@@ -187,7 +187,7 @@ def main():
     
     handler = RelayHandler()
     processor = RelayService.Processor(handler)
-    transport = TSocket.TServerSocket(port=9191)
+    transport = TSocket.TServerSocket(port=7900)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
