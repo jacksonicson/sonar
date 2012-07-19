@@ -203,8 +203,12 @@ def main():
     
     server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 
-    print 'Listening on port %i' % (PORT)    
-    server.serve()
+    print 'Listening on port %i' % (PORT)
+    try:    
+        server.serve()
+    except KeyboardInterrupt:
+        transport.close()
+        print 'Interrupted by keyboard, exiting now' 
     
 
 if __name__ == "__main__":
