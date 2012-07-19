@@ -36,6 +36,11 @@ def main():
     pid = client.launchNoWait(data, "test")
     print 'pid is %i' % (pid)
     
+    while True:
+        sta = client.isAlive(pid)
+        print 'alive %i' % (sta)
+        time.sleep(1)
+    
 
 
 if __name__ == '__main__':

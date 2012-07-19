@@ -160,6 +160,14 @@ class ProcessManager(object):
             
         return process.pid
         
+    def status(self, pid):
+        if pid not in self.pidMapping:
+            print 'No process with the given pid %i found' % (pid)
+            return False
+        
+        process = self.pidMapping[pid]
+        return process.poll() == None
+        
     def kill(self, pid):
         if pid not in self.pidMapping:
             print 'No process with the given pid %i found' % (pid)
@@ -189,7 +197,11 @@ class RelayHandler(object):
     def launchNoWait(self, data, name):
         print 'Launching package without waiting for it!'
         pid = self.processManager.launch(data, name, False)
-        return pid    
+        return pid
+    
+    def isAlive(self, pid):
+        print 'Checking if process %i is alive' % (pid)
+        return self.processManager.status(pid)
     
     def kill(self, pid):
         print 'KILL PROCESS %i' % (pid)

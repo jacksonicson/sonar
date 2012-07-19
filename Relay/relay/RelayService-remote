@@ -26,6 +26,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  void execute(string code)'
   print '  int launch(string data, string name)'
   print '  int launchNoWait(string data, string name)'
+  print '  bool isAlive(int pid)'
   print '  bool kill(int pid)'
   print ''
   sys.exit(0)
@@ -95,6 +96,12 @@ elif cmd == 'launchNoWait':
     print 'launchNoWait requires 2 args'
     sys.exit(1)
   pp.pprint(client.launchNoWait(args[0],args[1],))
+
+elif cmd == 'isAlive':
+  if len(args) != 1:
+    print 'isAlive requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.isAlive(eval(args[0]),))
 
 elif cmd == 'kill':
   if len(args) != 1:

@@ -10,6 +10,8 @@ service RelayService {
 	int launch(1:binary data, 2:string name)
 
 	int launchNoWait(1:binary data, 2:string name)	
+
+	bool isAlive(1:int pid)
 	
 	bool kill(1:int pid)
 }
