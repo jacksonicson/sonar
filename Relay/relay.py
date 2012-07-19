@@ -11,6 +11,8 @@ import zipfile
 
 class ProcessLoader(object):
     
+    VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh')
+    
     def decompress(self, data, name):
         # Create paths
         target = os.path.join(tempfile.gettempdir(), 'relay', name)
@@ -57,12 +59,11 @@ class ProcessLoader(object):
     def newProcess(self, name):
         # determine the executable
         mainFile = None
-        main = 'main.sh'
-        target = os.path.join(tempfile.gettempdir(), 'relay', name, main)
-        if os.path.exists(target):
-            mainFile = main
-        else:
-            return None
+        for main in ProcessLoader.VALID_MAINS:
+            target = os.path.join(tempfile.gettempdir(), 'sonar', name, main)
+            if os.path.exists(target):
+                mainFile = main
+                break
             
             
         # break if there is no main file
