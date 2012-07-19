@@ -4,21 +4,27 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from relay import *
 
+PORT = 7900
+
 def main():
-    transport = TSocket.TSocket('localhost', 9191)
+    transport = TSocket.TSocket('playground', 7900)
     transport = TTransport.TBufferedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
     client = RelayService.Client(protocol)
     transport.open()
     
     # Test the execute routine
-    client.execute('print "hello world"')
-    
-    
+    str = """for i in range(0,10):
+        print 'hello %i' % (i)
+    """
+    client.execute(str)
+
+    # Read contents of the zip file    
     file = open('test.zip', 'rb')
     data = file.read()
     file.close()
     
+    # Launch the ZIP file
     res = client.launch(data, "test")
     print res
     

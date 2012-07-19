@@ -9,6 +9,14 @@ import string
 import tempfile
 import zipfile
 
+
+def checkEnvironment():
+    tmpDir = tempfile.gettempdir()
+    if os.path.exists(os.path.join(tmpDir, 'relay')) == False:
+        print 'Creating relay directory in tmp...'
+        os.mkdir(os.path.join(tmpDir, 'relay')) 
+    
+
 class ProcessLoader(object):
     
     VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh')
@@ -60,7 +68,7 @@ class ProcessLoader(object):
         # determine the executable
         mainFile = None
         for main in ProcessLoader.VALID_MAINS:
-            target = os.path.join(tempfile.gettempdir(), 'sonar', name, main)
+            target = os.path.join(tempfile.gettempdir(), 'relay', name, main)
             if os.path.exists(target):
                 mainFile = main
                 break
@@ -69,7 +77,7 @@ class ProcessLoader(object):
         # break if there is no main file
         if mainFile == None:
             print 'missing main file for sensor %s' % (name)
-            return
+            return None
         
         # determine the executable (python, ..)
         executable = None
@@ -89,6 +97,7 @@ class ProcessLoader(object):
         except ValueError:
             executable = None
             main = None
+            return None
         
         # create a new process 
         try:
@@ -135,10 +144,11 @@ class ProcessManager(object):
             
         print 'Launching...'
         process = self.processLoader.newProcess(name)
-        self.pidMapping[process.pid] = process
         if process is None:
             print 'Error while launching process'
             return -1
+        else:
+            self.pidMapping[process.pid] = process
         
         if wait:
             print 'Waiting..'
@@ -147,7 +157,7 @@ class ProcessManager(object):
             del self.pidMapping[process.pid]
             
         return process.pid
-    
+        
     def kill(self, pid):
         if pid not in self.pidMapping:
             print 'No process with the given pid %i found' % (pid)
@@ -182,18 +192,18 @@ class RelayHandler(object):
     def kill(self, pid):
         return self.processManager.kill(pid)
     
+PORT = 7900
     
 def main():
-    print 'ok'
-    
     handler = RelayHandler()
     processor = RelayService.Processor(handler)
-    transport = TSocket.TServerSocket(port=7900)
+    transport = TSocket.TServerSocket(port=PORT)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
     server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
-    
+
+    print 'Listening on port %i' % (PORT)    
     server.serve()
     
 
