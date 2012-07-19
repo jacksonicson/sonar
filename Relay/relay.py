@@ -216,10 +216,11 @@ def main():
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
-    server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
+    # server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
+    server = TNonblockingServer.TNonblockingServer(processor, transport)
 
     print 'Listening on port %i' % (PORT)
-    try:    
+    try:
         server.serve()
     except KeyboardInterrupt:
         transport.close()

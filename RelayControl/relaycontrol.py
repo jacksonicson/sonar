@@ -10,10 +10,14 @@ PORT = 7900
 
 def main():
     transport = TSocket.TSocket('playdb', 7900)
-    transport = TTransport.TBufferedTransport(transport)
+    transport = TTransport.TFramedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
+    
     client = RelayService.Client(protocol)
     transport.open()
+    
+    
+    
     
     print "Creating ZIPs"
     build.main()
