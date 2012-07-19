@@ -1,7 +1,7 @@
 from relay import RelayService
 from subprocess import Popen, PIPE
 from thrift.protocol import TBinaryProtocol
-from thrift.server import TNonblockingServer, TServer
+from thrift.server import TNonblockingServer, TServer, TProcessPoolServer
 from thrift.transport import TSocket, TTransport
 import os
 import shutil
@@ -125,8 +125,10 @@ class ProcessLoader(object):
     def kill(self, process):
         try:
             if process.poll() is None:
+                print 'killing the process now...'
                 process.kill()
-            return True
+                return True
+            return False
         except Exception as e:
             print 'error while killing process %s' % (e)
             return False
@@ -190,6 +192,7 @@ class RelayHandler(object):
         return pid    
     
     def kill(self, pid):
+        print 'KILL PROCESS %i' % (pid)
         return self.processManager.kill(pid)
     
 PORT = 7900
@@ -201,7 +204,7 @@ def main():
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
 
     print 'Listening on port %i' % (PORT)
     try:    
