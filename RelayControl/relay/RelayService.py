@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py
+#  options string: py:twisted
 #
 
 from thrift.Thrift import TType, TMessageType, TException
@@ -16,16 +16,19 @@ try:
 except:
   fastbinary = None
 
+from zope.interface import Interface, implements
+from twisted.internet import defer
+from thrift.transport import TTwisted
 
-class Iface:
-  def execute(self, code):
+class Iface(Interface):
+  def execute(code):
     """
     Parameters:
      - code
     """
     pass
 
-  def launch(self, data, name):
+  def launch(data, name):
     """
     Parameters:
      - data
@@ -33,7 +36,7 @@ class Iface:
     """
     pass
 
-  def launchNoWait(self, data, name):
+  def launchNoWait(data, name):
     """
     Parameters:
      - data
@@ -41,14 +44,14 @@ class Iface:
     """
     pass
 
-  def isAlive(self, pid):
+  def isAlive(pid):
     """
     Parameters:
      - pid
     """
     pass
 
-  def kill(self, pid):
+  def kill(pid):
     """
     Parameters:
      - pid
@@ -56,40 +59,45 @@ class Iface:
     pass
 
 
-class Client(Iface):
-  def __init__(self, iprot, oprot=None):
-    self._iprot = self._oprot = iprot
-    if oprot is not None:
-      self._oprot = oprot
+class Client:
+  implements(Iface)
+
+  def __init__(self, transport, oprot_factory):
+    self._transport = transport
+    self._oprot_factory = oprot_factory
     self._seqid = 0
+    self._reqs = {}
 
   def execute(self, code):
     """
     Parameters:
      - code
     """
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
     self.send_execute(code)
-    self.recv_execute()
+    return d
 
   def send_execute(self, code):
-    self._oprot.writeMessageBegin('execute', TMessageType.CALL, self._seqid)
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('execute', TMessageType.CALL, self._seqid)
     args = execute_args()
     args.code = code
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
-  def recv_execute(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+  def recv_execute(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
     result = execute_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    return
+    result.read(iprot)
+    iprot.readMessageEnd()
+    return d.callback(None)
 
   def launch(self, data, name):
     """
@@ -97,31 +105,34 @@ class Client(Iface):
      - data
      - name
     """
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
     self.send_launch(data, name)
-    return self.recv_launch()
+    return d
 
   def send_launch(self, data, name):
-    self._oprot.writeMessageBegin('launch', TMessageType.CALL, self._seqid)
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('launch', TMessageType.CALL, self._seqid)
     args = launch_args()
     args.data = data
     args.name = name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
-  def recv_launch(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+  def recv_launch(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
     result = launch_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
+    result.read(iprot)
+    iprot.readMessageEnd()
     if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "launch failed: unknown result");
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "launch failed: unknown result"))
 
   def launchNoWait(self, data, name):
     """
@@ -129,96 +140,107 @@ class Client(Iface):
      - data
      - name
     """
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
     self.send_launchNoWait(data, name)
-    return self.recv_launchNoWait()
+    return d
 
   def send_launchNoWait(self, data, name):
-    self._oprot.writeMessageBegin('launchNoWait', TMessageType.CALL, self._seqid)
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('launchNoWait', TMessageType.CALL, self._seqid)
     args = launchNoWait_args()
     args.data = data
     args.name = name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
-  def recv_launchNoWait(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+  def recv_launchNoWait(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
     result = launchNoWait_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
+    result.read(iprot)
+    iprot.readMessageEnd()
     if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "launchNoWait failed: unknown result");
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "launchNoWait failed: unknown result"))
 
   def isAlive(self, pid):
     """
     Parameters:
      - pid
     """
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
     self.send_isAlive(pid)
-    return self.recv_isAlive()
+    return d
 
   def send_isAlive(self, pid):
-    self._oprot.writeMessageBegin('isAlive', TMessageType.CALL, self._seqid)
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('isAlive', TMessageType.CALL, self._seqid)
     args = isAlive_args()
     args.pid = pid
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
-  def recv_isAlive(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+  def recv_isAlive(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
     result = isAlive_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
+    result.read(iprot)
+    iprot.readMessageEnd()
     if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "isAlive failed: unknown result");
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "isAlive failed: unknown result"))
 
   def kill(self, pid):
     """
     Parameters:
      - pid
     """
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
     self.send_kill(pid)
-    return self.recv_kill()
+    return d
 
   def send_kill(self, pid):
-    self._oprot.writeMessageBegin('kill', TMessageType.CALL, self._seqid)
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('kill', TMessageType.CALL, self._seqid)
     args = kill_args()
     args.pid = pid
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
-  def recv_kill(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+  def recv_kill(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
     result = kill_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
+    result.read(iprot)
+    iprot.readMessageEnd()
     if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "kill failed: unknown result");
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "kill failed: unknown result"))
 
 
-class Processor(Iface, TProcessor):
+class Processor(TProcessor):
+  implements(Iface)
+
   def __init__(self, handler):
-    self._handler = handler
+    self._handler = Iface(handler)
     self._processMap = {}
     self._processMap["execute"] = Processor.process_execute
     self._processMap["launch"] = Processor.process_launch
@@ -236,17 +258,21 @@ class Processor(Iface, TProcessor):
       x.write(oprot)
       oprot.writeMessageEnd()
       oprot.trans.flush()
-      return
+      return defer.succeed(None)
     else:
-      self._processMap[name](self, seqid, iprot, oprot)
-    return True
+      return self._processMap[name](self, seqid, iprot, oprot)
 
   def process_execute(self, seqid, iprot, oprot):
     args = execute_args()
     args.read(iprot)
     iprot.readMessageEnd()
     result = execute_result()
-    self._handler.execute(args.code)
+    d = defer.maybeDeferred(self._handler.execute, args.code)
+    d.addCallback(self.write_results_success_execute, result, seqid, oprot)
+    return d
+
+  def write_results_success_execute(self, success, result, seqid, oprot):
+    result.success = success
     oprot.writeMessageBegin("execute", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -257,7 +283,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = launch_result()
-    result.success = self._handler.launch(args.data, args.name)
+    d = defer.maybeDeferred(self._handler.launch, args.data, args.name)
+    d.addCallback(self.write_results_success_launch, result, seqid, oprot)
+    return d
+
+  def write_results_success_launch(self, success, result, seqid, oprot):
+    result.success = success
     oprot.writeMessageBegin("launch", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -268,7 +299,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = launchNoWait_result()
-    result.success = self._handler.launchNoWait(args.data, args.name)
+    d = defer.maybeDeferred(self._handler.launchNoWait, args.data, args.name)
+    d.addCallback(self.write_results_success_launchNoWait, result, seqid, oprot)
+    return d
+
+  def write_results_success_launchNoWait(self, success, result, seqid, oprot):
+    result.success = success
     oprot.writeMessageBegin("launchNoWait", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -279,7 +315,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = isAlive_result()
-    result.success = self._handler.isAlive(args.pid)
+    d = defer.maybeDeferred(self._handler.isAlive, args.pid)
+    d.addCallback(self.write_results_success_isAlive, result, seqid, oprot)
+    return d
+
+  def write_results_success_isAlive(self, success, result, seqid, oprot):
+    result.success = success
     oprot.writeMessageBegin("isAlive", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -290,7 +331,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = kill_result()
-    result.success = self._handler.kill(args.pid)
+    d = defer.maybeDeferred(self._handler.kill, args.pid)
+    d.addCallback(self.write_results_success_kill, result, seqid, oprot)
+    return d
+
+  def write_results_success_kill(self, success, result, seqid, oprot):
+    result.success = success
     oprot.writeMessageBegin("kill", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()

@@ -8,6 +8,7 @@ import shutil
 import string
 import tempfile
 import zipfile
+from twisted.internet import reactor
 
 
 def checkEnvironment():
@@ -208,23 +209,63 @@ class RelayHandler(object):
         return self.processManager.kill(pid)
     
 PORT = 7900
+from zope.interface import Interface, implements
+import time
+class HandlerTest:
+    implements(RelayService.Iface)
+    
+    def execute(self, code):
+        print "test"
+        time.sleep(5)
+        pass
+    
+    def launch(self, data, name):
+      pass
+    
+    def launchNoWait(self, data, name):
+      pass
+    
+    def isAlive(self, pid):
+      pass
+    
+    def kill(self, pid):
+      pass
+      
+  
+
+from thrift.transport import TTwisted
+from thrift.protocol import TBinaryProtocol
+from thrift.server import TServer 
     
 def main():
-    handler = RelayHandler()
+#    handler = RelayHandler()
+#    processor = RelayService.Processor(handler)
+#    transport = TSocket.TServerSocket(port=PORT)
+#    tfactory = TTransport.TBufferedTransportFactory()
+#    pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+#    
+    # server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
+#    server = TNonblockingServer.TNonblockingServer(processor, transport)
+
+
+    handler = HandlerTest()
     processor = RelayService.Processor(handler)
-    transport = TSocket.TServerSocket(port=PORT)
-    tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
-    # server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
-    server = TNonblockingServer.TNonblockingServer(processor, transport)
+    server = reactor.listenTCP(9091,
+                TTwisted.ThriftServerFactory(processor,
+                pfactory), interface="127.0.0.1")
+    
+    print 'run reactor'
+    reactor.run()
+    
 
-    print 'Listening on port %i' % (PORT)
-    try:
-        server.serve()
-    except KeyboardInterrupt:
-        transport.close()
-        print 'Interrupted by keyboard, exiting now' 
+#    print 'Listening on port %i' % (PORT)
+#    try:
+#        server.serve()
+#    except KeyboardInterrupt:
+#        transport.close()
+#        print 'Interrupted by keyboard, exiting now' 
     
 
 if __name__ == "__main__":
