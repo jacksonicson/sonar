@@ -1,51 +1,78 @@
-from thrift import Thrift
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
 from relay import *
-import build
-import time 
-
-PORT = 7900
-
-
-from twisted.internet.defer import inlineCallbacks
+from thrift import Thrift, Thrift
+from thrift.protocol import TBinaryProtocol, TBinaryProtocol
+from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import reactor
+from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
-
-from thrift import Thrift
-from thrift.transport import TTwisted
-from thrift.protocol import TBinaryProtocol
+from twisted.internet import defer
+PORT = 7900
 
 def done(done):
     print "DOEN"
+
+
+
 
 @inlineCallbacks
 def test(client):
     print 'client'
     
-    d1 = client.execute("test").addCallback(done)
+    d1 = client.execute("print 'hello'").addCallback(done)
     print 'stop'
+
+    d = defer.Deferred()
     
     yield d1
     
     print "final"
-        
-    
 
+
+def te2(client):
+    print "one deferr fired"
+
+
+def done_all(done):
+    print "ALL METHOD EXECUTED SUCCESSFULLY %i" % (len(done))
+
+def te(client_list):
+    print "all connections established %s" % (client_list)
+    
+    li = []
+    for status in client_list:
+        de = defer.Deferred()
+        li.append(de)
+        d = status[1].execute("print 'hello'").addCallback(de.callback)
+        
+    dl = defer.DeferredList(li)
+    dl.addCallback(done_all)
+        
+    print 'done'
 
 def main():
     
-    for i in range(0,5):
+    ports = [PORT, PORT+1]
+    
+    items = []
+    for i in ports:
+        print 'Starting client for host %s:%i ' % ('127.0.0.1', i)
+        
         d = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
                           TBinaryProtocol.TBinaryProtocolFactory(),
-                          ).connectTCP("127.0.0.1", 9091)
+                          ).connectTCP("127.0.0.1", i)
         d.addCallback(lambda conn: conn.client)
-        d.addCallback(test)
+        
+        myDef = defer.Deferred()
+        items.append(myDef)
+        d.addCallback(myDef.callback)
 
-    print 'running'
+
+    wa = defer.DeferredList(items)
+    wa.addCallback(te)
+
+    print 'Starting reactor...'
     reactor.run()
     
 #    transport = TSocket.TSocket('playdb', 7900)

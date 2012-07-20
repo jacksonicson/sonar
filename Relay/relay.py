@@ -1,15 +1,18 @@
 from relay import RelayService
 from subprocess import Popen, PIPE
-from thrift.protocol import TBinaryProtocol
-from thrift.server import TNonblockingServer, TServer, TProcessPoolServer
-from thrift.transport import TSocket, TTransport
+from thrift.protocol import TBinaryProtocol, TBinaryProtocol
+from thrift.server import TNonblockingServer, TServer, TProcessPoolServer, \
+    TServer
+from thrift.transport import TSocket, TTransport, TTwisted
+from twisted.internet import reactor
+from zope.interface import Interface, implements
 import os
 import shutil
 import string
 import tempfile
 import zipfile
-from twisted.internet import reactor
 
+PORT = 7901
 
 def checkEnvironment():
     tmpDir = tempfile.gettempdir()
@@ -179,6 +182,7 @@ class ProcessManager(object):
     
 
 class RelayHandler(object):
+    implements(RelayService.Iface)
     
     def __init__(self):
         self.processManager = ProcessManager()
@@ -208,65 +212,17 @@ class RelayHandler(object):
         print 'KILL PROCESS %i' % (pid)
         return self.processManager.kill(pid)
     
-PORT = 7900
-from zope.interface import Interface, implements
-import time
-class HandlerTest:
-    implements(RelayService.Iface)
-    
-    def execute(self, code):
-        print "test"
-        time.sleep(5)
-        pass
-    
-    def launch(self, data, name):
-      pass
-    
-    def launchNoWait(self, data, name):
-      pass
-    
-    def isAlive(self, pid):
-      pass
-    
-    def kill(self, pid):
-      pass
-      
-  
 
-from thrift.transport import TTwisted
-from thrift.protocol import TBinaryProtocol
-from thrift.server import TServer 
-    
 def main():
-#    handler = RelayHandler()
-#    processor = RelayService.Processor(handler)
-#    transport = TSocket.TServerSocket(port=PORT)
-#    tfactory = TTransport.TBufferedTransportFactory()
-#    pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-#    
-    # server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
-#    server = TNonblockingServer.TNonblockingServer(processor, transport)
-
-
-    handler = HandlerTest()
+    handler = RelayHandler()
     processor = RelayService.Processor(handler)
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    
-    server = reactor.listenTCP(9091,
+    reactor.listenTCP(PORT,
                 TTwisted.ThriftServerFactory(processor,
                 pfactory), interface="127.0.0.1")
     
-    print 'run reactor'
+    print 'Starting reactor on port %i ...' % (PORT)
     reactor.run()
-    
-
-#    print 'Listening on port %i' % (PORT)
-#    try:
-#        server.serve()
-#    except KeyboardInterrupt:
-#        transport.close()
-#        print 'Interrupted by keyboard, exiting now' 
-    
 
 if __name__ == "__main__":
     main()
