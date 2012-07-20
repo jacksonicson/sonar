@@ -12,8 +12,6 @@ def done(done):
     print "DOEN"
 
 
-
-
 @inlineCallbacks
 def test(client):
     print 'client'

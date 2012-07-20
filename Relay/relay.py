@@ -193,8 +193,6 @@ class RelayHandler(object):
                    'processManager' : self.processManager
                    }
         exec code in context
-        import time
-        time.sleep(5)
     
     def launch(self, binary, name):
         print 'launching package'
