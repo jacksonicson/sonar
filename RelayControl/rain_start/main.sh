@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /opt/rain/current/
-./start
+#cd /opt/rain/current/
+#./start

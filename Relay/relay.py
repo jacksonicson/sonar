@@ -219,7 +219,7 @@ def main():
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     reactor.listenTCP(PORT,
                 TTwisted.ThriftServerFactory(processor,
-                pfactory), interface="127.0.0.1")
+                pfactory), interface="0.0.0.0")
     
     print 'Starting reactor on port %i ...' % (PORT)
     reactor.run()
