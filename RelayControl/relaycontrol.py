@@ -34,6 +34,10 @@ def te2(client):
 
 def done_all(done):
     print "ALL METHOD EXECUTED SUCCESSFULLY %i" % (len(done))
+    for res in done:
+        print res
+        
+    reactor.stop()
 
 def te(client_list):
     print "all connections established %s" % (client_list)

@@ -12,7 +12,7 @@ import string
 import tempfile
 import zipfile
 
-PORT = 7901
+PORT = 7900
 
 def checkEnvironment():
     tmpDir = tempfile.gettempdir()
@@ -193,6 +193,8 @@ class RelayHandler(object):
                    'processManager' : self.processManager
                    }
         exec code in context
+        import time
+        time.sleep(5)
     
     def launch(self, binary, name):
         print 'launching package'
