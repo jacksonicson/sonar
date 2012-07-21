@@ -83,18 +83,25 @@ def start_glassfish_database(client_list):
     
     file = open('spec_dbload.zip', 'rb')
     file_spec_dbload = file.read()
-    file.close() 
+    file.close()
+    
+    file = open('glassfish_wait.zip', 'rb')
+    file_glassfish_wait = file.read()
+    file.close()
 
     # Launch packages on hosts
     dp = defer.Deferred()
     client_list[0][1].launchNoWait(file_glassfish_start, "glassfish_start").addCallback(dp.callback)
+    # def pollForMessage(self, data, name, message):
+    dp2 = defer.Deferred()
+    client_list[0][1].pollForMessage(file_glassfish_wait, "glassfish_wait", "domain1 running").addCallback(dp2.callback)
     
     # TODO: Sync for glassfish startup finished 
     
     dd = defer.Deferred()
     client_list[1][1].launch(file_spec_dbload, "spec_dbload").addCallback(dd.callback)
 
-    dl = defer.DeferredList([dp, dd])
+    dl = defer.DeferredList([dp, dd, dp2])
     dl.addCallback(start_rain, client_list)
     
 

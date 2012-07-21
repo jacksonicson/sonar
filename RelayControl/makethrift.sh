@@ -1,2 +1,2 @@
 #!/bin/bash
-thrift -out . --gen py ../Thrift/relay.thrift
+thrift -out . --gen py:thrift ../Thrift/relay.thrift

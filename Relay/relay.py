@@ -144,6 +144,33 @@ class ProcessManager(object):
         self.processLoader = ProcessLoader()
         self.pidMapping = {}
     
+    def poll(self, data, name, message):
+        status = self.processLoader.decompress(data, name)
+        if status == True:
+            print 'Decomression successful'
+        else:
+            return False
+           
+        msgFound = False
+        while not msgFound: 
+            print 'Launching...'
+            
+            process = self.processLoader.newProcess(name)
+            if process is None:
+                print 'Error while launching process'
+                return False
+            else:
+                output = process.communicate()
+                print output
+                if output[0].find(message) > -1:
+                    print 'FOUND!!!'
+                    msgFound = True
+                    return True
+                
+            import time
+            time.sleep(1) 
+        
+    
     def launch(self, data, name, wait=True):
         status = self.processLoader.decompress(data, name)
         if status == True:
@@ -212,6 +239,10 @@ class RelayHandler(object):
     def kill(self, pid):
         print 'KILL PROCESS %i' % (pid)
         return self.processManager.kill(pid)
+    
+    def pollForMessage(self, data, name, message):
+        print 'Polling for message: %s' % (message)
+        return self.processManager.poll(data, name, message)
     
 
 def main():

@@ -28,6 +28,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  int launchNoWait(string data, string name)'
   print '  bool isAlive(int pid)'
   print '  bool kill(int pid)'
+  print '  bool pollForMessage(string data, string name, string message)'
   print ''
   sys.exit(0)
 
@@ -108,6 +109,12 @@ elif cmd == 'kill':
     print 'kill requires 1 args'
     sys.exit(1)
   pp.pprint(client.kill(eval(args[0]),))
+
+elif cmd == 'pollForMessage':
+  if len(args) != 3:
+    print 'pollForMessage requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.pollForMessage(args[0],args[1],args[2],))
 
 else:
   print 'Unrecognized method %s' % cmd
