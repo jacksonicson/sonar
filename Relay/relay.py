@@ -106,6 +106,7 @@ class ProcessLoader(object):
         # create a new process 
         try:
             path = os.path.join(tempfile.gettempdir(), 'relay', name, main)
+            cwd = os.path.join(tempfile.gettempdir(), 'relay', name)
             
             # configure executable and main file
             if executable is None:
@@ -113,7 +114,7 @@ class ProcessLoader(object):
             else:
                 executable = [executable, path, name]
             
-            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
+            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True, cwd=cwd)
             
             print 'PID %i' % (process.pid)
             return process

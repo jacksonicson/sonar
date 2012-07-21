@@ -1,0 +1,20 @@
+{
+    "profiles": "config/profiles.config.specj.json",
+    
+    "timing": {
+        "rampUp": 2,
+        "duration": 10,
+        "rampDown": 2
+    },
+    
+    "aggregateStats": true,
+    "usePipe": true,
+    "waitForStartSignal": true,
+    
+    
+    "## Database initialization settings":"##",
+    "txRate":20,
+    "maxItemsPerLoc":75000,
+    "itemsPerTxRate":100,
+    "parallelism":10
+}

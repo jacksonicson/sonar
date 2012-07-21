@@ -1,0 +1,159 @@
+{
+	"MfgTrack" : {
+		"generator": "de.tum.in.dss.specj.mfg.MfgGenerator",
+        "track": "de.tum.in.dss.specj.mfg.MfgTrack",
+        "resourcePath": "resources/",
+        
+        "behavior": {
+        	"default" : [
+        		[0.0,  0.0],
+        		[0.0,  0.0]
+        	]
+        },
+                
+        "### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
+        "loadProfile": [
+        {
+            "interval": 10,
+            "users": 10,
+            "mix": "default",
+            "transitionTime": 1
+        }
+        ],
+        
+        "target": {
+          "hostname": "127.0.0.1",
+          "port": 8080
+        },
+        
+        "pLogSampling": 1.0,
+        "pOpenLoop": 0.0,
+        "meanCycleTime": 0,
+        "meanThinkTime": 0,
+        "interactive": true,
+        "objectPoolMaxSize" : 5000,
+        "meanResponseTimeSamplingInterval" : 1000,
+
+        
+        "audit": true,
+        "stopIfAuditFailed": false,
+        "txRate": 20,
+        "maxItemsPerLoc": 75000,
+        "itemsPerTxRate": 100,
+        "plannedLineBorrowPercent": 10,
+        
+        "initialCtxFactory": "com.sun.enterprise.naming.impl.SerialInitContextFactory",
+        "urlPkgPrefix": "com.sun.enterprise.naming",
+        "ctxFactoryStates": "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl",
+        "orbInitialHost": "127.0.0.1",
+        "orbPort": "3700",
+        
+        "properties" : [
+        	{
+        		"name": "WorkOrderBean",
+        		"value": "org.spec.jent.ejb.mfg.session.WorkOrderSessionRemote"
+        	},
+        	{
+        		"name": "WorkOrderWebServiceEndpoint",
+        		"value": "http://localhost:8080/org.spec.jent.ejb.mfg.session.WorkOrderSession/WorkOrderSession"
+        	},
+        	{
+        		"name": "SupplierBean",
+        		"value": "org.spec.jent.ejb.supplier.session.SupplierSessionRemote"
+        	},
+        	{
+        		"name": "RunConfigBean",
+        		"value": "org.spec.jent.ejb.supplier.session.RunConfigSessionRemote"
+        	},
+        	{
+        		"name": "supp_ws_url",
+        		"value": "http://localhost:8080/emulator/SupplierService"
+        	},
+        	{
+        		"name": "supp_reply_url",
+        		"value": "http://localhost:8080/supplier/BuyerService"
+        	},
+        	{
+        		"name": "MfgAuditBean",
+        		"value": "org.spec.jent.ejb.mfg.session.MfgAuditSessionRemote"
+        	},
+        	{
+        		"name": "SupplierAuditBean",
+        		"value": "org.spec.jent.ejb.supplier.session.SupplierAuditSessionRemote"
+        	},
+        	{
+        		"name": "WorkOrderWebServiceWSDL",
+        		"value": "http://localhost:8080/org.spec.jent.ejb.mfg.session.WorkOrderSession/WorkOrderSession?wsdl"
+        	}
+        ],
+	},
+	 
+    "DealerTrack": {
+        "generator": "de.tum.in.dss.specj.dealer.DealerGenerator",
+        "track": "de.tum.in.dss.specj.dealer.DealerTrack",
+        "resourcePath": "resources/",
+        
+        "behavior": {
+        	"default" : [
+        		[0.0,  0.0],
+        		[0.0,  0.0]
+        	]
+        },
+                
+        "loadProfile": [
+        {
+            "interval": 10,
+            "users": 10,
+            "mix": "default",
+            "transitionTime": 1
+        }
+        ],
+        
+        "target": {
+          "hostname": "127.0.0.1",
+          "port": 8080
+        },
+        
+        
+        "pLogSampling": 1.0,
+        "pOpenLoop": 0.0,
+        "meanCycleTime": 0,
+        "meanThinkTime": 0,
+        "interactive": true,
+        "objectPoolMaxSize" : 5000,
+        "meanResponseTimeSamplingInterval" : 1000,
+        
+        
+        "audit": true,
+        "stopIfAuditFailed": false,
+        "txRate": 20,
+        "maxItemsPerLoc": 75000,
+        "itemsPerTxRate": 100,
+        "plannedLineBorrowPercent": 10,
+        
+        "initialCtxFactory": "com.sun.enterprise.naming.impl.SerialInitContextFactory",
+        "urlPkgPrefix": "com.sun.enterprise.naming",
+        "ctxFactoryStates": "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl",
+        "orbInitialHost": "127.0.0.1",
+        "orbPort": "3700",
+        
+        "properties" : [
+        	{
+        		"name": "OrderAuditBean",
+        		"value": "org.spec.jent.ejb.orders.session.OrderAuditSessionRemote"
+        	},
+        	{
+        		"name": "queryString",
+        		"value": "/specj/app?"
+        	},
+        	{
+        		"name": "htmlOutput",
+        		"value": "false"
+        	},
+        	{
+        		"name": "debugOutput",
+        		"value": "false"
+        	}
+        ],
+    },
+}
