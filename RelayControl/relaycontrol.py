@@ -43,7 +43,7 @@ def start_rain(ret, client_list):
     the Rain Tracks of the SpecJ driver are accessing the Glassfish services. 
     """
     
-    print 'Starting rain now...'
+    print 'Starting rain now... %s' % (client_list)
     
     # Reading packages
     file = open('rain_start.zip', 'rb')
@@ -51,7 +51,7 @@ def start_rain(ret, client_list):
     file.close()
 
     dp = defer.Deferred()
-    client_list[0][1].launch(file_rain_start, "rain_start").addCallback(dp.callback)
+    client_list[2][1].launch(file_rain_start, "rain_start").addCallback(dp.callback)
     
     dl = defer.DeferredList([dp])
     dl.addCallback(done_all)
@@ -102,7 +102,7 @@ def main():
     
     build.main()
     
-    hosts = ['playground', 'playdb']
+    hosts = ['playground', 'playdb', 'load1']
     
     items = []
     for i in hosts:
