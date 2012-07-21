@@ -11,6 +11,7 @@ import shutil
 import string
 import tempfile
 import zipfile
+from select import select
 
 PORT = 7900
 
@@ -160,12 +161,36 @@ class ProcessManager(object):
                 print 'Error while launching process'
                 return False
             else:
-                output = process.communicate()
-                print output
-                if output[0].find(message) > -1:
-                    print 'FOUND!!!'
-                    msgFound = True
-                    return True
+                print 'CHECK'
+                while True:
+                    print 'GO IN'
+                    streams = [process.stdout]
+                    data = None
+                    try:
+                        data = select(streams, [], [], 1)[0]
+                    except: 
+                        print 'stopping continuouse because of error in select'
+                        break 
+                
+                    for i in range(0, len(data)):
+                        line = data[i]
+                        line = line.readline()
+                        line = line.strip().rstrip()
+        
+                        if line.find(message) > -1:
+                            print 'FOUND!!!'
+                            
+                            if process.poll() is None:
+                                print 'KILLING'
+                                process.kill()
+                            
+                            print 'process killed'
+                            msgFound = True
+                            
+                            return True
+                
+                    if process.poll() is not None:
+                        break
                 
             import time
             time.sleep(1) 
