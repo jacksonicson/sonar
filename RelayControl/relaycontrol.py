@@ -129,8 +129,8 @@ def main():
 
     wa = defer.DeferredList(items)
     
-    wa.addCallback(start_glassfish_database)
-    #wa.addCallback(shutdown_glassfish)
+    #wa.addCallback(start_glassfish_database)
+    wa.addCallback(shutdown_glassfish)
 
     print 'Starting reactor...'
     reactor.run()
