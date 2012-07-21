@@ -38,6 +38,11 @@ def done_all(done):
 
 
 def start_rain(ret, client_list):
+    """
+    Rain has to be started after Glassfish is running! This is important because 
+    the Rain Tracks of the SpecJ driver are accessing the Glassfish services. 
+    """
+    
     print 'Starting rain now...'
     
     # Reading packages
@@ -83,6 +88,8 @@ def start_glassfish_database(client_list):
     # Launch packages on hosts
     dp = defer.Deferred()
     client_list[0][1].launchNoWait(file_glassfish_start, "glassfish_start").addCallback(dp.callback)
+    
+    # TODO: Sync for glassfish startup finished 
     
     dd = defer.Deferred()
     client_list[1][1].launch(file_spec_dbload, "spec_dbload").addCallback(dd.callback)
