@@ -22,7 +22,7 @@
         ],
         
         "target": {
-          "hostname": "127.0.0.1",
+          "hostname": "playground",
           "port": 8080
         },
         
@@ -45,7 +45,7 @@
         "initialCtxFactory": "com.sun.enterprise.naming.impl.SerialInitContextFactory",
         "urlPkgPrefix": "com.sun.enterprise.naming",
         "ctxFactoryStates": "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl",
-        "orbInitialHost": "127.0.0.1",
+        "orbInitialHost": "playground",
         "orbPort": "3700",
         
         "properties" : [
@@ -55,7 +55,7 @@
         	},
         	{
         		"name": "WorkOrderWebServiceEndpoint",
-        		"value": "http://localhost:8080/org.spec.jent.ejb.mfg.session.WorkOrderSession/WorkOrderSession"
+        		"value": "http://playground:8080/org.spec.jent.ejb.mfg.session.WorkOrderSession/WorkOrderSession"
         	},
         	{
         		"name": "SupplierBean",
@@ -67,11 +67,11 @@
         	},
         	{
         		"name": "supp_ws_url",
-        		"value": "http://localhost:8080/emulator/SupplierService"
+        		"value": "http://playground:8080/emulator/SupplierService"
         	},
         	{
         		"name": "supp_reply_url",
-        		"value": "http://localhost:8080/supplier/BuyerService"
+        		"value": "http://playground:8080/supplier/BuyerService"
         	},
         	{
         		"name": "MfgAuditBean",
@@ -83,7 +83,7 @@
         	},
         	{
         		"name": "WorkOrderWebServiceWSDL",
-        		"value": "http://localhost:8080/org.spec.jent.ejb.mfg.session.WorkOrderSession/WorkOrderSession?wsdl"
+        		"value": "http://playground:8080/org.spec.jent.ejb.mfg.session.WorkOrderSession/WorkOrderSession?wsdl"
         	}
         ],
 	},
@@ -110,7 +110,7 @@
         ],
         
         "target": {
-          "hostname": "127.0.0.1",
+          "hostname": "playground",
           "port": 8080
         },
         
@@ -134,7 +134,7 @@
         "initialCtxFactory": "com.sun.enterprise.naming.impl.SerialInitContextFactory",
         "urlPkgPrefix": "com.sun.enterprise.naming",
         "ctxFactoryStates": "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl",
-        "orbInitialHost": "127.0.0.1",
+        "orbInitialHost": "playground",
         "orbPort": "3700",
         
         "properties" : [

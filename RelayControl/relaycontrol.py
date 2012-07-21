@@ -96,8 +96,6 @@ def start_glassfish_database(client_list):
     dp2 = defer.Deferred()
     client_list[0][1].pollForMessage(file_glassfish_wait, "glassfish_wait", "domain1 running").addCallback(dp2.callback)
     
-    # TODO: Sync for glassfish startup finished 
-    
     dd = defer.Deferred()
     client_list[1][1].launch(file_spec_dbload, "spec_dbload").addCallback(dd.callback)
 
@@ -129,8 +127,14 @@ def main():
 
     wa = defer.DeferredList(items)
     
-    #wa.addCallback(start_glassfish_database)
-    wa.addCallback(shutdown_glassfish)
+    start = False
+    start = True
+    
+    if start:
+        wa.addCallback(start_glassfish_database)
+    else:
+        wa.addCallback(shutdown_glassfish)
+    
 
     print 'Starting reactor...'
     reactor.run()
