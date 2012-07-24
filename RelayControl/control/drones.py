@@ -4,12 +4,19 @@ import string
 
 DRONE_DIR = 'drones'
 
+class Drone(object):
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+        
 
 def load_drone(name):
     print 'loading drone %s' % (name)
     droneFile = open(os.path.join(DRONE_DIR, name + '.zip'), 'rb')
     drone = droneFile.read()
     droneFile.close()
+    
+    drone = Drone(name, drone)
     return drone
 
 def createDrone(name, path):
