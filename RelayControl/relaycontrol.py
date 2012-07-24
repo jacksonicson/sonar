@@ -6,8 +6,19 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import build
+import os
 
 PORT = 7900
+
+
+def __load_drone(name):
+    print 'loading drone %s' % (name)
+    droneFile = open(os.path.join(build.DRONE_DIR, name + '.zip'), 'rb')
+    drone = droneFile.read()
+    droneFile.close()
+    
+    return drone
+
 
 def done(done):
     print "DOEN"
@@ -46,11 +57,8 @@ def start_rain(ret, client_list):
     print 'Starting rain now... %s' % (client_list)
     
     # Reading packages
-    file = open('rain_start.zip', 'rb')
-    file_rain_start = file.read()
-    file.close()
-
     dp = defer.Deferred()
+    file_rain_start = __load_drone('rain_start')
     client_list[2][1].launch(file_rain_start, "rain_start").addCallback(dp.callback)
     
     dl = defer.DeferredList([dp])
@@ -60,13 +68,9 @@ def start_rain(ret, client_list):
 def shutdown_glassfish(client_list):
     print "shutting down system... %s" % (client_list)
     
-    # Reading packages
-    file = open('glassfish_stop.zip', 'rb')
-    file_glassfish_stop = file.read()
-    file.close()
-    
     # Launch packages on hosts
     dp = defer.Deferred()
+    file_glassfish_stop = __load_drone('glassfish_stop')
     client_list[0][1].launch(file_glassfish_stop, "glassfish_stop").addCallback(dp.callback)
     
     dl = defer.DeferredList([dp])
@@ -77,17 +81,9 @@ def start_glassfish_database(client_list):
     print "all connections established %s" % (client_list)
 
     # Reading packages
-    file = open('glassfish_start.zip', 'rb')
-    file_glassfish_start = file.read()
-    file.close()
-    
-    file = open('spec_dbload.zip', 'rb')
-    file_spec_dbload = file.read()
-    file.close()
-    
-    file = open('glassfish_wait.zip', 'rb')
-    file_glassfish_wait = file.read()
-    file.close()
+    file_glassfish_start = __load_drone('glassfish_start')
+    file_spec_dbload = __load_drone('spec_dbload')
+    file_glassfish_wait = __load_drone('glassfish_wait')
 
     # Launch packages on hosts
     dp = defer.Deferred()
@@ -106,7 +102,6 @@ def start_glassfish_database(client_list):
 def main():
     
     build.main()
-    return
     
     hosts = ['playground', 'playdb', 'load1']
     
@@ -129,7 +124,7 @@ def main():
     wa = defer.DeferredList(items)
     
     start = False
-    start = True
+    #start = True
     
     if start:
         print 'Starting system...'
@@ -138,8 +133,7 @@ def main():
         print 'Stopping system...'
         wa.addCallback(shutdown_glassfish)
     
-
-    print 'Starting reactor...'
+    # Start the twisted reactor
     reactor.run()
 
 if __name__ == '__main__':

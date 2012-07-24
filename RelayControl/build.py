@@ -4,8 +4,8 @@ import string
 
 DRONE_DIR = 'drones'
 
+
 def createDrone(name, path):
-    print 'creating zip %s.zip ...' % (name)
     shutil.make_archive(name, 'zip', path)
     return name + '.zip'
 
@@ -17,15 +17,15 @@ def clean(path):
             continue
         
         if string.find(subdir, '.zip') != -1:
-            print 'delete %s' % (subdir)
             os.remove(subpath)
 
 
 def main():
+    print 'Running drone builder...'
+    
     # Works on the drone directory
     path = os.getcwd() 
     path = os.path.join(path, DRONE_DIR)
-    print path
     
     # Remove all zip files in the drone directory
     clean(path)
