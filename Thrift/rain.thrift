@@ -14,11 +14,9 @@ struct Profile {
 
 service RainService {
 
-	void startBenchmark(1:long controllerTimestamp);
+	bool startBenchmark(1:long controllerTimestamp);
 	
-	void dynamicLoadProfile(1:Profile profile);
-	
-	int getStatus();
+	bool dynamicLoadProfile(1:Profile profile);
 	
 	list<string> getTrackNames();
 	
