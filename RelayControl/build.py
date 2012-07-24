@@ -1,34 +1,42 @@
 import os
 import shutil
 import string
-import yaml
-from optparse import OptionParser
 
-def createSensor(name, path):
-    print 'creating zip...'
+DRONE_DIR = 'drones'
+
+def createDrone(name, path):
+    print 'creating zip %s.zip ...' % (name)
     shutil.make_archive(name, 'zip', path)
     return name + '.zip'
 
+
 def clean(path):
     for subdir in os.listdir(path):
-        if os.path.isfile(subdir) == False:
+        if os.path.isfile(os.path.join(path, subdir)) == False:
             continue
         
         if string.find(subdir, '.zip') != -1:
-            print 'removing %s' % (subdir)
+            print 'delete %s' % (subdir)
             os.remove(os.path.join(path, subdir))
 
+
 def main():
+    # Works on the drone directory
     path = os.getcwd() 
+    path = os.path.join(path, DRONE_DIR)
+    print path
+    
+    # Remove all zip files in the drone directory
     clean(path)
+    
+    # Creates drone packages
     for subdir in os.listdir(path):
-        if os.path.isfile(subdir):
-            continue
-        elif subdir == 'relay':
+        if os.path.isfile(os.path.join(path, subdir)):
             continue
     
         sensorPath = os.path.join(path, subdir)
-        package = createSensor(subdir, sensorPath)
+        targetPath = os.path.join(path, subdir)
+        package = createDrone(targetPath, sensorPath)
         package = os.path.join(path, package)
         
 if __name__ == '__main__':

@@ -6,11 +6,11 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import build
+
 PORT = 7900
 
 def done(done):
     print "DOEN"
-
 
 @inlineCallbacks
 def test(client):
@@ -106,6 +106,7 @@ def start_glassfish_database(client_list):
 def main():
     
     build.main()
+    return
     
     hosts = ['playground', 'playdb', 'load1']
     
@@ -131,8 +132,10 @@ def main():
     start = True
     
     if start:
+        print 'Starting system...'
         wa.addCallback(start_glassfish_database)
     else:
+        print 'Stopping system...'
         wa.addCallback(shutdown_glassfish)
     
 
