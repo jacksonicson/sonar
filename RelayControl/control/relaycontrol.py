@@ -31,8 +31,7 @@ def finished(done):
 def phase_start_rain(ret, client_list):
     print 'starting rain driver...'
     
-    d = defer.Deferred()
-    __launch(client_list, 'load1', 'rain_start').addCallback(d.callback)
+    d = __launch(client_list, 'load1', 'rain_start')
     
     dl = defer.DeferredList([d])
     dl.addCallback(finished)
@@ -43,13 +42,11 @@ def shutdown_glassfish_rain(client_list):
     
     dlist = []
     
-    d = defer.Deferred()
+    d = __launch(client_list, 'playground', 'glassfish_stop')
     dlist.append(d)
-    __launch(client_list, 'playground', 'glassfish_stop').addCallback(d.callback)
     
-    d = defer.Deferred()
+    d = __launch(client_list, 'load1', 'rain_stop')
     dlist.append(d)
-    __launch(client_list, 'load1', 'rain_stop').addCallback(d.callback)
     
     dl = defer.DeferredList(dlist)
     dl.addCallback(finished)
@@ -64,17 +61,14 @@ def phase_start_glassfish_database(client_list):
     
     dlist = []
     
-    d = defer.Deferred()
+    d = __launch(client_list, 'playground', 'glassfish_start')
     dlist.append(d)
-    __launch(client_list, 'playground', 'glassfish_start').addCallback(d.callback)
     
-    d = defer.Deferred()
+    d = __launch(client_list, 'playground', 'glassfish_wait')
     dlist.append(d)
-    __launch(client_list, 'playground', 'glassfish_wait').addCallback(d.callback)
     
-    d = defer.Deferred()
+    d = __launch(client_list, 'playdb', 'spec_dbload')
     dlist.append(d)
-    __launch(client_list, 'playdb', 'spec_dbload').addCallback(d.callback)
     
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
