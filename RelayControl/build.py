@@ -12,12 +12,13 @@ def createDrone(name, path):
 
 def clean(path):
     for subdir in os.listdir(path):
-        if os.path.isfile(os.path.join(path, subdir)) == False:
+        subpath = os.path.join(path, subdir)
+        if os.path.isfile(subpath) == False:
             continue
         
         if string.find(subdir, '.zip') != -1:
             print 'delete %s' % (subdir)
-            os.remove(os.path.join(path, subdir))
+            os.remove(subpath)
 
 
 def main():
@@ -33,11 +34,9 @@ def main():
     for subdir in os.listdir(path):
         if os.path.isfile(os.path.join(path, subdir)):
             continue
-    
-        sensorPath = os.path.join(path, subdir)
+        
         targetPath = os.path.join(path, subdir)
-        package = createDrone(targetPath, sensorPath)
-        package = os.path.join(path, package)
+        createDrone(targetPath, targetPath)
         
 if __name__ == '__main__':
     main() 
