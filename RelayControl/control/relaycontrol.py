@@ -1,4 +1,5 @@
-from relay import *
+
+
 from thrift import Thrift, Thrift
 from thrift.protocol import TBinaryProtocol, TBinaryProtocol
 from thrift.transport import TSocket, TTransport, TTwisted
@@ -6,134 +7,129 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import os
+
 from control import drones
+from control import hosts
+from relay import RelayService
 
 PORT = 7900
 
-def __load_drone(name):
-    print 'loading drone %s' % (name)
-    droneFile = open(os.path.join(drones.DRONE_DIR, name + '.zip'), 'rb')
-    drone = droneFile.read()
-    droneFile.close()
-    
-    return drone
-
-
-def done(done):
-    print "DOEN"
-
-@inlineCallbacks
-def test(client):
-    print 'client'
-    
-    d1 = client.execute("print 'hello'").addCallback(done)
-    print 'stop'
-
-    d = defer.Deferred()
-    
-    yield d1
-    
-    print "final"
-
-
-def te2(client):
-    print "one deferr fired"
-
-
 def done_all(done):
-    print "ALL METHOD EXECUTED SUCCESSFULLY %i" % (len(done))
-    for res in done:
-        print res
+    print "execution successful"
     reactor.stop()
 
+def phase_start_rain(ret, client_list):
+    print 'starting rain driver...'
+    
+    d = defer.Deferred()
+    drone_rain_start = drones.load_drone('rain_start')
+    client_list[2][1].launch(drone_rain_start, 'rain_start').addCallback(d.callback)
+    
+    dl = defer.DeferredList([d])
+    dl.addCallback(done_all)
 
-def start_rain(ret, client_list):
+
+def shutdown_glassfish_rain(client_list):
+    print "stopping glassfish and rain drivers..."
+    
+    drone_glassfish_stop = drones.load_drone('glassfish_stop')
+    drone_rain_stop = drones.load_drone('rain_stop')
+    
+    dlist = []
+    
+    d = defer.Deferred()
+    dlist.append(d)
+    client_list[0][1].launch(drone_glassfish_stop, 'glassfish_stop').addCallback(d.callback)
+    
+    d = defer.Deferred()
+    dlist.append(d)
+    client_list[hosts.get_index('load1')][1].launch(drone_rain_stop, 'rain_stop').addCallback(d.callback)
+    
+    dl = defer.DeferredList(dlist)
+    dl.addCallback(done_all)
+    
+
+def phase_start_glassfish_database(client_list):
     """
     Rain has to be started after Glassfish is running! This is important because 
     the Rain Tracks of the SpecJ driver are accessing the Glassfish services. 
     """
     
-    print 'Starting rain now... %s' % (client_list)
+    print 'starting glassfish and database...'
     
-    # Reading packages
-    dp = defer.Deferred()
-    file_rain_start = __load_drone('rain_start')
-    client_list[2][1].launch(file_rain_start, "rain_start").addCallback(dp.callback)
+    # Loading drones
+    drone_glassfish_start = drones.load_drone('glassfish_start')
+    drone_spec_dbload = drones.load_drone('spec_dbload')
+    drone_glassfish_wait = drones.load_drone('glassfish_wait')
+
+    # Launch Glassfish and wait for its start
+    dlist = []
+    d = defer.Deferred()
+    dlist.append(d)
+    client_list[0][1].launchNoWait(drone_glassfish_start, "glassfish_start").addCallback(d.callback)
     
-    dl = defer.DeferredList([dp])
-    dl.addCallback(done_all)
-
-
-def shutdown_glassfish(client_list):
-    print "shutting down system... %s" % (client_list)
+    d = defer.Deferred()
+    dlist.append(d)
+    client_list[0][1].pollForMessage(drone_glassfish_wait, "glassfish_wait", "domain1 running").addCallback(d.callback)
     
-    # Launch packages on hosts
-    dp = defer.Deferred()
-    file_glassfish_stop = __load_drone('glassfish_stop')
-    client_list[0][1].launch(file_glassfish_stop, "glassfish_stop").addCallback(dp.callback)
+    d = defer.Deferred()
+    dlist.append(d)
+    client_list[1][1].launch(drone_spec_dbload, "spec_dbload").addCallback(d.callback)
     
-    dl = defer.DeferredList([dp])
-    dl.addCallback(done_all)
+    # Wait for all drones to finish and set phase
+    dl = defer.DeferredList(dlist)
+    dl.addCallback(phase_start_rain, client_list)
+ 
+ 
+def start_phase(client_list):
+    phase_start_glassfish_database(client_list)
     
-
-def start_glassfish_database(client_list):
-    print "all connections established %s" % (client_list)
-
-    # Reading packages
-    file_glassfish_start = __load_drone('glassfish_start')
-    file_spec_dbload = __load_drone('spec_dbload')
-    file_glassfish_wait = __load_drone('glassfish_wait')
-
-    # Launch packages on hosts
-    dp = defer.Deferred()
-    client_list[0][1].launchNoWait(file_glassfish_start, "glassfish_start").addCallback(dp.callback)
-    # def pollForMessage(self, data, name, message):
-    dp2 = defer.Deferred()
-    client_list[0][1].pollForMessage(file_glassfish_wait, "glassfish_wait", "domain1 running").addCallback(dp2.callback)
     
-    dd = defer.Deferred()
-    client_list[1][1].launch(file_spec_dbload, "spec_dbload").addCallback(dd.callback)
-
-    dl = defer.DeferredList([dp, dd, dp2])
-    dl.addCallback(start_rain, client_list)
+def stop_phase(client_list):
+    shutdown_glassfish_rain(client_list)
     
-
+    
 def main():
-    
+    # Create drones
     drones.main()
     
-    hosts = ['playground', 'playdb', 'load1']
+    # Add hosts
+    hosts.add_host('playground', 'target')
+    hosts.add_host('playdb', 'db')
+    hosts.add_host('load1', 'driver')
+    hosts_map = hosts.get_hosts_list()
     
-    items = []
-    for i in hosts:
-        print 'Starting client for host %s:%i ' % (i, PORT)
+    # Connect with all drone relays
+    dlist = []
+    for i in hosts_map:
+        print 'Connecting with relay %s:%i ' % (i, PORT)
         
-        d = ClientCreator(reactor,
+        creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
                           TBinaryProtocol.TBinaryProtocolFactory(),
                           ).connectTCP(i, PORT)
-        d.addCallback(lambda conn: conn.client)
+        creator.addCallback(lambda conn: conn.client)
         
-        myDef = defer.Deferred()
-        items.append(myDef)
-        d.addCallback(myDef.callback)
-
-
-    wa = defer.DeferredList(items)
+        d = defer.Deferred()
+        creator.addCallback(d.callback)
+        dlist.append(d)
+        
+    # Wait for all connections
+    wait = defer.DeferredList(dlist)
     
+    # Decide what to do after connection setup
     start = False
-    #start = True
-    
     if start:
-        print 'Starting system...'
-        wa.addCallback(start_glassfish_database)
+        print 'starting system ...'
+        wait.addCallback(start_phase)
     else:
-        print 'Stopping system...'
-        wa.addCallback(shutdown_glassfish)
+        print 'stopping system ...'
+        wait.addCallback(stop_phase)
     
-    # Start the twisted reactor
+    # Start the Twisted reactor
     reactor.run()
+
 
 if __name__ == '__main__':
     main()

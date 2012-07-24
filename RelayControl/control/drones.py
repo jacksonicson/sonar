@@ -5,6 +5,13 @@ import string
 DRONE_DIR = 'drones'
 
 
+def load_drone(name):
+    print 'loading drone %s' % (name)
+    droneFile = open(os.path.join(DRONE_DIR, name + '.zip'), 'rb')
+    drone = droneFile.read()
+    droneFile.close()
+    return drone
+
 def createDrone(name, path):
     shutil.make_archive(name, 'zip', path)
     return name + '.zip'
