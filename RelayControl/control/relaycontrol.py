@@ -5,15 +5,14 @@ from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
-import build
 import os
+from control import drones
 
 PORT = 7900
 
-
 def __load_drone(name):
     print 'loading drone %s' % (name)
-    droneFile = open(os.path.join(build.DRONE_DIR, name + '.zip'), 'rb')
+    droneFile = open(os.path.join(drones.DRONE_DIR, name + '.zip'), 'rb')
     drone = droneFile.read()
     droneFile.close()
     
@@ -101,7 +100,7 @@ def start_glassfish_database(client_list):
 
 def main():
     
-    build.main()
+    drones.main()
     
     hosts = ['playground', 'playdb', 'load1']
     
