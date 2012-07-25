@@ -1,5 +1,15 @@
 #!/bin/bash
 
-# Kill all rain processes
-cd /opt/rain/
-python start.py kill
+SENSORHUB=/opt/sensorhub
+
+# Remove old files and create the directory
+mkdir -f $SENSORHUB
+rm -rf $SENSORHUB/*
+
+# Update the files
+cp sensorhub.zip $SENSORHUB
+cd $SENSORHUB
+unzip sensorhub.zip
+
+# Restart the service
+systemctl restart sensorhub.service
