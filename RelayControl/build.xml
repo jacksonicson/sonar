@@ -1,0 +1,14 @@
+<project name="SensorHub" default="main" basedir=".">
+
+	<target name="dependencies" depends="prepare">
+		<ant antfile="../SensorHub/build.xml" target="main" dir="../SensorHub/" />
+		
+		<copy file="../SensorHub/build/sensorhub.zip" todir="drones/sensorhub_deploy" overwrite="true" />
+	</target>
+
+	<target name="prepare">
+	</target>
+
+	<target name="main" depends="dependencies" />
+
+</project>
