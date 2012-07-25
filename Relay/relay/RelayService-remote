@@ -29,7 +29,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool isAlive(int pid)'
   print '  bool kill(int pid)'
   print '  bool pollForMessage(string data, string name, string message)'
-  print '  bool waitForMessage(string data, string name, string message)'
+  print '  bool waitForMessage(string data, string name, string message, string file)'
   print ''
   sys.exit(0)
 
@@ -118,10 +118,10 @@ elif cmd == 'pollForMessage':
   pp.pprint(client.pollForMessage(args[0],args[1],args[2],))
 
 elif cmd == 'waitForMessage':
-  if len(args) != 3:
-    print 'waitForMessage requires 3 args'
+  if len(args) != 4:
+    print 'waitForMessage requires 4 args'
     sys.exit(1)
-  pp.pprint(client.waitForMessage(args[0],args[1],args[2],))
+  pp.pprint(client.waitForMessage(args[0],args[1],args[2],args[3],))
 
 else:
   print 'Unrecognized method %s' % cmd

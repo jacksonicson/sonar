@@ -17,5 +17,5 @@ service RelayService {
 	
 	bool pollForMessage(1:binary data, 2:string name, 3:string message)
 	
-	bool waitForMessage(1:binary data, 2:string name, 3:string message)
+	bool waitForMessage(1:binary data, 2:string name, 3:string message, 4:string file)
 }

@@ -42,6 +42,16 @@ def __poll_for_message(client_list, host, droneName, message):
         print 'error %s' % (e)
 
 
+def __wait_for_message(client_list, host, droneName, message, out=None):
+    try:
+        print 'launching (wait for message): %s' % (droneName)
+        drone = drones.load_drone(droneName)
+        d = __client(client_list, host).waitForMessage(drone.data, drone.name, message, out)
+        return d
+    except Exception, e:
+        print 'error %s' % (e)
+
+
 def rain_started(ret, client_list):
     print 'rain benchmark started'
     
@@ -68,14 +78,14 @@ def finished(done, client_list):
     print "execution successful"
     reactor.stop()
 
-
-def phase_start_rain(ret, client_list):
+# TODO: IMPORTATN RETTTTTT
+def phase_start_rain(client_list):
     print 'starting rain driver...'
     
-    d = __launch(client_list, 'load1', 'rain_start', wait=False)
+    d = __wait_for_message(client_list, 'load1', 'rain_start', 'Waiting for start signal...', '/opt/rain/rain.log')
     
     dl = defer.DeferredList([d])
-    dl.addCallback(finished)
+    dl.addCallback(finished, client_list)
 
 
 def shutdown_glassfish_rain(client_list):
@@ -90,7 +100,7 @@ def shutdown_glassfish_rain(client_list):
     dlist.append(d)
     
     dl = defer.DeferredList(dlist)
-    dl.addCallback(finished)
+    dl.addCallback(finished, client_list)
     
 
 def phase_start_glassfish_database(client_list):
@@ -102,18 +112,18 @@ def phase_start_glassfish_database(client_list):
     
     dlist = []
     
-#    d = __launch(client_list, 'playground', 'glassfish_start', wait=False)
-#    dlist.append(d)
-#    
-#    d = __poll_for_message(client_list, 'playground', 'glassfish_wait', 'domain1 running')
-#    dlist.append(d)
-#    
+    d = __launch(client_list, 'playground', 'glassfish_start', wait=False)
+    dlist.append(d)
+    
+    d = __poll_for_message(client_list, 'playground', 'glassfish_wait', 'domain1 running')
+    dlist.append(d)
+    
     d = __launch(client_list, 'playdb', 'spec_dbload')
     dlist.append(d)
     
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
-    dl.addCallback(finished, client_list)
+    dl.addCallback(phase_start_rain, client_list)
  
  
 def start_phase(client_list):
@@ -157,8 +167,8 @@ def main():
     start = True
     if start:
         print 'starting system ...'
-        wait.addCallback(start_phase)
-        # wait.addCallback(phase_start_rain)
+        # wait.addCallback(start_phase)
+        wait.addCallback(phase_start_rain)
     else:
         print 'stopping system ...'
         wait.addCallback(stop_phase)

@@ -67,12 +67,13 @@ class Iface(Interface):
     """
     pass
 
-  def waitForMessage(data, name, message):
+  def waitForMessage(data, name, message, file):
     """
     Parameters:
      - data
      - name
      - message
+     - file
     """
     pass
 
@@ -290,25 +291,27 @@ class Client:
       return d.callback(result.success)
     return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "pollForMessage failed: unknown result"))
 
-  def waitForMessage(self, data, name, message):
+  def waitForMessage(self, data, name, message, file):
     """
     Parameters:
      - data
      - name
      - message
+     - file
     """
     self._seqid += 1
     d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_waitForMessage(data, name, message)
+    self.send_waitForMessage(data, name, message, file)
     return d
 
-  def send_waitForMessage(self, data, name, message):
+  def send_waitForMessage(self, data, name, message, file):
     oprot = self._oprot_factory.getProtocol(self._transport)
     oprot.writeMessageBegin('waitForMessage', TMessageType.CALL, self._seqid)
     args = waitForMessage_args()
     args.data = data
     args.name = name
     args.message = message
+    args.file = file
     args.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -457,7 +460,7 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = waitForMessage_result()
-    d = defer.maybeDeferred(self._handler.waitForMessage, args.data, args.name, args.message)
+    d = defer.maybeDeferred(self._handler.waitForMessage, args.data, args.name, args.message, args.file)
     d.addCallback(self.write_results_success_waitForMessage, result, seqid, oprot)
     return d
 
@@ -1222,6 +1225,7 @@ class waitForMessage_args:
    - data
    - name
    - message
+   - file
   """
 
   thrift_spec = (
@@ -1229,12 +1233,14 @@ class waitForMessage_args:
     (1, TType.STRING, 'data', None, None, ), # 1
     (2, TType.STRING, 'name', None, None, ), # 2
     (3, TType.STRING, 'message', None, None, ), # 3
+    (4, TType.STRING, 'file', None, None, ), # 4
   )
 
-  def __init__(self, data=None, name=None, message=None,):
+  def __init__(self, data=None, name=None, message=None, file=None,):
     self.data = data
     self.name = name
     self.message = message
+    self.file = file
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1260,6 +1266,11 @@ class waitForMessage_args:
           self.message = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.file = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1281,6 +1292,10 @@ class waitForMessage_args:
     if self.message is not None:
       oprot.writeFieldBegin('message', TType.STRING, 3)
       oprot.writeString(self.message)
+      oprot.writeFieldEnd()
+    if self.file is not None:
+      oprot.writeFieldBegin('file', TType.STRING, 4)
+      oprot.writeString(self.file)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

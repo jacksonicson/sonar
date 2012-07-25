@@ -115,7 +115,7 @@ class ProcessLoader(object):
             else:
                 executable = [executable, path, name]
             
-            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True, cwd=cwd)
+            process = Popen(executable, stdout=PIPE, bufsize=10, universal_newlines=True, cwd=cwd)
             
             print 'PID %i' % (process.pid)
             return process
@@ -195,8 +195,61 @@ class ProcessManager(object):
             time.sleep(1) 
         
     
-    def wait(self, data, name, message):
-        return True
+    def wait(self, data, name, message, out=None):
+        status = self.processLoader.decompress(data, name)
+        if status == True:
+            print 'Decomression successful'
+        else:
+            return False
+           
+        print 'Launching...'
+        
+        process = self.processLoader.newProcess(name)
+        if process is None:
+            print 'Error while launching process'
+            return False
+        else:
+            print 'CHECK'
+            
+            streams = []
+            
+            if out is None:
+                streams = [process.stdout]
+            else:
+                # Wait for launch process to finish 
+                process.communicate()
+                
+                # Hook on the logfiles
+                try:
+                    print 'Reading from out: %s' % (out)
+                    stream = open(out, 'r')
+                    streams = [stream]
+                except Exception, e:
+                    print 'Error while reading: %s' % (e)
+            
+            while True:
+                # print 'GO IN'
+                
+                data = None
+                try:
+                    data = select(streams, [], [], 1)[0]
+                except Exception, e: 
+                    print 'stopping continuous because of error in select: %s' % (e)
+                    return False 
+            
+                for i in range(0, len(data)):
+                    line = data[i]
+                    line = line.readline()
+                    line = line.strip().rstrip()
+    
+                    if line.find(message) > -1:
+                        print 'message found: %s' % (line)
+                        return True
+            
+                if process.poll() is not None and out is None:
+                    print 'process is not alive anymore'
+                    return False
+                
     
     def launch(self, data, name, wait=True):
         status = self.processLoader.decompress(data, name)
@@ -220,6 +273,7 @@ class ProcessManager(object):
             
         print 'Returning process pid'
         return process.pid
+    
         
     def status(self, pid):
         if pid not in self.pidMapping:
@@ -273,9 +327,9 @@ class RelayHandler(object):
         print 'Polling for message: %s' % (message)
         return self.processManager.poll(data, name, message)
     
-    def waitForMessage(self, data, name, message):
+    def waitForMessage(self, data, name, message, out):
         print 'Waiting for message: %s' % (message)
-        return self.processManager.wait(data, name, message)
+        return self.processManager.wait(data, name, message, out)
 
 def main():
     handler = RelayHandler()
