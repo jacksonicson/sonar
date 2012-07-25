@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py:twisted
+#  options string: py:thrift
 #
 
 from thrift.Thrift import TType, TMessageType, TException
@@ -16,97 +16,14 @@ try:
 except:
   fastbinary = None
 
-from zope.interface import Interface, implements
-from twisted.internet import defer
-from thrift.transport import TTwisted
 
-class Iface(Interface):
-  def execute(code):
-    """
-    Parameters:
-     - code
-    """
-    pass
-
-  def launch(data, name):
-    """
-    Parameters:
-     - data
-     - name
-    """
-    pass
-
-  def launchNoWait(data, name):
-    """
-    Parameters:
-     - data
-     - name
-    """
-    pass
-
-  def isAlive(pid):
-    """
-    Parameters:
-     - pid
-    """
-    pass
-
-  def kill(pid):
-    """
-    Parameters:
-     - pid
-    """
-    pass
-
-  def pollForMessage(data, name, message):
-    """
-    Parameters:
-     - data
-     - name
-     - message
-    """
-    pass
-
-
-class Client:
-  implements(Iface)
-
-  def __init__(self, transport, oprot_factory):
-    self._transport = transport
-    self._oprot_factory = oprot_factory
-    self._seqid = 0
-    self._reqs = {}
-
+class Iface:
   def execute(self, code):
     """
     Parameters:
      - code
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_execute(code)
-    return d
-
-  def send_execute(self, code):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('execute', TMessageType.CALL, self._seqid)
-    args = execute_args()
-    args.code = code
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def recv_execute(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = execute_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    return d.callback(None)
+    pass
 
   def launch(self, data, name):
     """
@@ -114,34 +31,7 @@ class Client:
      - data
      - name
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_launch(data, name)
-    return d
-
-  def send_launch(self, data, name):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('launch', TMessageType.CALL, self._seqid)
-    args = launch_args()
-    args.data = data
-    args.name = name
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def recv_launch(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = launch_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "launch failed: unknown result"))
+    pass
 
   def launchNoWait(self, data, name):
     """
@@ -149,100 +39,21 @@ class Client:
      - data
      - name
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_launchNoWait(data, name)
-    return d
-
-  def send_launchNoWait(self, data, name):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('launchNoWait', TMessageType.CALL, self._seqid)
-    args = launchNoWait_args()
-    args.data = data
-    args.name = name
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def recv_launchNoWait(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = launchNoWait_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "launchNoWait failed: unknown result"))
+    pass
 
   def isAlive(self, pid):
     """
     Parameters:
      - pid
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_isAlive(pid)
-    return d
-
-  def send_isAlive(self, pid):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('isAlive', TMessageType.CALL, self._seqid)
-    args = isAlive_args()
-    args.pid = pid
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def recv_isAlive(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = isAlive_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "isAlive failed: unknown result"))
+    pass
 
   def kill(self, pid):
     """
     Parameters:
      - pid
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_kill(pid)
-    return d
-
-  def send_kill(self, pid):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('kill', TMessageType.CALL, self._seqid)
-    args = kill_args()
-    args.pid = pid
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def recv_kill(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = kill_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "kill failed: unknown result"))
+    pass
 
   def pollForMessage(self, data, name, message):
     """
@@ -251,42 +62,249 @@ class Client:
      - name
      - message
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
+    pass
+
+  def waitForMessage(self, data, name, message):
+    """
+    Parameters:
+     - data
+     - name
+     - message
+    """
+    pass
+
+
+class Client(Iface):
+  def __init__(self, iprot, oprot=None):
+    self._iprot = self._oprot = iprot
+    if oprot is not None:
+      self._oprot = oprot
+    self._seqid = 0
+
+  def execute(self, code):
+    """
+    Parameters:
+     - code
+    """
+    self.send_execute(code)
+    self.recv_execute()
+
+  def send_execute(self, code):
+    self._oprot.writeMessageBegin('execute', TMessageType.CALL, self._seqid)
+    args = execute_args()
+    args.code = code
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_execute(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = execute_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    return
+
+  def launch(self, data, name):
+    """
+    Parameters:
+     - data
+     - name
+    """
+    self.send_launch(data, name)
+    return self.recv_launch()
+
+  def send_launch(self, data, name):
+    self._oprot.writeMessageBegin('launch', TMessageType.CALL, self._seqid)
+    args = launch_args()
+    args.data = data
+    args.name = name
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_launch(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = launch_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "launch failed: unknown result");
+
+  def launchNoWait(self, data, name):
+    """
+    Parameters:
+     - data
+     - name
+    """
+    self.send_launchNoWait(data, name)
+    return self.recv_launchNoWait()
+
+  def send_launchNoWait(self, data, name):
+    self._oprot.writeMessageBegin('launchNoWait', TMessageType.CALL, self._seqid)
+    args = launchNoWait_args()
+    args.data = data
+    args.name = name
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_launchNoWait(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = launchNoWait_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "launchNoWait failed: unknown result");
+
+  def isAlive(self, pid):
+    """
+    Parameters:
+     - pid
+    """
+    self.send_isAlive(pid)
+    return self.recv_isAlive()
+
+  def send_isAlive(self, pid):
+    self._oprot.writeMessageBegin('isAlive', TMessageType.CALL, self._seqid)
+    args = isAlive_args()
+    args.pid = pid
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_isAlive(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = isAlive_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "isAlive failed: unknown result");
+
+  def kill(self, pid):
+    """
+    Parameters:
+     - pid
+    """
+    self.send_kill(pid)
+    return self.recv_kill()
+
+  def send_kill(self, pid):
+    self._oprot.writeMessageBegin('kill', TMessageType.CALL, self._seqid)
+    args = kill_args()
+    args.pid = pid
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_kill(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = kill_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "kill failed: unknown result");
+
+  def pollForMessage(self, data, name, message):
+    """
+    Parameters:
+     - data
+     - name
+     - message
+    """
     self.send_pollForMessage(data, name, message)
-    return d
+    return self.recv_pollForMessage()
 
   def send_pollForMessage(self, data, name, message):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('pollForMessage', TMessageType.CALL, self._seqid)
+    self._oprot.writeMessageBegin('pollForMessage', TMessageType.CALL, self._seqid)
     args = pollForMessage_args()
     args.data = data
     args.name = name
     args.message = message
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
 
-  def recv_pollForMessage(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
+  def recv_pollForMessage(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
     result = pollForMessage_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
     if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "pollForMessage failed: unknown result"))
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "pollForMessage failed: unknown result");
+
+  def waitForMessage(self, data, name, message):
+    """
+    Parameters:
+     - data
+     - name
+     - message
+    """
+    self.send_waitForMessage(data, name, message)
+    return self.recv_waitForMessage()
+
+  def send_waitForMessage(self, data, name, message):
+    self._oprot.writeMessageBegin('waitForMessage', TMessageType.CALL, self._seqid)
+    args = waitForMessage_args()
+    args.data = data
+    args.name = name
+    args.message = message
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_waitForMessage(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = waitForMessage_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "waitForMessage failed: unknown result");
 
 
-class Processor(TProcessor):
-  implements(Iface)
-
+class Processor(Iface, TProcessor):
   def __init__(self, handler):
-    self._handler = Iface(handler)
+    self._handler = handler
     self._processMap = {}
     self._processMap["execute"] = Processor.process_execute
     self._processMap["launch"] = Processor.process_launch
@@ -294,6 +312,7 @@ class Processor(TProcessor):
     self._processMap["isAlive"] = Processor.process_isAlive
     self._processMap["kill"] = Processor.process_kill
     self._processMap["pollForMessage"] = Processor.process_pollForMessage
+    self._processMap["waitForMessage"] = Processor.process_waitForMessage
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -305,21 +324,17 @@ class Processor(TProcessor):
       x.write(oprot)
       oprot.writeMessageEnd()
       oprot.trans.flush()
-      return defer.succeed(None)
+      return
     else:
-      return self._processMap[name](self, seqid, iprot, oprot)
+      self._processMap[name](self, seqid, iprot, oprot)
+    return True
 
   def process_execute(self, seqid, iprot, oprot):
     args = execute_args()
     args.read(iprot)
     iprot.readMessageEnd()
     result = execute_result()
-    d = defer.maybeDeferred(self._handler.execute, args.code)
-    d.addCallback(self.write_results_success_execute, result, seqid, oprot)
-    return d
-
-  def write_results_success_execute(self, success, result, seqid, oprot):
-    result.success = success
+    self._handler.execute(args.code)
     oprot.writeMessageBegin("execute", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -330,12 +345,7 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = launch_result()
-    d = defer.maybeDeferred(self._handler.launch, args.data, args.name)
-    d.addCallback(self.write_results_success_launch, result, seqid, oprot)
-    return d
-
-  def write_results_success_launch(self, success, result, seqid, oprot):
-    result.success = success
+    result.success = self._handler.launch(args.data, args.name)
     oprot.writeMessageBegin("launch", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -346,12 +356,7 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = launchNoWait_result()
-    d = defer.maybeDeferred(self._handler.launchNoWait, args.data, args.name)
-    d.addCallback(self.write_results_success_launchNoWait, result, seqid, oprot)
-    return d
-
-  def write_results_success_launchNoWait(self, success, result, seqid, oprot):
-    result.success = success
+    result.success = self._handler.launchNoWait(args.data, args.name)
     oprot.writeMessageBegin("launchNoWait", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -362,12 +367,7 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = isAlive_result()
-    d = defer.maybeDeferred(self._handler.isAlive, args.pid)
-    d.addCallback(self.write_results_success_isAlive, result, seqid, oprot)
-    return d
-
-  def write_results_success_isAlive(self, success, result, seqid, oprot):
-    result.success = success
+    result.success = self._handler.isAlive(args.pid)
     oprot.writeMessageBegin("isAlive", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -378,12 +378,7 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = kill_result()
-    d = defer.maybeDeferred(self._handler.kill, args.pid)
-    d.addCallback(self.write_results_success_kill, result, seqid, oprot)
-    return d
-
-  def write_results_success_kill(self, success, result, seqid, oprot):
-    result.success = success
+    result.success = self._handler.kill(args.pid)
     oprot.writeMessageBegin("kill", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -394,13 +389,19 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = pollForMessage_result()
-    d = defer.maybeDeferred(self._handler.pollForMessage, args.data, args.name, args.message)
-    d.addCallback(self.write_results_success_pollForMessage, result, seqid, oprot)
-    return d
-
-  def write_results_success_pollForMessage(self, success, result, seqid, oprot):
-    result.success = success
+    result.success = self._handler.pollForMessage(args.data, args.name, args.message)
     oprot.writeMessageBegin("pollForMessage", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_waitForMessage(self, seqid, iprot, oprot):
+    args = waitForMessage_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = waitForMessage_result()
+    result.success = self._handler.waitForMessage(args.data, args.name, args.message)
+    oprot.writeMessageBegin("waitForMessage", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1131,6 +1132,149 @@ class pollForMessage_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('pollForMessage_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.BOOL, 0)
+      oprot.writeBool(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class waitForMessage_args:
+  """
+  Attributes:
+   - data
+   - name
+   - message
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'data', None, None, ), # 1
+    (2, TType.STRING, 'name', None, None, ), # 2
+    (3, TType.STRING, 'message', None, None, ), # 3
+  )
+
+  def __init__(self, data=None, name=None, message=None,):
+    self.data = data
+    self.name = name
+    self.message = message
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.data = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.message = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('waitForMessage_args')
+    if self.data is not None:
+      oprot.writeFieldBegin('data', TType.STRING, 1)
+      oprot.writeString(self.data)
+      oprot.writeFieldEnd()
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 2)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    if self.message is not None:
+      oprot.writeFieldBegin('message', TType.STRING, 3)
+      oprot.writeString(self.message)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class waitForMessage_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.BOOL, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.BOOL:
+          self.success = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('waitForMessage_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.BOOL, 0)
       oprot.writeBool(self.success)

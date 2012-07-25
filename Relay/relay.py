@@ -1,4 +1,5 @@
 from relay import RelayService
+from select import select
 from subprocess import Popen, PIPE
 from thrift.protocol import TBinaryProtocol, TBinaryProtocol
 from thrift.server import TNonblockingServer, TServer, TProcessPoolServer, \
@@ -11,7 +12,6 @@ import shutil
 import string
 import tempfile
 import zipfile
-from select import select
 
 PORT = 7900
 
@@ -145,7 +145,7 @@ class ProcessManager(object):
         self.processLoader = ProcessLoader()
         self.pidMapping = {}
     
-    def poll(self, data, name, message):
+    def poll(self, data, name, message, kill=True):
         status = self.processLoader.decompress(data, name)
         if status == True:
             print 'Decomression successful'
@@ -153,7 +153,7 @@ class ProcessManager(object):
             return False
            
         msgFound = False
-        while not msgFound: 
+        while not msgFound and kill: # Restart process only if it is able to kill (not designed as a service) 
             print 'Launching...'
             
             process = self.processLoader.newProcess(name)
@@ -161,15 +161,13 @@ class ProcessManager(object):
                 print 'Error while launching process'
                 return False
             else:
-                print 'CHECK'
                 while True:
-                    print 'GO IN'
                     streams = [process.stdout]
                     data = None
                     try:
                         data = select(streams, [], [], 1)[0]
                     except: 
-                        print 'stopping continuouse because of error in select'
+                        print 'stopping continuous because of error in select'
                         break 
                 
                     for i in range(0, len(data)):
@@ -178,20 +176,22 @@ class ProcessManager(object):
                         line = line.strip().rstrip()
         
                         if line.find(message) > -1:
-                            print 'FOUND!!!'
+                            print 'message found'
                             
-                            if process.poll() is None:
-                                print 'KILLING'
-                                process.kill()
-                            
-                            print 'process killed'
+                            if kill:
+                                if process.poll() is None:
+                                    process.kill()
+                                
+                                print 'process killed'
                             msgFound = True
                             
                             return True
                 
+                    # Check if process needs a restart
                     if process.poll() is not None:
                         break
-                
+                    
+            # Wait before restarting the process
             import time
             time.sleep(1) 
         
@@ -269,6 +269,9 @@ class RelayHandler(object):
         print 'Polling for message: %s' % (message)
         return self.processManager.poll(data, name, message)
     
+    def waitForMessage(self, data, name, message):
+        print 'Waiting for message: %s' % (message)
+        return self.processManager.poll(data, name, message, kill=False)
 
 def main():
     handler = RelayHandler()

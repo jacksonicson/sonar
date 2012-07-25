@@ -16,4 +16,6 @@ service RelayService {
 	bool kill(1:int pid)
 	
 	bool pollForMessage(1:binary data, 2:string name, 3:string message)
+	
+	bool waitForMessage(1:binary data, 2:string name, 3:string message)
 }

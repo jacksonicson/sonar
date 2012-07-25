@@ -4,7 +4,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py:twisted
+#  options string: py:thrift
 #
 
 import sys
@@ -29,6 +29,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool isAlive(int pid)'
   print '  bool kill(int pid)'
   print '  bool pollForMessage(string data, string name, string message)'
+  print '  bool waitForMessage(string data, string name, string message)'
   print ''
   sys.exit(0)
 
@@ -115,6 +116,12 @@ elif cmd == 'pollForMessage':
     print 'pollForMessage requires 3 args'
     sys.exit(1)
   pp.pprint(client.pollForMessage(args[0],args[1],args[2],))
+
+elif cmd == 'waitForMessage':
+  if len(args) != 3:
+    print 'waitForMessage requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.waitForMessage(args[0],args[1],args[2],))
 
 else:
   print 'Unrecognized method %s' % cmd
