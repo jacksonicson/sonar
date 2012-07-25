@@ -145,7 +145,7 @@ class ProcessManager(object):
         self.processLoader = ProcessLoader()
         self.pidMapping = {}
     
-    def poll(self, data, name, message, kill=True):
+    def poll(self, data, name, message):
         status = self.processLoader.decompress(data, name)
         if status == True:
             print 'Decomression successful'
@@ -153,7 +153,7 @@ class ProcessManager(object):
             return False
            
         msgFound = False
-        while not msgFound and kill: # Restart process only if it is able to kill (not designed as a service) 
+        while not msgFound: 
             print 'Launching...'
             
             process = self.processLoader.newProcess(name)
@@ -161,7 +161,9 @@ class ProcessManager(object):
                 print 'Error while launching process'
                 return False
             else:
+                print 'CHECK'
                 while True:
+                    print 'GO IN'
                     streams = [process.stdout]
                     data = None
                     try:
@@ -178,23 +180,23 @@ class ProcessManager(object):
                         if line.find(message) > -1:
                             print 'message found'
                             
-                            if kill:
-                                if process.poll() is None:
-                                    process.kill()
-                                
-                                print 'process killed'
+                            if process.poll() is None:
+                                process.kill()
+                            
+                            print 'process killed'
                             msgFound = True
                             
                             return True
                 
-                    # Check if process needs a restart
                     if process.poll() is not None:
                         break
                     
-            # Wait before restarting the process
             import time
             time.sleep(1) 
         
+    
+    def wait(self, data, name, message):
+        return True
     
     def launch(self, data, name, wait=True):
         status = self.processLoader.decompress(data, name)
@@ -212,9 +214,11 @@ class ProcessManager(object):
         if wait:
             print 'Waiting..'
             self.processLoader.waitFor(process)
+            
             print 'Finished'
             del self.pidMapping[process.pid]
             
+        print 'Returning process pid'
         return process.pid
         
     def status(self, pid):
@@ -271,7 +275,7 @@ class RelayHandler(object):
     
     def waitForMessage(self, data, name, message):
         print 'Waiting for message: %s' % (message)
-        return self.processManager.poll(data, name, message, kill=False)
+        return self.processManager.wait(data, name, message)
 
 def main():
     handler = RelayHandler()
