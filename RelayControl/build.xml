@@ -1,12 +1,17 @@
-<project name="SensorHub" default="main" basedir=".">
+<project name="RelayControl" default="main" basedir=".">
 
 	<target name="dependencies" depends="prepare">
 		<ant antfile="../SensorHub/build.xml" target="main" dir="../SensorHub/" />
-		
 		<copy file="../SensorHub/build/sensorhub.zip" todir="drones/sensorhub_deploy" overwrite="true" />
+
+		<ant antfile="../Relay/build.xml" target="main" dir="../Relay/" />
+		<copy file="../Relay/build/relay.zip" todir="drones/relay_deploy" overwrite="true" />
 	</target>
 
 	<target name="prepare">
+		<delete dir="build" />
+		<mkdir dir="build" />
+		<mkdir dir="build/files" />
 	</target>
 
 	<target name="main" depends="dependencies" />

@@ -1,0 +1,26 @@
+<project name="Relay" default="main" basedir=".">
+
+	<target name="package" depends="prepare">
+		<copy todir="build/files">
+			<fileset dir=".">
+				<exclude name="build/*" />
+				<include name="**/*.py" />
+				<include name="**/*.service" />
+				<include name="**/*.sh" />
+			</fileset>
+		</copy>
+
+		<zip destfile="build/relay.zip" basedir="build/files">
+			<include name="**/*.*" />
+		</zip>
+	</target>
+
+	<target name="prepare">
+		<delete dir="build" />
+		<mkdir dir="build" />
+		<mkdir dir="build/files" />
+	</target>
+
+	<target name="main" depends="package" />
+
+</project>

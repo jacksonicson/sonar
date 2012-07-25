@@ -1,0 +1,13 @@
+# systemd service configuration
+
+[Unit]
+Description=Relay Service
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/python /usr/local/sonar/relay.py
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
