@@ -1,4 +1,5 @@
 from control import drones, hosts
+from rain import RainService, constants, ttypes
 from relay import RelayService
 from thrift import Thrift, Thrift
 from thrift.protocol import TBinaryProtocol, TBinaryProtocol
@@ -6,6 +7,7 @@ from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
+
 
 # Port the relay service is listening on
 PORT = 7900
@@ -16,13 +18,10 @@ def __client(client_list, host):
 
 
 def __launch(client_list, host, droneName):
-    try:
-        print 'launching: %s' % (droneName)
-        drone = drones.load_drone(droneName)
-        d = __client(client_list, host).launch(drone.data, drone.name)
-        return d
-    except Exception, e:
-        print e
+    drone = drones.load_drone(droneName)
+    d = __client(client_list, host).launch(drone.data, drone.name)
+    return d
+
 
 def finished(done):
     print "execution successful"
@@ -125,5 +124,31 @@ def main():
     # Start the Twisted reactor
     reactor.run()
 
+
+def rain_started(ret, client_list):
+    print 'started'
+
+
+def rain_connected(client):
+    print 'Rain is connected %s' % (client)
+    try:
+        client.startBenchmark(long(0))
+    except Exception, e:
+        print "error %s" % (e)
+    print 'ok'
+    
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+    
+    creator = ClientCreator(reactor,
+                          TTwisted.ThriftClientProtocol,
+                          RainService.Client,
+                          TBinaryProtocol.TBinaryProtocolFactory(),
+                          ).connectTCP('localhost', 7852)
+                          
+    creator.addCallback(lambda conn: conn.client)
+    creator.addCallback(rain_connected)
+    
+    reactor.run()
