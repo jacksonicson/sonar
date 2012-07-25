@@ -163,6 +163,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			jedis.del(key);
 		}
 
+		jedis.save();
 		jedisPool.returnResource(jedis);
 	}
 
@@ -202,6 +203,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Could not create MD5 for sensor binary", e);
 		}
 
+		jedis.save(); 
 		jedisPool.returnResource(jedis);
 	}
 
@@ -214,6 +216,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		String key = key("sensor", name, "labels");
 		jedis.sadd(key, labels.toArray(new String[] {}));
 
+		jedis.save();
 		jedisPool.returnResource(jedis);
 	}
 
@@ -227,6 +230,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		if (!jedis.sismember(key, hostname))
 			jedis.sadd(key, hostname);
 
+		jedis.save(); 
 		jedisPool.returnResource(jedis);
 	}
 
@@ -247,6 +251,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			jedis.del(key);
 		}
 
+		jedis.save(); 
 		jedisPool.returnResource(jedis);
 	}
 
@@ -260,6 +265,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			jedis.del(key);
 		jedis.sadd(key, labels.toArray(new String[] {}));
 
+		jedis.save(); 
 		jedisPool.returnResource(jedis);
 	}
 
@@ -288,6 +294,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		String key = key("host", hostname, "sensor", sensor);
 		jedis.set(key, Boolean.toString(activate));
 
+		jedis.save(); 
 		jedisPool.returnResource(jedis);
 	}
 
@@ -383,6 +390,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				jedis.set(key(key, param.key), param.value);
 			}
 		}
+		
+		jedis.save(); 
 		jedisPool.returnResource(jedis);
 	}
 
