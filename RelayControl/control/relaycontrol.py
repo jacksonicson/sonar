@@ -1,4 +1,6 @@
 from control import drones, hosts
+from datetime import datetime
+from rain import RainService, constants, ttypes
 from relay import RelayService
 from thrift import Thrift, Thrift
 from thrift.protocol import TBinaryProtocol, TBinaryProtocol
@@ -23,6 +25,29 @@ def __launch(client_list, host, droneName):
         return d
     except Exception, e:
         print e
+
+
+def rain_started(ret, client_list):
+    print 'rain benchmark started'
+    
+
+def rain_connected(rain_client, client_list):
+    print 'connected with rain'
+    d = rain_client.startBenchmark(long(datetime.now()))
+    d.addCallback(rain_started, rain_client, client_list)
+
+def trigger_rain_benchmark(ret, client_list):
+    creator = ClientCreator(reactor,
+                          TTwisted.ThriftClientProtocol,
+                          RainService.Client,
+                          TBinaryProtocol.TBinaryProtocolFactory(),
+                          ).connectTCP('localhost', 7852)
+                          
+    creator.addCallback(lambda conn: conn.client)
+    creator.addCallback(rain_connected, client_list)
+    
+    reactor.run()
+
 
 def finished(done):
     print "execution successful"
