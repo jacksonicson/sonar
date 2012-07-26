@@ -15,6 +15,7 @@ import zipfile
 
 PORT = 7900
 
+
 def checkEnvironment():
     tmpDir = tempfile.gettempdir()
     if os.path.exists(os.path.join(tmpDir, 'relay')) == False:
@@ -146,96 +147,35 @@ class ProcessManager(object):
         self.pidMapping = {}
     
     def poll(self, data, name, message):
+        # Decompress
         status = self.processLoader.decompress(data, name)
-        if status == True:
-            print 'Decomression successful'
-        else:
+        if status == False:
+            print 'Error: Decompression failed'
             return False
            
-        msgFound = False
-        while not msgFound: 
-            print 'Launching...'
-            
+        # Restart process if it fails (isAlive polling)
+        while True: 
+
+            # Launch process            
             process = self.processLoader.newProcess(name)
             if process is None:
-                print 'Error while launching process'
+                print 'Error: Could not launch process'
                 return False
-            else:
-                print 'CHECK'
-                while True:
-                    print 'GO IN'
-                    streams = [process.stdout]
-                    data = None
-                    try:
-                        data = select(streams, [], [], 1)[0]
-                    except: 
-                        print 'stopping continuous because of error in select'
-                        break 
-                
-                    for i in range(0, len(data)):
-                        line = data[i]
-                        line = line.readline()
-                        line = line.strip().rstrip()
-        
-                        if line.find(message) > -1:
-                            print 'message found'
-                            
-                            if process.poll() is None:
-                                process.kill()
-                            
-                            print 'process killed'
-                            msgFound = True
-                            
-                            return True
-                
-                    if process.poll() is not None:
-                        break
-                    
-            import time
-            time.sleep(1) 
-        
-    
-    def wait(self, data, name, message, out=None):
-        status = self.processLoader.decompress(data, name)
-        if status == True:
-            print 'Decomression successful'
-        else:
-            return False
-           
-        print 'Launching...'
-        
-        process = self.processLoader.newProcess(name)
-        if process is None:
-            print 'Error while launching process'
-            return False
-        else:
-            print 'CHECK'
             
-            streams = []
-            
-            if out is None:
-                streams = [process.stdout]
-            else:
-                # Wait for launch process to finish 
-                process.communicate()
-                
-                # Hook on the logfiles
-                try:
-                    print 'Reading from out: %s' % (out)
-                    stream = open(out, 'r')
-                    streams = [stream]
-                except Exception, e:
-                    print 'Error while reading: %s' % (e)
-            
+            # Read until message gets found or process is dead (restart necessary)
             while True:
-                # print 'GO IN'
-                
+                streams = [process.stdout]
                 data = None
                 try:
                     data = select(streams, [], [], 1)[0]
-                except Exception, e: 
-                    print 'stopping continuous because of error in select: %s' % (e)
-                    return False 
+                except: 
+                    print 'Error: select failed, restarting process'
+                    
+                    # Kill the process (just to be sure)
+                    if process.poll() is None:
+                        process.kill()
+                    
+                    break 
             
                 for i in range(0, len(data)):
                     line = data[i]
@@ -243,49 +183,113 @@ class ProcessManager(object):
                     line = line.strip().rstrip()
     
                     if line.find(message) > -1:
-                        print 'message found: %s' % (line)
+                        # This process is still alive (no return code)
+                        if process.poll() is None:
+                            process.kill()
+
+                        # Return
                         return True
             
-                if process.poll() is not None and out is None:
-                    print 'process is not alive anymore'
-                    return False
+                # Process is dead
+                if process.poll() is not None:
+                    break
+                    
+            # Sleep some time between the iterations
+            import time
+            time.sleep(1) 
+        
+    
+    def wait(self, data, name, message, targetFile=None):
+        # Decompress
+        status = self.processLoader.decompress(data, name)
+        if status == False: 
+            print 'Error: Decompression failed'
+            return False
+        
+        # Launch process
+        process = self.processLoader.newProcess(name)
+        if process is None:
+            print 'Error: Failed to launch process'
+            return False
+        
+        # Get stream
+        streams = []
+        if targetFile is None:
+            streams = [process.stdout]
+        else:
+            # Wait launch process to finish 
+            process.communicate()
+            
+            # Hook onto the logfiles
+            try:
+                print 'Reading from file: %s' % (targetFile)
+                stream = open(targetFile, 'r')
+                streams = [stream]
+            except Exception, e:
+                print 'Error: Could not read file %s' % (e)
+        
+        # Read the stream until the sequence is found        
+        while True:
+            
+            data = None
+            try:
+                data = select(streams, [], [], 1)[0]
+            except Exception, e: 
+                print 'Error: select failed, %s' % (e)
+                return False 
+        
+            for i in range(0, len(data)):
+                line = data[i]
+                line = line.readline()
+                line = line.strip().rstrip()
+
+                if line.find(message) > -1:
+                    print 'message found'
+                    return True
                 
     
     def launch(self, data, name, wait=True):
         status = self.processLoader.decompress(data, name)
-        if status == True:
-            print 'Decomression successful'
+        if status == False:
+            print 'Error: Decompression failed'
+            return -1
             
-        print 'Launching...'
         process = self.processLoader.newProcess(name)
         if process is None:
-            print 'Error while launching process'
+            print 'Error: launching process failed'
             return -1
-        else:
-            self.pidMapping[process.pid] = process
         
+        # Update PID map
+        self.pidMapping[process.pid] = process
+        
+        # Waiting until process is closed?
         if wait:
-            print 'Waiting..'
+            print 'waiting for process ...'
             self.processLoader.waitFor(process)
             
-            print 'Finished'
+            # Update PID map
             del self.pidMapping[process.pid]
             
-        print 'Returning process pid'
+            # Process is dead
+            return 0
+
+
+        # Return a valid PID            
         return process.pid
     
         
-    def status(self, pid):
+    def isAlive(self, pid):
         if pid not in self.pidMapping:
-            print 'No process with the given pid %i found' % (pid)
+            print 'Error: no process with PID %i found' % (pid)
             return False
         
         process = self.pidMapping[pid]
         return process.poll() == None
         
+        
     def kill(self, pid):
         if pid not in self.pidMapping:
-            print 'No process with the given pid %i found' % (pid)
+            print 'Error: no process with PID %i found' % (pid)
             return False
 
         process = self.pidMapping[pid]        
@@ -299,37 +303,35 @@ class RelayHandler(object):
         self.processManager = ProcessManager()
     
     def execute(self, code):
-        print 'executing %s' % (code)
+        print 'executing python source: %s' % (code)
         context = {
                    'processManager' : self.processManager
                    }
         exec code in context
     
     def launch(self, binary, name):
-        print 'launching package'
-        self.processManager.launch(binary, name)
-        return 0
+        print 'launching drone...'
+        return self.processManager.launch(binary, name)
 
     def launchNoWait(self, data, name):
-        print 'Launching package without waiting for it!'
-        pid = self.processManager.launch(data, name, False)
-        return pid
+        print 'launching drone... (no wait)'
+        return self.processManager.launch(data, name, False)
     
     def isAlive(self, pid):
-        print 'Checking if process %i is alive' % (pid)
-        return self.processManager.status(pid)
+        print 'checking if process %i is alive...' % (pid)
+        return self.processManager.isAlive(pid)
     
     def kill(self, pid):
-        print 'KILL PROCESS %i' % (pid)
+        print 'killing process %i...' % (pid)
         return self.processManager.kill(pid)
     
     def pollForMessage(self, data, name, message):
-        print 'Polling for message: %s' % (message)
+        print 'polling for message %s...' % (message)
         return self.processManager.poll(data, name, message)
     
-    def waitForMessage(self, data, name, message, out):
-        print 'Waiting for message: %s' % (message)
-        return self.processManager.wait(data, name, message, out)
+    def waitForMessage(self, data, name, message, targetFile):
+        print 'polling for message %s in file %s...' % (message, targetFile)
+        return self.processManager.wait(data, name, message, targetFile)
 
 def main():
     handler = RelayHandler()
@@ -339,7 +341,7 @@ def main():
                 TTwisted.ThriftServerFactory(processor,
                 pfactory), interface="0.0.0.0")
     
-    print 'Starting reactor on port %i ...' % (PORT)
+    print 'starting reactor on port %i ...' % (PORT)
     reactor.run()
 
 if __name__ == "__main__":
