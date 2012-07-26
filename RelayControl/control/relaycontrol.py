@@ -52,6 +52,10 @@ def __wait_for_message(client_list, host, droneName, message, out=None):
         print 'error %s' % (e)
 
 
+def __millis():
+    import time as time_
+    return int(round(time_.time() * 1000))
+
 def finished(done, client_list):
     print "execution successful"
     reactor.stop()
@@ -64,7 +68,7 @@ def rain_started(ret, rain_client, client_list):
 
 def rain_connected(rain_client, client_list):
     print 'connected with rain'
-    d = rain_client.startBenchmark(long(datetime.now()))
+    d = rain_client.startBenchmark(long(__millis()))
     d.addCallback(rain_started, rain_client, client_list)
     
 
@@ -165,11 +169,11 @@ def main():
     wait = defer.DeferredList(dlist)
     
     # Decide what to do after connection setup
-    start = False
+    start = True
     if start:
         print 'starting system ...'
         wait.addCallback(start_phase)
-        # wait.addCallback(phase_start_rain)
+        # wait.addCallback(phase_start_rain) # have to change the method signature
     else:
         print 'stopping system ...'
         wait.addCallback(stop_phase)

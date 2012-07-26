@@ -7,7 +7,7 @@ mkdir $RAIN
 rm -rf $RAIN/*
 
 # Update the files
-cp rain.zip $RAIN
+cp driver.zip $RAIN
 cd $RAIN
-unzip rain.zip
-rm rain.zip
+unzip driver.zip
+rm driver.zip

@@ -2,14 +2,16 @@
     "profiles": "config/profiles.config.specj.json",
     
     "timing": {
-        "rampUp": 2,
-        "duration": 10,
-        "rampDown": 2
+        "rampUp": 40,
+        "duration": 240,
+        "rampDown": 40
     },
     
     "aggregateStats": true,
-    "usePipe": true,
     "waitForStartSignal": true,
+    
+    "usePipe": false,
+    "useThrift": true,
     
     
     "## Database initialization settings":"##",

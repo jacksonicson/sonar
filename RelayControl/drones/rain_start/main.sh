@@ -2,7 +2,7 @@
 
 # Update configuration files
 cp *.json /opt/rain/config
-
+# cp -r load /opt/rain/config/
 cd /opt/rain/
 
 rm -rf /opt/rain/rain.pid
