@@ -1,11 +1,18 @@
 <project name="RelayControl" default="main" basedir=".">
 
 	<target name="dependencies" depends="prepare">
+		<!-- Create deployment packages -->
+		<!-- SensorHub -->
 		<ant antfile="../SensorHub/build.xml" target="main" dir="../SensorHub/" />
 		<copy file="../SensorHub/build/sensorhub.zip" todir="drones/sensorhub_deploy" overwrite="true" />
 
+		<!-- Relay -->
 		<ant antfile="../Relay/build.xml" target="main" dir="../Relay/" />
 		<copy file="../Relay/build/relay.zip" todir="drones/relay_deploy" overwrite="true" />
+		
+		<!-- Rain -->
+		<ant antfile="../../storm/RainSpecDriver/build.xml" target="main" dir="../../storm/RainSpecDriver/" />
+		<copy file="../../storm/RainSpecDriver/driver.zip" todir="drones/rain_deploy" overwrite="true" />
 	</target>
 
 	<target name="prepare">

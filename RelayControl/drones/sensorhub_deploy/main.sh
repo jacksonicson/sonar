@@ -18,5 +18,4 @@ cp sensorhub.service /etc/systemd/system/
 
 # Restart the service
 systemctl disable sensorhub.service
-# systemctl restart sensorhub.service
-# test
+systemctl restart sensorhub.service

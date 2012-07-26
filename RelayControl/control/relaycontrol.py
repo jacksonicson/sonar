@@ -165,7 +165,7 @@ def main():
     wait = defer.DeferredList(dlist)
     
     # Decide what to do after connection setup
-    start = True
+    start = False
     if start:
         print 'starting system ...'
         wait.addCallback(start_phase)

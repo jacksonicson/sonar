@@ -57,16 +57,30 @@ def finished(done, client_list):
     reactor.stop()
  
 
-def deploy_phase(client_list):
-    print 'deploying SensorHub to all machines'
+def deploy_relay(ret, client_list):
+    print 'deploying Relay: '
     
     dlist = []
     
-    d = __launch(client_list, 'load1', 'relay_deploy', wait=False)
-    dlist.append(d)
+    for host in hosts.get_hosts_list():
+        print '   %s' % (host)
+        d = __launch(client_list, host, 'relay_deploy', wait=True)
+        dlist.append(d)
     
-    d = __launch(client_list, 'load1', 'sensorhub_deploy', wait=False)
-    dlist.append(d)
+    # Wait for all drones to finish and set phase
+    dl = defer.DeferredList(dlist)
+    dl.addCallback(finished, client_list)
+
+
+def deploy_phase(client_list):
+    print 'deploying SensorHub: '
+    
+    dlist = []
+    
+    for host in hosts.get_hosts_list():
+        print '   %s' % (host)
+        d = __launch(client_list, host, 'sensorhub_start', wait=True)
+        dlist.append(d)
     
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
@@ -78,6 +92,8 @@ def main():
     
     # Add hosts
     hosts.add_host('load1', 'deploy')
+    hosts.add_host('playground', 'deploy')
+    hosts.add_host('playdb', 'deploy')
     hosts_map = hosts.get_hosts_list()
     
     # Connect with all drone relays

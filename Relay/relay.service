@@ -7,7 +7,7 @@ After=network.target
 [Service]
 User=root
 ExecStart=/usr/bin/python /opt/relay/relay.py
-Restart=on-abort
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
