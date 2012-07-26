@@ -52,40 +52,41 @@ def __wait_for_message(client_list, host, droneName, message, out=None):
         print 'error %s' % (e)
 
 
-def rain_started(ret, client_list):
+def finished(done, client_list):
+    print "execution successful"
+    reactor.stop()
+
+
+def rain_started(ret, rain_client, client_list):
     print 'rain benchmark started'
-    
+    finished(ret, client_list)
+
 
 def rain_connected(rain_client, client_list):
     print 'connected with rain'
     d = rain_client.startBenchmark(long(datetime.now()))
     d.addCallback(rain_started, rain_client, client_list)
+    
 
 def trigger_rain_benchmark(ret, client_list):
+    print 'connecting with rain'
     creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RainService.Client,
                           TBinaryProtocol.TBinaryProtocolFactory(),
-                          ).connectTCP('localhost', 7852)
+                          ).connectTCP('load1', 7852)
                           
     creator.addCallback(lambda conn: conn.client)
     creator.addCallback(rain_connected, client_list)
-    
-    reactor.run()
 
 
-def finished(done, client_list):
-    print "execution successful"
-    reactor.stop()
-
-# TODO: IMPORTATN RETTTTTT
-def phase_start_rain(client_list):
+def phase_start_rain(ret, client_list):
     print 'starting rain driver...'
     
     d = __wait_for_message(client_list, 'load1', 'rain_start', 'Waiting for start signal...', '/opt/rain/rain.log')
     
     dl = defer.DeferredList([d])
-    dl.addCallback(finished, client_list)
+    dl.addCallback(trigger_rain_benchmark, client_list)
 
 
 def shutdown_glassfish_rain(client_list):
@@ -167,8 +168,8 @@ def main():
     start = True
     if start:
         print 'starting system ...'
-        # wait.addCallback(start_phase)
-        wait.addCallback(phase_start_rain)
+        wait.addCallback(start_phase)
+        # wait.addCallback(phase_start_rain)
     else:
         print 'stopping system ...'
         wait.addCallback(stop_phase)

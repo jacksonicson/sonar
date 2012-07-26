@@ -322,7 +322,7 @@ class ProcessLoader(object):
 
             # check if the sensor configuration has parameters
             paramLen = len(sensor.settings.parameters)
-	    	if paramLen > 0:
+            if paramLen > 0:
                 print 'sensor parameter exists, appending same as command line arguments'
                 for parameter in sensor.settings.parameters:
                     paramValue = parameter.key + '=' + parameter.value

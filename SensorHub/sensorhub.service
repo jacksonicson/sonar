@@ -1,12 +1,17 @@
 # systemd service configuration
 
+# Copy this file to: /etc/systemd/system
+# systemctl enable sensorhub.service
+# systemctl restart sensorhub.service
+# systemctl status sensorhub.service
+
 [Unit]
 Description=SensorHub Service
 After=network.target
 
 [Service]
 User=root
-ExecStart=/usr/bin/python /usr/local/sonar/sensorhub.py
+ExecStart=/usr/bin/python /opt/sensorhub/sensorhub.py
 Restart=on-abort
 
 [Install]
