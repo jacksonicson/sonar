@@ -17,6 +17,6 @@ rm sensorhub.zip
 cp sensorhub.service /etc/systemd/system/
 
 # Restart the service
-systemctl enable sensorhub.service
+systemctl disable sensorhub.service
 # systemctl restart sensorhub.service
 # test

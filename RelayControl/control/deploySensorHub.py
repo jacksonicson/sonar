@@ -62,7 +62,10 @@ def deploy_phase(client_list):
     
     dlist = []
     
-    d = __launch(client_list, 'load1', 'sensorhub_deploy', wait=False)
+#    d = __launch(client_list, 'load1', 'sensorhub_deploy', wait=False)
+#    dlist.append(d)
+
+    d = __launch(client_list, 'load1', 'relay_deploy', wait=False)
     dlist.append(d)
     
     # Wait for all drones to finish and set phase

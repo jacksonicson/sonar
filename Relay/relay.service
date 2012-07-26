@@ -6,7 +6,7 @@ After=network.target
 
 [Service]
 User=root
-ExecStart=/usr/bin/python /usr/local/sonar/relay.py
+ExecStart=/usr/bin/python /opt/relay/relay.py
 Restart=on-abort
 
 [Install]
