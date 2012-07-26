@@ -110,24 +110,11 @@
         	]
         },
                 
-        "loadProfile": [
-        {
-            "interval": 10,
-            "users": 10,
-            "mix": "default",
-            "transitionTime": 1
-        },{
-            "interval": 50,
-            "users": 50,
-            "mix": "default",
-            "transitionTime": 1
-        },{
-            "interval": 100,
-            "users": 80,
-            "mix": "default",
-            "transitionTime": 1
-        }
-        ],
+        "loadScheduleCreator": "de.tum.in.dss.specj.ReplayLoadGenerator",
+        "loadScheduleCreatorParameters": {
+        	"maxUsers": 100,
+        	"profile": "config/load/o2.srw"
+        },
         
         "target": {
           "hostname": "playground",
