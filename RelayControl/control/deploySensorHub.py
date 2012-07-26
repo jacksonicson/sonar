@@ -78,13 +78,13 @@ def deploy_phase(client_list):
     dlist = []
     
     # Deploy sensorhubs
-#    for host in hosts.get_hosts_list():
-#        print '   %s' % (host)
-#        d = __launch(client_list, host, 'sensorhub_start', wait=True)
-#        dlist.append(d)
+    for host in hosts.get_hosts_list():
+        print '   %s' % (host)
+        d = __launch(client_list, host, 'sensorhub_deploy', wait=True)
+        dlist.append(d)
     
-    d = __launch(client_list, 'load1', 'rain_deploy', wait=True)
-    dlist.append(d)
+#    d = __launch(client_list, 'load1', 'rain_deploy', wait=True)
+#    dlist.append(d)
     
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
