@@ -17,6 +17,10 @@ import time
 import traceback
 import zipfile
 
+COLLECTOR_IP = 'monitor0'
+MANAGEMENT_PORT = 7931
+LOGGING_PORT = 7921
+
 
 class Sensor(object):
 
@@ -321,19 +325,20 @@ class ProcessLoader(object):
                 executable = [executable, path, sensor.name]
 
             # check if the sensor configuration has parameters
-            paramLen = len(sensor.settings.parameters)
-            if paramLen > 0:
-                print 'sensor parameter exists, appending same as command line arguments'
-                for parameter in sensor.settings.parameters:
-                    paramValue = parameter.key + '=' + parameter.value
-                    executable.append(paramValue) 
+            if sensor.settings.parameters is not None:
+                paramLen = len(sensor.settings.parameters)
+                if paramLen > 0:
+                    print 'sensor parameter exists, appending same as command line arguments'
+                    for parameter in sensor.settings.parameters:
+                        paramValue = parameter.key + '=' + parameter.value
+                        executable.append(paramValue) 
 
             process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True)
             
             print 'PID %i' % (process.pid)
             return process
-        except Exception as e:
-            print 'error starting process %s' % (e)
+        except Exception, e:
+            print 'error starting process: %s' % (e)
             return None
     
     
@@ -597,8 +602,8 @@ class SensorHub(Thread, object):
       
     def __connect(self):
         # Make socket
-        transportManagement = TSocket.TSocket('131.159.41.171', 7931)
-        transportLogging = TSocket.TSocket('131.159.41.171', 7921)
+        transportManagement = TSocket.TSocket(COLLECTOR_IP, MANAGEMENT_PORT)
+        transportLogging = TSocket.TSocket(COLLECTOR_IP, LOGGING_PORT)
         
         # Buffering is critical. Raw sockets are very slow
         transportManagement = TTransport.TBufferedTransport(transportManagement)
@@ -670,6 +675,8 @@ class SensorHub(Thread, object):
             sensor = MetricSensor(sensorName, self.loggingClient, self.managementClient)
         elif sensorConfig.sensorType == ttypes.SensorType.LOG:
             sensor = LogSensor(sensorName, self.loggingClient, self.managementClient)
+        else:
+            sensor = MetricSensor(sensorName, self.loggingClient, self.managementClient)
 
         launch = sensor.configure()
         self.sensors[sensorName] = sensor
