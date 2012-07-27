@@ -20,12 +20,12 @@
             "transitionTime": 1
         },{
             "interval": 50,
-            "users": 50,
+            "users": 40,
             "mix": "default",
             "transitionTime": 1
         },{
             "interval": 100,
-            "users": 80,
+            "users": 40,
             "mix": "default",
             "transitionTime": 1
         }
