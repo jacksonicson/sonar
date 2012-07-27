@@ -1,6 +1,24 @@
 <project name="RelayControl" default="main" basedir=".">
 
-	<target name="dependencies" depends="prepare">
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="." />
+			<arg value="--gen" />
+			<arg value="py:twisted" />
+			<arg value="../../sonar/Thrift/relay.thrift" />
+		</exec>
+
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="." />
+			<arg value="--gen" />
+			<arg value="py:twisted" />
+			<arg value="../../sonar/Thrift/rain.thrift" />
+		</exec>
+	</target>
+
+	<target name="dependencies" depends="prepare, thrift">
 		<!-- Create deployment packages -->
 		<!-- SensorHub -->
 		<ant antfile="../SensorHub/build.xml" target="main" dir="../SensorHub/" />
@@ -9,7 +27,7 @@
 		<!-- Relay -->
 		<ant antfile="../Relay/build.xml" target="main" dir="../Relay/" />
 		<copy file="../Relay/build/relay.zip" todir="drones/relay_deploy" overwrite="true" />
-		
+
 		<!-- Rain -->
 		<ant antfile="../../storm/RainSpecDriver/build.xml" target="main" dir="../../../storm/RainSpecDriver/" />
 		<copy file="../../../storm/RainSpecDriver/build/driver.zip" todir="drones/rain_deploy" overwrite="true" />
