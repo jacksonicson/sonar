@@ -5,11 +5,29 @@
 	<!-- set global properties for this build -->
 	<property name="src" location="src" />
 	<property name="build" location="build" />
-	<property name="package" location="${build}/package"/>
+	<property name="package" location="${build}/package" />
 	<property name="resources" location="resources" />
 	<property name="jarfile" value="collector.jar" />
 
-	<target name="compile">
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="../../sonar/Thrift/collector.thrift" />
+		</exec>
+
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="resources/timeseries.thrift" />
+		</exec>
+	</target>
+
+	<target name="compile" depends="thrift">
 		<javac srcdir="${src}:resources:generated" destdir="${build}/bin">
 			<classpath refid="classpath" />
 		</javac>
@@ -34,7 +52,7 @@
 				<include name="**/*.jar" />
 			</fileset>
 		</copy>
-		
+
 		<!-- SpecJ Rain Driver jar file -->
 		<copy file="${build}/${jarfile}" todir="${package}" />
 
@@ -52,10 +70,10 @@
 		<!-- Create zip archive -->
 		<zip destfile="build/collector.zip">
 			<fileset dir="build/package">
-				<include name="**/*.*"/>
+				<include name="**/*.*" />
 			</fileset>
 		</zip>
-		
+
 	</target>
 
 	<target name="clean">
