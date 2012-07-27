@@ -1143,11 +1143,11 @@ class queryLogs_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype45, _size42) = iprot.readListBegin()
-          for _i46 in xrange(_size42):
-            _elem47 = LogMessage()
-            _elem47.read(iprot)
-            self.success.append(_elem47)
+          (_etype59, _size56) = iprot.readListBegin()
+          for _i60 in xrange(_size56):
+            _elem61 = LogMessage()
+            _elem61.read(iprot)
+            self.success.append(_elem61)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1164,8 +1164,8 @@ class queryLogs_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter48 in self.success:
-        iter48.write(oprot)
+      for iter62 in self.success:
+        iter62.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1272,11 +1272,11 @@ class query_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype52, _size49) = iprot.readListBegin()
-          for _i53 in xrange(_size49):
-            _elem54 = TransferableTimeSeriesPoint()
-            _elem54.read(iprot)
-            self.success.append(_elem54)
+          (_etype66, _size63) = iprot.readListBegin()
+          for _i67 in xrange(_size63):
+            _elem68 = TransferableTimeSeriesPoint()
+            _elem68.read(iprot)
+            self.success.append(_elem68)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1293,8 +1293,8 @@ class query_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter55 in self.success:
-        iter55.write(oprot)
+      for iter69 in self.success:
+        iter69.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1734,10 +1734,10 @@ class getAllSensors_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype59, _size56) = iprot.readSetBegin()
-          for _i60 in xrange(_size56):
-            _elem61 = iprot.readString();
-            self.success.add(_elem61)
+          (_etype73, _size70) = iprot.readSetBegin()
+          for _i74 in xrange(_size70):
+            _elem75 = iprot.readString();
+            self.success.add(_elem75)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -1754,8 +1754,8 @@ class getAllSensors_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter62 in self.success:
-        oprot.writeString(iter62)
+      for iter76 in self.success:
+        oprot.writeString(iter76)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1980,10 +1980,10 @@ class getSensorLabels_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype66, _size63) = iprot.readSetBegin()
-          for _i67 in xrange(_size63):
-            _elem68 = iprot.readString();
-            self.success.add(_elem68)
+          (_etype80, _size77) = iprot.readSetBegin()
+          for _i81 in xrange(_size77):
+            _elem82 = iprot.readString();
+            self.success.add(_elem82)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -2000,8 +2000,8 @@ class getSensorLabels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter69 in self.success:
-        oprot.writeString(iter69)
+      for iter83 in self.success:
+        oprot.writeString(iter83)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -2159,10 +2159,10 @@ class setSensorLabels_args:
       elif fid == 3:
         if ftype == TType.SET:
           self.labels = set()
-          (_etype73, _size70) = iprot.readSetBegin()
-          for _i74 in xrange(_size70):
-            _elem75 = iprot.readString();
-            self.labels.add(_elem75)
+          (_etype87, _size84) = iprot.readSetBegin()
+          for _i88 in xrange(_size84):
+            _elem89 = iprot.readString();
+            self.labels.add(_elem89)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -2183,8 +2183,8 @@ class setSensorLabels_args:
     if self.labels is not None:
       oprot.writeFieldBegin('labels', TType.SET, 3)
       oprot.writeSetBegin(TType.STRING, len(self.labels))
-      for iter76 in self.labels:
-        oprot.writeString(iter76)
+      for iter90 in self.labels:
+        oprot.writeString(iter90)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -2549,10 +2549,10 @@ class getSensorNames_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype80, _size77) = iprot.readSetBegin()
-          for _i81 in xrange(_size77):
-            _elem82 = iprot.readString();
-            self.success.add(_elem82)
+          (_etype94, _size91) = iprot.readSetBegin()
+          for _i95 in xrange(_size91):
+            _elem96 = iprot.readString();
+            self.success.add(_elem96)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -2569,8 +2569,8 @@ class getSensorNames_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter83 in self.success:
-        oprot.writeString(iter83)
+      for iter97 in self.success:
+        oprot.writeString(iter97)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -2760,10 +2760,10 @@ class getAllHosts_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype87, _size84) = iprot.readSetBegin()
-          for _i88 in xrange(_size84):
-            _elem89 = iprot.readString();
-            self.success.add(_elem89)
+          (_etype101, _size98) = iprot.readSetBegin()
+          for _i102 in xrange(_size98):
+            _elem103 = iprot.readString();
+            self.success.add(_elem103)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -2780,8 +2780,8 @@ class getAllHosts_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter90 in self.success:
-        oprot.writeString(iter90)
+      for iter104 in self.success:
+        oprot.writeString(iter104)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -2938,10 +2938,10 @@ class setHostLabels_args:
       elif fid == 2:
         if ftype == TType.SET:
           self.labels = set()
-          (_etype94, _size91) = iprot.readSetBegin()
-          for _i95 in xrange(_size91):
-            _elem96 = iprot.readString();
-            self.labels.add(_elem96)
+          (_etype108, _size105) = iprot.readSetBegin()
+          for _i109 in xrange(_size105):
+            _elem110 = iprot.readString();
+            self.labels.add(_elem110)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -2962,8 +2962,8 @@ class setHostLabels_args:
     if self.labels is not None:
       oprot.writeFieldBegin('labels', TType.SET, 2)
       oprot.writeSetBegin(TType.STRING, len(self.labels))
-      for iter97 in self.labels:
-        oprot.writeString(iter97)
+      for iter111 in self.labels:
+        oprot.writeString(iter111)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3111,10 +3111,10 @@ class getLabels_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype101, _size98) = iprot.readSetBegin()
-          for _i102 in xrange(_size98):
-            _elem103 = iprot.readString();
-            self.success.add(_elem103)
+          (_etype115, _size112) = iprot.readSetBegin()
+          for _i116 in xrange(_size112):
+            _elem117 = iprot.readString();
+            self.success.add(_elem117)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -3131,8 +3131,8 @@ class getLabels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter104 in self.success:
-        oprot.writeString(iter104)
+      for iter118 in self.success:
+        oprot.writeString(iter118)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3364,10 +3364,10 @@ class getSensors_result:
       if fid == 0:
         if ftype == TType.SET:
           self.success = set()
-          (_etype108, _size105) = iprot.readSetBegin()
-          for _i109 in xrange(_size105):
-            _elem110 = iprot.readString();
-            self.success.add(_elem110)
+          (_etype122, _size119) = iprot.readSetBegin()
+          for _i123 in xrange(_size119):
+            _elem124 = iprot.readString();
+            self.success.add(_elem124)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -3384,8 +3384,8 @@ class getSensors_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.SET, 0)
       oprot.writeSetBegin(TType.STRING, len(self.success))
-      for iter111 in self.success:
-        oprot.writeString(iter111)
+      for iter125 in self.success:
+        oprot.writeString(iter125)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

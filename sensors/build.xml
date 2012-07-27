@@ -1,4 +1,4 @@
-<project name="SensorHub" default="main" basedir=".">
+<project name="Sensors" default="main" basedir=".">
 
 	<target name="thrift">
 		<exec executable="thrift">
