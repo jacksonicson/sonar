@@ -6,7 +6,7 @@
 			<arg value="." />
 			<arg value="--gen" />
 			<arg value="py:twisted" />
-			<arg value="../../sonar/Thrift/relay.thrift" />
+			<arg value="../Thrift/relay.thrift" />
 		</exec>
 
 		<exec executable="thrift">
@@ -14,7 +14,7 @@
 			<arg value="." />
 			<arg value="--gen" />
 			<arg value="py:twisted" />
-			<arg value="../../sonar/Thrift/rain.thrift" />
+			<arg value="../Thrift/rain.thrift" />
 		</exec>
 	</target>
 

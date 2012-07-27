@@ -1,0 +1,15 @@
+<project name="SensorHub" default="main" basedir=".">
+
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="." />
+			<arg value="--gen" />
+			<arg value="py" />
+			<arg value="../Thrift/collector.thrift" />
+		</exec>
+	</target>
+
+	<target name="main" depends="thrift" />
+
+</project>

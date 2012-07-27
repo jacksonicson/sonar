@@ -15,7 +15,7 @@
 			<arg value="generated" />
 			<arg value="--gen" />
 			<arg value="java" />
-			<arg value="../../sonar/Thrift/collector.thrift" />
+			<arg value="../Thrift/collector.thrift" />
 		</exec>
 
 		<exec executable="thrift">
