@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Update configuration files
-cp *.json /opt/rain/config
-# cp -r load /opt/rain/config/
+cp -f *.json /opt/rain/config
+mkdir /opt/rain/config/load
+cp -f load/* /opt/rain/config/load
+
 cd /opt/rain/
 
 rm -rf /opt/rain/rain.pid

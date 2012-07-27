@@ -49,22 +49,31 @@ class ProcessLoader(object):
             return False
         
         zf = zipfile.ZipFile(targetFile)
-        for info in zf.infolist():
-            print info.filename
+        for filename in zf.namelist():
+            print filename
     
-            if info.filename.endswith('/'):
+            if filename.endswith('/'):
                 try:
-                    os.makedirs(os.path.join(target, info.filename))
+                    os.makedirs(os.path.join(target, filename))
                 except Exception as e:
                     print 'error while decompressing files %s' % (e)
                     return False
                     
                 continue
+
+            # If directory entries are missing (hack)            
+            target_dir = filename.split('/')[0:-1]
+            if len(target_dir) > 0:
+                dir_path = string.join(target_dir, '/')
+                os.makedirs(os.path.join(target, dir_path))
             
-            cf = zf.read(info.filename)
-            f = open(os.path.join(target, info.filename), "wb")
-            f.write(cf)
-            f.close()
+            try:
+                cf = zf.read(filename)
+                f = open(os.path.join(target, filename), "wb")
+                f.write(cf)
+                f.close()
+            except Exception as e:
+                print 'error unzipping file %s' % (e)
             
         zf.close()
         
