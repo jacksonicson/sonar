@@ -242,6 +242,9 @@ class ProcessManager(object):
         base_time = time.time()        
         while True:
             
+            # TODO: Solve this without a hard deadline
+            # If the child process finishes .. the polling should stop
+            # This requires to start the target process using exec in bash
             if (time.time() - base_time) > 60:
                 print 'ERROR: did not find message within 60 seconds'
                 return False
@@ -324,29 +327,45 @@ class RelayHandler(object):
                    }
         exec code in context
     
+    def __done(self, ret):
+        print 'Status: %s' % (ret)
+        print 'Waiting for messages...'
+    
     def launch(self, binary, name):
         print 'launching drone...'
-        return self.processManager.launch(binary, name)
+        ret = self.processManager.launch(binary, name)
+        self.__done(ret)
+        return ret
 
     def launchNoWait(self, data, name):
         print 'launching drone... (no wait)'
-        return self.processManager.launch(data, name, False)
+        ret = self.processManager.launch(data, name, False)
+        self.__done(ret)
+        return ret
     
     def isAlive(self, pid):
         print 'checking if process %i is alive...' % (pid)
-        return self.processManager.isAlive(pid)
+        ret = self.processManager.isAlive(pid)
+        self.__done(ret)
+        return ret
     
     def kill(self, pid):
         print 'killing process %i...' % (pid)
-        return self.processManager.kill(pid)
+        ret = self.processManager.kill(pid)
+        self.__done(ret)
+        return ret
     
     def pollForMessage(self, data, name, message):
         print 'polling for message %s...' % (message)
-        return self.processManager.poll(data, name, message)
+        ret = self.processManager.poll(data, name, message)
+        self.__done(ret)
+        return ret
     
     def waitForMessage(self, data, name, message, targetFile):
         print 'polling for message %s in file %s...' % (message, targetFile)
-        return self.processManager.wait(data, name, message, targetFile)
+        ret = self.processManager.wait(data, name, message, targetFile)
+        self.__done(ret)
+        return ret
 
 def main():
     handler = RelayHandler()
