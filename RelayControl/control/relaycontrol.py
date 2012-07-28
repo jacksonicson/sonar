@@ -129,6 +129,7 @@ def phase_start_glassfish_database(client_list):
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
     dl.addCallback(phase_start_rain, client_list)
+    #dl.addCallback(finished, client_list)
  
  
 def start_phase(client_list):
@@ -169,7 +170,7 @@ def main():
     wait = defer.DeferredList(dlist)
     
     # Decide what to do after connection setup
-    start = False
+    start = True
     if start:
         print 'starting system ...'
         wait.addCallback(start_phase)

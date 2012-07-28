@@ -22,6 +22,7 @@ import zipfile
 COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
+DEBUG = False
 ##########################
 
 class Sensor(object):
@@ -219,8 +220,9 @@ class LogSensor(Sensor):
         # Send message
         self.loggingClient.logMessage(ids, value)
 
-        # Debug output    
-        print "value is %s" % (line)
+        # Debug output
+        if DEBUG:    
+            print "value is %s" % (line)
 
         
     
@@ -279,8 +281,9 @@ class MetricSensor(Sensor):
         # Send message
         self.loggingClient.logMetric(ids, value)
 
-        # Debug output    
-        print "value %s" % (line)
+        # Debug output
+        if DEBUG:    
+            print "value %s" % (line)
 
 class ProcessLoader(object):
     def newProcess(self, sensor):

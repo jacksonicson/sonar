@@ -2,9 +2,9 @@
     "profiles": "config/profiles.config.specj.json",
     
     "timing": {
-        "rampUp": 600,
-        "duration": 1000,
-        "rampDown": 600
+        "rampUp": 60,
+        "duration": 180,
+        "rampDown": 60
     },
     
     "aggregateStats": true,

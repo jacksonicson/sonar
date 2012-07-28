@@ -14,20 +14,10 @@
         "### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
         "loadProfile": [
         {
-            "interval": 30,
-            "users": 50,
+            "interval": 240,
+            "users": 400,
             "mix": "default",
             "transitionTime": 30
-        },{
-            "interval": 50,
-            "users": 200,
-            "mix": "default",
-            "transitionTime": 10
-        },{
-            "interval": 100,
-            "users": 500,
-            "mix": "default",
-            "transitionTime": 1
         }
         ],
         
@@ -110,11 +100,14 @@
         	]
         },
                 
-        "loadScheduleCreator": "de.tum.in.dss.specj.ReplayLoadGenerator",
-        "loadScheduleCreatorParameters": {
-        	"maxUsers": 100,
-        	"profile": "config/load/o2.srw"
-        },
+        "loadProfile": [
+        {
+            "interval": 240,
+            "users": 400,
+            "mix": "default",
+            "transitionTime": 30
+        }
+        ],
         
         "target": {
           "hostname": "playground",

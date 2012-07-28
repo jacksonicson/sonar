@@ -13,8 +13,10 @@ import string
 import tempfile
 import zipfile
 
+##########################
+## Configuration        ##
 PORT = 7900
-
+##########################
 
 def checkEnvironment():
     tmpDir = tempfile.gettempdir()
@@ -163,6 +165,8 @@ class ProcessManager(object):
             return False
            
         # Restart process if it fails (isAlive polling)
+        import time
+        base_time = time.time()
         while True: 
 
             # Launch process            
@@ -173,6 +177,14 @@ class ProcessManager(object):
             
             # Read until message gets found or process is dead (restart necessary)
             while True:
+                
+                # TODO: Solve this without a hard deadline
+                # If the child process finishes .. the polling should stop
+                # This requires to start the target process using exec in bash
+                if (time.time() - base_time) > 60:
+                    print 'ERROR: did not find message within 60 seconds'
+                    return False
+                
                 streams = [process.stdout]
                 data = None
                 try:
