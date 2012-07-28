@@ -1,6 +1,7 @@
 package de.tum.in.sonar.collector.server;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -185,7 +186,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			String key = key("sensor", name, "md5");
 			String md5 = "";
 			if (jedis.exists(key))
+			{
 				md5 = jedis.get(key);
+				logger.debug("returning sensor hash: " + md5);
+			}
 
 			return md5;
 		} finally {
@@ -210,8 +214,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			try {
 				MessageDigest md = MessageDigest.getInstance("MD5");
 				byte[] md5 = md.digest(binary.array());
+				BigInteger bigInt = new BigInteger(1, md5);
+				String smd5 = bigInt.toString(16);
+				logger.info("deploy md5: " + smd5); 
+				
 				key = key("sensor", name, "md5");
-				jedis.set(key, new String(md5));
+				jedis.set(key, smd5);
 			} catch (NoSuchAlgorithmException e) {
 				logger.error("Could not create MD5 for sensor binary", e);
 			}

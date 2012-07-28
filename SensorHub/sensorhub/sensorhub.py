@@ -17,10 +17,12 @@ import time
 import traceback
 import zipfile
 
+##########################
+## Configuration        ##
 COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
-
+##########################
 
 class Sensor(object):
 
@@ -657,6 +659,14 @@ class SensorHub(Thread, object):
         sensorsMap = dict([(k, None) for k in sensors])
         for test in self.sensors.keys():
             if test not in sensorsMap:
+                self.__disableSensor(test)
+            
+            
+        # Check for sensor updates
+        for test in self.sensors.keys():
+            md5 = self.managementClient.sensorHash(test)
+            if self.sensors[test].md5 != md5:
+                print 'Updating sensor %s' % (test)
                 self.__disableSensor(test)
                 
         # Get all new sensors

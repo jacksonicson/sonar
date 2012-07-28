@@ -12,12 +12,12 @@
 	</appender>
 
 	<logger name="de.tum.in.sonar.collector.server" additivity="false">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="consoleAppender" />
 	</logger>
 
 	<logger name="de.tum.in.sonar.collector" additivity="false">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="consoleAppender" />
 	</logger>
 

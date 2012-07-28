@@ -166,7 +166,7 @@ public class TimeSeriesDatabase {
 			logger.error("invalid label used", e);
 		}
 
-		logger.info("writing data ");
+		logger.debug("writing data ");
 	}
 
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {

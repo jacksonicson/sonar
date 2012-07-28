@@ -498,6 +498,10 @@ function tsdbHandler(req, resp) {
                 jsonObj.push(item)
             }
 
+            jsonObj.sort( function(a, b) {
+                return a[0] - b[0]
+            });
+
             var ss = JSON.stringify(jsonObj);
             console.log(ss);
             resp.end(ss);

@@ -105,7 +105,7 @@ public class IdResolver {
 	}
 
 	long scanNames(String name) throws UnresolvableException, InvalidLabelException {
-		logger.info("checking for name: " + name + " of type " + type);
+		logger.debug("checking for name: " + name + " of type " + type);
 		
 		try {
 			HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
@@ -119,23 +119,23 @@ public class IdResolver {
 			if (!uidTable.exists(get)) {
 				logger.info("creating new mapping");
 				long value = createMappingRetry(name);
-				logger.info("value: " + value);
+				logger.debug("value: " + value);
 
 				return value;
 			}
 
 			KeyValue kvalue = result.getColumnLatest(Bytes.toBytes("forward"), Bytes.toBytes(type));
 			if (kvalue == null) {
-				logger.info("creating new mapping");
+				logger.debug("creating new mapping");
 				long value = createMappingRetry(name);
-				logger.info("value: " + value);
+				logger.debug("value: " + value);
 
 				return value;
 			}
 
 			byte[] value = kvalue.getValue();
 			long lValue = Bytes.toLong(value);
-			logger.info("resolved to value: " + lValue);
+			logger.debug("resolved to value: " + lValue);
 			return lValue;
 
 		} catch (IOException e) {
