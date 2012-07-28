@@ -237,8 +237,14 @@ class ProcessManager(object):
             except Exception, e:
                 print 'Error: Could not read file %s' % (e)
         
-        # Read the stream until the sequence is found        
+        # Read the stream until the sequence is found
+        import time
+        base_time = time.time()        
         while True:
+            
+            if (time.time() - base_time) > 60:
+                print 'ERROR: did not find message within 60 seconds'
+                return False
             
             data = None
             try:
