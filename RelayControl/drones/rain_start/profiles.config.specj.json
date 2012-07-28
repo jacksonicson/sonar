@@ -14,18 +14,18 @@
         "### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
         "loadProfile": [
         {
-            "interval": 10,
-            "users": 10,
+            "interval": 30,
+            "users": 50,
             "mix": "default",
-            "transitionTime": 1
+            "transitionTime": 30
         },{
             "interval": 50,
-            "users": 40,
+            "users": 200,
             "mix": "default",
-            "transitionTime": 1
+            "transitionTime": 10
         },{
             "interval": 100,
-            "users": 40,
+            "users": 500,
             "mix": "default",
             "transitionTime": 1
         }
@@ -47,7 +47,7 @@
         
         "audit": true,
         "stopIfAuditFailed": false,
-        "txRate": 20,
+        "txRate": 60,
         "maxItemsPerLoc": 75000,
         "itemsPerTxRate": 100,
         "plannedLineBorrowPercent": 10,
@@ -133,7 +133,7 @@
         
         "audit": true,
         "stopIfAuditFailed": false,
-        "txRate": 20,
+        "txRate": 60,
         "maxItemsPerLoc": 75000,
         "itemsPerTxRate": 100,
         "plannedLineBorrowPercent": 10,

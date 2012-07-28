@@ -7,8 +7,8 @@ cp -f load/* /opt/rain/config/load
 
 cd /opt/rain/
 
-rm -rf /opt/rain/rain.pid
-rm -rf /opt/rain/rain.log
+rm -rf /opt/rain/*.pid
+rm -rf /opt/rain/*.log
 
 sleep 1
 

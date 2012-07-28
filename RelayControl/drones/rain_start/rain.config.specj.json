@@ -15,7 +15,7 @@
     
     
     "## Database initialization settings":"##",
-    "txRate":20,
+    "txRate":60,
     "maxItemsPerLoc":75000,
     "itemsPerTxRate":100,
     "parallelism":10
