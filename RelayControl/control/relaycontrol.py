@@ -8,10 +8,29 @@ from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
+from string import Template
 
 # Port the relay service is listening on
 PORT = 7900
 
+# WARN: Configuration is untested
+def __configure_rain(phase=0):
+    if phase < 10: 
+        config = open('drones/rain_start/profiles.config.specj.json', 'r')
+        data = config.readlines()        
+        config.close()
+
+        templ = Template(data)
+        templ.substitute(users = 30)
+        
+        config = open('drones/rain_start/profiles.config.specj.json', 'w')
+        config.writelines(data)
+        config.close()
+    
+
+def configuration_preparation(phase=0):
+    __configure_rain(phase=0)
+    
 
 def __client(client_list, host):
     return client_list[hosts.get_index(host)][1]

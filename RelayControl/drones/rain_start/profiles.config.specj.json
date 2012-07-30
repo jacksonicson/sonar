@@ -15,7 +15,7 @@
         "loadProfile": [
         {
             "interval": 240,
-            "users": 400,
+            "users": 50,
             "mix": "default",
             "transitionTime": 30
         }
@@ -103,7 +103,7 @@
         "loadProfile": [
         {
             "interval": 240,
-            "users": 400,
+            "users": 50,
             "mix": "default",
             "transitionTime": 30
         }
