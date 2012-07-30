@@ -14,8 +14,8 @@
         "### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
         "loadProfile": [
         {
-            "interval": 240,
-            "users": 50,
+            "interval": 1800,
+            "users": 300,
             "mix": "default",
             "transitionTime": 30
         }
@@ -102,8 +102,8 @@
                 
         "loadProfile": [
         {
-            "interval": 240,
-            "users": 50,
+            "interval": 1800,
+            "users": 300,
             "mix": "default",
             "transitionTime": 30
         }
