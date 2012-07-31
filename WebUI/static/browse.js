@@ -92,8 +92,11 @@ function setupCharts() {
         },
         navigation:{
             buttonOptions:{
-                enabled:false
+                enabled:true
             }
+        },
+        export: {
+          enabled: true
         },
         chart:{
             renderTo:'container',
