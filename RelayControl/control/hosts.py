@@ -2,11 +2,11 @@ hosts_map = {}
 hosts = []
 
 
-def add_host(hostname, function):
-    if function not in hosts_map:
-        hosts_map[function] = []
+def add_host(hostname, drone_type):
+    if drone_type not in hosts_map:
+        hosts_map[drone_type] = []
         
-    hosts_map[function].append(hostname)
+    hosts_map[drone_type].append(hostname)
     hosts.append(hostname)
 
 
@@ -14,12 +14,11 @@ def get_index(host):
     return hosts.index(host)
 
 
-def get_hosts(function):
-    hostnames = hosts_map[function]
+def get_hosts(drone_type):
+    hostnames = hosts_map[drone_type]
     result = []
     for host in hostnames:
-        index = get_index(host)
-        result.append((index, host))
+        result.append(host)
         
     return result
 
