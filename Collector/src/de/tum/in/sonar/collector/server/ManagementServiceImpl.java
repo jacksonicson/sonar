@@ -96,6 +96,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:labels -> [] - set of labels
 	//
 	// :host:[hostname]:labels -> [] - set of labels
+	// :host:[hostname]:extends -> other hostname - reference another host
 	// :host:[hostname]:sensor:[sensorname] - enables or disables a sensor
 	// :host:[hostname]:sensor:[sensorname]/config:[item] - overrides a sensor
 	// configuration

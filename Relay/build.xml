@@ -10,6 +10,15 @@
 		</exec>
 	</target>
 
+	<target name="copy_to_server">
+		<scp todir="root:rooter@monitor0.dfg:/mnt/arr0/share/packages/relay" trust="true" failonerror="true" verbose="false">
+			<fileset dir="build">
+				<include name="install.sh"/>
+				<include name="relay.zip"/>
+			</fileset>
+		</scp>
+	</target>
+
 	<target name="package" depends="prepare, thrift">
 		<copy todir="build/files">
 			<fileset dir=".">
@@ -19,6 +28,8 @@
 				<include name="**/*.sh" />
 			</fileset>
 		</copy>
+
+		<copy todir="build" file="install.sh" />
 
 		<zip destfile="build/relay.zip" basedir="build/files">
 			<include name="**/*.*" />
