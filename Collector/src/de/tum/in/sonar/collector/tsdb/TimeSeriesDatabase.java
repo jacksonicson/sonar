@@ -214,7 +214,7 @@ public class TimeSeriesDatabase {
 
 			// Empty start row
 			// ===============================================================
-			byte[] startRow = new byte[keyWidth(10)];
+			byte[] startRow = new byte[keyWidth(0)];
 			int index = 0;
 
 			// Add sensor
