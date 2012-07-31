@@ -1,12 +1,15 @@
 # YUM dependencies
 yum install python python-devel
 yum install ntp
-yum group install "Development Tools"
+# Was required for building zop interface, which is now used from yum
+# yum group install "Development Tools"
 yum install unzip
 yum install twisted
-yum install python-setuptools 
+yum install python-setuptools
+yum install python-zope-interface 
 
 # Copy relay to opt dir
+rm -rf /opt/relay
 mkdir /opt/relay
 cp -f relay.zip /opt/relay
 
@@ -14,12 +17,12 @@ cp -f relay.zip /opt/relay
 cd ../thrift-0.8.0/lib/py
 python setup.py install
 
-cd ../zope.interface-4.0.1
-python setup.py install
+# Is now installed by yum
+#cd ../zope.interface-4.0.1
+# python setup.py install
 
 # TARGET DIR
 cd /opt/relay
-rm -rf *
 unzip relay.zip
 
 # Install Systemd service
