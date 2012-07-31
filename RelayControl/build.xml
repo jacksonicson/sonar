@@ -29,7 +29,7 @@
 		<copy file="../Relay/build/relay.zip" todir="drones/relay_deploy" overwrite="true" />
 
 		<!-- Rain -->
-		<ant antfile="../../storm/RainSpecDriver/build.xml" target="copy_to_server" dir="../../../storm/RainSpecDriver/" />
+		<ant antfile="build.xml" target="copy_to_server" dir="../../storm/RainSpecDriver/" />
 	</target>
 
 	<target name="prepare">
