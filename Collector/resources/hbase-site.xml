@@ -6,7 +6,7 @@
 	<configuration>
 		<property>
 			<name>hbase.zookeeper.quorum</name>
-			<value>monitor1</value>
+			<value>monitor0</value>
 		</property>
 	</configuration>
 

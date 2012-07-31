@@ -28,7 +28,7 @@ public class Collector {
 		try {
 			tsdb.setupTables();
 		} catch (TableCreationException e) {
-			logger.error("Error while creating HBase talbe structure", e);
+			logger.error("Error while creating HBase table structure", e);
 			System.exit(1);
 		}
 
@@ -38,7 +38,7 @@ public class Collector {
 		try {
 			logdb.setupTables();
 		} catch (TableCreationException e) {
-			logger.error("Error while creating HBase talbe structure", e);
+			logger.error("Error while creating HBase table structure", e);
 			System.exit(1);
 		}
 
