@@ -98,7 +98,7 @@ service NotificationService {
 }
 
 service NotificationClient {
-	void receive(1:set<NotificationData> data)
+	void receive(1:list<NotificationData> data)
 }
 
 service ManagementService {

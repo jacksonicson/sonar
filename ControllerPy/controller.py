@@ -1,30 +1,36 @@
 
-from collector import NotificationClient 
-
-from thrift.transport import TSocket
-from thrift.transport import TTransport
+from collector import NotificationClient, NotificationService
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
-
+from thrift.transport import TSocket, TTransport
 import threading
 
-LISTENING_PORT = 8000
+################################
+## Configuration              ##
+LISTENING_PORT = 9876
+LISTENING_INTERFACE_IPV4 = '192.168.96.3'
 
 COLLECTOR_PORT = 7911
 COLLECTOR_HOST = 'localhost'
+################################
 
-class NotificationServiceImpl(object):
+
+class NotificationReceiverImpl:
+    
     def receive(self, data):
         print 'receiving notification data'
+        return
 
-class NotificationService(threading.Thread):
+
+class ServiceThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         
     def run(self):
-        handler = NotificationServiceImpl()
+        handler = NotificationReceiverImpl()
         processor = NotificationClient.Processor(handler)
-        transport = TSocket.TServerSocket(port=LISTENING_PORT)
+        transport = TSocket.TServerSocket(host=LISTENING_INTERFACE_IPV4, port=LISTENING_PORT)
+        
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         
@@ -36,19 +42,34 @@ def main():
     print 'Starting Controller...'
 
     # Start the Receiver    
-    client = NotificationService()
+    client = ServiceThread()
     client.start()
-    print 'Receiver started'
     
     # Register the Receiver in the Controller
+    # Make socket
+    transport = TSocket.TSocket(COLLECTOR_HOST, COLLECTOR_PORT)
+    
+    # Buffering is critical. Raw sockets are very slow
+    transport = TTransport.TBufferedTransport(transport)
+    
+    # Wrap in a protocol
+    protocol = TBinaryProtocol.TBinaryProtocol(transport)
+    
+    # Create a client to use the protocol encoder
+    serviceClient = NotificationService.Client(protocol)
+    
+    # Connect!
+    transport.open()
 
+    # Subscribe
+    print 'Subscribing now...'
+    serviceClient.subscribe(LISTENING_INTERFACE_IPV4, LISTENING_PORT, []),
+    print 'Done'
+    
 
     # Wait for join
+    print 'Waiting for exit...'
     client.join(); 
-    
-    
-    
-    
     
 
 if __name__ == '__main__':

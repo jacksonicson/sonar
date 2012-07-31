@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="src" path="generated"/>
 	<classpathentry kind="src" path="tests"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/hbase-0.92.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-core-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
@@ -31,5 +30,6 @@
 	<classpathentry kind="lib" path="lib/jedis/jedis-2.2.0-SNAPSHOT.jar" sourcepath="D:/work/3party/jedis/src"/>
 	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6-sources.jar"/>
 	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_33"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

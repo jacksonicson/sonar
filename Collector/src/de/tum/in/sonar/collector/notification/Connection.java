@@ -1,7 +1,7 @@
 package de.tum.in.sonar.collector.notification;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -28,9 +28,10 @@ public class Connection {
 
 	public Connection(Subscription subscription) {
 		this.subscription = subscription;
+		logger.info("New subscription: " + subscription.getIp() + ":" + subscription.getPort());
 	}
 
-	void close() {
+	public void close() {
 		if (transport != null) {
 			if (transport.isOpen())
 				transport.close();
@@ -38,10 +39,11 @@ public class Connection {
 	}
 
 	private boolean establish() {
-		if(transport != null && transport.isOpen())
+		if (transport != null && transport.isOpen())
 			return true;
-		
+
 		transport = new TSocket(subscription.getIp(), subscription.getPort());
+
 		try {
 			transport.open();
 		} catch (TTransportException e) {
@@ -57,22 +59,22 @@ public class Connection {
 
 	private void checkConnection() throws DeadSubscriptionException {
 		if (transport != null) {
-				transport.close(); 
-			
-				logger.info("Reestablishing connection with receiver");
-				
-				connectionRetries++;
-				if (connectionRetries > 3) {
-					throw new DeadSubscriptionException(subscription);
-				}
-				
-				establish();
+			transport.close();
+
+			logger.info("Reestablishing connection with receiver");
+
+			connectionRetries++;
+			if (connectionRetries > 3) {
+				throw new DeadSubscriptionException(subscription);
+			}
+
+			establish();
 		}
 	}
 
-	private void send(Set<NotificationData> data) throws DeadSubscriptionException {
+	private void send(List<NotificationData> data) throws DeadSubscriptionException {
 		try {
-			establish(); 
+			establish();
 			logger.debug("Sending data through the callback channel");
 			client.receive(data);
 		} catch (TException e) {
@@ -81,9 +83,10 @@ public class Connection {
 		}
 	}
 
-	void send(Notification notification) throws DeadSubscriptionException {
+	public void send(Notification notification) throws DeadSubscriptionException {
+		logger.info("Sending...");
 		if (this.subscription.check(notification)) {
-			Set<NotificationData> set = new HashSet<NotificationData>();
+			List<NotificationData> set = new ArrayList<NotificationData>(1);
 
 			NotificationData data = new NotificationData();
 			data.setId(notification.getReading().getIdentifier());

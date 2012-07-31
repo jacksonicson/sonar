@@ -2,7 +2,7 @@ package de.tum.in.sonar.collector.notification;
 
 import de.tum.in.sonar.collector.tsdb.MetricPoint;
 
-final class Notification {
+final public class Notification {
 
 	private final String hostname;
 	private final String sensor;

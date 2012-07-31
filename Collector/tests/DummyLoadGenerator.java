@@ -29,12 +29,14 @@ public class DummyLoadGenerator {
 			Random rand = new Random();
 			long time = System.currentTimeMillis();
 			System.out.println("current timestamp: " + time);
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < 10; i++) {
 
+				System.out.println("sending"); 
+				
 				Identifier id = new Identifier();
 				id.setTimestamp(time / 1000 + i);
-				id.setHostname("jack");
-				id.setSensor("CPU");
+				id.setHostname("Debug-PC");
+				id.setSensor("debug_CPU");
 
 				MetricReading tsp = new MetricReading();
 				Set<String> labels = new HashSet<String>();

@@ -105,7 +105,7 @@ class receive_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.SET, 'data', (TType.STRUCT,(NotificationData, NotificationData.thrift_spec)), None, ), # 1
+    (1, TType.LIST, 'data', (TType.STRUCT,(NotificationData, NotificationData.thrift_spec)), None, ), # 1
   )
 
   def __init__(self, data=None,):
@@ -121,14 +121,14 @@ class receive_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.SET:
-          self.data = set()
-          (_etype52, _size49) = iprot.readSetBegin()
+        if ftype == TType.LIST:
+          self.data = []
+          (_etype52, _size49) = iprot.readListBegin()
           for _i53 in xrange(_size49):
             _elem54 = NotificationData()
             _elem54.read(iprot)
-            self.data.add(_elem54)
-          iprot.readSetEnd()
+            self.data.append(_elem54)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       else:
@@ -142,11 +142,11 @@ class receive_args:
       return
     oprot.writeStructBegin('receive_args')
     if self.data is not None:
-      oprot.writeFieldBegin('data', TType.SET, 1)
-      oprot.writeSetBegin(TType.STRUCT, len(self.data))
+      oprot.writeFieldBegin('data', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.data))
       for iter55 in self.data:
         iter55.write(oprot)
-      oprot.writeSetEnd()
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

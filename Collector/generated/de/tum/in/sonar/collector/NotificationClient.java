@@ -31,13 +31,13 @@ public class NotificationClient {
 
   public interface Iface {
 
-    public void receive(Set<NotificationData> data) throws org.apache.thrift.TException;
+    public void receive(List<NotificationData> data) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void receive(Set<NotificationData> data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.receive_call> resultHandler) throws org.apache.thrift.TException;
+    public void receive(List<NotificationData> data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.receive_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -61,13 +61,13 @@ public class NotificationClient {
       super(iprot, oprot);
     }
 
-    public void receive(Set<NotificationData> data) throws org.apache.thrift.TException
+    public void receive(List<NotificationData> data) throws org.apache.thrift.TException
     {
       send_receive(data);
       recv_receive();
     }
 
-    public void send_receive(Set<NotificationData> data) throws org.apache.thrift.TException
+    public void send_receive(List<NotificationData> data) throws org.apache.thrift.TException
     {
       receive_args args = new receive_args();
       args.setData(data);
@@ -99,7 +99,7 @@ public class NotificationClient {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void receive(Set<NotificationData> data, org.apache.thrift.async.AsyncMethodCallback<receive_call> resultHandler) throws org.apache.thrift.TException {
+    public void receive(List<NotificationData> data, org.apache.thrift.async.AsyncMethodCallback<receive_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       receive_call method_call = new receive_call(data, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -107,8 +107,8 @@ public class NotificationClient {
     }
 
     public static class receive_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private Set<NotificationData> data;
-      public receive_call(Set<NotificationData> data, org.apache.thrift.async.AsyncMethodCallback<receive_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private List<NotificationData> data;
+      public receive_call(List<NotificationData> data, org.apache.thrift.async.AsyncMethodCallback<receive_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.data = data;
       }
@@ -169,7 +169,7 @@ public class NotificationClient {
   public static class receive_args implements org.apache.thrift.TBase<receive_args, receive_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("receive_args");
 
-    private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.SET, (short)1);
+    private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.LIST, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -177,7 +177,7 @@ public class NotificationClient {
       schemes.put(TupleScheme.class, new receive_argsTupleSchemeFactory());
     }
 
-    public Set<NotificationData> data; // required
+    public List<NotificationData> data; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -242,7 +242,7 @@ public class NotificationClient {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, NotificationData.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(receive_args.class, metaDataMap);
@@ -252,7 +252,7 @@ public class NotificationClient {
     }
 
     public receive_args(
-      Set<NotificationData> data)
+      List<NotificationData> data)
     {
       this();
       this.data = data;
@@ -263,7 +263,7 @@ public class NotificationClient {
      */
     public receive_args(receive_args other) {
       if (other.isSetData()) {
-        Set<NotificationData> __this__data = new HashSet<NotificationData>();
+        List<NotificationData> __this__data = new ArrayList<NotificationData>();
         for (NotificationData other_element : other.data) {
           __this__data.add(new NotificationData(other_element));
         }
@@ -290,16 +290,16 @@ public class NotificationClient {
 
     public void addToData(NotificationData elem) {
       if (this.data == null) {
-        this.data = new HashSet<NotificationData>();
+        this.data = new ArrayList<NotificationData>();
       }
       this.data.add(elem);
     }
 
-    public Set<NotificationData> getData() {
+    public List<NotificationData> getData() {
       return this.data;
     }
 
-    public receive_args setData(Set<NotificationData> data) {
+    public receive_args setData(List<NotificationData> data) {
       this.data = data;
       return this;
     }
@@ -325,7 +325,7 @@ public class NotificationClient {
         if (value == null) {
           unsetData();
         } else {
-          setData((Set<NotificationData>)value);
+          setData((List<NotificationData>)value);
         }
         break;
 
@@ -472,18 +472,18 @@ public class NotificationClient {
           }
           switch (schemeField.id) {
             case 1: // DATA
-              if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TSet _set56 = iprot.readSetBegin();
-                  struct.data = new HashSet<NotificationData>(2*_set56.size);
-                  for (int _i57 = 0; _i57 < _set56.size; ++_i57)
+                  org.apache.thrift.protocol.TList _list56 = iprot.readListBegin();
+                  struct.data = new ArrayList<NotificationData>(_list56.size);
+                  for (int _i57 = 0; _i57 < _list56.size; ++_i57)
                   {
                     NotificationData _elem58; // required
                     _elem58 = new NotificationData();
                     _elem58.read(iprot);
                     struct.data.add(_elem58);
                   }
-                  iprot.readSetEnd();
+                  iprot.readListEnd();
                 }
                 struct.setDataIsSet(true);
               } else { 
@@ -508,12 +508,12 @@ public class NotificationClient {
         if (struct.data != null) {
           oprot.writeFieldBegin(DATA_FIELD_DESC);
           {
-            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.data.size()));
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.data.size()));
             for (NotificationData _iter59 : struct.data)
             {
               _iter59.write(oprot);
             }
-            oprot.writeSetEnd();
+            oprot.writeListEnd();
           }
           oprot.writeFieldEnd();
         }
@@ -556,9 +556,9 @@ public class NotificationClient {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TSet _set61 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.data = new HashSet<NotificationData>(2*_set61.size);
-            for (int _i62 = 0; _i62 < _set61.size; ++_i62)
+            org.apache.thrift.protocol.TList _list61 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.data = new ArrayList<NotificationData>(_list61.size);
+            for (int _i62 = 0; _i62 < _list61.size; ++_i62)
             {
               NotificationData _elem63; // required
               _elem63 = new NotificationData();
