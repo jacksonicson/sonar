@@ -18,12 +18,15 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.tum.in.sonar.collector.Collector;
 import de.tum.in.sonar.collector.HBaseUtil;
+import de.tum.in.sonar.collector.tsdb.gen.CompactPoint;
+import de.tum.in.sonar.collector.tsdb.gen.CompactTimeseries;
 
 public class TimeSeriesDatabase {
 
@@ -277,6 +280,8 @@ public class TimeSeriesDatabase {
 			ResultScanner scanner = table.getScanner(scan);
 
 			TimeSeries timeSeries = new TimeSeries();
+			long startTimeStampHour = getHourSinceEpoch(query.getStartTime());
+			long stopTimeStampHour = getHourSinceEpoch(query.getStopTime());
 
 			Result next;
 			while ((next = scanner.next()) != null) {
@@ -292,26 +297,47 @@ public class TimeSeriesDatabase {
 				for (byte[] key : familyMap.keySet()) {
 
 					if (Bytes.toString(key).equals("data")) {
-						try {
-							fragment.addSegment(timestampHours, familyMap.get(key));
-						} catch (TException e) {
-							e.printStackTrace();
+						// for the compacted row
+						if (startTimeStampHour == timestampHours) {
+							// if start hour's record is processed, add all the
+							// records
+							// that come after the selected start hour
+							addDataToFragmentAfterStartHour(query.getStartTime(), timestampHours, familyMap.get(key),
+									fragment);
+						} else if (stopTimeStampHour == timestampHours) {
+							// if end hour's records are processed, add all the
+							// records
+							// that come after the selected start hour
+							addDataToFragmentBeforeEndHour(query.getStopTime(), timestampHours, familyMap.get(key),
+									fragment);
+						} else {
+							// add the whole fragment
+							try {
+								fragment.addSegment(timestampHours, familyMap.get(key));
+							} catch (TException e) {
+								e.printStackTrace();
+							}
 						}
-
 					} else {
 						long quali = Bytes.toLong(key);
-						double value = Bytes.toDouble(familyMap.get(key));
+						long timestamp = timestampHours + quali;
+						if (timestamp >= query.getStartTime()
+								&& timestamp <= query.getStopTime()) {
+							double value = Bytes.toDouble(familyMap.get(key));
 
-						TimeSeriesPoint p = new TimeSeriesPoint();
-						p.setTimestamp(timestampHours + quali);
-						p.setValue(value);
-						fragment.addPoint(p);
+							TimeSeriesPoint p = new TimeSeriesPoint();
+							p.setTimestamp(timestamp);
+							p.setValue(value);
+							fragment.addPoint(p);
+						}
 					}
 				}
 			}
 
 			return timeSeries;
 
+		} catch (TException e) {
+			throw new QueryException(e);
 		} catch (IOException e) {
 			throw new QueryException(e);
 		} catch (InvalidLabelException e) {
@@ -345,6 +371,42 @@ public class TimeSeriesDatabase {
 			return result;
 		} catch (IOException e) {
 			throw new QueryException(e);
+		}
+	}
+
+	private void addDataToFragmentAfterStartHour(long startHour, long hoursSinceEpoch, byte[] data,
+			TimeSeriesFragment fragment) throws TException {
+		TDeserializer deserializer = new TDeserializer();
+		CompactTimeseries ts = new CompactTimeseries();
+		deserializer.deserialize(ts, data);
+
+		for (CompactPoint point : ts.getPoints()) {
+			long timestamp = hoursSinceEpoch + point.getTimestamp();
+			if (timestamp >= startHour) {
+				TimeSeriesPoint dp = new TimeSeriesPoint();
+				dp.setTimestamp(timestamp);
+				dp.setValue(point.getValue());
+				fragment.addPoint(dp);
+			}
+		}
+	}
+
+	private void addDataToFragmentBeforeEndHour(long endHour, long hoursSinceEpoch, byte[] data,
+			TimeSeriesFragment fragment) throws TException {
+		TDeserializer deserializer = new TDeserializer();
+		CompactTimeseries ts = new CompactTimeseries();
+		deserializer.deserialize(ts, data);
+
+		for (CompactPoint point : ts.getPoints()) {
+			long timestamp = hoursSinceEpoch + point.getTimestamp();
+			if (timestamp <= endHour) {
+				TimeSeriesPoint dp = new TimeSeriesPoint();
+				dp.setTimestamp(timestamp);
+				dp.setValue(point.getValue());
+				fragment.addPoint(dp);
+			} else {
+				break;
+			}
 		}
 	}
 }
