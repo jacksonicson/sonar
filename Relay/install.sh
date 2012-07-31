@@ -8,7 +8,7 @@ yum install python-setuptools
 
 # Copy relay to opt dir
 mkdir /opt/relay
-cp relay.zip /opt/relay
+cp -f relay.zip /opt/relay
 
 # Install Thrift
 cd ../thrift-0.8.0/lib/py
@@ -19,6 +19,7 @@ python setup.py install
 
 # TARGET DIR
 cd /opt/relay
+rm -rf *
 unzip relay.zip
 
 # Install Systemd service
