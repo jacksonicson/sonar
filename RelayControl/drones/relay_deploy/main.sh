@@ -3,8 +3,11 @@
 RELAY=/opt/relay
 
 # Remove old files and create the directory
-mkdir $RELAY
-rm -rf $RELAY/*
+if [ -d $RELAY ]; then
+	rm -rf $RELAY/*
+else
+	mkdir $RELAY
+fi
 
 # Update the files
 cp relay.zip $RELAY
@@ -16,5 +19,5 @@ rm relay.zip
 cp relay.service /etc/systemd/system/
 
 # Restart the service
-systemctl disable relay.service
+systemctl enable relay.service
 systemctl restart relay.service

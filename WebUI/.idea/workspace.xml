@@ -28,16 +28,25 @@
       <file leaf-file-name="template.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/template.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="155" column="0" selection-start="4538" selection-end="4538" vertical-scroll-proportion="-15.269231">
+            <state line="155" column="0" selection-start="4538" selection-end="4538" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="browse.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="browse.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/browse.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="99" column="10" selection-start="2060" selection-end="2060" vertical-scroll-proportion="0.5933014">
+            <state line="126" column="1" selection-start="2587" selection-end="2587" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sonar.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="539" column="0" selection-start="17471" selection-end="17471" vertical-scroll-proportion="0.6880952">
               <folding />
             </state>
           </provider>
@@ -46,7 +55,7 @@
       <file leaf-file-name="browse.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="60" column="10" selection-start="2557" selection-end="2557" vertical-scroll-proportion="-10.692307">
+            <state line="60" column="10" selection-start="2557" selection-end="2557" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -74,10 +83,10 @@
         <option value="$PROJECT_DIR$/static/sonar.css" />
         <option value="$PROJECT_DIR$/static/logs.html" />
         <option value="$PROJECT_DIR$/static/logs.js" />
-        <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/template.html" />
         <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/browse.js" />
+        <option value="$PROJECT_DIR$/sonar.js" />
       </list>
     </option>
   </component>
@@ -132,6 +141,16 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -202,16 +221,6 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="modules" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -326,11 +335,11 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.2100181" sideWeight="0.3048499" order="1" side_tool="true" content_ui="tabs" x="1689" y="355" width="417" height="497" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21605311" sideWeight="0.75375724" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21605311" sideWeight="0.7549133" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24624278" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24494383" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -457,30 +466,24 @@
         <state line="4" column="37" selection-start="183" selection-end="183" vertical-scroll-proportion="0.12230216" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sonar.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="501" column="22" selection-start="16441" selection-end="16441" vertical-scroll-proportion="0.020238096">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/template.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="155" column="0" selection-start="4538" selection-end="4538" vertical-scroll-proportion="-15.269231">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="60" column="10" selection-start="2557" selection-end="2557" vertical-scroll-proportion="-10.692307">
-          <folding />
-        </state>
+        <state line="155" column="0" selection-start="4538" selection-end="4538" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="99" column="10" selection-start="2060" selection-end="2060" vertical-scroll-proportion="0.5933014">
+        <state line="126" column="1" selection-start="2587" selection-end="2587" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/browse.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="60" column="10" selection-start="2557" selection-end="2557" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sonar.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="539" column="0" selection-start="17471" selection-end="17471" vertical-scroll-proportion="0.6880952">
           <folding />
         </state>
       </provider>

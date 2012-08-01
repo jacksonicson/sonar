@@ -493,17 +493,18 @@ function tsdbHandler(req, resp) {
             var jsonObj = [];
 
             for (i in timeSeries) {
-                console.log("received feedback " + timeSeries[i].value);
+                // console.log("received feedback " + timeSeries[i].value);
                 var item = [timeSeries[i].timestamp * 1000, timeSeries[i].value];
                 jsonObj.push(item)
             }
 
+            console.log(timeSeries.length + "data received");
             jsonObj.sort( function(a, b) {
                 return a[0] - b[0]
             });
 
             var ss = JSON.stringify(jsonObj);
-            console.log(ss);
+            
             resp.end(ss);
         });
     });
