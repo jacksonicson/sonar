@@ -57,6 +57,8 @@ def finished(done, client_list):
     reactor.stop()
 
 def error(done, client_list):
+    # If relay gets restarted the connection to relay is broken
+    # So, it is expected that an error occurs, no logging here. 
     pass
 
 def deploy_phase(client_list):
