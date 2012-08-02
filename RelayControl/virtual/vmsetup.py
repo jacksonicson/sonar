@@ -135,19 +135,22 @@ def clone(source, target):
    
    
 count = 0
+clone_names = [('template', 'test7')]
 def next_vm():
-    global count
-    count += 1
     
-    if count > 1:
+    if count >= len(clone_names):
         print 'exiting...'
         conn.close()
         reactor.stop()  
         return
     
-    #clone('template', 'test1')
-    setup('test1')
-       
+    global count
+    job = clone_names[count]
+    print 'Launching job %s -> %s' % job
+    count += 1
+    
+    clone(job[0], job[1])
+    setup(job[1])
 
 
 def main():

@@ -7,9 +7,9 @@ dhclient -r
 ifdown eth0
 
 # Update hostname
-sed -i "s/vmt/test1/g" /etc/sysconfig/network
+sed -i "s/vmt/test7/g" /etc/sysconfig/network
 
 # Change scripts
 cp ifcfg-eth0 /etc/sysconfig/network-scripts/
 
-reboot
+shutdown -h now
