@@ -1,0 +1,45 @@
+<project name="SonarAppender" default="jar" basedir=".">
+
+	<import file="classpath.xml" />
+
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="package" location="${build}/package" />
+	<property name="jarfile" value="sonarAppender.jar" />
+
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="../Thrift/collector.thrift" />
+		</exec>
+	</target>
+
+	<target name="compile" depends="thrift">
+		<javac srcdir="${src}:generated" destdir="${build}/bin">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="prepare">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build}/bin" />
+	</target>
+
+	<target name="jar" depends="prepare, compile">
+		<jar destfile="${build}/${jarfile}" basedir="${build}/bin" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build}" />
+	</target>
+
+	<target name="mkcp">
+		<exec executable="python">
+			<arg value="buildclasspath.py" />
+		</exec>
+	</target>
+</project>
