@@ -11,14 +11,35 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
 
-DEFAULT_SETUP_IP = ''
+DEFAULT_SETUP_IP = '192.168.110.246'
 RELAY_PORT = 7900
 
 conn = None
 
+def update_done(ret, relay_conn):
+    print 'Update executed'
+    
+    
+    # Schedule next VM clone
+    reactor.callLater(0, next_vm)
+
+
+def done(ret):
+    print 'Connection established'
+    
+    drone = drones.load_drone('setup_vm')
+    
+    # Do the setup process
+    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, ret)
+        
+
+def error(err, vm):
+    # print 'ERRO %s' % (err)
+    setup(vm)
+    
 
 def setup(vm):
-        
+    print 'Connecting...'
     # Spin (blocking) until relay is up and running
     creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
@@ -27,12 +48,12 @@ def setup(vm):
                           ).connectTCP(DEFAULT_SETUP_IP, RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
     
-    d = defer.Deferred()
-    creator.addCallback(d.callback)
+    creator.addCallback(done)
+    creator.addErrback(error, vm)
     
 
 
-def clone(conn, source, target):
+def clone(source, target):
     # Load VM
     domain = conn.lookupByName(source)
     pool = conn.storagePoolLookupByName("s0a0")
@@ -77,25 +98,36 @@ def clone(conn, source, target):
     print xml_domain_desc
     
     # Create a new Domain
-    conn.defineXML(xml_domain_desc)
+    # conn.defineXML(xml_domain_desc)
    
    
 count = 0
 def next_vm():
-    clone(conn, 'jacksch', 'test0')
+    global count
+    count += 1
+    
+    if count > 1:
+        print 'exiting...'
+        conn.close()
+        reactor.stop()  
+        return
+    
+    clone('jacksch', 'test0')
     setup('test0')
     
-    count += 1
-    if count > 0:
-        print 'exiting...'
-        conn.close()      
+       
 
 
 def main():
+    # Create drones
+    drones.main()
+    
     print 'connecting'
+    global conn
     conn = libvirt.open("qemu+ssh://root@srv0/system")
 
-    next_vm()    
+    reactor.callLater(0, next_vm)
+    reactor.run()
     
 
 if __name__ == '__main__':
