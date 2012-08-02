@@ -1,3 +1,6 @@
+# Relay installation script
+# Downloads all dependencies, installs Relay in the /opt directory and activates the Relay service (sytemd) 
+
 # YUM dependencies
 yum install python python-devel
 yum install ntp
