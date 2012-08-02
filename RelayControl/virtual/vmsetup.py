@@ -12,8 +12,13 @@ from twisted.internet.protocol import ClientCreator
 import libvirt
 from string import Template
 
+
+###############################################
+### CONFIG                                   ##
 DEFAULT_SETUP_IP = '192.168.110.246'
 RELAY_PORT = 7900
+###############################################
+
 
 conn = None
 
