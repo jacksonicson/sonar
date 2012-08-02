@@ -21,5 +21,5 @@ service TimeService {
 	
 	void create(1:string name, 2:int frequency);
 	
-	void append(1:string name, list<Element> elements);
+	void append(1:string name, 2:list<Element> elements);
 }
