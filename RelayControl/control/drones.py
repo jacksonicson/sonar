@@ -9,7 +9,6 @@ class Drone(object):
         self.name = name
         self.data = data
         
-
 def load_drone(name):
     print 'loading drone %s' % (name)
     droneFile = open(os.path.join(DRONE_DIR, name + '.zip'), 'rb')

@@ -1,7 +1,6 @@
 hosts_map = {}
 hosts = []
 
-
 def add_host(hostname, drone_type):
     if drone_type not in hosts_map:
         hosts_map[drone_type] = []
