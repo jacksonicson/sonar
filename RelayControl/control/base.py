@@ -65,3 +65,8 @@ def connect(hosts_map):
         dlist.append(d)
         
     return dlist
+
+def millis():
+    import time as time_
+    return int(round(time_.time() * 1000)) 
+    
