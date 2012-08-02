@@ -10,6 +10,7 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
+from string import Template
 
 DEFAULT_SETUP_IP = '192.168.110.246'
 RELAY_PORT = 7900
@@ -24,8 +25,33 @@ def update_done(ret, relay_conn):
     reactor.callLater(0, next_vm)
 
 
-def done(ret):
+def done(ret, vm):
     print 'Connection established'
+    
+    try:
+        config = open('drones/setup_vm/main_template.sh', 'r')
+        data = config.readlines()
+        data = ''.join(data)
+        config.close()
+        
+        # print data
+    
+        templ = Template(data)
+        d = dict(hostname = vm)
+        templ = templ.substitute(d)
+            
+        config = open('drones/setup_vm/main.sh', 'w')
+        config.writelines(templ)
+        config.close()
+    
+        print templ
+    except Exception, e:
+        print e
+        reactor.stop()
+        return
+   
+    # Rebuild drones
+    drones.main()
     
     drone = drones.load_drone('setup_vm')
     
@@ -48,7 +74,7 @@ def setup(vm):
                           ).connectTCP(DEFAULT_SETUP_IP, RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
     
-    creator.addCallback(done)
+    creator.addCallback(done, vm)
     creator.addErrback(error, vm)
     
 
@@ -57,26 +83,27 @@ def clone(source, target):
     # Load VM
     domain = conn.lookupByName(source)
     pool = conn.storagePoolLookupByName("s0a0")
-    volume = pool.storageVolLookupByName(source + ".img")
+    volume = pool.storageVolLookupByName(source + ".qcow")
 
     # Reconfigure the volume     
     xml_vol_desc = volume.XMLDesc(0)
     
     xml_tree = etree.fromstring(xml_vol_desc)
     name = xml_tree.xpath('/volume/name')[0]
-    name.text = target + '.img'
+    name.text = target + '.qcow'
     
     key = xml_tree.xpath('/volume/key')[0]
-    key.text = '/mnt/s0a0/' + target + '.img'
+    key.text = '/mnt/s0a0/' + target + '.qcow'
     
     path = xml_tree.xpath('/volume/target/path')[0]
-    path.text = '/mnt/s0a0/' + target + '.img'
+    path.text = '/mnt/s0a0/' + target + '.qcow'
     
     xml_vol_desc = etree.tostring(xml_tree)
     #print xml_vol_desc
     
     # Create a new volume
-    # new_volume = pool.createXMLFrom(xml_vol_desc, volume, 0)
+    print 'Cloning volume...'
+    new_volume = pool.createXMLFrom(xml_vol_desc, volume, 0)
     
     # Reconfigure the domain
     xml_domain_desc = domain.XMLDesc(0)
@@ -89,7 +116,7 @@ def clone(source, target):
     uuid.getparent().remove(uuid)
     
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
-    source.set('file', '/mnt/s0a0/' + target + '.img')
+    source.set('file', '/mnt/s0a0/' + target + '.qcow')
     
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
     mac.getparent().remove(mac)
@@ -98,7 +125,13 @@ def clone(source, target):
     print xml_domain_desc
     
     # Create a new Domain
-    # conn.defineXML(xml_domain_desc)
+    print 'Creating Domain...'
+    new_domain = conn.defineXML(xml_domain_desc)
+    #new_domain = conn.lookupByName(target)
+    
+    # Launch it
+    print 'Starting Domain...'
+    new_domain.create()
    
    
 count = 0
@@ -112,9 +145,8 @@ def next_vm():
         reactor.stop()  
         return
     
-    clone('jacksch', 'test0')
-    setup('test0')
-    
+    #clone('template', 'test1')
+    setup('test1')
        
 
 
