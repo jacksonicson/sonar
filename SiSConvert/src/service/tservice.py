@@ -71,19 +71,19 @@ pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
 server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 
-handler.create('hello', 5*60)
-
-elements = []
-for i in range(0,10):
-    e = ttypes.Element()
-    e.timestamp = 2
-    e.value = i
-    elements.append(e)
-
-handler.append('hello', elements)
+#handler.create('hello', 5*60)
+#
+#elements = []
+#for i in range(0,10):
+#    e = ttypes.Element()
+#    e.timestamp = 2
+#    e.value = i
+#    elements.append(e)
+#
+#handler.append('hello', elements)
 
 data = handler.load('hello')
 print data
 
 print 'Times listening...'
-# server.serve()
+server.serve()
