@@ -1,25 +1,21 @@
-namespace java de.tum.in.storm.times 
+namespace java de.tum.in.storm.relay 
 
 typedef i64 long
 typedef i32 int
 
-struct Element {
-	1:long timestamp,
-	2:long value,
-}
-
-struct TimeSeries {
-	1:string name,
-	2:int frequency,
-	
-	3:list<Element> elements,
-}
-
 service RelayService {
 
-	TimeSeries load(1:string name);
+	void execute(1:string code);
 	
-	void create(1:string name, 2:int frequency);
+	int launch(1:binary data, 2:string name)
+
+	int launchNoWait(1:binary data, 2:string name)	
+
+	bool isAlive(1:int pid)
 	
-	void append(1:string name, list<Element> elements);
+	bool kill(1:int pid)
+	
+	bool pollForMessage(1:binary data, 2:string name, 3:string message)
+	
+	bool waitForMessage(1:binary data, 2:string name, 3:string message, 4:string file)
 }
