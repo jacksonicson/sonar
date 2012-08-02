@@ -35,15 +35,14 @@ class TimeSeries(object):
         ts = ttypes.TimeSeries()
         ts.name = name
         ts.frequency = frequency
+        e = ttypes.Element()
+        ts.elements = [e]
         
         self.__write(ts, self.__filename(name))
     
     def _append(self, name, elements):
         ts = self.__read(self.__filename(name))
-        if ts.elements is None:
-            ts.elements = []
-            
-        ts.elements.append(elements)
+        ts.elements.extend(elements)
         
         self.__write(ts, self.__filename(name))
     
