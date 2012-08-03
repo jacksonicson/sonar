@@ -1,64 +1,60 @@
-from proto import trace_pb2
-import configuration.storage as storage
+from service import ctimes
 import csv
-import gridfs
-import os
+from times import ttypes 
+
+# Times client
+connection = None
 
 def load_trace(path, identifier):
-    print path
-    file = open(path, 'rU')
+    print 'loading O2 data from %s' % path
+    ts_file = open(path, 'rU')
+    reader = csv.reader(ts_file, delimiter=';', quotechar='"')
     
-    reader = csv.reader(file, delimiter=';', quotechar='"')
-
-    fs = gridfs.GridFS(storage.db, collection='tracefiles')
-    
+    # Read the first line (CSV header) 
     line = reader.next()
-    count = len(line)
-    
-    file_handles = []
-    traces = []
-    for i in range(0, count):
-        filename = '/' + identifier + '/' + str(i)
+
+    # Get all the service names    
+    ts_names = []
+    ts_elements = []
+    for i in range(0, len(line)):
+        filename = identifier + '_' + str(line[i])
+        ts_names.append(filename)
+        ts_elements.append([])
+
+        # 3 second monitoring frequency
         print 'creating: %s' % (filename)
+        connection.create(filename, 3000)
         
-        # Create file
-        if fs.exists(filename=filename):
-            print 'removing existing file %s ' % (filename) 
-            to_del = fs.get_last_version(filename=filename)
-            fs.delete(to_del._id)
-        
-        file_handles.append(fs.new_file(filename=filename))
-        
-        # Create trace
-        traces.append(trace_pb2.Trace())
-        traces[i].name = filename
-    
+    # Read all the CSV lines
     for line in reader:
-        for i in range(0, count):
-            element = traces[i].elements.add()
-            element.start = int(0)
-            element.stop = int(0)
+        for i in range(0, len(line)):
+            element = ttypes.Element()
+            element.timestamp = int(0)
             element.value = int(line[i])
+            
+            ts_elements[i].append(element)
     
-    # Serialize all traces to files
-    for i in range(0, count):
-        file_handles[i].write(traces[i].SerializeToString())
-        create_timeseries(traces[i].name, file_handles[i]._id)
+    # Send TS to the service
+    print 'Sending TS data...'
+    for i in range(0, len(ts_names)):
+        connection.append(ts_names[i], ts_elements[i])
     
-        file_handles[i].close()
-    
+            
 if __name__ == '__main__':
-
+    global connection
+    connection = ctimes.connect()
+    
+    #############################
     # Configuration #############
-    # List of files with O2 data
     files = [
-                          ('D:\work\data\O2 time series\eai-bcs-hour.csv', 'retail'),
-                          ('D:\work\data\O2 time series\eai-rcs-hour.csv', 'business'),
+                          ('D:/backups/time series data/O2 time series/eai-rcs-hour.csv', 'retail'),
+                          ('D:/backups/time series data/O2 time series/eai-rcs-hour.csv', 'business'),
                           ]
-    # ###########################
+    #############################
 
-    for file in files:
-        print file
-        load_trace(file[0], 'O2 RAW %s' % (file[1]))
+    for ts_file in files:
+        print ts_file
+        load_trace(ts_file[0], 'O2_%s' % (ts_file[1]))
 
-    print 'done'
+    # Close connection
+    ctimes.close()

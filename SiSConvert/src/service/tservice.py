@@ -6,7 +6,7 @@ from thrift.protocol import TCompactProtocol
 from thrift.server import TServer
 
 from times import ttypes
-from times import TimesService
+from times import TimeService
 
 class TimeSeries(object):
     
@@ -35,13 +35,16 @@ class TimeSeries(object):
         ts = ttypes.TimeSeries()
         ts.name = name
         ts.frequency = frequency
-        e = ttypes.Element()
-        ts.elements = [e]
+        ts.elements = []
         
         self.__write(ts, self.__filename(name))
     
     def _append(self, name, elements):
         ts = self.__read(self.__filename(name))
+        if ts is None:
+            print 'ERROR: TS not found %s' % (name)
+            return 
+        
         ts.elements.extend(elements)
         
         self.__write(ts, self.__filename(name))
@@ -64,7 +67,7 @@ class TimesHandler(TimeSeries):
     
 
 handler = TimesHandler()
-processor = TimesService.Processor(handler)
+processor = TimeService.Processor(handler)
 transport = TSocket.TServerSocket(port=7855)
 tfactory = TTransport.TBufferedTransportFactory()
 pfactory = TBinaryProtocol.TBinaryProtocolFactory()
@@ -81,9 +84,6 @@ server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 #    elements.append(e)
 #
 #handler.append('hello', elements)
-
-data = handler.load('hello')
-print data
 
 print 'Times listening...'
 server.serve()
