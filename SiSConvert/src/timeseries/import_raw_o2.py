@@ -1,4 +1,4 @@
-from service import ctimes
+from service import times_client
 import csv
 from times import ttypes 
 
@@ -39,7 +39,7 @@ def load_trace(path, identifier):
             
 if __name__ == '__main__':
     global connection
-    connection = ctimes.connect()
+    connection = times_client.connect()
     
     #############################
     # Configuration #############
@@ -54,4 +54,4 @@ if __name__ == '__main__':
         load_trace(ts_file[0], 'O2_%s' % (ts_file[1]))
 
     # Close connection
-    ctimes.close()
+    times_client.close()

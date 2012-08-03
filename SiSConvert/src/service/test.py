@@ -1,6 +1,6 @@
-from service import ctimes
+from service import times_client
 
-connection = ctimes.connect()
+connection = times_client.connect()
 
 result = connection.find('^.*retail.*HWORDER\Z')
 for i in result:
@@ -11,4 +11,4 @@ for i in result:
     print ts.elements
     
 
-ctimes.close()
+times_client.close()

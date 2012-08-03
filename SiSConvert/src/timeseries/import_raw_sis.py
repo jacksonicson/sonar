@@ -1,4 +1,4 @@
-from service import ctimes
+from service import times_client
 from times import ttypes
 import csv
 import os
@@ -33,7 +33,7 @@ def load_trace(path, identifier, number):
     
 if __name__ == '__main__':
     global connection
-    connection = ctimes.connect()
+    connection = times_client.connect()
 
     # Subdirectory which contains the RAW CSV file
     subpath = '1/raw/series.csv'
@@ -59,4 +59,4 @@ if __name__ == '__main__':
             continue
 
     # Close connection
-    ctimes.close()
+    times_client.close()
