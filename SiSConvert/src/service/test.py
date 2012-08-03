@@ -2,6 +2,8 @@ from service import times_client
 
 connection = times_client.connect()
 
+ts = connection.load('SIS_101_mem')
+
 result = connection.find('^.*retail.*HWORDER\Z')
 for i in result:
     print i

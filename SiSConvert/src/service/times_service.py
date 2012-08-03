@@ -17,7 +17,6 @@ class Wrapper(ttypes.TimeSeries):
         self.data = data
     
     def write(self, oprot):
-        print 'writing...... %s' % (oprot)
         oprot.trans.write(self.data)
 
 class TimeSeries(object):

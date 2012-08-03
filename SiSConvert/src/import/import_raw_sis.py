@@ -13,23 +13,31 @@ def load_trace(path, identifier, number):
     ts_file = open(path, 'rU')
     reader = csv.reader(ts_file)
     
-    # 3 second monitoring frequency
-    filename = identifier + '_' + number
-    print 'creating: %s' % (filename)
-    connection.create(filename, 60 * 5 * 1000)
+    # 5 minutes monitoring frequency
+    filename_cpu = identifier + '_' + number + '_cpu'
+    connection.create(filename_cpu, 60 * 5 * 1000)
+    filename_mem = identifier + '_' + number + '_mem'
+    connection.create(filename_mem, 60 * 5 * 1000)
      
     # Skip the first line
     reader.next()        
     
-    ts_elements = []
+    ts_cpu_elements = []
+    ts_mem_elements = []
     for line in reader:
         element = ttypes.Element()
         element.timestamp = long(line[1])
         element.value = int(line[3])
-        ts_elements.append(element)
+        ts_cpu_elements.append(element)
         
-    connection.append(filename, ts_elements)
-        
+        element = ttypes.Element()
+        element.timestamp = long(line[1])
+        element.value = int(line[4])
+        ts_mem_elements.append(element)
+    
+    connection.append(filename_cpu, ts_cpu_elements)
+    connection.append(filename_mem, ts_mem_elements)
+    
     
 if __name__ == '__main__':
     global connection
