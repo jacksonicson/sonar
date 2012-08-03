@@ -16,6 +16,9 @@ class Wrapper(ttypes.TimeSeries):
     def __init__(self, data):
         self.data = data
     
+    def read(self, iprot):
+        print 'WARN: Not implemented'
+    
     def write(self, oprot):
         oprot.trans.write(self.data)
 
@@ -23,6 +26,7 @@ class TimeSeries(object):
     
     def __write(self, ts, outfile):
         outfile = os.path.join(DATA_DIR, outfile)
+        
         f = open(outfile, 'wb')
         t = TTransport.TFileObjectTransport(f)
         prot = TBinaryProtocol.TBinaryProtocolAccelerated(t)
@@ -31,7 +35,6 @@ class TimeSeries(object):
     
     def __read(self, infile):
         infile = os.path.join(DATA_DIR, infile)
-        
         if not os.path.exists(infile):
             return None
 
@@ -57,7 +60,7 @@ class TimeSeries(object):
         
         f = open(infile, 'rb')
         t = TTransport.TFileObjectTransport(f)
-        prot = TCompactProtocol.TCompactProtocol(t)
+        prot = TBinaryProtocol.TBinaryProtocolAccelerated(t)
         
         ts = ttypes.TimeSeries()
         ts.read(prot)

@@ -2,15 +2,20 @@ from service import times_client
 
 connection = times_client.connect()
 
-ts = connection.load('SIS_101_mem')
+result = connection.find('^O2.*\Z')
+timestamp = None
+print 'Starting...'
+for ts in result:
+    ts = connection.load(ts)
+    print ts
+    
+    test = ts.elements[0].timestamp
+    if timestamp == None:
+        timestamp = test
+        print timestamp
+    elif timestamp != test:
+        print 'ERRROR in %s' % (ts.name)
 
-result = connection.find('^.*retail.*HWORDER\Z')
-for i in result:
-    print i
-    ts = connection.load(i)
-    print ts.frequency
-    print ts.name
-    print ts.elements
     
 
 times_client.close()

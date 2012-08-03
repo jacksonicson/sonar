@@ -1,18 +1,16 @@
 from scipy import *
 from scipy.signal import *
+from service import times_client
 import array
 import csv
 import math
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import random
 import scipy
 import scipy.stats as stats
 import signal
-import matplotlib.pyplot as plt
-from scipy import *
-from scipy.signal import *
-from service import times_client
 
 def gaussian_smooth(list, degree=5):  
     window = degree * 2 - 1  
@@ -267,7 +265,7 @@ def process_file(filename, elements, periodicity, frequency, smoothening_factor)
     
     # #####################################################
     # Plot signals 
-    fig = plt.figure()
+    fig = plt.figure(num=None, figsize=(8, 5), dpi=95)
     ax = fig.add_subplot(111)
     plt.xlabel('Time')
     plt.ylabel('Service Demand')
@@ -284,9 +282,9 @@ def process_file(filename, elements, periodicity, frequency, smoothening_factor)
     # fig.savefig('../../target/%s' % (fname))
     
     # Show the plot in a window
-    plt.show()
+    # plt.show()
     
-    # plt.savefig("real.pdf", papertype='a4')
+    plt.savefig('C:/temp/convolution/' + filename + '.png', papertype='a4')
     
     return signal
     
@@ -313,7 +311,7 @@ def process_trace(name):
     print 'complete'
     
     # 24 hours
-    periodicity =  24.0 * 3600.0 # day
+    periodicity = 24.0 * 3600.0 # day
     frequency = 3600 # hour
     smoothening = 30
     return process_file(name, timeSeries.elements, periodicity, frequency, smoothening)
@@ -354,12 +352,55 @@ def plot_overlay(plots):
     # Show the plot in a window
     plt.show()    
     
+def gen_html(result):
+    import StringIO
+    pages = []
+    count = 0
+    while count < len(result):
+        buffer = StringIO.StringIO()
+        pages.append(buffer)
+        
+        buffer.write("<html><body>")
+    
+        to = count + 20
+        for i in range(count, to):
+            if i >= len(result):
+                break
+            r = result[i]
+            print i
+            buffer.write('<a href="' + r + '.png"><img src="' + r + '.png" width="200" height="150"></img></a>')
+        print "next"
+        
+        count += 20
+        
+    count = 1
+    pcount = 0
+    for buffer in pages:  
+        buffer.write('<a href="index' + str(count) + '.html">next</a>')
+        count += 1
+                  
+        buffer.write("</body></html>")
+        value = buffer.getvalue()
+        buffer.close()
+        
+        f = open('C:/temp/convolution/index' + str(pcount) + '.html', 'w')
+        pcount += 1
+        f.write(value)
+        f.close()
+    
 if __name__ == '__main__':
     connection = times_client.connect()
-    result = connection.find('^SIS_.*\Z')
+    
+    result = [] # connection.find('^O2_.*\Z')
+    result.extend(connection.find('^SIS_.*_cpu.*\Z'))
+    
     times_client.close()
     
-    for r in result: 
-        print r
-        process_trace(r)
-
+    if True:
+        for r in result: 
+            print r
+            try:
+                process_trace(r)
+            except Exception, e :
+                print 'error in processing %s' % (r)
+    
