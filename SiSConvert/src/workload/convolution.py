@@ -142,7 +142,7 @@ def normalize_signal(signal, nv=1.0, percentile=95):
         normalized = min(nv, normalized)
         normalized_signal.append(normalized)
     
-    return normalized_signal
+    return signal # normalized_signal
 
 
 def filter_extremes(bucket, lower_percentile=5, upper_percentile=95):
@@ -355,5 +355,11 @@ def plot_overlay(plots):
     plt.show()    
     
 if __name__ == '__main__':
-    process_trace('SIS_1')
+    connection = times_client.connect()
+    result = connection.find('^SIS_.*\Z')
+    times_client.close()
+    
+    for r in result: 
+        print r
+        process_trace(r)
 

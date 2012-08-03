@@ -23,6 +23,10 @@ class TimeSeries(object):
     
     def __read(self, infile):
         infile = os.path.join(DATA_DIR, infile)
+        
+        if not os.path.exists(infile):
+            return None
+        
         f = open(infile, 'rb')
         t = TTransport.TFileObjectTransport(f)
         prot = TCompactProtocol.TCompactProtocol(t)
@@ -66,7 +70,6 @@ class TimeSeries(object):
             return 
         
         ts.elements.extend(elements)
-        
         self.__write(ts, self.__filename(name))
     
     def _loadFile(self, name):
