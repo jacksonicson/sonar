@@ -6,9 +6,13 @@ import math
 import numpy as np
 import os
 import random
+import scipy
 import scipy.stats as stats
 import signal
-
+import matplotlib.pyplot as plt
+from scipy import *
+from scipy.signal import *
+from service import times_client
 
 def gaussian_smooth(list, degree=5):  
     window = degree * 2 - 1  
@@ -280,7 +284,7 @@ def process_file(filename, elements, periodicity, frequency, smoothening_factor)
     # fig.savefig('../../target/%s' % (fname))
     
     # Show the plot in a window
-    # plt.show()
+    plt.show()
     
     # plt.savefig("real.pdf", papertype='a4')
     
@@ -301,31 +305,21 @@ def load_trace(filename):
     return trace
 
 
-def process_trace(identifier, number):
-    
-    fs = gridfs.GridFS(storage.db, collection='tracefiles')
-    
-    filename = "/" + identifier + "/" + number
-    print 'loading: %s' % (filename)
-    
-    # Check if this file exists already
-    if fs.exists(filename=filename) == False:
-        return 
-    
-    gfile = fs.get_last_version(filename=filename)
-    
-    trace = trace_pb2.Trace()
-    trace.ParseFromString(gfile.read())
+def process_trace(name):
+    print 'Downloading...'
+    connection = times_client.connect()
+    timeSeries = connection.load(name)
+    times_client.close()
+    print 'complete'
     
     # 24 hours
     periodicity =  24.0 * 3600.0 # day
     frequency = 3600 # hour
     smoothening = 30
-    return process_file(filename, trace.elements, periodicity, frequency, smoothening)
+    return process_file(name, timeSeries.elements, periodicity, frequency, smoothening)
 
 
 def plot_overlay(plots):
-    
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.xlabel('Time')
@@ -361,9 +355,5 @@ def plot_overlay(plots):
     plt.show()    
     
 if __name__ == '__main__':
-    print "loading"
-    process_trace('O2 RAW business', '5')
-    # plot_overlay(('/tmp/O2 RAW business/3', '/tmp/O2 RAW business/4'))
-#    for i in range(0, 20):
-#        load_trace('O2 RAW business', '%i' % (i))
+    process_trace('SIS_1')
 
