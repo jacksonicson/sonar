@@ -21,6 +21,8 @@ service TimeService {
 
 	TimeSeries load(1:string name);
 	
+	void delete(1:string name);
+	
 	void create(1:string name, 2:int frequency);
 	
 	void append(1:string name, 2:list<Element> elements);

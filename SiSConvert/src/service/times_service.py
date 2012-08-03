@@ -36,6 +36,11 @@ class TimeSeries(object):
     def __filename(self, name):
         return name + '.times'
     
+    def __delete(self, name):
+        del_file = os.path.join(DATA_DIR, self.__filename(name))
+        if os.path.exists(del_file) and os.path.isfile(del_file):
+            os.remove(del_file)
+    
     def _find(self, pattern):
         result = []
         pattern = re.compile(pattern)
@@ -82,6 +87,9 @@ class TimesHandler(TimeSeries):
         
     def find(self, pattern):
         return super(TimesHandler, self)._find(pattern)
+    
+    def delete(self, name):
+        return super(TimesHandler, self)._delete(name)
     
 
 handler = TimesHandler()

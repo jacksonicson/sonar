@@ -1,23 +1,14 @@
-from configuration import storage
-from proto import trace_pb2
 from scipy import *
 from scipy.signal import *
 import array
 import csv
-import gridfs
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pymongo
 import random
 import scipy.stats as stats
 import signal
 
-connection = pymongo.Connection("169.254.220.2")
-db = connection.dod
-timeseries = db.timeseries
-tsdata = db.tsdata
 
 def gaussian_smooth(list, degree=5):  
     window = degree * 2 - 1  
