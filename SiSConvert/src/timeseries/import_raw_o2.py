@@ -2,9 +2,6 @@ from service import ctimes
 import csv
 from times import ttypes 
 
-# Times client
-connection = None
-
 def load_trace(path, identifier):
     print 'loading O2 data from %s' % path
     ts_file = open(path, 'rU')
@@ -23,7 +20,7 @@ def load_trace(path, identifier):
 
         # 3 second monitoring frequency
         print 'creating: %s' % (filename)
-        connection.create(filename, 3000)
+        connection.create(filename, 15 * 60 * 1000)
         
     # Read all the CSV lines
     for line in reader:

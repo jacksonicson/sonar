@@ -18,6 +18,13 @@ except:
 
 
 class Iface:
+  def find(self, pattern):
+    """
+    Parameters:
+     - pattern
+    """
+    pass
+
   def load(self, name):
     """
     Parameters:
@@ -48,6 +55,36 @@ class Client(Iface):
     if oprot is not None:
       self._oprot = oprot
     self._seqid = 0
+
+  def find(self, pattern):
+    """
+    Parameters:
+     - pattern
+    """
+    self.send_find(pattern)
+    return self.recv_find()
+
+  def send_find(self, pattern):
+    self._oprot.writeMessageBegin('find', TMessageType.CALL, self._seqid)
+    args = find_args()
+    args.pattern = pattern
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_find(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = find_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "find failed: unknown result");
 
   def load(self, name):
     """
@@ -144,6 +181,7 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
+    self._processMap["find"] = Processor.process_find
     self._processMap["load"] = Processor.process_load
     self._processMap["create"] = Processor.process_create
     self._processMap["append"] = Processor.process_append
@@ -162,6 +200,17 @@ class Processor(Iface, TProcessor):
     else:
       self._processMap[name](self, seqid, iprot, oprot)
     return True
+
+  def process_find(self, seqid, iprot, oprot):
+    args = find_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = find_result()
+    result.success = self._handler.find(args.pattern)
+    oprot.writeMessageBegin("find", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
   def process_load(self, seqid, iprot, oprot):
     args = load_args()
@@ -198,6 +247,133 @@ class Processor(Iface, TProcessor):
 
 
 # HELPER FUNCTIONS AND STRUCTURES
+
+class find_args:
+  """
+  Attributes:
+   - pattern
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'pattern', None, None, ), # 1
+  )
+
+  def __init__(self, pattern=None,):
+    self.pattern = pattern
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.pattern = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('find_args')
+    if self.pattern is not None:
+      oprot.writeFieldBegin('pattern', TType.STRING, 1)
+      oprot.writeString(self.pattern)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class find_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype10, _size7) = iprot.readListBegin()
+          for _i11 in xrange(_size7):
+            _elem12 = iprot.readString();
+            self.success.append(_elem12)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('find_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRING, len(self.success))
+      for iter13 in self.success:
+        oprot.writeString(iter13)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
 
 class load_args:
   """
@@ -467,11 +643,11 @@ class append_args:
       elif fid == 2:
         if ftype == TType.LIST:
           self.elements = []
-          (_etype10, _size7) = iprot.readListBegin()
-          for _i11 in xrange(_size7):
-            _elem12 = Element()
-            _elem12.read(iprot)
-            self.elements.append(_elem12)
+          (_etype17, _size14) = iprot.readListBegin()
+          for _i18 in xrange(_size14):
+            _elem19 = Element()
+            _elem19.read(iprot)
+            self.elements.append(_elem19)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -492,8 +668,8 @@ class append_args:
     if self.elements is not None:
       oprot.writeFieldBegin('elements', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.elements))
-      for iter13 in self.elements:
-        iter13.write(oprot)
+      for iter20 in self.elements:
+        iter20.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

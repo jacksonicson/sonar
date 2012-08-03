@@ -23,6 +23,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] function [arg1 [arg2...]]'
   print ''
   print 'Functions:'
+  print '   find(string pattern)'
   print '  TimeSeries load(string name)'
   print '  void create(string name, int frequency)'
   print '  void append(string name,  elements)'
@@ -77,7 +78,13 @@ protocol = TBinaryProtocol.TBinaryProtocol(transport)
 client = TimeService.Client(protocol)
 transport.open()
 
-if cmd == 'load':
+if cmd == 'find':
+  if len(args) != 1:
+    print 'find requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.find(args[0],))
+
+elif cmd == 'load':
   if len(args) != 1:
     print 'load requires 1 args'
     sys.exit(1)

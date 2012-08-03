@@ -1,26 +1,31 @@
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-
-from thrift.protocol import TBinaryProtocol
-from thrift.protocol import TCompactProtocol  
+from thrift.protocol import TBinaryProtocol, TCompactProtocol
 from thrift.server import TServer
+from thrift.transport import TSocket, TTransport
+from times import TimeService, ttypes
+import os
+import re
 
-from times import ttypes
-from times import TimeService
+################################
+## Configuration              ##
+DATA_DIR = 'C:/temp/times'
+PORT = 7855
+################################
 
 class TimeSeries(object):
     
     def __write(self, ts, outfile):
+        outfile = os.path.join(DATA_DIR, outfile)
         f = open(outfile, 'wb')
         t = TTransport.TFileObjectTransport(f)
-        prot = TBinaryProtocol.TBinaryProtocol(t)
+        prot = TCompactProtocol.TCompactProtocol(t)
         ts.write(prot)
         f.close()
     
     def __read(self, infile):
+        infile = os.path.join(DATA_DIR, infile)
         f = open(infile, 'rb')
         t = TTransport.TFileObjectTransport(f)
-        prot = TBinaryProtocol.TBinaryProtocol(t)
+        prot = TCompactProtocol.TCompactProtocol(t)
         
         ts = ttypes.TimeSeries()
         ts.read(prot)
@@ -30,6 +35,16 @@ class TimeSeries(object):
     
     def __filename(self, name):
         return name + '.times'
+    
+    def _find(self, pattern):
+        result = []
+        pattern = re.compile(pattern)
+        for element in os.listdir(DATA_DIR):
+            element = element.replace('.times', '')
+            if pattern.match(element):
+                result.append(element)
+                
+        return result
     
     def _create(self, name, frequency):
         ts = ttypes.TimeSeries()
@@ -64,26 +79,18 @@ class TimesHandler(TimeSeries):
     
     def append(self, name, elements):
         super(TimesHandler, self)._append(name, elements)
+        
+    def find(self, pattern):
+        return super(TimesHandler, self)._find(pattern)
     
 
 handler = TimesHandler()
 processor = TimeService.Processor(handler)
-transport = TSocket.TServerSocket(port=7855)
+transport = TSocket.TServerSocket(port=PORT)
 tfactory = TTransport.TBufferedTransportFactory()
 pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
 server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
-
-#handler.create('hello', 5*60)
-#
-#elements = []
-#for i in range(0,10):
-#    e = ttypes.Element()
-#    e.timestamp = 2
-#    e.value = i
-#    elements.append(e)
-#
-#handler.append('hello', elements)
 
 print 'Times listening...'
 server.serve()

@@ -1,74 +1,62 @@
-from proto import trace_pb2
-import configuration.storage as storage
+from service import ctimes
+from times import ttypes
 import csv
-import gridfs
 import os
- 
-def load_trace(path, identifier, number):
-    file = open(path, 'r')
-    reader = csv.reader(file)
-    
-    fs = gridfs.GridFS(storage.db, collection='tracefiles')
-    
-    filename = "/" + identifier + "/" + number
-    
-    # Check if this file exists already
-    if fs.exists(filename=filename):
-        print 'removing existing file %s ' % (filename) 
-        to_del = fs.get_last_version(filename=filename)
-        fs.delete(to_del._id)
-     
-    # Create and fill file
-    gfile = fs.new_file(filename=filename)
-    try:
-        trace = trace_pb2.Trace()
-        trace.name = filename
 
-        reader.next()        
-        for str in reader:
-            element = trace.elements.add()
-            element.start = int(str[1])
-            element.stop = int(str[2])
-            element.value = int(str[3])
-            
-        gfile.write(trace.SerializeToString())
-        
-    finally:
-        gfile.close()
-        
-    id = gfile._id
-    create_timeseries(filename, id)
+################################################################
+## Configuration                                              ##
+directory = 'D:/backups/time series data/SIS time series 2'
+################################################################
+
+def load_trace(path, identifier, number):
+    print 'loading SIS data from %s' % path
+    ts_file = open(path, 'rU')
+    reader = csv.reader(ts_file)
     
-    return id
+    # 3 second monitoring frequency
+    filename = identifier + '_' + number
+    print 'creating: %s' % (filename)
+    connection.create(filename, 60 * 5 * 1000)
+     
+    # Skip the first line
+    reader.next()        
+    
+    ts_elements = []
+    for line in reader:
+        element = ttypes.Element()
+        element.timestamp = int(line[1])
+        element.value = int(line[3])
+        ts_elements.append(element)
+        
+    connection.append(filename, ts_elements)
         
     
 if __name__ == '__main__':
+    global connection
+    connection = ctimes.connect()
 
-    # Configuration #############
-    # The directory with the CSV files (SIS format: Start, End, Value)
-    directory_elements = ['D:/', 'work', 'data', 'SIS time series 2']
-    directory = ''
-    for element in directory_elements:
-        directory = os.path.join(directory, element)
-    # ###########################
+    # Subdirectory which contains the RAW CSV file
+    subpath = '1/raw/series.csv'
 
-    # subdirectory which contains the RAW CSV file
-    subpath_elements = ['1', 'raw', 'series.csv']
-
-    # iterate over all directory and import the RAW CSV files
+    # Iterate over all directory and import the CSV files
     dataset = os.listdir(directory)
     for timeseries_number in dataset:
-        if os.path.isfile(timeseries_number):
+        # Filter files and hidden folders
+        if os.path.isfile(os.path.join(directory, timeseries_number)):
             continue
         elif str.startswith(timeseries_number, '.'):
             continue
         
+        # The folder contains a TS
         path = os.path.join(directory, timeseries_number)
+        path = os.path.join(path, subpath)
         
-        for element in subpath_elements: 
-            path = os.path.join(path, element)
-        
-        print path
-        load_trace(path, 'SIS RAW', timeseries_number)
+        # Load it
+        try:
+            load_trace(path, 'SIS', timeseries_number)
+        except Exception, e:
+            print 'Could not process %s' % (path)
+            continue
 
-    print 'done'
+    # Close connection
+    ctimes.close()

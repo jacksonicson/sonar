@@ -17,6 +17,8 @@ struct TimeSeries {
 
 service TimeService {
 
+	list<string> find(1:string pattern);
+
 	TimeSeries load(1:string name);
 	
 	void create(1:string name, 2:int frequency);
