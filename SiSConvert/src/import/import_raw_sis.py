@@ -24,7 +24,7 @@ def load_trace(path, identifier, number):
     ts_elements = []
     for line in reader:
         element = ttypes.Element()
-        element.timestamp = int(line[1])
+        element.timestamp = long(line[1])
         element.value = int(line[3])
         ts_elements.append(element)
         

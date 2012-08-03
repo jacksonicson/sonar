@@ -25,6 +25,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Functions:'
   print '   find(string pattern)'
   print '  TimeSeries load(string name)'
+  print '  void remove(string name)'
   print '  void create(string name, int frequency)'
   print '  void append(string name,  elements)'
   print ''
@@ -89,6 +90,12 @@ elif cmd == 'load':
     print 'load requires 1 args'
     sys.exit(1)
   pp.pprint(client.load(args[0],))
+
+elif cmd == 'remove':
+  if len(args) != 1:
+    print 'remove requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.remove(args[0],))
 
 elif cmd == 'create':
   if len(args) != 2:

@@ -4,6 +4,7 @@ from thrift.transport import TSocket, TTransport
 from times import TimeService, ttypes
 import os
 import re
+import StringIO
 
 ################################
 ## Configuration              ##
@@ -11,17 +12,45 @@ DATA_DIR = 'C:/temp/times'
 PORT = 7855
 ################################
 
+class Wrapper(ttypes.TimeSeries):
+    def __init__(self, data):
+        self.data = data
+    
+    def write(self, oprot):
+        print 'writing...... %s' % (oprot)
+        oprot.trans.write(self.data)
+
 class TimeSeries(object):
     
     def __write(self, ts, outfile):
         outfile = os.path.join(DATA_DIR, outfile)
         f = open(outfile, 'wb')
         t = TTransport.TFileObjectTransport(f)
-        prot = TCompactProtocol.TCompactProtocol(t)
+        prot = TBinaryProtocol.TBinaryProtocolAccelerated(t)
         ts.write(prot)
         f.close()
     
     def __read(self, infile):
+        infile = os.path.join(DATA_DIR, infile)
+        
+        if not os.path.exists(infile):
+            return None
+
+        f = open(infile, 'rb')
+        io = StringIO.StringIO()
+        while True:
+            chunk = f.read(32)
+            if chunk: 
+                io.write(chunk)
+            else:
+                break
+        f.close()
+        value = io.getvalue()
+        io.close()
+        
+        return Wrapper(value)
+    
+    def _read_decode(self, infile):
         infile = os.path.join(DATA_DIR, infile)
         
         if not os.path.exists(infile):
@@ -64,11 +93,14 @@ class TimeSeries(object):
         self.__write(ts, self.__filename(name))
     
     def _append(self, name, elements):
-        ts = self.__read(self.__filename(name))
+        ts = self._read_decode(self.__filename(name))
         if ts is None:
             print 'ERROR: TS not found %s' % (name)
             return 
         
+        if ts.elements is None:
+            ts.elements = []
+            
         ts.elements.extend(elements)
         self.__write(ts, self.__filename(name))
     
@@ -91,7 +123,7 @@ class TimesHandler(TimeSeries):
     def find(self, pattern):
         return super(TimesHandler, self)._find(pattern)
     
-    def delete(self, name):
+    def remove(self, name):
         return super(TimesHandler, self)._delete(name)
     
 
