@@ -12,11 +12,6 @@ import scipy
 import scipy.stats as stats
 import signal
 
-def simple_moving_average(array, window=5):
-    weights = np.repeat(1.0, window) / window
-    return np.convolve(array, weights)[window-1:-(window-1)]
-    
-
 def gaussian_smooth(list, degree=5):  
     window = degree * 2 - 1  
     weight = np.array([1.0] * window)  
@@ -106,8 +101,6 @@ def add_noise(signal, convolution, bucket_signal_width=1, lower_percentile=5, up
                 
         array_filtered_bucket = np.array(filtered_values)
         std_dev = (scipy.std(array_filtered_bucket) / 2.0) + 0.0000001
-              
-        std_dev = max(std_dev, 0.005)
                 
         min_range = min(bucket_signal_width, len(signal) - i)
         index = i * bucket_signal_width
@@ -310,30 +303,18 @@ def load_trace(filename):
     return trace
 
 
-def process_trace(connection, name):
+def process_trace(name):
     print 'Downloading...'
+    connection = times_client.connect()
     timeSeries = connection.load(name)
+    times_client.close()
     print 'complete'
-
-    load = np.zeros(len(timeSeries.elements))
-    for i in range(0, len(timeSeries.elements)):
-        load[i] = timeSeries.elements[i].value
-    
-        
-    load = simple_moving_average(load,20)
-    
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(range(0, len(load)), load)
-    
-    plt.show()
     
     # 24 hours
-#    periodicity = 24.0 * 3600.0 # day
-#    frequency = 3600 # hour
-#    smoothening = 30
-#    return process_file(name, timeSeries.elements, periodicity, frequency, smoothening)
+    periodicity = 24.0 * 3600.0 # day
+    frequency = 3600 # hour
+    smoothening = 30
+    return process_file(name, timeSeries.elements, periodicity, frequency, smoothening)
 
 
 def plot_overlay(plots):
@@ -370,17 +351,56 @@ def plot_overlay(plots):
     
     # Show the plot in a window
     plt.show()    
-
+    
+def gen_html(result):
+    import StringIO
+    pages = []
+    count = 0
+    while count < len(result):
+        buffer = StringIO.StringIO()
+        pages.append(buffer)
+        
+        buffer.write("<html><body>")
+    
+        to = count + 20
+        for i in range(count, to):
+            if i >= len(result):
+                break
+            r = result[i]
+            print i
+            buffer.write('<a href="' + r + '.png"><img src="' + r + '.png" width="200" height="150"></img></a>')
+        print "next"
+        
+        count += 20
+        
+    count = 1
+    pcount = 0
+    for buffer in pages:  
+        buffer.write('<a href="index' + str(count) + '.html">next</a>')
+        count += 1
+                  
+        buffer.write("</body></html>")
+        value = buffer.getvalue()
+        buffer.close()
+        
+        f = open('C:/temp/convolution/index' + str(pcount) + '.html', 'w')
+        pcount += 1
+        f.write(value)
+        f.close()
     
 if __name__ == '__main__':
     connection = times_client.connect()
-    result = connection.find('^O2_retail_UPDATEACCOUNT\Z')
     
-    for r in result: 
-        print r
-        try:
-            process_trace(connection, r)
-        except Exception, e :
-            print 'error in processing %s' % (r)
+    result = [] # connection.find('^O2_.*\Z')
+    result.extend(connection.find('^SIS_133_cpu.*\Z'))
     
     times_client.close()
+    
+    if True:
+        for r in result: 
+            print r
+            try:
+                process_trace(r)
+            except Exception, e :
+                print 'error in processing %s' % (r)
+    

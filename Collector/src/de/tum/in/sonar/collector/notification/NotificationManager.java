@@ -27,11 +27,18 @@ public class NotificationManager extends Thread {
 
 	public void addSubscription(Subscription subscription) {
 		Connection connection = new Connection(subscription);
-		connections.add(connection);
+		synchronized (connections) {
+			connections.add(connection);
+		}
 	}
 
 	private void deliver(Notification notification) {
-		for (Iterator<Connection> it = this.connections.iterator(); it.hasNext();) {
+		ArrayList<Connection> cloneConnections = new ArrayList<Connection>();
+		synchronized (connections) {
+			cloneConnections.addAll(connections);
+		}
+
+		for (Iterator<Connection> it = cloneConnections.iterator(); it.hasNext();) {
 			Connection connection = it.next();
 			try {
 				connection.send(notification);

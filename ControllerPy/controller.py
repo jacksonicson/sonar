@@ -11,7 +11,7 @@ LISTENING_PORT = 9876
 LISTENING_INTERFACE_IPV4 = '192.168.96.3'
 
 COLLECTOR_PORT = 7911
-COLLECTOR_HOST = 'localhost'
+COLLECTOR_HOST = 'monitor0.dfg'
 ################################
 
 
@@ -19,6 +19,7 @@ class NotificationReceiverImpl:
     
     def receive(self, data):
         print 'receiving notification data'
+        print data
         return
 
 
