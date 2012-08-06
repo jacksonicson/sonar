@@ -12,12 +12,13 @@ var qs = require('querystring');
 var url = require('url');
 
 var PORT = 8090;
+var SERVER_HOST = 'monitor0.dfg';
 
 var thrift = require('thrift');
 var managementService = require('./ManagementService');
 var types = require("./collector_types");
 
-var connection = thrift.createConnection('monitor0.dfg', 7932);
+var connection = thrift.createConnection(SERVER_HOST, 7932);
 connection.on("error", function (err) {
     console.log("Could not connect with the Collector: " + err);
 });
@@ -27,7 +28,7 @@ function plain(req, resp) {
 }
 
 function delHostHandler(req, resp) {
-    var connection = thrift.createConnection('monitor0.dfg', 7932);
+    var connection = thrift.createConnection(SERVER_HOST, 7932);
     var client = thrift.createClient(managementService, connection);
 
     var query = url.parse(req.url).query;
@@ -41,7 +42,7 @@ function delHostHandler(req, resp) {
 }
 
 function delSensorHandler(req, resp) {
-    var connection = thrift.createConnection('monitor0.dfg', 7932);
+    var connection = thrift.createConnection(SERVER_HOST, 7932);
     var client = thrift.createClient(managementService, connection);
 
     var query = url.parse(req.url).query;
@@ -68,7 +69,7 @@ function addHostHandler(req, resp) {
         console.log("end host add body: " + body);
         body = qs.parse(body);
 
-        var connection = thrift.createConnection('monitor0.dfg', 7932);
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
 
         console.log("host name: " + body.hostname);
@@ -150,7 +151,7 @@ function addSensorHandler(req, resp) {
         console.log("end: " + body);
         body = qs.parse(body);
 
-        var connection = thrift.createConnection('monitor0.dfg', 7932);
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
 
         console.log("sensor name: " + body.sensorName);
@@ -235,7 +236,7 @@ function addSensorHandler(req, resp) {
 
 function hostsHandler(req, resp) {
 
-    var connection = thrift.createConnection('monitor0.dfg', 7932);
+    var connection = thrift.createConnection(SERVER_HOST, 7932);
     var client = thrift.createClient(managementService, connection);
 
     var dataTable = []
@@ -309,7 +310,7 @@ function hostsHandler(req, resp) {
 }
 
 function sensorsHandler(req, resp) {
-    var connection = thrift.createConnection('monitor0.dfg', 7932);
+    var connection = thrift.createConnection(SERVER_HOST, 7932);
     var client = thrift.createClient(managementService, connection);
 
     connection.on("error", function (err) {
@@ -395,7 +396,7 @@ function logdbHandler(req, resp){
     req.on('end', function () {
         body = qs.parse(body);
 
-        var connection = thrift.createConnection('monitor0.dfg', 7932);
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
 
         connection.on("error", function (err) {
@@ -456,7 +457,7 @@ function tsdbHandler(req, resp) {
 
         console.log("startTime: " + body.startdate);
 
-        var connection = thrift.createConnection('monitor0.dfg', 7932);
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
 
         connection.on("error", function (err) {
@@ -522,7 +523,7 @@ function sensorConfigHandler(req, resp){
         var sensor = body.sensor;
         console.log("Requesting configuration for sensor: " + body.sensor);
 
-        var connection = thrift.createConnection('monitor0.dfg', 7932);
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
 
         connection.on("error", function (err) {
@@ -543,7 +544,7 @@ function sensorNamesHandler(req, resp){
     req.on('end', function () {
         console.log("Requesting all sensors");
 
-        var connection = thrift.createConnection('monitor0.dfg', 7932);
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
         var sensorData = []
         connection.on("error", function (err) {
@@ -657,7 +658,7 @@ app.use(router(urls));
 app.use(connect.static('static'));
 app.listen(PORT);
 
-console.log('server running at monitor0.dfg.dfg:' + PORT);
+console.log('server running at ' + SERVER_HOST + '.dfg:' + PORT);
 
 console.log("connecting with a thrift controller")
 
@@ -665,7 +666,7 @@ console.log("connecting with a thrift controller")
 // var ttransport = thrift.transport;
 
 /*
- var connection = thrift.createConnection('monitor0.dfg', 7932);
+ var connection = thrift.createConnection(SERVER_HOST, 7932);
  client = thrift.createClient(managementService, connection);
 
  connection.on("error", function (err) {
