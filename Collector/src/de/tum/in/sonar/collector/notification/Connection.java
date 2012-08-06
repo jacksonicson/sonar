@@ -42,7 +42,7 @@ public class Connection {
 		if (transport != null && transport.isOpen())
 			return true;
 
-		transport = new TSocket(subscription.getIp(), subscription.getPort());
+		transport = new TSocket(subscription.getIp(), subscription.getPort(), 3);
 
 		try {
 			transport.open();
