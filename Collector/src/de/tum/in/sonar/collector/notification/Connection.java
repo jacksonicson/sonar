@@ -8,7 +8,6 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +19,9 @@ public class Connection {
 
 	private static Logger logger = LoggerFactory.getLogger(Collector.class);
 
-	private final Subscription subscription;
+	final Subscription subscription;
 	private TTransport transport;
 	private NotificationClient.Client client;
-
-	private int connectionRetries = 0;
 
 	public Connection(Subscription subscription) {
 		this.subscription = subscription;
@@ -38,53 +35,39 @@ public class Connection {
 		}
 	}
 
-	private boolean establish() {
-		if (transport != null && transport.isOpen())
-			return true;
-
-		transport = new TSocket(subscription.getIp(), subscription.getPort(), 3);
-
+	private boolean establish() throws DeadSubscriptionException {
 		try {
-			transport.open();
-		} catch (TTransportException e) {
-			logger.info("Error while creating callback transport object", e);
-			return false;
+			if (transport != null && transport.isOpen())
+				return true;
+		} catch (Exception e) {
+			// do nothing
 		}
 
-		TProtocol protocol = new TBinaryProtocol(transport);
-		client = new NotificationClient.Client(protocol);
+		try {
+			transport = new TSocket(subscription.getIp(), subscription.getPort(), 3000);
+			transport.open();
+			TProtocol protocol = new TBinaryProtocol(transport);
+			client = new NotificationClient.Client(protocol);
+			return true;
 
-		return true;
-	}
-
-	private void checkConnection() throws DeadSubscriptionException {
-		if (transport != null) {
-			transport.close();
-
-			logger.info("Reestablishing connection with receiver");
-
-			connectionRetries++;
-			if (connectionRetries > 3) {
-				throw new DeadSubscriptionException(subscription);
-			}
-
-			establish();
+		} catch (Exception e) {
+			logger.info("Error while creating callback transport object", e);
+			throw new DeadSubscriptionException(subscription);
 		}
 	}
 
 	private void send(List<NotificationData> data) throws DeadSubscriptionException {
-		try {
-			establish();
-			logger.debug("Sending data through the callback channel");
-			client.receive(data);
-		} catch (TException e) {
-			logger.debug("Could not send notification data", e);
-			checkConnection();
+		if (establish()) {
+			try {
+				client.receive(data);
+			} catch (TException e) {
+				logger.warn("Could not send data");
+				throw new DeadSubscriptionException(subscription);
+			}
 		}
 	}
 
 	public void send(Notification notification) throws DeadSubscriptionException {
-		logger.info("Sending...");
 		if (this.subscription.check(notification)) {
 			List<NotificationData> set = new ArrayList<NotificationData>(1);
 
@@ -95,5 +78,19 @@ public class Connection {
 			set.add(data);
 			send(set);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return subscription.getIp().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof Connection))
+			return false; 
+		
+		Connection test = (Connection)obj; 
+		return (test.subscription.equals(subscription));
 	}
 }

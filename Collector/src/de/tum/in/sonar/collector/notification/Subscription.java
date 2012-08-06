@@ -31,5 +31,17 @@ public final class Subscription {
 	boolean check(Notification notification) {
 		return true;
 	}
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof Subscription))
+			return false;
+		
+		Subscription test = (Subscription)obj; 
+		boolean equals = true; 
+		equals &= test.getIp().equals(this.ip);
+		equals &= test.getPort() == this.port;
+				
+		return equals; 
+	}
 }

@@ -28,7 +28,7 @@
 	</target>
 
 	<target name="compile" depends="thrift">
-		<javac srcdir="${src}:resources:generated" destdir="${build}/bin">
+		<javac srcdir="${src}:resources:generated" destdir="${build}/bin" debug="true">
 			<classpath refid="classpath" />
 		</javac>
 	</target>
