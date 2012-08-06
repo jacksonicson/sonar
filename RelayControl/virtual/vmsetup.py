@@ -65,7 +65,7 @@ def done(ret, vm):
         
 
 def error(err, vm):
-    # print 'ERRO %s' % (err)
+    print 'Warn %s' % (err)
     setup(vm)
     
 
@@ -140,8 +140,21 @@ def clone(source, target):
    
    
 count = 0
-clone_names = [('template', 'test7')]
-def next_vm():
+clone_names = [('playground', 'glassfish0'),
+               ('playground', 'glassfish1'),
+               ('playground', 'glassfish2'),
+               ('playground', 'glassfish3'),
+               ('playground', 'glassfish4'),
+               ('playground', 'glassfish5'),
+               ('playdb', 'mysql0'),
+               ('playdb', 'mysql1'),
+               ('playdb', 'mysql2'),
+               ('playdb', 'mysql3'),
+               ('playdb', 'mysql4'),
+               ('playdb', 'mysql5'),]
+
+def next_vm():   
+    global count
     
     if count >= len(clone_names):
         print 'exiting...'
@@ -149,7 +162,6 @@ def next_vm():
         reactor.stop()  
         return
     
-    global count
     job = clone_names[count]
     print 'Launching job %s -> %s' % job
     count += 1
