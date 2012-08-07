@@ -13,25 +13,20 @@ def to_weekday(value):
     day = long(long(value) / (24 * 60 * 60)) % 7
     return day
  
-def extract_profile(time, signal):
-    # All calculations are in seconds
-    # cycle = 24 hours
-    # sampling frequency = 15 minutes 
+def extract_profile(name, time, signal):
     cycle_time = 24 * 60 * 60
-    sampling_frequency = 60 * 60
+    sampling_frequency = 60 * 60 # O2 
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
 
-    cover_days = (len(signal) * sampling_frequency) / (60 * 60 * 24)
-    print 'TS covers %i days' % (cover_days)
+    print 'Number of cycles %i' % (cycle_count)
         
     # Remove Weekends/Sundays
-    tv = np.vectorize(to_weekday)
-    time = tv(time)
-    
-    indices = np.where(time != 6)
-    time = np.take(time, indices)
-    signal = np.ravel(np.take(signal, indices))
+#    tv = np.vectorize(to_weekday)
+#    time = tv(time)
+#    indices = np.where(time < 6)
+#    time = np.take(time, indices)
+#    signal = np.ravel(np.take(signal, indices))
         
     # TODO: Filter extreme values > the 95th percentile
     # TODO: Signal normalization
@@ -45,6 +40,9 @@ def extract_profile(time, signal):
     # Get Buckets
     bucket_time = 1 * 60 * 60
     bucket_count = cycle_time / bucket_time
+    elements_per_bucket = elements_per_cycle / bucket_count
+    
+    print 'elements per bucket %i' % (elements_per_bucket)
     
     # Split the signal
     buckets = np.hsplit(signal, bucket_count)
@@ -71,6 +69,16 @@ def extract_profile(time, signal):
         variance_array[i] = var
     variance_array = np.ravel(variance_array)
     
+    # Variance calculation two
+    variance_array_2 = np.empty((len(buckets), 1), np.float32) # per bucket averaged variance
+    for i in range(0, len(buckets)):
+        bucket = buckets[i]
+        variance = np.apply_along_axis(np.var, 1, bucket)
+        variance = np.mean(np.ravel(variance))
+        variance_array_2[i] = variance
+    variance_array_2 = np.ravel(variance_array)
+     
+    
     # Increase signal resolution
     resolution_factor = 5
     noise_profile = np.ravel(np.array(zip(*[raw_profile for i in range(0, resolution_factor)])))
@@ -82,19 +90,23 @@ def extract_profile(time, signal):
     noise_array = np.array(0, np.float32)
     for i in range(0, len(noise_profile), resolution_factor):
         j = i / resolution_factor
-        variance = variance_array[j]
-        noise = np.random.normal(0, variance / 10.0, resolution_factor)
-        noise_array = np.hstack((noise_array, noise))
+        variance = variance_array_2[j]
+        if variance > 0:
+            noise = np.random.normal(0, variance / 10, resolution_factor)
+            noise_array = np.hstack((noise_array, noise))
+        else:
+            noise = np.array(resolution_factor, np.float32)
+            noise_array = np.hstack(( noise_array, noise))
     
     noise_profile = np.resize(noise_profile, len(noise_array))
     noise_profile = noise_profile + noise_array
 
     # Plotting    
     fig = plt.figure()
+    fig.suptitle(name)
     ax = fig.add_subplot(111)
     ax.plot(range(0, len(noise_profile)), noise_profile)
     
-    plt.show()
     
      
 def process_trace(connection, name):
@@ -108,16 +120,27 @@ def process_trace(connection, name):
         time[i] = timeSeries.elements[i].timestamp
         load[i] = timeSeries.elements[i].value
         
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(range(0, len(load) * 60, 60), load)
     
-    extract_profile(time, load)
+    extract_profile(name, time, load)
+    
+    print 'saving'
+    if name.find('business') > -1:
+        index = name.find('business')
+        index += len('business_')
+        name = name[index:]
+        name += '_business'
+    else:
+        index = name.find('retail')
+        index += len('retail_')
+        name = name[index:]
+        name += '_retail'
 
+    # plt.show()
+    plt.savefig('C:/temp/convolution/' + name + '.png')
 
 if __name__ == '__main__':
     connection = times_client.connect()
-    result = connection.find('^O2_business_CONTRACTEXT\Z')
+    result = connection.find('^O2_.*\Z')
     
     for r in result: 
         print r
