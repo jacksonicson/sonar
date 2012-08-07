@@ -20,7 +20,7 @@ def to_positive(value):
  
 def extract_profile(name, time, signal):
     cycle_time = 24 * 60 * 60
-    sampling_frequency = 60 * 60 # 15 * 60 # 60 * 60 # O2
+    sampling_frequency = 5 * 60 # 15 * 60 # 60 * 60 # O2
      
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
@@ -146,28 +146,28 @@ def process_trace(connection, name):
 
 if __name__ == '__main__':
     connection = times_client.connect()
-    result = connection.find('^O2_.*\Z')
+    result = connection.find('^SIS_5[0-9]{1,2}_cpu\Z')
     
     selected = ['O2_business_UPDATEDSSLINE',    # Burst in the evening
                 'O2_business_ADDUCP',           # Day workload
-                'O2_business_LINECONFIRM',      # Day nand night workload
+                'O2_business_LINECONFIRM',      # Day and night workload
                 'O2_retail_ADDORDER',           # Night and low day workload
                 'O2_retail_PIRANHAREQUEST',     # No shape workload (random spikes) 
                 'O2_retail_SENDMSG',            # Day workload flattens till evening
                 'O2_retail_PORTORDER',          # Random spikes 
                 'O2_retail_UPDATEDSS',          # Night workload
-                '', 
-                '',
-                '', 
-                '',
-                '', 
-                '',
-                '', 
-                '',
-                '', 
-                '',
-                '', 
-                '',
+                'SIS_221_cpu',                  # Evening workload 
+                'SIS_237_cpu',                  # All day with minor peaks
+                'SIS_194_cpu',                  # Average day high evening workload 
+                'SIS_375_cpu',                  # Trend to full CPU utilization starting in the morning
+                'SIS_213_cpu',                  # High dynamic range 
+                'SIS_211_cpu',                  # High dynamic range
+                'SIS_83_cpu',                   # Highly volatile varying levels 
+                'SIS_394_cpu',                  # Multiple peaks
+                'SIS_381_cpu',                  # High volatile 
+                'SIS_383_cpu',                  # Bursts and then slow
+                'SIS_415_cpu',                  # Volatility bursts  
+                'SIS_176_cpu',                  # Spike like flashmobs
                 ]
     
 #    for s in selected:
