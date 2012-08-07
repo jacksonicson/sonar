@@ -1,6 +1,7 @@
 from service import times_client
 import matplotlib.pyplot as plt
 import numpy as np
+from times import ttypes
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -20,7 +21,7 @@ def to_positive(value):
  
 def extract_profile(name, time, signal):
     cycle_time = 24 * 60 * 60
-    sampling_frequency = 5 * 60 # 15 * 60 # 60 * 60 # O2
+    sampling_frequency = 5 * 60 # 5 * 60 is SIS # 60 * 60 is O2
      
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
@@ -125,6 +126,8 @@ def extract_profile(name, time, signal):
     ax = fig.add_subplot(313)
     ax.plot(range(0, len(variance_array_2)), variance_array_2)
     
+    return noise_profile
+    
     
      
 def process_trace(connection, name):
@@ -139,14 +142,31 @@ def process_trace(connection, name):
         load[i] = timeSeries.elements[i].value
         
     
-    extract_profile(name, time, load)
+    profile = extract_profile(name, time, load)
+    print 'len %i' % (len(profile))
     
-    # plt.show()
-    plt.savefig('C:/temp/convolution/' + name + '.png')
+    # Store it
+    name = name + '_profile'
+    connection.create(name, 60 * 60)
+    
+    elements = []
+    for i in range(0, len(profile)):
+        item = profile[i]
+        
+        element = ttypes.Element()
+        element.timestamp = i * 60
+        element.value = item 
+        elements.append(element)
+
+    print 'storing profile'    
+    connection.append(name, elements)
+    
+    plt.show()
+    # plt.savefig('C:/temp/convolution/' + name + '.png')
 
 if __name__ == '__main__':
     connection = times_client.connect()
-    result = connection.find('^SIS_5[0-9]{1,2}_cpu\Z')
+    result = connection.find('^SIS_158_cpu\Z')
     
     selected = ['O2_business_UPDATEDSSLINE',    # Burst in the evening
                 'O2_business_ADDUCP',           # Day workload
