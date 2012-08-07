@@ -148,16 +148,26 @@ if __name__ == '__main__':
     connection = times_client.connect()
     result = connection.find('^O2_.*\Z')
     
-    selected = ['', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
+    selected = ['O2_business_UPDATEDSSLINE',    # Burst in the evening
+                'O2_business_ADDUCP',           # Day workload
+                'O2_business_LINECONFIRM',      # Day nand night workload
+                'O2_retail_ADDORDER',           # Night and low day workload
+                'O2_retail_PIRANHAREQUEST',     # No shape workload (random spikes) 
+                'O2_retail_SENDMSG',            # Day workload flattens till evening
+                'O2_retail_PORTORDER',          # Random spikes 
+                'O2_retail_UPDATEDSS',          # Night workload
+                '', 
+                '',
+                '', 
+                '',
+                '', 
+                '',
+                '', 
+                '',
+                '', 
+                '',
+                '', 
+                '',
                 ]
     
 #    for s in selected:
