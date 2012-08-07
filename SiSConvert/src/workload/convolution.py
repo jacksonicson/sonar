@@ -148,6 +148,21 @@ if __name__ == '__main__':
     connection = times_client.connect()
     result = connection.find('^O2_.*\Z')
     
+    selected = ['', '',
+                '', '',
+                '', '',
+                '', '',
+                '', '',
+                '', '',
+                '', '',
+                '', '',
+                '', '',
+                '', '',
+                ]
+    
+#    for s in selected:
+#        result = connection.find(r'^' + s + r'\Z')
+    
     for r in result: 
         print r
         process_trace(connection, r)
