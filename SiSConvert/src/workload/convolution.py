@@ -1,32 +1,41 @@
-import numpy as np
 from service import times_client
 import matplotlib.pyplot as plt
+import numpy as np
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
     return np.convolve(array, weights)[window - 1:-(window - 1)]
 
 def average_bucket(floor_array):
-    return np.average(floor_array)
+    return np.median(floor_array)
 
 def to_weekday(value):
     day = long(long(value) / (24 * 60 * 60)) % 7
     return day
  
+def to_positive(value):
+    if value < 0:
+        value = 0
+    return value
+ 
 def extract_profile(name, time, signal):
     cycle_time = 24 * 60 * 60
-    sampling_frequency = 60 * 60 # O2 
+    sampling_frequency = 60 * 60 # 15 * 60 # 60 * 60 # O2
+     
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
 
     print 'Number of cycles %i' % (cycle_count)
         
     # Remove Weekends/Sundays
-#    tv = np.vectorize(to_weekday)
-#    time = tv(time)
-#    indices = np.where(time < 6)
-#    time = np.take(time, indices)
-#    signal = np.ravel(np.take(signal, indices))
+    tv = np.vectorize(to_weekday)
+    time = tv(time)
+    indices = np.where(time < 5)
+    time = np.take(time, indices)
+    signal = np.ravel(np.take(signal, indices))
+    
+    # Buffer original signal
+    org_signal = signal
         
     # TODO: Filter extreme values > the 95th percentile
     # TODO: Signal normalization
@@ -66,16 +75,16 @@ def extract_profile(name, time, signal):
         bucket = buckets[i]
         bucket = np.ravel(bucket)
         var = np.std(bucket)
-        variance_array[i] = var
+        variance_array[i] = var / 20
     variance_array = np.ravel(variance_array)
     
     # Variance calculation two
     variance_array_2 = np.empty((len(buckets), 1), np.float32) # per bucket averaged variance
     for i in range(0, len(buckets)):
         bucket = buckets[i]
-        variance = np.apply_along_axis(np.var, 1, bucket)
-        variance = np.mean(np.ravel(variance))
-        variance_array_2[i] = variance
+        variance = np.apply_along_axis(np.std, 1, bucket)
+        variance = np.median(np.ravel(variance))
+        variance_array_2[i] = variance / 2
     variance_array_2 = np.ravel(variance_array)
      
     
@@ -92,20 +101,29 @@ def extract_profile(name, time, signal):
         j = i / resolution_factor
         variance = variance_array_2[j]
         if variance > 0:
-            noise = np.random.normal(0, variance / 10, resolution_factor)
+            noise = np.random.normal(0, variance, resolution_factor)
             noise_array = np.hstack((noise_array, noise))
         else:
             noise = np.array(resolution_factor, np.float32)
-            noise_array = np.hstack(( noise_array, noise))
+            noise_array = np.hstack((noise_array, noise))
     
     noise_profile = np.resize(noise_profile, len(noise_array))
     noise_profile = noise_profile + noise_array
+    
+    tv = np.vectorize(to_positive)
+    noise_profile = tv(noise_profile)
 
     # Plotting    
     fig = plt.figure()
     fig.suptitle(name)
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(311)
     ax.plot(range(0, len(noise_profile)), noise_profile)
+    
+    ax = fig.add_subplot(312)
+    ax.plot(range(0, len(org_signal)), org_signal)
+    
+    ax = fig.add_subplot(313)
+    ax.plot(range(0, len(variance_array_2)), variance_array_2)
     
     
      
@@ -123,18 +141,6 @@ def process_trace(connection, name):
     
     extract_profile(name, time, load)
     
-    print 'saving'
-    if name.find('business') > -1:
-        index = name.find('business')
-        index += len('business_')
-        name = name[index:]
-        name += '_business'
-    else:
-        index = name.find('retail')
-        index += len('retail_')
-        name = name[index:]
-        name += '_retail'
-
     # plt.show()
     plt.savefig('C:/temp/convolution/' + name + '.png')
 
