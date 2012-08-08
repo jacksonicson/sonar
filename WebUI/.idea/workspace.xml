@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="199" />
+    <bookmark url="file://$PROJECT_DIR$/sonar.js" line="200" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="007e9ddd-7a65-4a74-8145-eb4d182ba2b9" name="Default" comment="" />
@@ -46,7 +46,7 @@
       <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="552" column="28" selection-start="17928" selection-end="17928" vertical-scroll-proportion="0.6216216">
+            <state line="558" column="43" selection-start="18138" selection-end="18138" vertical-scroll-proportion="0.43243244">
               <folding />
             </state>
           </provider>
@@ -483,7 +483,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="552" column="28" selection-start="17928" selection-end="17928" vertical-scroll-proportion="0.6216216">
+        <state line="558" column="43" selection-start="18138" selection-end="18138" vertical-scroll-proportion="0.43243244">
           <folding />
         </state>
       </provider>
