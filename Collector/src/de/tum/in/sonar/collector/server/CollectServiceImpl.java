@@ -33,11 +33,11 @@ public class CollectServiceImpl implements CollectService.Iface {
 		tsdb.writeData(dp);
 
 		// Notify clients
-		try {
-			notifyManager.notify(id.getHostname(), id.getSensor(), dp);
-		} catch (InterruptedException e) {
-			logger.error("Error while notifing clients", e);
-		}
+//		try {
+//			notifyManager.notify(id.getHostname(), id.getSensor(), dp);
+//		} catch (InterruptedException e) {
+//			logger.error("Error while notifing clients", e);
+//		}
 	}
 
 	@Override

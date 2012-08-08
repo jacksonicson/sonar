@@ -66,18 +66,19 @@ def phase_start_glassfish_database(client_list):
     
     dlist = []
     
-    d = base.launch(client_list, 'playground', 'glassfish_start', wait=False)
+    d = base.launch(client_list, 'glassfish0', 'glassfish_start', wait=False)
     dlist.append(d)
     
-    d = base.poll_for_message(client_list, 'playground', 'glassfish_wait', 'domain1 running')
+    d = base.poll_for_message(client_list, 'glassfish0', 'glassfish_wait', 'domain1 running')
     dlist.append(d)
     
-    d = base.launch(client_list, 'playdb', 'spec_dbload')
+    d = base.launch(client_list, 'mysql0', 'spec_dbload')
     dlist.append(d)
     
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
-    dl.addCallback(phase_start_rain, client_list)
+    # dl.addCallback(phase_start_rain, client_list)
+    dl.addCallback(finished, client_list)
  
  
 def start_phase(client_list):
@@ -93,9 +94,9 @@ def main():
     drones.main()
     
     # Add hosts
-    hosts.add_host('playground', 'target')
-    hosts.add_host('playdb', 'db')
-    hosts.add_host('load1', 'driver')
+    hosts.add_host('glassfish0', 'target')
+    hosts.add_host('mysql0', 'db')
+    # hosts.add_host('load1', 'driver')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()

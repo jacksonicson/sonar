@@ -33,24 +33,19 @@ public class NotificationManager extends Thread {
 	}
 
 	private void deliver(Notification notification) {
-		ArrayList<Connection> cloneConnections = new ArrayList<Connection>();
 		synchronized (connections) {
-			cloneConnections.addAll(connections);
-		}
+			ArrayList<Connection> deleteList = new ArrayList<Connection>();
 
-		ArrayList<Connection> deleteList = new ArrayList<Connection>();
-
-		for (Iterator<Connection> it = cloneConnections.iterator(); it.hasNext();) {
-			Connection connection = it.next();
-			try {
-				connection.send(notification);
-			} catch (DeadSubscriptionException e) {
-				logger.info("removing dead connection");
-				deleteList.add(connection); 
+			for (Iterator<Connection> it = connections.iterator(); it.hasNext();) {
+				Connection connection = it.next();
+				try {
+					connection.send(notification);
+				} catch (DeadSubscriptionException e) {
+					logger.info("removing dead connection");
+					deleteList.add(connection);
+				}
 			}
-		}
 
-		synchronized (connections) {
 			for (Connection toDel : deleteList) {
 				boolean status = connections.remove(toDel);
 				logger.info("removing dead connection: " + status);

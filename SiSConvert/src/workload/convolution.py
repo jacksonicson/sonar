@@ -146,8 +146,11 @@ def process_trace(connection, name):
     print 'len %i' % (len(profile))
     
     # Store it
+    print 'Storing profile...'
+    
     name = name + '_profile'
-    connection.create(name, 60 * 60)
+    # TODO: Adapt the frequency here!
+    connection.create(name, 60)
     
     elements = []
     for i in range(0, len(profile)):
@@ -158,11 +161,12 @@ def process_trace(connection, name):
         element.value = item 
         elements.append(element)
 
-    print 'storing profile'    
     connection.append(name, elements)
     
-    plt.show()
-    # plt.savefig('C:/temp/convolution/' + name + '.png')
+    print 'Finished'
+    
+    # plt.show()
+    plt.savefig('C:/temp/convolution/' + name + '.png')
 
 if __name__ == '__main__':
     connection = times_client.connect()
@@ -193,7 +197,7 @@ if __name__ == '__main__':
 #    for s in selected:
 #        result = connection.find(r'^' + s + r'\Z')
     
-    for r in result: 
+    for r in selected: 
         print r
         process_trace(connection, r)
     

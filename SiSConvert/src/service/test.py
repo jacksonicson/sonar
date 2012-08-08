@@ -1,13 +1,32 @@
 from service import times_client
-
+import matplotlib.pyplot as plt
 connection = times_client.connect()
 
-result = connection.find('^O2_business_UPDATEACCOUNT_profile\Z')
-timestamp = None
-print 'Starting...'
-for ts in result:
-    ts = connection.load(ts)
-    print len(ts.elements)
+items = connection.find('SIS.*')
+for item in items:
+    print item
+
+ts = connection.load("SIS_221_cpu_profile")
+ff= []
+for i in ts.elements:
+    ff.append(i.value)
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(range(0, len(ff)), ff)
+
+# ax.acorr(load, maxlags=700)
+
+plt.show()
+
+# ts = connection.load("SIS_194_cpu_profile_profile")
+# print ts
+#result = connection.find('^SIS_194_cpu_profile_profile')
+#timestamp = None
+#print 'Starting...'
+#for ts in result:
+#    ts = connection.load(ts)
+#    print len(ts.elements)
     
 
 times_client.close()

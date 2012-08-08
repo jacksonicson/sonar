@@ -7,8 +7,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -186,8 +188,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		try {
 			String key = key("sensor", name, "md5");
 			String md5 = "";
-			if (jedis.exists(key))
-			{
+			if (jedis.exists(key)) {
 				md5 = jedis.get(key);
 				logger.debug("returning sensor hash: " + md5);
 			}
@@ -217,8 +218,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				byte[] md5 = md.digest(binary.array());
 				BigInteger bigInt = new BigInteger(1, md5);
 				String smd5 = bigInt.toString(16);
-				logger.info("deploy md5: " + smd5); 
-				
+				logger.info("deploy md5: " + smd5);
+
 				key = key("sensor", name, "md5");
 				jedis.set(key, smd5);
 			} catch (NoSuchAlgorithmException e) {
@@ -368,9 +369,19 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 	}
 
+	private Map<String, Set<String>> sensorCache = new HashMap<String, Set<String>>();
+	private Map<String, Long> sensorAge = new HashMap<String, Long>();
+
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
 		logger.debug("get all sensors for host: " + hostname);
+
+		if (sensorCache.containsKey(hostname)) {
+			long time = sensorAge.get(hostname);
+			if ((System.currentTimeMillis() - time) < (60 * 1000))
+				return sensorCache.get(hostname);
+		}
+
 		Jedis jedis = jedisPool.getResource();
 		try {
 			String key = key("host", hostname, "sensor");
@@ -390,6 +401,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 					sensors.add(sensor);
 				}
 			}
+			sensorAge.put(hostname, System.currentTimeMillis());
+			sensorCache.put(hostname, sensors);
+			
+			logger.info("jedis fetch"); 
 			return sensors;
 		} finally {
 			jedisPool.returnResource(jedis);

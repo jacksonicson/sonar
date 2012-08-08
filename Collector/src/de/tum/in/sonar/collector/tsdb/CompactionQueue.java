@@ -29,7 +29,7 @@ class CompactionQueue extends Thread {
 	// Logger
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
-	private static final long TIME_DELAY = 10;
+	private static final long TIME_DELAY = 10 * 60;
 
 	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
 
@@ -48,7 +48,7 @@ class CompactionQueue extends Thread {
 	} 
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
-		logger.debug("running compaction...");
+		logger.info("running compaction...");
 
 		Get get = new Get(key);
 		Result result = table.get(get);
