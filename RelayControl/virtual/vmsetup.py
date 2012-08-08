@@ -3,6 +3,7 @@ from datetime import datetime
 from lxml import etree
 from rain import RainService, constants, ttypes
 from relay import RelayService
+from string import Template
 from thrift import Thrift, Thrift
 from thrift.protocol import TBinaryProtocol, TBinaryProtocol
 from thrift.transport import TSocket, TTransport, TTwisted
@@ -10,7 +11,6 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
-from string import Template
 
 
 ###############################################
@@ -18,6 +18,11 @@ from string import Template
 DEFAULT_SETUP_IP = '192.168.110.246'
 RELAY_PORT = 7900
 ###############################################
+
+'''
+All Domains (VMs) are setup on the srv0 system! This is the initialization system. If a Domain is moved 
+to another system it's configuration has to be created on the target system. 
+'''
 
 
 conn = None
@@ -42,7 +47,7 @@ def done(ret, vm):
         # print data
     
         templ = Template(data)
-        d = dict(hostname = vm)
+        d = dict(hostname=vm)
         templ = templ.substitute(d)
             
         config = open('drones/setup_vm/main.sh', 'w')
@@ -151,7 +156,7 @@ clone_names = [('playground', 'glassfish0'),
                ('playdb', 'mysql2'),
                ('playdb', 'mysql3'),
                ('playdb', 'mysql4'),
-               ('playdb', 'mysql5'),]
+               ('playdb', 'mysql5'), ]
 
 def next_vm():   
     global count
