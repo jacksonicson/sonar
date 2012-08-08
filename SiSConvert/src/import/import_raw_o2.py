@@ -22,14 +22,19 @@ def load_trace(path, identifier):
         print 'creating: %s' % (filename)
         connection.create(filename, 15 * 60 * 1000)
         
+    # Timestamp 
+    timestamp = 0
+     
     # Read all the CSV lines
     for line in reader:
         for i in range(0, len(line)):
             element = ttypes.Element()
-            element.timestamp = int(0)
+            element.timestamp = timestamp
             element.value = int(line[i])
             
             ts_elements[i].append(element)
+        
+        timestamp += (60 * 60)
     
     # Send TS to the service
     print 'Sending TS data...'
