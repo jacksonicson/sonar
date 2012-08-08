@@ -429,7 +429,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
-		logger.debug("setting sensor configuration: " + sensor);
+		logger.info("setting sensor configuration: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 		try {
 			String key = key("sensor", sensor, "config");
@@ -468,7 +468,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
-		logger.debug("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
+		logger.info("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 		try {
 			// Set default settings
@@ -542,7 +542,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	public SensorConfiguration getSensorConfiguration(String sensor) throws TException {
-		logger.debug("reading sensor configuration for sensor: " + sensor);
+		logger.info("reading sensor configuration for sensor: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 		try {
 			SensorConfiguration sensorConfig = new SensorConfiguration();

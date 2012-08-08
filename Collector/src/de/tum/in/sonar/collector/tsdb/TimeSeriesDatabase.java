@@ -133,6 +133,8 @@ public class TimeSeriesDatabase extends Thread {
 
 				hbase.createTable(desc);
 			}
+			
+			hbase.close();
 
 		} catch (MasterNotRunningException e) {
 			throw new TableCreationException(e);
@@ -150,7 +152,7 @@ public class TimeSeriesDatabase extends Thread {
 	private BlockingQueue<MetricPoint> queue = new LinkedBlockingQueue<MetricPoint>(1000);
 
 	private ArrayList<Put> puts = new ArrayList<Put>();
-
+	private HTableInterface table = null; 
 	public void run() {
 		while (true) {
 			try {
@@ -159,7 +161,8 @@ public class TimeSeriesDatabase extends Thread {
 				try {
 					byte[] key = buildKey(dataPoint);
 
-					HTableInterface table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
+					if(table == null)
+						table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
 
 					try {
 						// Create a new row in this case
@@ -180,10 +183,9 @@ public class TimeSeriesDatabase extends Thread {
 							}
 						}
 
-						// scheduleCompaction(key);
+						scheduleCompaction(key);
 					} finally {
-						table.close();
-						// this.tsdbTablePool.putTable(table);
+						// table.close();
 					}
 
 				} catch (IOException e) {
