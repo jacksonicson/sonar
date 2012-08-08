@@ -172,7 +172,7 @@ public class TimeSeriesDatabase extends Thread {
 
 						put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), secs, value);
 
-						synchronized (puts) {
+						synchronized (this) {
 							puts.add(put);
 							if (puts.size() > 50) {
 								long time = System.currentTimeMillis();
@@ -242,7 +242,7 @@ public class TimeSeriesDatabase extends Thread {
 		return result;
 	}
 
-	public TimeSeries run(Query query) throws QueryException, UnresolvableException {
+	public synchronized TimeSeries run(Query query) throws QueryException, UnresolvableException {
 
 		logger.info("queue size: " + this.queue.size());
 

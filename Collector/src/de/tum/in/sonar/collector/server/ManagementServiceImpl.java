@@ -180,8 +180,13 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 	}
 
+	private Map<String, String> hashes = new HashMap<String, String>();
+
 	@Override
 	public String sensorHash(String name) throws TException {
+		if (hashes.containsKey(name))
+			return hashes.get(name);
+
 		logger.debug("sensor hash for " + name);
 		Jedis jedis = jedisPool.getResource();
 
@@ -192,6 +197,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				md5 = jedis.get(key);
 				logger.debug("returning sensor hash: " + md5);
 			}
+
+			hashes.put(name, md5);
 
 			return md5;
 		} finally {
@@ -403,8 +410,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			}
 			sensorAge.put(hostname, System.currentTimeMillis());
 			sensorCache.put(hostname, sensors);
-			
-			logger.info("jedis fetch"); 
+
+			logger.info("jedis fetch");
 			return sensors;
 		} finally {
 			jedisPool.returnResource(jedis);
