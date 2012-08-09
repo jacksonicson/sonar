@@ -32,20 +32,18 @@ def load_drone(name):
     return drone
 
 
-def create_drone(name, path=None):
-    if path is None:
-        path = os.path.join(os.getcwd(), DRONE_DIR, name)
-        name = path
-        zip_path = os.path.join(os.getcwd(), DRONE_DIR, name + '.zip')
+def create_drone(name):
+    path = os.path.join(os.getcwd(), DRONE_DIR, name)
+    zip_path = os.path.join(os.getcwd(), DRONE_DIR, name + '.zip')
+    
+    if os.path.exists(zip_path):
+        os.remove(zip_path)
         
-        if os.path.exists(zip_path):
-            os.remove(zip_path)
-        
-    shutil.make_archive(name, 'zip', path)
+    shutil.make_archive(path, 'zip', path)
     return name + '.zip'
 
 
-def clean(path):
+def __clean(path):
     for subdir in os.listdir(path):
         subpath = os.path.join(path, subdir)
         if os.path.isfile(subpath) == False:
@@ -62,15 +60,15 @@ def build_all_drones():
     path = os.path.join(path, DRONE_DIR)
     
     # Remove all zip files in the drone directory
-    clean(path)
+    __clean(path)
     
     # Creates drone packages
     for subdir in os.listdir(path):
         if os.path.isfile(os.path.join(path, subdir)):
             continue
         
-        targetPath = os.path.join(path, subdir)
-        create_drone(targetPath, targetPath)
+        drone_path = os.path.join(path, subdir)
+        create_drone(drone_path)
 
 def main():
     build_all_drones()
