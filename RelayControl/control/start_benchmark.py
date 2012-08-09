@@ -1,9 +1,10 @@
 from control import drones, hosts, base
+from rain import RainService
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
-from rain import RainService
+import math
 
 def finished(done, client_list):
     print "execution successful"
@@ -33,12 +34,39 @@ def trigger_rain_benchmark(ret, client_list):
     creator.addCallback(rain_connected, client_list)
 
 
-def phase_start_rain(ret, client_list):
-    print 'starting rain driver...'
+def phase_start_rain(done, client_list):
+    print 'starting rain drivers...'
     
-    d = base.wait_for_message(client_list, 'load1', 'rain_start', 'Waiting for start signal...', '/opt/rain/rain.log')
+    dlist = []
+
+    targets = hosts.get_hosts('target')
+    target_count = len(targets)
     
-    dl = defer.DeferredList([d])
+    drivers = hosts.get_hosts('load')
+    driver_count = len(drivers)
+    
+    targets_per_driver = int(math.ceil(float(target_count) / float(driver_count)))
+    
+    for i in range(0, driver_count):
+        driver = drivers[i]
+        
+        config_targets = []
+        for target in targets[i * targets_per_driver : (i + 1) * targets_per_driver]:
+            config_target = {}
+            config_target['target'] = target
+            config_targets.append(config_target)
+        
+        # Configure drone
+        drones.prepare_drone('rain_start', 'rain.config.specj.json', targets=config_targets)
+        drones.create_drone('glassfish_configure')
+        
+        # Launch drone
+        d = base.wait_for_message(client_list, driver, 'rain_start', 'Waiting for start signal...', '/opt/rain/rain.log')
+        dlist.append(d)
+    
+    
+    # Wait for all load drivers to start
+    dl = defer.DeferredList(dlist)
     dl.addCallback(trigger_rain_benchmark, client_list)
 
 
@@ -143,6 +171,9 @@ def main():
     hosts.add_host('mysql5', 'database')
     hosts.add_host('load0', 'load')
     hosts.add_host('load1', 'load')
+    
+    phase_start_rain(None, None)
+    return
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()

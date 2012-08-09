@@ -36,11 +36,12 @@
     
     	"tracks": [
     	
+% for target in targets:
 	    	{
     			type:"dealer",
     			
 		        "target": {
-		          "hostname": "glassfish3",
+		          "hostname": "${target['target']}",
 		          "port": 8080
 		        },
 		        "loadScheduleCreatorParameters" : {
@@ -53,7 +54,7 @@
 	    		type:"mfg",
 	    		
 		        "target": {
-		          "hostname": "glassfish3",
+		          "hostname": "${target['target']}",
 		          "port": 8080,
 		        },
 		        "loadScheduleCreatorParameters" : {
@@ -63,60 +64,7 @@
 		        }
 	    	},
 	    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "glassfish4",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "glassfish4",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
-		        }
-	    	},
-	    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "glassfish5",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "glassfish5",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
-		        }
-	    	},
-	    	
+% endfor
     	],
     },
 }
