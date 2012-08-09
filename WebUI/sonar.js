@@ -12,6 +12,7 @@ var qs = require('querystring');
 var url = require('url');
 
 var PORT = 8090;
+// var SERVER_HOST = 'localhost';
 var SERVER_HOST = 'monitor0.dfg';
 
 var thrift = require('thrift');

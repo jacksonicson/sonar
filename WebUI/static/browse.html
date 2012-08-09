@@ -38,16 +38,17 @@
                 <div class="control-group">
                     <label class="control-label" for="startdate">Start</label>
                     <div class="controls">
-                        <input type="text" class="input" value="02/16/2011" id="startdate" name="startdate">
-                        <input type="text" class="input dropdown-timepicker" id="starttime" name="starttime">
+                        <input type="text" class="input-small" value="02/16/2011" id="startdate" name="startdate">
+                        <input type="text" class="input-small timepicker-default" id="starttime" name="starttime">
                     </div>
+
                 </div>
 
                 <div class="control-group">
                     <label class="control-label" for="stopdate">Stop</label>
                     <div class="controls">
-                        <input type="text" class="input" value="02/16/2012" id="stopdate" name="stopdate">
-                        <input type="text" class="input dropdown-timepicker" id="stoptime" name="stoptime">
+                        <input type="text" class="input-small" value="02/16/2012" id="stopdate" name="stopdate">
+                        <input type="text" class="input-small timepicker-default" id="stoptime" name="stoptime">
                     </div>
                 </div>
 
@@ -68,6 +69,17 @@
 {% block jsfoot %}
 <script src="http://code.highcharts.com/stock/highstock.js"></script>
 <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.timepicker-default').timepicker({
+            showMeridian: false
+
+        });
+    });
+</script>
+
 {% endblock %}
 
 </body>

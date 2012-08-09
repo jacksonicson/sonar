@@ -74,7 +74,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 				tsPoint.setTimestamp(point.getTimestamp());
 				tsPoint.setValue(point.getValue());
-				tsPoint.setLabels(point.getLabels());
+
+				if (point.getLabels() != null) {
+					Set<String> labels = new HashSet<String>();
+					Collections.addAll(labels, point.getLabels());
+					tsPoint.setLabels(labels);
+				}
 			}
 
 			return tsPoints;
