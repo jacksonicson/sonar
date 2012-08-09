@@ -71,7 +71,7 @@ def phase_start_glassfish_database(done, client_list):
     dlist = []
     
     for target in hosts.get_hosts('target'):
-        print 'starting glassfish on target %s' % (target) 
+        print '   * starting glassfish on target %s' % (target) 
         d = base.launch(client_list, target, 'glassfish_start', wait=False)
         dlist.append(d)
         
@@ -79,7 +79,7 @@ def phase_start_glassfish_database(done, client_list):
         dlist.append(d)
     
     for target in hosts.get_hosts('database'):
-        print 'starting database on target %s' % (target)
+        print '   * starting database on target %s' % (target)
         d = base.launch(client_list, target, 'spec_dbload')
         dlist.append(d)
     
@@ -95,10 +95,10 @@ def phase_configure_glassfish(client_list):
     dlist = []
     
     for target in hosts.get_hosts('target'):
-        print 'configuring glassfish on target %s' % (target)
+        print '   * configuring glassfish on target %s' % (target)
         
         mysql_name = target.replace('glassfish', 'mysql')
-        print '  using mysql name: %s' % (mysql_name)
+        print '     using mysql name: %s' % (mysql_name)
         drones.prepare_drone('glassfish_configure', 'domain.xml', mysql_server=mysql_name)
         drones.create_drone('glassfish_configure')
         
@@ -109,12 +109,19 @@ def phase_configure_glassfish(client_list):
     dl = defer.DeferredList(dlist)
     dl.addCallback(phase_start_glassfish_database, client_list)
  
+ 
 def start_phase(client_list):
     phase_configure_glassfish(client_list)
     
     
 def stop_phase(client_list):
     shutdown_glassfish_rain(client_list)
+    
+    
+def errback(failure):
+    print 'Error while executing'
+    print failure
+    reactor.stop()
     
     
 def main():
@@ -143,9 +150,10 @@ def main():
         
     # Wait for all connections
     wait = defer.DeferredList(dlist)
+    wait.addErrback(errback)
     
     # Decide what to do after connection setup
-    start = False
+    start = True
     if start:
         print 'starting system ...'
         wait.addCallback(start_phase)
