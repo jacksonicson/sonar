@@ -64,11 +64,10 @@ function setupDatePickers() {
     $('#startdate').datepicker();
     $('#stopdate').datepicker();
 
-    $('.dropdown-timepicker').timepicker({
-        defaultTime: 'current',
-        minuteStep: 15,
-        disableFocus: false,
-        template: 'dropdown'
+    $(document).ready(function () {
+        $('.timepicker-default').timepicker({
+            showMeridian: false
+        });
     });
 }
 
@@ -90,22 +89,44 @@ function setupCharts() {
         tooltip:{
             enabled:false
         },
-        navigation:{
+        navigator:{
             buttonOptions:{
                 enabled:true
             }
         },
+
+        rangeSelector: {
+            selected: 2,
+            enabled:true,
+            inputEnabled:false,
+            buttons: [{
+                type: 'minute',
+                count: 5,
+                text: '5m'
+            }, {
+                type: 'minute',
+                count: 15,
+                text: '15m'
+            }, {
+                type: 'hour',
+                count: 1,
+                text: '1h'
+            }, {
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'all',
+                text: 'All'
+            }]
+        },
+
         export: {
           enabled: true
         },
         chart:{
             renderTo:'container',
             animation:false
-        },
-        rangeSelector:{
-            selected:0,
-            enabled:true,
-            inputEnabled:false
         },
         plotOptions:{
             series:{

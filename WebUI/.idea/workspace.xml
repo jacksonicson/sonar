@@ -34,15 +34,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="browse.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/static/browse.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="126" column="1" selection-start="2587" selection-end="2587" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="sonar.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
@@ -52,10 +43,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="browse.html" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="browse.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/browse.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="98" column="23" selection-start="2025" selection-end="2025" vertical-scroll-proportion="0.2972973">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="browse.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="0" selection-start="677" selection-end="677" vertical-scroll-proportion="0.5356551">
+            <state line="57" column="22" selection-start="2528" selection-end="2528" vertical-scroll-proportion="-8.153846">
               <folding />
             </state>
           </provider>
@@ -83,10 +83,10 @@
         <option value="$PROJECT_DIR$/static/sonar.css" />
         <option value="$PROJECT_DIR$/static/logs.html" />
         <option value="$PROJECT_DIR$/static/logs.js" />
-        <option value="$PROJECT_DIR$/static/browse.js" />
         <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/template.html" />
         <option value="$PROJECT_DIR$/static/browse.html" />
+        <option value="$PROJECT_DIR$/static/browse.js" />
       </list>
     </option>
   </component>
@@ -466,9 +466,11 @@
         <state line="4" column="37" selection-start="183" selection-end="183" vertical-scroll-proportion="0.12230216" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.js">
+    <entry file="file://$PROJECT_DIR$/static/template.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="126" column="1" selection-start="2587" selection-end="2587" vertical-scroll-proportion="0.0" />
+        <state line="99" column="20" selection-start="2683" selection-end="2683" vertical-scroll-proportion="5.576923">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
@@ -478,16 +480,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/template.html">
+    <entry file="file://$PROJECT_DIR$/static/browse.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="99" column="20" selection-start="2683" selection-end="2683" vertical-scroll-proportion="5.576923">
+        <state line="57" column="22" selection-start="2528" selection-end="2528" vertical-scroll-proportion="-8.153846">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.html">
+    <entry file="file://$PROJECT_DIR$/static/browse.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="0" selection-start="677" selection-end="677" vertical-scroll-proportion="0.5356551">
+        <state line="98" column="23" selection-start="2025" selection-end="2025" vertical-scroll-proportion="0.2972973">
           <folding />
         </state>
       </provider>
