@@ -12,6 +12,7 @@ import shutil
 import string
 import tempfile
 import zipfile
+import time
 
 ##########################
 ## Configuration        ##
@@ -165,7 +166,6 @@ class ProcessManager(object):
             return False
            
         # Restart process if it fails (isAlive polling)
-        import time
         base_time = time.time()
         while True: 
 
@@ -216,7 +216,6 @@ class ProcessManager(object):
                     break
                     
             # Sleep some time between the iterations
-            import time
             time.sleep(1) 
         
     
@@ -248,6 +247,7 @@ class ProcessManager(object):
                 streams = [stream]
             except Exception, e:
                 print 'Error: Could not read file %s' % (e)
+                return False
         
         # Read the stream until the sequence is found
         import time
