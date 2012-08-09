@@ -67,7 +67,8 @@ def phase_start_rain(done, client_list):
     
     # Wait for all load drivers to start
     dl = defer.DeferredList(dlist)
-    dl.addCallback(trigger_rain_benchmark, client_list)
+    # dl.addCallback(trigger_rain_benchmark, client_list)
+    dl.addCallback(finished, client_list)
 
 
 def shutdown_glassfish_rain(client_list, ret=None):
@@ -139,7 +140,8 @@ def phase_configure_glassfish(client_list):
  
  
 def start_phase(client_list):
-    phase_configure_glassfish(client_list)
+    # phase_configure_glassfish(client_list)
+    phase_start_rain(None, client_list)
     
     
 def stop_phase(client_list):
@@ -157,9 +159,9 @@ def main():
     drones.main()
     
     # Add hosts
-    hosts.add_host('glassfish0', 'target')
-    hosts.add_host('glassfish1', 'target')
-    hosts.add_host('glassfish2', 'target')
+#    hosts.add_host('glassfish0', 'target')
+#    hosts.add_host('glassfish1', 'target')
+#    hosts.add_host('glassfish2', 'target')
     hosts.add_host('glassfish3', 'target')
     hosts.add_host('glassfish4', 'target')
     hosts.add_host('glassfish5', 'target')
@@ -170,10 +172,11 @@ def main():
     hosts.add_host('mysql4', 'database')
     hosts.add_host('mysql5', 'database')
     hosts.add_host('load0', 'load')
-    hosts.add_host('load1', 'load')
+    # hosts.add_host('load1', 'load')
     
-    phase_start_rain(None, None)
-    return
+    # Test rain start
+    # phase_start_rain(None, None)
+    # return
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()
