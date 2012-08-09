@@ -64,7 +64,7 @@
       <property name="connectionAttributes" value=";create=true"></property>
     </jdbc-connection-pool>
     <jdbc-connection-pool driver-classname="com.mysql.jdbc.Driver" pool-resize-quantity="7" is-isolation-level-guaranteed="false" max-pool-size="256" wrap-jdbc-objects="false" res-type="java.sql.Driver" steady-pool-size="16" name="specj" transaction-isolation-level="repeatable-read">
-      <property name="URL" value="jdbc:mysql://mysql0:3306/specdb"></property>
+      <property name="URL" value="jdbc:mysql://mysql5:3306/specdb"></property>
       <property name="user" value="root"></property>
       <property name="password" value="rooter"></property>
     </jdbc-connection-pool>

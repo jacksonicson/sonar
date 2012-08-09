@@ -42,22 +42,26 @@ def phase_start_rain(ret, client_list):
     dl.addCallback(trigger_rain_benchmark, client_list)
 
 
-def shutdown_glassfish_rain(client_list):
+def shutdown_glassfish_rain(client_list, ret=None):
     print "stopping glassfish and rain drivers..."
     
     dlist = []
     
-    d = base.launch(client_list, 'playground', 'glassfish_stop')
-    dlist.append(d)
+    for target in hosts.get_hosts('target'):
+        print 'stopping glassfish on target %s' % (target) 
+        d = base.launch(client_list, target, 'glassfish_stop')
+        dlist.append(d)
     
-    d = base.launch(client_list, 'load1', 'rain_stop')
-    dlist.append(d)
+    for target in hosts.get_hosts('load'):
+        print 'stopping rain on target %s' % (target)
+        d = base.launch(client_list, target, 'rain_stop')
+        dlist.append(d)
     
     dl = defer.DeferredList(dlist)
     dl.addCallback(finished, client_list)
     
 
-def phase_start_glassfish_database(client_list):
+def phase_start_glassfish_database(done, client_list):
     """
     Rain has to be started after Glassfish is running! This is important because 
     the Rain Tracks of the SpecJ driver are accessing the Glassfish services. 
@@ -85,8 +89,28 @@ def phase_start_glassfish_database(client_list):
     dl.addCallback(finished, client_list)
  
  
+def phase_configure_glassfish(client_list):
+    print 'reconfiguring glassfish ...'
+    
+    dlist = []
+    
+    for target in hosts.get_hosts('target'):
+        print 'configuring glassfish on target %s' % (target)
+        
+        mysql_name = target.replace('glassfish', 'mysql')
+        print '  using mysql name: %s' % (mysql_name)
+        drones.prepare_drone('glassfish_configure', 'domain.xml', mysql_server=mysql_name)
+        drones.create_drone('glassfish_configure')
+        
+        d = base.launch(client_list, target, 'glassfish_configure', wait=True)
+        dlist.append(d)
+    
+    # Wait for all drones to finish and set phase
+    dl = defer.DeferredList(dlist)
+    dl.addCallback(phase_start_glassfish_database, client_list)
+ 
 def start_phase(client_list):
-    phase_start_glassfish_database(client_list)
+    phase_configure_glassfish(client_list)
     
     
 def stop_phase(client_list):
@@ -98,10 +122,20 @@ def main():
     drones.main()
     
     # Add hosts
-#   hosts.add_host('glassfish0', 'target')
+    hosts.add_host('glassfish0', 'target')
     hosts.add_host('glassfish1', 'target')
-#   hosts.add_host('mysql0', 'database')
+    hosts.add_host('glassfish2', 'target')
+    hosts.add_host('glassfish3', 'target')
+    hosts.add_host('glassfish4', 'target')
+    hosts.add_host('glassfish5', 'target')
+    hosts.add_host('mysql0', 'database')
     hosts.add_host('mysql1', 'database')
+    hosts.add_host('mysql2', 'database')
+    hosts.add_host('mysql3', 'database')
+    hosts.add_host('mysql4', 'database')
+    hosts.add_host('mysql5', 'database')
+    hosts.add_host('load0', 'load')
+    hosts.add_host('load1', 'load')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()
@@ -111,7 +145,7 @@ def main():
     wait = defer.DeferredList(dlist)
     
     # Decide what to do after connection setup
-    start = True
+    start = False
     if start:
         print 'starting system ...'
         wait.addCallback(start_phase)

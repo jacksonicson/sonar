@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /opt/glassfish/current/glassfish/bin
-./startserv
+# Copy over the new configuration
+cp domain.xml /opt/glassfish/current/glassfish/domains/domain1/config
