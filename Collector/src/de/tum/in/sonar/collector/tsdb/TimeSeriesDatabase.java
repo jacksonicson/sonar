@@ -243,134 +243,126 @@ public class TimeSeriesDatabase extends Thread {
 		return result;
 	}
 
-	public synchronized TimeSeries run(Query query) throws QueryException, UnresolvableException {
+	private final byte[] createScannerStartKey(final Query query) throws UnresolvableException, InvalidLabelException {
+		// Create the start key for the scanner
+		byte[] startRow = new byte[keyWidth(0)];
+		int index = 0;
 
-		logger.info("queue size: " + this.queue.size());
+		// Sensor field
+		appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
+		index += 8;
 
+		// Hostname field
+		if (query.getHostname() != null) {
+			appendToKey(startRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+			index += 8;
+		} else {
+			index += 8;
+		}
+
+		// Start time field
+		appendToKey(startRow, index, getHourSinceEpoch(query.getStartTime()));
+		index += 8;
+
+		return startRow;
+	}
+
+	private final byte[] createScannerStopKey(final Query query) throws UnresolvableException, InvalidLabelException {
+		// Create the stop key for the scanner
+		byte[] stopRow = new byte[keyWidth(10)];
+		int index = 0;
+
+		// Add sensor
+		appendToKey(stopRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
+		index += 8;
+
+		// Add hostname
+		if (query.getHostname() != null) {
+			logger.debug("Using hostname in query");
+			appendToKey(stopRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
+			index += 8;
+		} else {
+			index += 8;
+		}
+
+		// Add stop time
+		appendToKey(stopRow, index, getHourSinceEpoch(query.getStopTime()));
+		index += 8;
+
+		// Fill the remaining digits with ones
+		for (; index < stopRow.length; index++)
+			stopRow[index] = (byte) 0xFF;
+
+		return stopRow;
+	}
+
+	public TimeSeries run(Query query) throws QueryException, UnresolvableException {
 		HTableInterface table = null;
 		try {
-			logger.debug("start: " + query.getStartTime());
-			logger.debug("stop: " + query.getStopTime());
-			logger.debug("hostname: " + query.getHostname());
-			logger.debug("sensor: " + query.getSensor());
+			logger.debug("start time: " + query.getStartTime());
+			logger.debug("stop time:  " + query.getStopTime());
+			logger.debug("hostname:   " + query.getHostname());
+			logger.debug("sensor:     " + query.getSensor());
 
+			// Get the table
 			table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
+
+			// New scanner
 			Scan scan = new Scan();
+			scan.setStartRow(createScannerStartKey(query));
+			scan.setStopRow(createScannerStopKey(query));
 
-			// Empty start row
-			// ===============================================================
-			byte[] startRow = new byte[keyWidth(0)];
-			int index = 0;
-
-			// Add sensor
-			appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
-			index += 8;
-
-			// Add hostname
-			if (query.getHostname() != null) {
-				logger.debug("Using hostname in query");
-				appendToKey(startRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
-				index += 8;
-			} else {
-				index += 8;
-			}
-
-			// Add start time
-			appendToKey(startRow, index, getHourSinceEpoch(query.getStartTime()));
-			index += 8;
-
-			// Define start row now
-			scan.setStartRow(startRow);
-			logger.info("start: " + getHexString(startRow));
-
-			// Empty stop row
-			// ===============================================================
-			byte[] stopRow = new byte[keyWidth(10)];
-
-			index = 0;
-
-			// Add sensor
-			appendToKey(stopRow, index, Bytes.toBytes(sensorResolver.resolveName(query.getSensor())));
-			index += 8;
-
-			// Add hostname
-			if (query.getHostname() != null) {
-				logger.debug("Using hostname in query");
-				appendToKey(stopRow, index, Bytes.toBytes(hostnameResolver.resolveName(query.getHostname())));
-				index += 8;
-			} else {
-				index += 8;
-			}
-
-			// Add stop time
-			appendToKey(stopRow, index, getHourSinceEpoch(query.getStopTime()));
-			index += 8;
-
-			// Fill the remaining digits with ones
-			for (; index < stopRow.length; index++)
-				stopRow[index] = (byte) 0xFF;
-
-			// Define stop row
-			scan.setStopRow(stopRow);
-			logger.info("stop:  " + getHexString(stopRow));
-
-			// Rows finished
-			// ===============================================================
-
-			// Load the scanner
-			logger.debug("Starting table scanner on query");
+			// Scan the table
 			ResultScanner scanner = table.getScanner(scan);
 
+			// Time series which holds all the fetched data
 			TimeSeries timeSeries = new TimeSeries();
-			long startTimeStampHour = getHourSinceEpoch(query.getStartTime());
-			long stopTimeStampHour = getHourSinceEpoch(query.getStopTime());
+			long startTimestampHour = getHourSinceEpoch(query.getStartTime());
+			long stopTimestampHour = getHourSinceEpoch(query.getStopTime());
 
 			Result next;
 			while ((next = scanner.next()) != null) {
 				byte[] rowKey = next.getRow();
-				long timestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + 8);
+				long rowTimestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + 8);
 
+				// New fragment for this row
 				TimeSeriesFragment fragment = timeSeries.newFragment();
 
 				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
-
 				for (byte[] key : familyMap.keySet()) {
 
+					// Found a compaction field
 					if (Bytes.toString(key).equals("data")) {
-						// for the compacted row
-						if (startTimeStampHour == timestampHours) {
-							// if start hour's record is processed, add all the
-							// records
-							// that come after the selected start hour
-							addDataToFragmentAfterStartHour(query.getStartTime(), timestampHours, familyMap.get(key), fragment);
-						} else if (stopTimeStampHour == timestampHours) {
-							// if end hour's records are processed, add all the
-							// records
-							// that come after the selected start hour
-							addDataToFragmentBeforeEndHour(query.getStopTime(), timestampHours, familyMap.get(key), fragment);
+						if (startTimestampHour < rowTimestampHours && rowTimestampHours < stopTimestampHour) {
+							fragment.addSegment(rowTimestampHours, familyMap.get(key));
 						} else {
-							// add the whole fragment
-							try {
-								fragment.addSegment(timestampHours, familyMap.get(key));
-							} catch (TException e) {
-								e.printStackTrace();
+							TDeserializer deserializer = new TDeserializer();
+							CompactTimeseries ts = new CompactTimeseries();
+							deserializer.deserialize(ts, familyMap.get(key));
+
+							for (CompactPoint point : ts.getPoints()) {
+								long timestamp = rowTimestampHours + point.getTimestamp();
+								if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
+									double value = Bytes.toDouble(familyMap.get(key));
+									TimeSeriesPoint tsPoint = new TimeSeriesPoint(timestamp, value);
+									fragment.addPoint(tsPoint);
+								}
 							}
 						}
-					} else {
-						long quali = Bytes.toLong(key);
-						long timestamp = timestampHours + quali;
+
+					} else { // Found a non compacted field
+						long qualifier = Bytes.toLong(key);
+						long timestamp = rowTimestampHours + qualifier;
 						if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
 							double value = Bytes.toDouble(familyMap.get(key));
-
-							TimeSeriesPoint p = new TimeSeriesPoint(timestamp, value);
-							fragment.addPoint(p);
+							TimeSeriesPoint tsPoint = new TimeSeriesPoint(timestamp, value);
+							fragment.addPoint(tsPoint);
 						}
 					}
 				}
 			}
 
 			scanner.close();
-
 			return timeSeries;
 
 		} catch (TException e) {
@@ -384,8 +376,7 @@ public class TimeSeriesDatabase extends Thread {
 				try {
 					table.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.trace("could not close HBase table", e);
 				}
 		}
 	}
@@ -427,38 +418,6 @@ public class TimeSeriesDatabase extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-		}
-	}
-
-	private void addDataToFragmentAfterStartHour(long startHour, long hoursSinceEpoch, byte[] data, TimeSeriesFragment fragment)
-			throws TException {
-		TDeserializer deserializer = new TDeserializer();
-		CompactTimeseries ts = new CompactTimeseries();
-		deserializer.deserialize(ts, data);
-
-		for (CompactPoint point : ts.getPoints()) {
-			long timestamp = hoursSinceEpoch + point.getTimestamp();
-			if (timestamp >= startHour) {
-				TimeSeriesPoint dp = new TimeSeriesPoint(timestamp, point.getValue());
-				fragment.addPoint(dp);
-			}
-		}
-	}
-
-	private void addDataToFragmentBeforeEndHour(long endHour, long hoursSinceEpoch, byte[] data, TimeSeriesFragment fragment)
-			throws TException {
-		TDeserializer deserializer = new TDeserializer();
-		CompactTimeseries ts = new CompactTimeseries();
-		deserializer.deserialize(ts, data);
-
-		for (CompactPoint point : ts.getPoints()) {
-			long timestamp = hoursSinceEpoch + point.getTimestamp();
-			if (timestamp <= endHour) {
-				TimeSeriesPoint dp = new TimeSeriesPoint(timestamp, point.getValue());
-				fragment.addPoint(dp);
-			} else {
-				break;
-			}
 		}
 	}
 }

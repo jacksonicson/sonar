@@ -42,9 +42,15 @@ public class TimeSeries implements Iterable<TimeSeriesPoint> {
 			if (pointIterator == null)
 				return false;
 
-			boolean fragmentLeft = fragmentsIterator.hasNext();
-			boolean pointLeft = pointIterator.hasNext();
-			return fragmentLeft || pointLeft;
+			while (!pointIterator.hasNext()) {
+				if (fragmentsIterator.hasNext()) {
+					pointIterator = fragmentsIterator.next().iterator();
+				} else {
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		@Override
@@ -52,16 +58,15 @@ public class TimeSeries implements Iterable<TimeSeriesPoint> {
 			if (pointIterator == null)
 				throw new NoSuchElementException();
 
-			if (pointIterator.hasNext())
-				return pointIterator.next();
-
-			if (fragmentsIterator.hasNext())
-			{
-				pointIterator = fragmentsIterator.next().iterator();
-				return next();
+			while (!pointIterator.hasNext()) {
+				if (fragmentsIterator.hasNext()) {
+					pointIterator = fragmentsIterator.next().iterator();
+				} else {
+					throw new NoSuchElementException();
+				}
 			}
-			
-			throw new NoSuchElementException(); 
+
+			return pointIterator.next();
 		}
 
 		@Override
