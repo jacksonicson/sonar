@@ -7,10 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -49,6 +47,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	private JedisPool jedisPool;
 
 	private LogDatabase logdb;
+
+	private SensorlistCache sensorlistCache = new SensorlistCache();
 
 	public ManagementServiceImpl() {
 		JedisPoolConfig config = new JedisPoolConfig();
@@ -185,13 +185,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 	}
 
-	private Map<String, String> hashes = new HashMap<String, String>();
-
 	@Override
 	public String sensorHash(String name) throws TException {
-		if (hashes.containsKey(name))
-			return hashes.get(name);
-
 		logger.debug("sensor hash for " + name);
 		Jedis jedis = jedisPool.getResource();
 
@@ -202,8 +197,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				md5 = jedis.get(key);
 				logger.debug("returning sensor hash: " + md5);
 			}
-
-			hashes.put(name, md5);
 
 			return md5;
 		} finally {
@@ -341,6 +334,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			jedis.set(key, Boolean.toString(activate));
 
 			jedis.save();
+
+			// Invalidate cache
+			sensorlistCache.invalidate(hostname);
+
 		} finally {
 			jedisPool.returnResource(jedis);
 		}
@@ -354,8 +351,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			String key = key("sensors");
 			if (!jedis.exists(key))
 				return Collections.emptySet();
-
-			logger.debug("test1");
 
 			Set<String> sensors = jedis.smembers(key);
 			return sensors;
@@ -381,18 +376,13 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 	}
 
-	private Map<String, Set<String>> sensorCache = new HashMap<String, Set<String>>();
-	private Map<String, Long> sensorAge = new HashMap<String, Long>();
-
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
 		logger.debug("get all sensors for host: " + hostname);
 
-		if (sensorCache.containsKey(hostname)) {
-			long time = sensorAge.get(hostname);
-			if ((System.currentTimeMillis() - time) < (60 * 1000))
-				return sensorCache.get(hostname);
-		}
+		// Check cache
+		if (sensorlistCache.get(hostname) != null)
+			return sensorlistCache.get(hostname);
 
 		Jedis jedis = jedisPool.getResource();
 		try {
@@ -413,10 +403,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 					sensors.add(sensor);
 				}
 			}
-			sensorAge.put(hostname, System.currentTimeMillis());
-			sensorCache.put(hostname, sensors);
 
-			logger.info("jedis fetch");
+			// Add data to cache
+			sensorlistCache.put(hostname, sensors);
+
 			return sensors;
 		} finally {
 			jedisPool.returnResource(jedis);
