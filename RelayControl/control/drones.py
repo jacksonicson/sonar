@@ -1,3 +1,4 @@
+from mako.template import Template
 import os
 import shutil
 import string
@@ -8,6 +9,18 @@ class Drone(object):
     def __init__(self, name, data):
         self.name = name
         self.data = data
+
+        
+def prepare_drone(name, template, **properties):
+    path = os.path.join(os.getcwd(), DRONE_DIR, name, template + '.template')
+    mytemplate = Template(filename=path, module_directory='/tmp/mako_modules')
+    result = mytemplate.render(**properties)
+    
+    path = os.path.join(os.getcwd(), DRONE_DIR, name, template)
+    tmpl_file = open(path, 'wb')
+    tmpl_file.write(result)
+    tmpl_file.close()
+    
         
 def load_drone(name):
     print 'loading drone %s' % (name)
@@ -18,7 +31,16 @@ def load_drone(name):
     drone = Drone(name, drone)
     return drone
 
-def createDrone(name, path):
+
+def create_drone(name, path=None):
+    if path is None:
+        path = os.path.join(os.getcwd(), DRONE_DIR, name)
+        name = path
+        zip_path = os.path.join(os.getcwd(), DRONE_DIR, name + '.zip')
+        
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+        
     shutil.make_archive(name, 'zip', path)
     return name + '.zip'
 
@@ -32,8 +54,7 @@ def clean(path):
         if string.find(subdir, '.zip') != -1:
             os.remove(subpath)
 
-
-def main():
+def build_all_drones():
     print 'Running drone builder...'
     
     # Works on the drone directory
@@ -49,7 +70,10 @@ def main():
             continue
         
         targetPath = os.path.join(path, subdir)
-        createDrone(targetPath, targetPath)
+        create_drone(targetPath, targetPath)
+
+def main():
+    build_all_drones()
         
 if __name__ == '__main__':
     main() 
