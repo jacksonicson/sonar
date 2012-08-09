@@ -1,5 +1,5 @@
 
-from collector import NotificationClient, NotificationService
+from collector import NotificationClient, NotificationService, ttypes
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
@@ -62,9 +62,13 @@ def main():
     # Connect!
     transport.open()
 
+    # Define hotsts and sensors to listen on
+    srv0_cpu = ttypes.SensorToWatch('srv0', 'psutilcpu')
+    glassfish0_cpu = ttypes.SensorToWatch('glassfish0', 'psutilcpu')
+
     # Subscribe
     print 'Subscribing now...'
-    serviceClient.subscribe(LISTENING_INTERFACE_IPV4, LISTENING_PORT, []),
+    serviceClient.subscribe(LISTENING_INTERFACE_IPV4, LISTENING_PORT, [srv0_cpu, glassfish0_cpu]),
     print 'Done'
     
 
