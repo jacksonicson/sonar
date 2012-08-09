@@ -87,7 +87,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		} catch (QueryException e) {
 			logger.error("Error while executing query", e);
 		} catch (UnresolvableException e) {
-			logger.error("Error while mapping in query", e);
+			logger.trace("Error while mapping in query", e);
 		}
 
 		return new ArrayList<TransferableTimeSeriesPoint>();
