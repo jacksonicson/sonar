@@ -3,6 +3,7 @@ package de.tum.in.sonar.collector.tsdb;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
@@ -14,15 +15,12 @@ public class TimeSeries implements Iterable<TimeSeriesPoint> {
 
 	private List<TimeSeriesFragment> fragments = new ArrayList<TimeSeriesFragment>();
 
-	private TimeSeriesIterator iterator = new TimeSeriesIterator();
-
 	@Override
 	public Iterator<TimeSeriesPoint> iterator() {
-		return iterator;
+		return new TimeSeriesIterator();
 	}
 
 	TimeSeriesFragment newFragment() {
-		logger.info("new fragment");
 		TimeSeriesFragment fragment = new TimeSeriesFragment();
 		fragments.add(fragment);
 		return fragment;
@@ -30,38 +28,40 @@ public class TimeSeries implements Iterable<TimeSeriesPoint> {
 
 	class TimeSeriesIterator implements Iterator<TimeSeriesPoint> {
 
-		int fragment = 0;
-		Iterator<TimeSeriesPoint> listIterator = null;
+		final Iterator<TimeSeriesFragment> fragmentsIterator;
+		Iterator<TimeSeriesPoint> pointIterator = null;
+
+		private TimeSeriesIterator() {
+			fragmentsIterator = fragments.iterator();
+			if (fragmentsIterator.hasNext())
+				pointIterator = fragmentsIterator.next().iterator();
+		}
 
 		@Override
 		public boolean hasNext() {
-			if (fragment > fragments.size())
-				return false;
-			
-			if(fragments.size() == 0)
+			if (pointIterator == null)
 				return false;
 
-			if (listIterator != null) {
-				if (!listIterator.hasNext())
-					return fragment < fragments.size();
-			}
-
-			return true;
+			boolean fragmentLeft = fragmentsIterator.hasNext();
+			boolean pointLeft = pointIterator.hasNext();
+			return fragmentLeft || pointLeft;
 		}
 
 		@Override
 		public TimeSeriesPoint next() {
-			if (listIterator == null) {
-				listIterator = fragments.get(fragment).iterator();
-				fragment++;
-			}
+			if (pointIterator == null)
+				throw new NoSuchElementException();
 
-			if (!listIterator.hasNext()) {
-				listIterator = fragments.get(fragment).iterator();
-				fragment++;
-			}
+			if (pointIterator.hasNext())
+				return pointIterator.next();
 
-			return listIterator.next();
+			if (fragmentsIterator.hasNext())
+			{
+				pointIterator = fragmentsIterator.next().iterator();
+				return next();
+			}
+			
+			throw new NoSuchElementException(); 
 		}
 
 		@Override

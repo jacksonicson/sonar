@@ -133,7 +133,7 @@ public class TimeSeriesDatabase extends Thread {
 
 				hbase.createTable(desc);
 			}
-			
+
 			hbase.close();
 
 		} catch (MasterNotRunningException e) {
@@ -152,7 +152,8 @@ public class TimeSeriesDatabase extends Thread {
 	private BlockingQueue<MetricPoint> queue = new LinkedBlockingQueue<MetricPoint>(1000);
 
 	private ArrayList<Put> puts = new ArrayList<Put>();
-	private HTableInterface table = null; 
+	private HTableInterface table = null;
+
 	public void run() {
 		while (true) {
 			try {
@@ -161,7 +162,7 @@ public class TimeSeriesDatabase extends Thread {
 				try {
 					byte[] key = buildKey(dataPoint);
 
-					if(table == null)
+					if (table == null)
 						table = this.tsdbTablePool.getTable(Const.TABLE_TSDB);
 
 					try {
@@ -361,9 +362,7 @@ public class TimeSeriesDatabase extends Thread {
 						if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
 							double value = Bytes.toDouble(familyMap.get(key));
 
-							TimeSeriesPoint p = new TimeSeriesPoint();
-							p.setTimestamp(timestamp);
-							p.setValue(value);
+							TimeSeriesPoint p = new TimeSeriesPoint(timestamp, value);
 							fragment.addPoint(p);
 						}
 					}
@@ -440,9 +439,7 @@ public class TimeSeriesDatabase extends Thread {
 		for (CompactPoint point : ts.getPoints()) {
 			long timestamp = hoursSinceEpoch + point.getTimestamp();
 			if (timestamp >= startHour) {
-				TimeSeriesPoint dp = new TimeSeriesPoint();
-				dp.setTimestamp(timestamp);
-				dp.setValue(point.getValue());
+				TimeSeriesPoint dp = new TimeSeriesPoint(timestamp, point.getValue());
 				fragment.addPoint(dp);
 			}
 		}
@@ -457,9 +454,7 @@ public class TimeSeriesDatabase extends Thread {
 		for (CompactPoint point : ts.getPoints()) {
 			long timestamp = hoursSinceEpoch + point.getTimestamp();
 			if (timestamp <= endHour) {
-				TimeSeriesPoint dp = new TimeSeriesPoint();
-				dp.setTimestamp(timestamp);
-				dp.setValue(point.getValue());
+				TimeSeriesPoint dp = new TimeSeriesPoint(timestamp, point.getValue());
 				fragment.addPoint(dp);
 			} else {
 				break;
