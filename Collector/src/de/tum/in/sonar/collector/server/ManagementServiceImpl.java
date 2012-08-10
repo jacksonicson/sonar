@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -631,15 +632,28 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			for (String name : parameters) {
 				String value = jedis.get(name);
 				Parameter param = new Parameter();
-				param.setKey(getKeyValueFromRedisKey(name));
+				String keyStr = getKeyValueFromRedisKey(name);
+				param.setKey(keyStr);
 				param.setValue(value);
 				param.setExtendSensor(sensor);
+				// to override the keys of child in paremnt
+				deleteKeyFromParamList(keyStr, paramsList);
 				paramsList.add(param);
 			}
 
 			return paramsList;
 		} finally {
 			jedisPool.returnResourceObject(jedis);
+		}
+	}
+
+	private void deleteKeyFromParamList(String key, List<Parameter> paramList) {
+		Iterator<Parameter> iter = paramList.iterator();
+		while (iter.hasNext()) {
+			Parameter temp = iter.next();
+			if (temp.getKey().equalsIgnoreCase(key)) {
+				iter.remove();
+			}
 		}
 	}
 
