@@ -32,6 +32,7 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
 
   private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField EXTEND_SENSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("extendSensor", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -41,11 +42,13 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
 
   public String key; // required
   public String value; // required
+  public String extendSensor; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     KEY((short)1, "key"),
-    VALUE((short)2, "value");
+    VALUE((short)2, "value"),
+    EXTEND_SENSOR((short)3, "extendSensor");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -64,6 +67,8 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
           return KEY;
         case 2: // VALUE
           return VALUE;
+        case 3: // EXTEND_SENSOR
+          return EXTEND_SENSOR;
         default:
           return null;
       }
@@ -111,6 +116,8 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.EXTEND_SENSOR, new org.apache.thrift.meta_data.FieldMetaData("extendSensor", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Parameter.class, metaDataMap);
   }
@@ -120,11 +127,13 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
 
   public Parameter(
     String key,
-    String value)
+    String value,
+    String extendSensor)
   {
     this();
     this.key = key;
     this.value = value;
+    this.extendSensor = extendSensor;
   }
 
   /**
@@ -137,6 +146,9 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
     if (other.isSetValue()) {
       this.value = other.value;
     }
+    if (other.isSetExtendSensor()) {
+      this.extendSensor = other.extendSensor;
+    }
   }
 
   public Parameter deepCopy() {
@@ -147,6 +159,7 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
   public void clear() {
     this.key = null;
     this.value = null;
+    this.extendSensor = null;
   }
 
   public String getKey() {
@@ -197,6 +210,30 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
     }
   }
 
+  public String getExtendSensor() {
+    return this.extendSensor;
+  }
+
+  public Parameter setExtendSensor(String extendSensor) {
+    this.extendSensor = extendSensor;
+    return this;
+  }
+
+  public void unsetExtendSensor() {
+    this.extendSensor = null;
+  }
+
+  /** Returns true if field extendSensor is set (has been assigned a value) and false otherwise */
+  public boolean isSetExtendSensor() {
+    return this.extendSensor != null;
+  }
+
+  public void setExtendSensorIsSet(boolean value) {
+    if (!value) {
+      this.extendSensor = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case KEY:
@@ -215,6 +252,14 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       }
       break;
 
+    case EXTEND_SENSOR:
+      if (value == null) {
+        unsetExtendSensor();
+      } else {
+        setExtendSensor((String)value);
+      }
+      break;
+
     }
   }
 
@@ -225,6 +270,9 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
 
     case VALUE:
       return getValue();
+
+    case EXTEND_SENSOR:
+      return getExtendSensor();
 
     }
     throw new IllegalStateException();
@@ -241,6 +289,8 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       return isSetKey();
     case VALUE:
       return isSetValue();
+    case EXTEND_SENSOR:
+      return isSetExtendSensor();
     }
     throw new IllegalStateException();
   }
@@ -273,6 +323,15 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       if (!(this_present_value && that_present_value))
         return false;
       if (!this.value.equals(that.value))
+        return false;
+    }
+
+    boolean this_present_extendSensor = true && this.isSetExtendSensor();
+    boolean that_present_extendSensor = true && that.isSetExtendSensor();
+    if (this_present_extendSensor || that_present_extendSensor) {
+      if (!(this_present_extendSensor && that_present_extendSensor))
+        return false;
+      if (!this.extendSensor.equals(that.extendSensor))
         return false;
     }
 
@@ -312,6 +371,16 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetExtendSensor()).compareTo(typedOther.isSetExtendSensor());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExtendSensor()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.extendSensor, typedOther.extendSensor);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -345,6 +414,14 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       sb.append("null");
     } else {
       sb.append(this.value);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("extendSensor:");
+    if (this.extendSensor == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.extendSensor);
     }
     first = false;
     sb.append(")");
@@ -405,6 +482,14 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // EXTEND_SENSOR
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.extendSensor = iprot.readString();
+              struct.setExtendSensorIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -428,6 +513,11 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       if (struct.value != null) {
         oprot.writeFieldBegin(VALUE_FIELD_DESC);
         oprot.writeString(struct.value);
+        oprot.writeFieldEnd();
+      }
+      if (struct.extendSensor != null) {
+        oprot.writeFieldBegin(EXTEND_SENSOR_FIELD_DESC);
+        oprot.writeString(struct.extendSensor);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -454,19 +544,25 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       if (struct.isSetValue()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetExtendSensor()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetKey()) {
         oprot.writeString(struct.key);
       }
       if (struct.isSetValue()) {
         oprot.writeString(struct.value);
       }
+      if (struct.isSetExtendSensor()) {
+        oprot.writeString(struct.extendSensor);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Parameter struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.key = iprot.readString();
         struct.setKeyIsSet(true);
@@ -474,6 +570,10 @@ public class Parameter implements org.apache.thrift.TBase<Parameter, Parameter._
       if (incoming.get(1)) {
         struct.value = iprot.readString();
         struct.setValueIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.extendSensor = iprot.readString();
+        struct.setExtendSensorIsSet(true);
       }
     }
   }

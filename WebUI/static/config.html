@@ -85,6 +85,16 @@
                                name="hostLabels"/>
                     </div>
                 </div>
+                
+                 <div class="control-group">
+                    <label class="control-label" for="hostLabels">Extends:</label>
+
+                    <div class="controls">
+                        <select id="hostExtends" name="hostExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
+                </div>
 
                 <div class="control-group" id="sensorField">
                 </div>
@@ -134,6 +144,16 @@
                                name="sensorInterval"/>[seconds]
                     </div>
                 </div>
+                
+                <div class="control-group">
+                    <label class="control-label" for="hostLabels">Extends:</label>
+
+                    <div class="controls">
+                        <select id="sensorExtends" name="sensorExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
+                </div>
 
                 <div class="control-group" for="sensorType">
                     <label class="control-label">Sensor Type:</label>
@@ -158,6 +178,33 @@
                         <tbody id='sensorParamTableBody'>
                         </tbody>
                     </table>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary" id="submitSensor">Save changes</a>
+    </div>
+</div>
+
+<div class="modal hide" id="sensorExtendsDlg">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Extend Sensor</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" id="sensorExtendsForm">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="hostLabels">Extends:</label>
+
+                    <div class="controls">
+                        <select id="sensorExtends" name="sensorExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
                 </div>
             </fieldset>
         </form>
