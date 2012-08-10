@@ -75,13 +75,31 @@ function addRowToParamTable(parameter, disabledRow){
         paramTable.append(
             $('<tr>').append(
                 $('<td>').append(
-                        $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").attr("disabled", "disabled").val(parameter.key)
+                    $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").attr("disabled", "disabled").val(parameter.key)
                 ),
                 $('<td>').append(
                     $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").attr("disabled", "disabled").val(parameter.value)
+                ),
+                $('<td>').append(
+                    $('<input>').attr("type", "checkbox").change(function(){toggleData(this, parameter.key, parameter.value);})
                 )
             )
         );
+    }
+}
+
+function toggleData(object, key, value){
+    var row = $(object).parent().parent();
+    var keyObj = $(row).find('input[name$="sensorParamKey"]');
+    var valObj = $(row).find('textarea[name$="sensorParamValue"]');
+    if(!object.checked){
+        keyObj.val(key);
+        valObj.val(value);
+        keyObj.attr("disabled", "disabled");
+        valObj.attr("disabled", "disabled");
+    } else {
+        keyObj.removeAttr('disabled');
+        valObj.removeAttr('disabled');
     }
 }
 
