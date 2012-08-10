@@ -47,22 +47,6 @@ jQuery(document).ready(function ($) {
     updateHostsList();
 });
 
-function sortHostTable(){
-    var $table = $('#listHosts');
-    var $rows = $('tbody > tr',$table);
-    $rows.sort(function(a, b){
-        var keyA = $('td:eq(2)',a).text();
-        var keyB = $('td:eq(2)',b).text();
-        
-            return (keyA > keyB) ? 1 : 0;
-        
-    });
-    $.each($rows, function(index, row){
-      $table.append(row);
-    });
-    
-}
-
 function addRowToParamTable(parameter, disabledRow){
 
     if(null == parameter){
@@ -450,7 +434,6 @@ function updateHostsList() {
 
             //alert(data); // shows whole dom
             // alert( $(data).find('#wrapper').html() ); // returns null
-            sortHostTable();
             stopAlert();
 
         },
