@@ -39,7 +39,7 @@ class ServiceThread(threading.Thread):
         print 'Starting TSD callback service...'
         server.serve()
 
-def main():
+def main(interface=LISTENING_INTERFACE_IPV4, collector=COLLECTOR_HOST):
     print 'Starting Controller...'
 
     # Start the Receiver    
@@ -48,7 +48,7 @@ def main():
     
     # Register the Receiver in the Controller
     # Make socket
-    transport = TSocket.TSocket(COLLECTOR_HOST, COLLECTOR_PORT)
+    transport = TSocket.TSocket(collector, COLLECTOR_PORT)
     
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TBufferedTransport(transport)
@@ -68,7 +68,7 @@ def main():
 
     # Subscribe
     print 'Subscribing now...'
-    serviceClient.subscribe(LISTENING_INTERFACE_IPV4, LISTENING_PORT, [srv0_cpu, glassfish0_cpu]),
+    serviceClient.subscribe(interface, LISTENING_PORT, [srv0_cpu, glassfish0_cpu]),
     print 'Done'
     
 

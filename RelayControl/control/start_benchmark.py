@@ -5,10 +5,14 @@ from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 import math
+import logic.controller as controller
 
 def finished(done, client_list):
     print "execution successful"
     reactor.stop()
+    
+    # Launch the controller
+    controller.main() 
 
 
 def rain_started(ret, rain_client, client_list):
