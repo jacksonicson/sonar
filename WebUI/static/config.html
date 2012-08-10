@@ -118,7 +118,7 @@
     <div class="modal-body">
         <form class="form-horizontal" id="newSensorForm">
             <fieldset>
-                <div class="control-group">
+                <div class="control-group" id="sensorNameGroup">
                     <label class="control-label" for="sensorName">Sensor Name:</label>
 
                     <div class="controls">
@@ -127,7 +127,7 @@
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="sensorLabelGroup">
                     <label class="control-label" for="sensorLabels">Labels:</label>
 
                     <div class="controls">
@@ -136,7 +136,7 @@
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="sensorIntervalGroup">
                     <label class="control-label" for="sensorInterval">Interval:</label>
 
                     <div class="controls">
@@ -145,7 +145,7 @@
                     </div>
                 </div>
                 
-                <div class="control-group">
+                <div class="control-group hide" id="sensorExtendControl">
                     <label class="control-label" for="hostLabels">Extends:</label>
 
                     <div class="controls">
@@ -155,7 +155,7 @@
                     </div>
                 </div>
 
-                <div class="control-group" for="sensorType">
+                <div class="control-group" for="sensorType" id="sensorTypeGroup">
                     <label class="control-label">Sensor Type:</label>
 
                     <div class="controls">
@@ -167,7 +167,7 @@
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="sensorParamGroup">
                     <table class="table" style="width:98%" id="sensorParamTable">
                         <thead>
                         <tr>

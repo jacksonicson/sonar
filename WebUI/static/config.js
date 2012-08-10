@@ -95,10 +95,12 @@ function toggleData(object, key, value){
     if(!object.checked){
         keyObj.val(key);
         valObj.val(value);
+        keyObj.attr('readonly', false);
         keyObj.attr("disabled", "disabled");
         valObj.attr("disabled", "disabled");
     } else {
         keyObj.removeAttr('disabled');
+        keyObj.attr('readonly', true);
         valObj.removeAttr('disabled');
     }
 }
@@ -471,7 +473,8 @@ function updateSensorList() {
                         $('<td>').text(i),
 
                         $('<td>').append(
-                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor),
+                            $('<a>').append($('<i>').addClass('icon-cog'), "Extend").addClass("btn").attr("id", sensor.name).click(editSensorExtend)
                         ),
 						$('<td>').append(
                             $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
@@ -493,13 +496,19 @@ function updateSensorList() {
     });
 }
 
-function editSensor(event){
-	var editSensor = event.target.id;
+function editSensorExtend(event){
+    var editSensor = event.target.id;
     clearFormElements($('#newSensorForm'));
-    editSenrorIntern(event, editSensor);
+    editSenrorIntern(event, editSensor, true);
 }
 
-function editSenrorIntern(event, editSensor){
+function editSensor(event, extendFlag){
+	var editSensor = event.target.id;
+    clearFormElements($('#newSensorForm'));
+    editSenrorIntern(event, editSensor, false);
+}
+
+function editSenrorIntern(event, editSensor, extendFlag){
 	console.log("editing sensor" + editSensor);
 
     $.ajax({
@@ -521,14 +530,14 @@ function editSenrorIntern(event, editSensor){
 							labelString += ","
 					}
                     $('#sensorLabels').attr("value", labelString);
-                    populateSensorConfiguration(sensor.name);
+                    populateSensorConfiguration(sensor.name, extendFlag);
 				}    
 			}
         }
     });
 }
 
-function populateSensorConfiguration(sensorName){
+function populateSensorConfiguration(sensorName, extendFlag){
     var paramTable = $('#sensorParamTableBody');
     paramTable.children('tr').remove();
 
@@ -565,6 +574,22 @@ function populateSensorConfiguration(sensorName){
             $('#newSensorDlg').modal('show');
         }
     });
+    
+    if(!extendFlag){
+        $("#sensorNameGroup").show();
+        $("#sensorLabelGroup").show();
+        $("#sensorIntervalGroup").show();
+        $("#sensorExtendControl").hide();
+        $("#sensorTypeGroup").show();
+        $("#sensorParamGroup").show();
+    } else {
+        $("#sensorNameGroup").hide();
+        $("#sensorLabelGroup").hide();
+        $("#sensorIntervalGroup").hide();
+        $("#sensorExtendControl").show();
+        $("#sensorTypeGroup").hide();
+        $("#sensorParamGroup").hide();
+    }
 }
 
 function populateExtendSensorList(sensorName, virtualSensorName){
