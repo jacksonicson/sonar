@@ -30,13 +30,24 @@ jQuery(document).ready(function ($) {
             }
         });
     });
+    
+    $("#hostExtends").change(function() {
+        var value = $(this).val();
+        if(value == "-1"){
+            // show the sensor selection div
+            updateSensorField();
+        } else {
+            // hide the sensor selection div
+            $('#sensorField').empty();
+        }
+    });
 
     // Load list data
     updateSensorList();
     updateHostsList();
 });
 
-function addRowToParamTable(parameter){
+function addRowToParamTable(parameter, disabledRow){
 
     if(null == parameter){
         parameter = {
@@ -46,19 +57,52 @@ function addRowToParamTable(parameter){
     }
 
     var paramTable = $('#sensorParamTableBody');
-    paramTable.append(
-        $('<tr>').append(
-            $('<td>').append(
-                    $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").val(parameter.key)
-            ),
-            $('<td>').append(
-                $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").val(parameter.value)
-            ),
-            $('<td>').append(
-                $('<a>').addClass("btn").addClass("btn-primary").attr("href", "#").append($('<i>').addClass('icon-trash').addClass('icon-white'))
+    if(!disabledRow){
+        paramTable.append(
+            $('<tr>').append(
+                $('<td>').append(
+                        $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").val(parameter.key)
+                ),
+                $('<td>').append(
+                    $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").val(parameter.value)
+                ),
+                $('<td>').append(
+                    $('<a>').addClass("btn").addClass("btn-primary").attr("href", "#").append($('<i>').addClass('icon-trash').addClass('icon-white'))
+                )
             )
-        )
-    );
+        );
+    } else {
+        paramTable.append(
+            $('<tr>').append(
+                $('<td>').append(
+                    $('<input>').attr("type", "text").attr("placeholder","Key..").attr("name","sensorParamKey").attr("disabled", "disabled").val(parameter.key)
+                ),
+                $('<td>').append(
+                    $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").attr("disabled", "disabled").val(parameter.value)
+                ),
+                $('<td>').append(
+                    $('<input>').attr("type", "checkbox").change(function(){toggleData(this, parameter.key, parameter.value);})
+                )
+            )
+        );
+    }
+}
+
+function toggleData(object, key, value){
+    var row = $(object).parent().parent();
+    var keyObj = $(row).find('input[name$="sensorParamKey"]');
+    var valObj = $(row).find('textarea[name$="sensorParamValue"]');
+    if(!object.checked){
+        keyObj.val(key);
+        valObj.val(value);
+        keyObj.attr('readonly', false);
+        keyObj.attr("disabled", "disabled");
+        valObj.attr("disabled", "disabled");
+    } else {
+        keyObj.removeAttr('disabled');
+        keyObj.attr('readonly', true);
+        valObj.removeAttr('disabled');
+    }
 }
 
 function newSensor(event){
@@ -73,6 +117,7 @@ function newSensor(event){
     paramTable.children('tr').remove();
 
     clearFormElements($('#newSensorForm'));
+    populateExtendSensorList(null, null);
 }
 
 function clearFormElements(ele) {
@@ -202,10 +247,37 @@ function newHost(event) {
                     )
                 )
             }
-
+            getHostListExcludingCurrentHost(null,null);
             $('#hostName').attr("value", "");
             $('#hostLabels').attr("value", "");
             $('#newHost').modal('show');
+        }
+    });
+}
+
+function updateSensorField(){
+    $('#sensorField').empty();
+    $.ajax({
+        type:"GET",
+        url:'{{ROOT_SENSORS}}',
+        dataType:'json',
+
+        success:function (sensors) {
+
+            var sensorField = $('#sensorField');
+
+            for (var s in sensors) {
+                var sensor = sensors[s]
+                var checked = "no";
+
+                sensorField.append(
+                    $('<div>').addClass("controls").attr("id", sensor.name).append(
+                        $('<label>').addClass("checkbox").text(sensor.name).append(
+                            $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
+                        )
+                    )
+                )
+            }
         }
     });
 }
@@ -251,24 +323,28 @@ function editHostIntern(event, editHost) {
                     }
 
                     $('#hostLabels').attr("value", labelsString);
+                    
+                    getHostListExcludingCurrentHost(host.hostname, host.extendsHost);
+                    
+                    if(null == host.extendsHost){
+                        // need not populate the sensor list when the host extends another host
+                        for (var s in host.sensor) {
 
+                            var sensor = host.sensor[s]
 
-                    for (var s in host.sensor) {
-
-                        var sensor = host.sensor[s]
-
-                        sensorField.append(
-                            $('<div>').addClass("controls").attr("id", sensor.name).append(
-                                $('<label>').addClass("checkbox").text(sensor.name).append(
-                                    $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
+                            sensorField.append(
+                                $('<div>').addClass("controls").attr("id", sensor.name).append(
+                                    $('<label>').addClass("checkbox").text(sensor.name).append(
+                                        $('<input>').attr("type", "checkbox").attr("id", "chbx_" + sensor.name).attr("name", "sensor_" + sensor.name)
+                                    )
                                 )
                             )
-                        )
 
-                        console.log("sensor active: " + sensor.active + " sensor " + sensor.name);
+                            console.log("sensor active: " + sensor.active + " sensor " + sensor.name);
 
-                        if (sensor.active) {
-                            $("#chbx_" + sensor.name).attr("checked", "yes")
+                            if (sensor.active) {
+                                $("#chbx_" + sensor.name).attr("checked", "yes")
+                            }
                         }
                     }
 
@@ -280,8 +356,33 @@ function editHostIntern(event, editHost) {
             }
         }
     });
+}
 
+function getHostListExcludingCurrentHost(currentHostName, virtualHostSelected){
+    $.ajax({
+        type:"GET",
+        url:'{{ROOT_HOSTS}}',
+        dataType:'json',
 
+        success:function (data) {
+            $('#hostExtends').empty();
+            var noneOpt = new Option("None", "-1");
+            $(noneOpt).html("None");
+            $("#hostExtends").append(noneOpt);
+            
+            for (var i in data) {
+                var host = data[i];
+                if(currentHostName == null || host.hostname.toLowerCase() != currentHostName.toLowerCase()){
+                    var o = new Option(host.hostname, host.hostname);
+                    $(o).html(host.hostname);
+                    $("#hostExtends").append(o);
+                }
+            }
+            if(null != virtualHostSelected){
+                $("#hostExtends").val(virtualHostSelected); 
+            }
+        }
+    });
 }
 
 function updateHostsList() {
@@ -372,7 +473,8 @@ function updateSensorList() {
                         $('<td>').text(i),
 
                         $('<td>').append(
-                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor)
+                            $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor),
+                            $('<a>').append($('<i>').addClass('icon-cog'), "Extend").addClass("btn").attr("id", sensor.name).click(editSensorExtend)
                         ),
 						$('<td>').append(
                             $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
@@ -394,13 +496,19 @@ function updateSensorList() {
     });
 }
 
-function editSensor(event){
-	var editSensor = event.target.id;
+function editSensorExtend(event){
+    var editSensor = event.target.id;
     clearFormElements($('#newSensorForm'));
-    editSenrorIntern(event, editSensor);
+    editSenrorIntern(event, editSensor, true);
 }
 
-function editSenrorIntern(event, editSensor){
+function editSensor(event, extendFlag){
+	var editSensor = event.target.id;
+    clearFormElements($('#newSensorForm'));
+    editSenrorIntern(event, editSensor, false);
+}
+
+function editSenrorIntern(event, editSensor, extendFlag){
 	console.log("editing sensor" + editSensor);
 
     $.ajax({
@@ -422,15 +530,14 @@ function editSenrorIntern(event, editSensor){
 							labelString += ","
 					}
                     $('#sensorLabels').attr("value", labelString);
-                    populateSensorConfiguration(sensor.name);
-					break;
-				}
+                    populateSensorConfiguration(sensor.name, extendFlag);
+				}    
 			}
         }
     });
 }
 
-function populateSensorConfiguration(sensorName){
+function populateSensorConfiguration(sensorName, extendFlag){
     var paramTable = $('#sensorParamTableBody');
     paramTable.children('tr').remove();
 
@@ -447,7 +554,10 @@ function populateSensorConfiguration(sensorName){
             if(null != configData.parameters && configData.parameters.length > 0){
                 for(var count = 0; count < configData.parameters.length; count++){
                     var parameter = configData.parameters[count];
-                    addRowToParamTable(parameter);
+                    if(parameter.extendSensor == sensorName)
+                        addRowToParamTable(parameter);
+                    else 
+                        addRowToParamTable(parameter, true);
                 }
             }
 
@@ -459,8 +569,53 @@ function populateSensorConfiguration(sensorName){
                 $('#logButton').button('toggle');
             }
 
+            populateExtendSensorList(sensorName, configData.sensorExtends);
+
             $('#newSensorDlg').modal('show');
         }
     });
+    
+    if(!extendFlag){
+        $("#sensorNameGroup").show();
+        $("#sensorLabelGroup").show();
+        $("#sensorIntervalGroup").show();
+        $("#sensorExtendControl").hide();
+        $("#sensorTypeGroup").show();
+        $("#sensorParamGroup").show();
+    } else {
+        $("#sensorNameGroup").hide();
+        $("#sensorLabelGroup").hide();
+        $("#sensorIntervalGroup").hide();
+        $("#sensorExtendControl").show();
+        $("#sensorTypeGroup").hide();
+        $("#sensorParamGroup").hide();
+    }
+}
+
+function populateExtendSensorList(sensorName, virtualSensorName){
+    $.ajax({
+        type:"GET",
+        url:'{{ROOT_SENSORS}}',
+        dataType:'json',
+
+        success:function (data) {
+            $('#sensorExtends').empty();
+            var noneOpt = new Option("None", "-1");
+            $(noneOpt).html("None");
+            $("#sensorExtends").append(noneOpt);
+
+            for (var i in data) {
+                var sensor = data[i];
+                if(sensorName == null || sensor.name.toLowerCase() != sensorName.toLowerCase()){
+                    var o = new Option(sensor.name, sensor.name);
+                    $(o).html(sensor.name);
+                    $("#sensorExtends").append(o);
+                }
+                if(null != virtualSensorName){
+                    $("#sensorExtends").val(virtualSensorName); 
+                }
+            }
+        }
+    });			
 }
 

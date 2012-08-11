@@ -85,52 +85,57 @@ function addHostHandler(req, resp) {
 
                     var labels = body.hostLabels.split(",");
 
-                    console.log("SAVING LABELS: " + labels);
+                    console.log("saving host extensions :" + body.hostExtends);
+                    
+                    client.addHostExtension(body.hostname, body.hostExtends, function (err, ret) {
+                        
+                        console.log("SAVING LABELS: " + labels);
+                        
+                        client.setHostLabels(body.hostname, labels, function (err, ret) {
 
-                    client.setHostLabels(body.hostname, labels, function (err, ret) {
-
-                        console.log("b");
-                        var sensorList = [];
-                        for (var i in body) {
-                            if (i.indexOf("sensor_") == 0) {
-                                console.log("sensor active " + i);
-                                sensorList[i.replace("sensor_", '')] = body[i]
-                            }
-                        }
-
-                        var disableList = [];
-                        for (var s in sensors) {
-                            if (sensorList.hasOwnProperty(sensors[s]) == false) {
-                                disableList[sensors[s]] = 'off';
-                            }
-                        }
-
-                        for (var item in disableList) {
-                            sensorList[item] = disableList[item];
-                        }
-
-                        var counter = 0;
-                        for (var i in sensorList) {
-                            var active = false;
-                            if (sensorList[i] == "on") {
-                                console.log("sensor " + i + " is active!!!!");
-                                active = true;
-                            }
-
-                            console.log("SETTING SENSOR: " + i);
-
-                            client.setSensor(body.hostname, i, active, function (err, ret) {
-                                console.log("sensor set " + i);
-                                counter++;
-                                if (counter == sensorList.length) {
-                                    console.log("everything worked out...");
-                                    resp.end("ok");
+                            console.log("b");
+                            var sensorList = [];
+                            for (var i in body) {
+                                if (i.indexOf("sensor_") == 0) {
+                                    console.log("sensor active " + i);
+                                    sensorList[i.replace("sensor_", '')] = body[i]
                                 }
-                            })
-                        }
+                            }
 
-                        if (sensorList.length == 0)
-                            resp.end("ok");
+                            var disableList = [];
+                            for (var s in sensors) {
+                                if (sensorList.hasOwnProperty(sensors[s]) == false) {
+                                    disableList[sensors[s]] = 'off';
+                                }
+                            }
+
+                            for (var item in disableList) {
+                                sensorList[item] = disableList[item];
+                            }
+
+                            var counter = 0;
+                            for (var i in sensorList) {
+                                var active = false;
+                                if (sensorList[i] == "on") {
+                                    console.log("sensor " + i + " is active!!!!");
+                                    active = true;
+                                }
+
+                                console.log("SETTING SENSOR: " + i);
+
+                                client.setSensor(body.hostname, i, active, function (err, ret) {
+                                    console.log("sensor set " + i);
+                                    counter++;
+                                    if (counter == sensorList.length) {
+                                        console.log("everything worked out...");
+                                        resp.end("ok");
+                                    }
+                                })
+                            }
+
+                            if (sensorList.length == 0)
+                                resp.end("ok");
+                        })
                     })
                 })
             })
@@ -171,6 +176,7 @@ function addSensorHandler(req, resp) {
                         var sensorType = body.sensorType;
                         var paramKeys = body.sensorParamKey;
                         var paramValues = body.sensorParamValue;
+                        var sensorExtends = body.sensorExtends;
                         var parameters = new Array();
                         var config = false;
 
@@ -181,7 +187,7 @@ function addSensorHandler(req, resp) {
                         } else {
                             sensorInterval = 0;
                         }
-
+                        
                         var enumSensorType = null;
                         if(null == sensorType){
                             enumSensorType =  0;
@@ -192,6 +198,11 @@ function addSensorHandler(req, resp) {
                         }
 
                         console.log("Sensor type value: " + enumSensorType);
+                        
+                        console.log("Sensor Extends: " + sensorExtends);
+                        if(null == sensorExtends || sensorExtends == "-1"){
+                            sensorExtends = null;
+                        }
 
                         // prepare the parameter array
                         if(null != paramKeys){
@@ -218,7 +229,8 @@ function addSensorHandler(req, resp) {
                             var sensorConfiguration = new types.SensorConfiguration({
                                 interval : sensorInterval,
                                 parameters : parameters,
-                                sensorType: enumSensorType
+                                sensorType: enumSensorType,
+                                sensorExtends: sensorExtends
                             });
 
                             client.setSensorConfiguration(body.sensorName, sensorConfiguration, function (err, ret) {
@@ -261,50 +273,62 @@ function hostsHandler(req, resp) {
 
                 dataTable[i] = {
                     hostname:hosts[i],
+                    extendsHost:null,
                     labels:[],
                     sensor:[]
                 }
-
-                // Getting labels for the current host
-                client.getLabels(hosts[i], (function (i) {
-                    return function (err, labels) {
-
-                        console.log("labels received");
-                        dataTable[i].labels = labels;
-
-                        if (sensors.length == 0) {
-                            counter++;
-                            if (counter == hosts.length) {
-                                resp.end(JSON.stringify(dataTable));
-                                return;
-                            }
+                
+                client.getHostExtension(hosts[i], (function (i) {
+                    return function(err, extendsHost){
+                        if(null != extendsHost){
+                            console.log(i + "extends :" + extendsHost);
+                            dataTable[i].extendsHost = extendsHost;
                         }
+                        
+                        // Getting labels for the current host
+                        client.getLabels(hosts[i], (function (i) {
+                            return function (err, labels) {
 
-                        // Get sensor configuration for all (sensors + hosts)
-                        for (var j in sensors) {
-                            console.log("checking sensor: " + sensors[j]);
-                            // Get bundled sensor configuration for the host
-                            client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
-                                return function (err, sensorConfig) {
-                                    dataTable[i].sensor[j] = {
-                                        name:sensorConfig.sensor,
-                                        labels:sensorConfig.labels,
-                                        active:sensorConfig.active
-                                    }
-
-                                    // For each host all sensors have to be evaluated
+                                console.log("labels received");
+                                dataTable[i].labels = labels;
+                                if (sensors.length == 0) {
                                     counter++;
-                                    if (counter >= sensors.length * hosts.length) {
+                                    if (counter == hosts.length) {
                                         resp.end(JSON.stringify(dataTable));
+                                        console.log("Returning from here");
                                         return;
                                     }
                                 }
-                            })(i, j));
-                        }
-                    }
+                                console.log("sensors: " + sensors);
+                            
+                                // Get sensor configuration for all (sensors + hosts)
+                                for (var j in sensors) {
+                                    console.log("checking sensor: " + sensors[j]);
+                                    // Get bundled sensor configuration for the host
+                                    client.getBundledSensorConfiguration(sensors[j], hosts[i], (function (i, j) {
+                                        return function (err, sensorConfig) {
+                                            dataTable[i].sensor[j] = {
+                                                name:sensorConfig.sensor,
+                                                labels:sensorConfig.labels,
+                                                active:sensorConfig.active
+                                            }
+                                            
+                                            console.log(i + ":" + hosts[i] + ":" + dataTable[i].sensor[j].name+ ":" + dataTable[i].sensor[j].active);
+
+                                            // For each host all sensors have to be evaluated
+                                            counter++;
+                                            if (counter >= sensors.length * hosts.length) {
+                                                resp.end(JSON.stringify(dataTable));
+                                                console.log("Processing done");
+                                                return;
+                                            }
+                                        }
+                                    })(i, j));
+                                }
+                            }
+                        })(i))
+                    }  
                 })(i))
-
-
             }
         })
     });

@@ -59,6 +59,10 @@ public class ManagementService {
 
     public void addHost(String hostname) throws org.apache.thrift.TException;
 
+    public void addHostExtension(String hostname, String virtualHostName) throws org.apache.thrift.TException;
+
+    public String getHostExtension(String hostname) throws org.apache.thrift.TException;
+
     public Set<String> getAllHosts() throws org.apache.thrift.TException;
 
     public void delHost(String hostname) throws org.apache.thrift.TException;
@@ -104,6 +108,10 @@ public class ManagementService {
     public void getSensorNames(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getSensorNames_call> resultHandler) throws org.apache.thrift.TException;
 
     public void addHost(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addHost_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void addHostExtension(String hostname, String virtualHostName, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addHostExtension_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void getHostExtension(String hostname, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getHostExtension_call> resultHandler) throws org.apache.thrift.TException;
 
     public void getAllHosts(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getAllHosts_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -447,6 +455,50 @@ public class ManagementService {
       addHost_result result = new addHost_result();
       receiveBase(result, "addHost");
       return;
+    }
+
+    public void addHostExtension(String hostname, String virtualHostName) throws org.apache.thrift.TException
+    {
+      send_addHostExtension(hostname, virtualHostName);
+      recv_addHostExtension();
+    }
+
+    public void send_addHostExtension(String hostname, String virtualHostName) throws org.apache.thrift.TException
+    {
+      addHostExtension_args args = new addHostExtension_args();
+      args.setHostname(hostname);
+      args.setVirtualHostName(virtualHostName);
+      sendBase("addHostExtension", args);
+    }
+
+    public void recv_addHostExtension() throws org.apache.thrift.TException
+    {
+      addHostExtension_result result = new addHostExtension_result();
+      receiveBase(result, "addHostExtension");
+      return;
+    }
+
+    public String getHostExtension(String hostname) throws org.apache.thrift.TException
+    {
+      send_getHostExtension(hostname);
+      return recv_getHostExtension();
+    }
+
+    public void send_getHostExtension(String hostname) throws org.apache.thrift.TException
+    {
+      getHostExtension_args args = new getHostExtension_args();
+      args.setHostname(hostname);
+      sendBase("getHostExtension", args);
+    }
+
+    public String recv_getHostExtension() throws org.apache.thrift.TException
+    {
+      getHostExtension_result result = new getHostExtension_result();
+      receiveBase(result, "getHostExtension");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getHostExtension failed: unknown result");
     }
 
     public Set<String> getAllHosts() throws org.apache.thrift.TException
@@ -1073,6 +1125,73 @@ public class ManagementService {
       }
     }
 
+    public void addHostExtension(String hostname, String virtualHostName, org.apache.thrift.async.AsyncMethodCallback<addHostExtension_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      addHostExtension_call method_call = new addHostExtension_call(hostname, virtualHostName, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class addHostExtension_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String hostname;
+      private String virtualHostName;
+      public addHostExtension_call(String hostname, String virtualHostName, org.apache.thrift.async.AsyncMethodCallback<addHostExtension_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.hostname = hostname;
+        this.virtualHostName = virtualHostName;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addHostExtension", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        addHostExtension_args args = new addHostExtension_args();
+        args.setHostname(hostname);
+        args.setVirtualHostName(virtualHostName);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_addHostExtension();
+      }
+    }
+
+    public void getHostExtension(String hostname, org.apache.thrift.async.AsyncMethodCallback<getHostExtension_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      getHostExtension_call method_call = new getHostExtension_call(hostname, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class getHostExtension_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String hostname;
+      public getHostExtension_call(String hostname, org.apache.thrift.async.AsyncMethodCallback<getHostExtension_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.hostname = hostname;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getHostExtension", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getHostExtension_args args = new getHostExtension_args();
+        args.setHostname(hostname);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public String getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_getHostExtension();
+      }
+    }
+
     public void getAllHosts(org.apache.thrift.async.AsyncMethodCallback<getAllHosts_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       getAllHosts_call method_call = new getAllHosts_call(resultHandler, this, ___protocolFactory, ___transport);
@@ -1333,6 +1452,8 @@ public class ManagementService {
       processMap.put("getSensorConfiguration", new getSensorConfiguration());
       processMap.put("getSensorNames", new getSensorNames());
       processMap.put("addHost", new addHost());
+      processMap.put("addHostExtension", new addHostExtension());
+      processMap.put("getHostExtension", new getHostExtension());
       processMap.put("getAllHosts", new getAllHosts());
       processMap.put("delHost", new delHost());
       processMap.put("setHostLabels", new setHostLabels());
@@ -1564,6 +1685,38 @@ public class ManagementService {
       protected addHost_result getResult(I iface, addHost_args args) throws org.apache.thrift.TException {
         addHost_result result = new addHost_result();
         iface.addHost(args.hostname);
+        return result;
+      }
+    }
+
+    private static class addHostExtension<I extends Iface> extends org.apache.thrift.ProcessFunction<I, addHostExtension_args> {
+      public addHostExtension() {
+        super("addHostExtension");
+      }
+
+      protected addHostExtension_args getEmptyArgsInstance() {
+        return new addHostExtension_args();
+      }
+
+      protected addHostExtension_result getResult(I iface, addHostExtension_args args) throws org.apache.thrift.TException {
+        addHostExtension_result result = new addHostExtension_result();
+        iface.addHostExtension(args.hostname, args.virtualHostName);
+        return result;
+      }
+    }
+
+    private static class getHostExtension<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getHostExtension_args> {
+      public getHostExtension() {
+        super("getHostExtension");
+      }
+
+      protected getHostExtension_args getEmptyArgsInstance() {
+        return new getHostExtension_args();
+      }
+
+      protected getHostExtension_result getResult(I iface, getHostExtension_args args) throws org.apache.thrift.TException {
+        getHostExtension_result result = new getHostExtension_result();
+        result.success = iface.getHostExtension(args.hostname);
         return result;
       }
     }
@@ -11448,6 +11601,1410 @@ public class ManagementService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, addHost_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class addHostExtension_args implements org.apache.thrift.TBase<addHostExtension_args, addHostExtension_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addHostExtension_args");
+
+    private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField VIRTUAL_HOST_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("virtualHostName", org.apache.thrift.protocol.TType.STRING, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new addHostExtension_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new addHostExtension_argsTupleSchemeFactory());
+    }
+
+    public String hostname; // required
+    public String virtualHostName; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      HOSTNAME((short)1, "hostname"),
+      VIRTUAL_HOST_NAME((short)2, "virtualHostName");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // HOSTNAME
+            return HOSTNAME;
+          case 2: // VIRTUAL_HOST_NAME
+            return VIRTUAL_HOST_NAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.VIRTUAL_HOST_NAME, new org.apache.thrift.meta_data.FieldMetaData("virtualHostName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addHostExtension_args.class, metaDataMap);
+    }
+
+    public addHostExtension_args() {
+    }
+
+    public addHostExtension_args(
+      String hostname,
+      String virtualHostName)
+    {
+      this();
+      this.hostname = hostname;
+      this.virtualHostName = virtualHostName;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public addHostExtension_args(addHostExtension_args other) {
+      if (other.isSetHostname()) {
+        this.hostname = other.hostname;
+      }
+      if (other.isSetVirtualHostName()) {
+        this.virtualHostName = other.virtualHostName;
+      }
+    }
+
+    public addHostExtension_args deepCopy() {
+      return new addHostExtension_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.hostname = null;
+      this.virtualHostName = null;
+    }
+
+    public String getHostname() {
+      return this.hostname;
+    }
+
+    public addHostExtension_args setHostname(String hostname) {
+      this.hostname = hostname;
+      return this;
+    }
+
+    public void unsetHostname() {
+      this.hostname = null;
+    }
+
+    /** Returns true if field hostname is set (has been assigned a value) and false otherwise */
+    public boolean isSetHostname() {
+      return this.hostname != null;
+    }
+
+    public void setHostnameIsSet(boolean value) {
+      if (!value) {
+        this.hostname = null;
+      }
+    }
+
+    public String getVirtualHostName() {
+      return this.virtualHostName;
+    }
+
+    public addHostExtension_args setVirtualHostName(String virtualHostName) {
+      this.virtualHostName = virtualHostName;
+      return this;
+    }
+
+    public void unsetVirtualHostName() {
+      this.virtualHostName = null;
+    }
+
+    /** Returns true if field virtualHostName is set (has been assigned a value) and false otherwise */
+    public boolean isSetVirtualHostName() {
+      return this.virtualHostName != null;
+    }
+
+    public void setVirtualHostNameIsSet(boolean value) {
+      if (!value) {
+        this.virtualHostName = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case HOSTNAME:
+        if (value == null) {
+          unsetHostname();
+        } else {
+          setHostname((String)value);
+        }
+        break;
+
+      case VIRTUAL_HOST_NAME:
+        if (value == null) {
+          unsetVirtualHostName();
+        } else {
+          setVirtualHostName((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case HOSTNAME:
+        return getHostname();
+
+      case VIRTUAL_HOST_NAME:
+        return getVirtualHostName();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case HOSTNAME:
+        return isSetHostname();
+      case VIRTUAL_HOST_NAME:
+        return isSetVirtualHostName();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof addHostExtension_args)
+        return this.equals((addHostExtension_args)that);
+      return false;
+    }
+
+    public boolean equals(addHostExtension_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_hostname = true && this.isSetHostname();
+      boolean that_present_hostname = true && that.isSetHostname();
+      if (this_present_hostname || that_present_hostname) {
+        if (!(this_present_hostname && that_present_hostname))
+          return false;
+        if (!this.hostname.equals(that.hostname))
+          return false;
+      }
+
+      boolean this_present_virtualHostName = true && this.isSetVirtualHostName();
+      boolean that_present_virtualHostName = true && that.isSetVirtualHostName();
+      if (this_present_virtualHostName || that_present_virtualHostName) {
+        if (!(this_present_virtualHostName && that_present_virtualHostName))
+          return false;
+        if (!this.virtualHostName.equals(that.virtualHostName))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(addHostExtension_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      addHostExtension_args typedOther = (addHostExtension_args)other;
+
+      lastComparison = Boolean.valueOf(isSetHostname()).compareTo(typedOther.isSetHostname());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetHostname()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hostname, typedOther.hostname);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetVirtualHostName()).compareTo(typedOther.isSetVirtualHostName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetVirtualHostName()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.virtualHostName, typedOther.virtualHostName);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("addHostExtension_args(");
+      boolean first = true;
+
+      sb.append("hostname:");
+      if (this.hostname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.hostname);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("virtualHostName:");
+      if (this.virtualHostName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.virtualHostName);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class addHostExtension_argsStandardSchemeFactory implements SchemeFactory {
+      public addHostExtension_argsStandardScheme getScheme() {
+        return new addHostExtension_argsStandardScheme();
+      }
+    }
+
+    private static class addHostExtension_argsStandardScheme extends StandardScheme<addHostExtension_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, addHostExtension_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // HOSTNAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.hostname = iprot.readString();
+                struct.setHostnameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // VIRTUAL_HOST_NAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.virtualHostName = iprot.readString();
+                struct.setVirtualHostNameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, addHostExtension_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.hostname != null) {
+          oprot.writeFieldBegin(HOSTNAME_FIELD_DESC);
+          oprot.writeString(struct.hostname);
+          oprot.writeFieldEnd();
+        }
+        if (struct.virtualHostName != null) {
+          oprot.writeFieldBegin(VIRTUAL_HOST_NAME_FIELD_DESC);
+          oprot.writeString(struct.virtualHostName);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class addHostExtension_argsTupleSchemeFactory implements SchemeFactory {
+      public addHostExtension_argsTupleScheme getScheme() {
+        return new addHostExtension_argsTupleScheme();
+      }
+    }
+
+    private static class addHostExtension_argsTupleScheme extends TupleScheme<addHostExtension_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, addHostExtension_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetHostname()) {
+          optionals.set(0);
+        }
+        if (struct.isSetVirtualHostName()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetHostname()) {
+          oprot.writeString(struct.hostname);
+        }
+        if (struct.isSetVirtualHostName()) {
+          oprot.writeString(struct.virtualHostName);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, addHostExtension_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.hostname = iprot.readString();
+          struct.setHostnameIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.virtualHostName = iprot.readString();
+          struct.setVirtualHostNameIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class addHostExtension_result implements org.apache.thrift.TBase<addHostExtension_result, addHostExtension_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addHostExtension_result");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new addHostExtension_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new addHostExtension_resultTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addHostExtension_result.class, metaDataMap);
+    }
+
+    public addHostExtension_result() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public addHostExtension_result(addHostExtension_result other) {
+    }
+
+    public addHostExtension_result deepCopy() {
+      return new addHostExtension_result(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof addHostExtension_result)
+        return this.equals((addHostExtension_result)that);
+      return false;
+    }
+
+    public boolean equals(addHostExtension_result that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(addHostExtension_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      addHostExtension_result typedOther = (addHostExtension_result)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("addHostExtension_result(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class addHostExtension_resultStandardSchemeFactory implements SchemeFactory {
+      public addHostExtension_resultStandardScheme getScheme() {
+        return new addHostExtension_resultStandardScheme();
+      }
+    }
+
+    private static class addHostExtension_resultStandardScheme extends StandardScheme<addHostExtension_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, addHostExtension_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, addHostExtension_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class addHostExtension_resultTupleSchemeFactory implements SchemeFactory {
+      public addHostExtension_resultTupleScheme getScheme() {
+        return new addHostExtension_resultTupleScheme();
+      }
+    }
+
+    private static class addHostExtension_resultTupleScheme extends TupleScheme<addHostExtension_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, addHostExtension_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, addHostExtension_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class getHostExtension_args implements org.apache.thrift.TBase<getHostExtension_args, getHostExtension_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getHostExtension_args");
+
+    private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getHostExtension_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getHostExtension_argsTupleSchemeFactory());
+    }
+
+    public String hostname; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      HOSTNAME((short)1, "hostname");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // HOSTNAME
+            return HOSTNAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getHostExtension_args.class, metaDataMap);
+    }
+
+    public getHostExtension_args() {
+    }
+
+    public getHostExtension_args(
+      String hostname)
+    {
+      this();
+      this.hostname = hostname;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getHostExtension_args(getHostExtension_args other) {
+      if (other.isSetHostname()) {
+        this.hostname = other.hostname;
+      }
+    }
+
+    public getHostExtension_args deepCopy() {
+      return new getHostExtension_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.hostname = null;
+    }
+
+    public String getHostname() {
+      return this.hostname;
+    }
+
+    public getHostExtension_args setHostname(String hostname) {
+      this.hostname = hostname;
+      return this;
+    }
+
+    public void unsetHostname() {
+      this.hostname = null;
+    }
+
+    /** Returns true if field hostname is set (has been assigned a value) and false otherwise */
+    public boolean isSetHostname() {
+      return this.hostname != null;
+    }
+
+    public void setHostnameIsSet(boolean value) {
+      if (!value) {
+        this.hostname = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case HOSTNAME:
+        if (value == null) {
+          unsetHostname();
+        } else {
+          setHostname((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case HOSTNAME:
+        return getHostname();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case HOSTNAME:
+        return isSetHostname();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getHostExtension_args)
+        return this.equals((getHostExtension_args)that);
+      return false;
+    }
+
+    public boolean equals(getHostExtension_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_hostname = true && this.isSetHostname();
+      boolean that_present_hostname = true && that.isSetHostname();
+      if (this_present_hostname || that_present_hostname) {
+        if (!(this_present_hostname && that_present_hostname))
+          return false;
+        if (!this.hostname.equals(that.hostname))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getHostExtension_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getHostExtension_args typedOther = (getHostExtension_args)other;
+
+      lastComparison = Boolean.valueOf(isSetHostname()).compareTo(typedOther.isSetHostname());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetHostname()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hostname, typedOther.hostname);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getHostExtension_args(");
+      boolean first = true;
+
+      sb.append("hostname:");
+      if (this.hostname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.hostname);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getHostExtension_argsStandardSchemeFactory implements SchemeFactory {
+      public getHostExtension_argsStandardScheme getScheme() {
+        return new getHostExtension_argsStandardScheme();
+      }
+    }
+
+    private static class getHostExtension_argsStandardScheme extends StandardScheme<getHostExtension_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getHostExtension_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // HOSTNAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.hostname = iprot.readString();
+                struct.setHostnameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getHostExtension_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.hostname != null) {
+          oprot.writeFieldBegin(HOSTNAME_FIELD_DESC);
+          oprot.writeString(struct.hostname);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getHostExtension_argsTupleSchemeFactory implements SchemeFactory {
+      public getHostExtension_argsTupleScheme getScheme() {
+        return new getHostExtension_argsTupleScheme();
+      }
+    }
+
+    private static class getHostExtension_argsTupleScheme extends TupleScheme<getHostExtension_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getHostExtension_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetHostname()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetHostname()) {
+          oprot.writeString(struct.hostname);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getHostExtension_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.hostname = iprot.readString();
+          struct.setHostnameIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class getHostExtension_result implements org.apache.thrift.TBase<getHostExtension_result, getHostExtension_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getHostExtension_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getHostExtension_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getHostExtension_resultTupleSchemeFactory());
+    }
+
+    public String success; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getHostExtension_result.class, metaDataMap);
+    }
+
+    public getHostExtension_result() {
+    }
+
+    public getHostExtension_result(
+      String success)
+    {
+      this();
+      this.success = success;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getHostExtension_result(getHostExtension_result other) {
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
+    }
+
+    public getHostExtension_result deepCopy() {
+      return new getHostExtension_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+    }
+
+    public String getSuccess() {
+      return this.success;
+    }
+
+    public getHostExtension_result setSuccess(String success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getHostExtension_result)
+        return this.equals((getHostExtension_result)that);
+      return false;
+    }
+
+    public boolean equals(getHostExtension_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getHostExtension_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getHostExtension_result typedOther = (getHostExtension_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getHostExtension_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getHostExtension_resultStandardSchemeFactory implements SchemeFactory {
+      public getHostExtension_resultStandardScheme getScheme() {
+        return new getHostExtension_resultStandardScheme();
+      }
+    }
+
+    private static class getHostExtension_resultStandardScheme extends StandardScheme<getHostExtension_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getHostExtension_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.success = iprot.readString();
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getHostExtension_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          oprot.writeString(struct.success);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getHostExtension_resultTupleSchemeFactory implements SchemeFactory {
+      public getHostExtension_resultTupleScheme getScheme() {
+        return new getHostExtension_resultTupleScheme();
+      }
+    }
+
+    private static class getHostExtension_resultTupleScheme extends TupleScheme<getHostExtension_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getHostExtension_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSuccess()) {
+          oprot.writeString(struct.success);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getHostExtension_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.success = iprot.readString();
+          struct.setSuccessIsSet(true);
+        }
       }
     }
 
