@@ -424,6 +424,9 @@ function updateHostsList() {
                         .append(
                         $('<td>').text(i),
                         $('<td>').append(
+                            $('<input>').attr("type", "checkbox").attr("id", "ext_" + host.hostname).attr("name", "extHosts")
+                        ),
+                        $('<td>').append(
                             $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
                         ),
                         $('<td>').append(
@@ -474,7 +477,7 @@ function updateSensorList() {
 
                         $('<td>').append(
                             $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", sensor.name).click(deleteSensor),
-                            $('<a>').append($('<i>').addClass('icon-cog'), "Extend").addClass("btn").attr("id", sensor.name).click(editSensorExtend)
+                            $('<a>').append($('<i>').addClass('icon-cog'), "Extend").addClass("btn").attr("id", "ext_" + sensor.name).click(editSensorExtend)
                         ),
 						$('<td>').append(
                             $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
@@ -498,8 +501,10 @@ function updateSensorList() {
 
 function editSensorExtend(event){
     var editSensor = event.target.id;
+    var sensorName = editSensor.substring(4, editSensor.length);
+    
     clearFormElements($('#newSensorForm'));
-    editSenrorIntern(event, editSensor, true);
+    editSenrorIntern(event, sensorName, true);
 }
 
 function editSensor(event, extendFlag){
