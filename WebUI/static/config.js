@@ -385,8 +385,91 @@ function getHostListExcludingCurrentHost(currentHostName, virtualHostSelected){
     });
 }
 
+function updateCheckboxStates(event){
+    var id = event.target.id;
+    var $table = $('#listHosts');
+    var $rows = $('tbody > tr',$table);
+    var atLeastOneSelected = false;
+    
+    $.each($rows, function(index, row){
+        var keyA = $('td:eq(1) > input[type="checkbox"]', row);
+        var hostName = keyA.attr('id');
+        var actualHostName = hostName.substring(4, hostName.length);
+        if(keyA.is(':checked')){
+            setOption(actualHostName, true);
+        } else {
+            setOption(actualHostName, false);
+        }
+        if(keyA.is(':checked') && !atLeastOneSelected){
+            atLeastOneSelected = true;
+        }
+    });
+    
+    if(atLeastOneSelected){
+        $("#extendsButton").removeClass("disabled");
+    } else {
+        $("#extendsButton").addClass("disabled");
+    }
+}
+
+function setBulkHostExtends(event){
+    var hostNameStr = event.target.id;
+    var parentHostName = hostNameStr.substring(8, hostNameStr.length);
+    
+    // get the selected children to override
+    var formData = "";
+    var $table = $('#listHosts');
+    var $rows = $('tbody > tr',$table);
+    
+    $.each($rows, function(index, row){
+        var keyA = $('td:eq(1) > input[type="checkbox"]', row);
+        var hostName = keyA.attr('id');
+        var actualHostName = hostName.substring(4, hostName.length);
+        if(keyA.is(':checked')){
+            formData += "childHost=" + actualHostName + "&";
+        }
+    });
+    formData += "parentHost=" + parentHostName;
+    
+    $.ajax({
+        type:"POST",
+        url:'{{ROOT_HOSTEXTEND}}',
+        dataType:'text',
+        data:formData,
+        success:function (data) {
+            if (data == 'ok') {
+                updateHostsList();
+            } else {
+                $('#errors').show();
+                $('#errors').text("Error: Could not extend the sensors...");
+            }
+        }
+    });
+    
+    
+}
+
+function setOption(hostname, option){
+    var $button = $('ul#hostExtendOptions li');
+    $.each($button, function(index, row){
+         var keyA = $('a', row);
+         if(hostname == keyA.text()){
+            if(option){
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+            return;
+         }
+    });
+} 
+
 function updateHostsList() {
     doAlert("Loading...");
+    
+    // clear states of extension
+    $("#extendsButton").addClass("disabled");
+    $("#hostExtendOptions li:not(:first)").remove();
 
     // Load all hosts
     $.ajax({
@@ -424,7 +507,7 @@ function updateHostsList() {
                         .append(
                         $('<td>').text(i),
                         $('<td>').append(
-                            $('<input>').attr("type", "checkbox").attr("id", "ext_" + host.hostname).attr("name", "extHosts")
+                            $('<input>').attr("type", "checkbox").attr("id", "ext_" + host.hostname).attr("name", "extHosts").click(updateCheckboxStates)
                         ),
                         $('<td>').append(
                             $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
@@ -433,6 +516,13 @@ function updateHostsList() {
                             $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
                         ),
                         $('<td>').append(list)
+                    )
+                );
+                
+                // clear host extesion
+                $("#hostExtendOptions").append(
+                    $('<li>').append(
+                        $('<a>').text(host.hostname).attr("id", "hostext_" + host.hostname).click(setBulkHostExtends)
                     )
                 );
             }

@@ -43,12 +43,9 @@
                 <div class="btn-group">
                     <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
                  
-                  <button class="btn dropdown-toggle" data-toggle="dropdown">Extend<span class="caret"></span></button>
-                  <ul class="dropdown-menu">
-                    <li><a href="#">None</a></li>
-                    <li><a href="#">HC Host2</a></li>
-                    <li><a href="#">HC Host3</a></li>
-                    <li><a href="#">HC Host4</a></li>
+                  <button class="btn dropdown-toggle disabled" id="extendsButton" data-toggle="dropdown">Extend<span class="caret"></span></button>
+                  <ul class="dropdown-menu" id="hostExtendOptions">
+                    <li><a href="#" id="hostext_-1" onClick="setBulkHostExtends(event)">--None--</a></li>
                   </ul>
                 </div>
                 <table class="table" id="listHosts">

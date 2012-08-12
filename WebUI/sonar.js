@@ -57,6 +57,42 @@ function delSensorHandler(req, resp) {
     });
 }
 
+function bulkHostExtendsHandler(req, resp){
+    console.log("bulk host extender handler");
+
+    var body = "";
+    req.on('data', function (data) {
+        body += data;
+    });
+
+    req.on('end', function () {
+        console.log("end host extend body: " + body);
+        body = qs.parse(body);
+        
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
+        var client = thrift.createClient(managementService, connection);
+        var counter = 0;
+        var childHosts = body.childHost;
+        
+        if(childHosts instanceof Array){
+            for(var index = 0; index < childHosts.length ; index++){
+                client.addHostExtension(childHosts[index], body.parentHost, function (err, ret) {
+                    counter++;
+                    if (counter == childHosts.length) {
+                        console.log("everything worked out...");
+                        resp.end("ok");
+                    }
+                });
+            }
+        } else {
+            client.addHostExtension(childHosts, body.parentHost, function (err, ret) {
+                console.log("everything worked out...");
+                resp.end("ok");
+            });
+        }
+    });   
+}
+
 function addHostHandler(req, resp) {
     console.log("add host handler");
 
@@ -668,6 +704,7 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
     new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
     new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, []),
+    new router.UrlNode('HOSTEXTEND', {url:'hostExtend', handler:bulkHostExtendsHandler}, []),
 	new router.UrlNode('LOGDB', {url:'logdb', handler:logdbHandler}, []),
     new router.UrlNode('SENSORNAMES', {url:'sensornames', handler:sensorNamesHandler}, [])
 ]);
