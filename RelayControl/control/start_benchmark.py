@@ -144,8 +144,8 @@ def phase_configure_glassfish(client_list):
  
  
 def start_phase(client_list):
-    # phase_configure_glassfish(client_list)
-    phase_start_rain(None, client_list)
+    phase_configure_glassfish(client_list)
+    # phase_start_rain(None, client_list)
     
     
 def stop_phase(client_list):
