@@ -147,9 +147,8 @@ function setupCharts() {
     chart = new Highcharts.StockChart(chart);
 }
 
-function addQueryHandler(event) {
+function addQueryHandler(event, noLabel) {
     event.preventDefault();
-
     // Serialize the form
     var serializedForm = $('#queryForm').serialize();
 
@@ -167,6 +166,31 @@ function addQueryHandler(event) {
 
             // Update the time series in the chart
             chart.series[0].setData(list);
+            if(!noLabel)
+                addQueryLabel();
         }
     })
+}
+
+function resubmitForm(event){
+    var id = event.target.id;
+    var data=id.split("$");
+    $("#hostname").val(data[0]);
+    $("#sensor").val(data[1]);
+    $("#startdate").val(data[2]);
+    $("#starttime").val(data[3]);
+    $("#stopdate").val(data[4]);
+    $("#stoptime").val(data[5]); 
+    addQueryHandler(event, true);
+}
+
+function addQueryLabel() {
+    var id = $("#hostname").val() + "$" + $("#sensor").val() + "$" + $("#startdate").val() + "$" + $("#starttime").val() 
+        + "$" + $("#stopdate").val() + "$" + $("#stoptime").val(); 
+    var labelName = $("#hostname").val() + ":" + $("#sensor").val();
+    $("#labelContainer").append(
+        $('<span>').addClass("badge").addClass("badge-info").append(
+            $('<a>').attr("id", id).addClass("labelLink").text(labelName).click(resubmitForm)
+        )
+    );
 }
