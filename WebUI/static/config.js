@@ -462,7 +462,27 @@ function setOption(hostname, option){
             return;
          }
     });
-} 
+}
+
+function sortHostTable(){
+    var $table = $('#listHosts');
+    var $rows = $('tbody > tr',$table);
+    $rows.sort(function(a, b){
+        var keyA = $('td:eq(3)',a);
+        var keyB = $('td:eq(3)',b);
+        return $(keyA).text().toUpperCase().localeCompare($(keyB).text().toUpperCase());
+
+    });
+    $.each($rows, function(index, row){
+        $table.append(row);
+    });
+
+    $.each($rows, function(index, row) {
+        $this = $(this)
+        $this.find("td:eq(0)").html(index+1);
+    });
+
+}
 
 function updateHostsList() {
     doAlert("Loading...");
@@ -529,6 +549,7 @@ function updateHostsList() {
 
             //alert(data); // shows whole dom
             // alert( $(data).find('#wrapper').html() ); // returns null
+            sortHostTable();
             stopAlert();
 
         },
