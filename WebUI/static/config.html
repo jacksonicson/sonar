@@ -40,11 +40,19 @@
 
             <!-- Hostnames -->
             <div class="tab-pane" id="tabHostnames">
-                <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
+                <div class="btn-group">
+                    <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
+                 
+                  <button class="btn dropdown-toggle disabled" id="extendsButton" data-toggle="dropdown">Extend<span class="caret"></span></button>
+                  <ul class="dropdown-menu" id="hostExtendOptions">
+                    <li><a href="#" id="hostext_-1" onClick="setBulkHostExtends(event)">--None--</a></li>
+                  </ul>
+                </div>
                 <table class="table" id="listHosts">
                     <thead>
                     <tr>
                         <th>#</th>
+                        <th>&nbsp;</th>
                         <th>&nbsp;</th>
                         <th>Hostname</th>
                         <th>Sensors</th>
@@ -85,6 +93,16 @@
                                name="hostLabels"/>
                     </div>
                 </div>
+                
+                 <div class="control-group">
+                    <label class="control-label" for="hostLabels">Extends:</label>
+
+                    <div class="controls">
+                        <select id="hostExtends" name="hostExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
+                </div>
 
                 <div class="control-group" id="sensorField">
                 </div>
@@ -108,7 +126,7 @@
     <div class="modal-body">
         <form class="form-horizontal" id="newSensorForm">
             <fieldset>
-                <div class="control-group">
+                <div class="control-group" id="sensorNameGroup">
                     <label class="control-label" for="sensorName">Sensor Name:</label>
 
                     <div class="controls">
@@ -117,7 +135,7 @@
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="sensorLabelGroup">
                     <label class="control-label" for="sensorLabels">Labels:</label>
 
                     <div class="controls">
@@ -126,7 +144,7 @@
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="sensorIntervalGroup">
                     <label class="control-label" for="sensorInterval">Interval:</label>
 
                     <div class="controls">
@@ -134,8 +152,18 @@
                                name="sensorInterval"/>[seconds]
                     </div>
                 </div>
+                
+                <div class="control-group hide" id="sensorExtendControl">
+                    <label class="control-label" for="hostLabels">Extends:</label>
 
-                <div class="control-group" for="sensorType">
+                    <div class="controls">
+                        <select id="sensorExtends" name="sensorExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group" for="sensorType" id="sensorTypeGroup">
                     <label class="control-label">Sensor Type:</label>
 
                     <div class="controls">
@@ -147,7 +175,7 @@
                     </div>
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="sensorParamGroup">
                     <table class="table" style="width:98%" id="sensorParamTable">
                         <thead>
                         <tr>
