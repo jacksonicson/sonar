@@ -584,4 +584,16 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 		return result;
 	}
+
+	@Override
+	public void addHostExtension(String hostname, String virtualHostName) throws TException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getHostExtension(String hostname) throws TException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

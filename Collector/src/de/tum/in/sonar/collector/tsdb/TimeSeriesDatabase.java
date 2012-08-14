@@ -67,7 +67,7 @@ public class TimeSeriesDatabase extends Thread {
 	}
 
 	private int keyWidth(int labels) {
-		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_WIDTH + Const.LABEL_ID_WIDTH * labels;
+		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_ID_WIDTH + Const.LABEL_ID_WIDTH * labels;
 
 		return keyWidth;
 	}
@@ -323,7 +323,7 @@ public class TimeSeriesDatabase extends Thread {
 			Result next;
 			while ((next = scanner.next()) != null) {
 				byte[] rowKey = next.getRow();
-				long rowTimestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + 8);
+				long rowTimestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + Const.HOSTNAME_ID_WIDTH);
 
 				// New fragment for this row
 				TimeSeriesFragment fragment = timeSeries.newFragment();
@@ -333,7 +333,7 @@ public class TimeSeriesDatabase extends Thread {
 
 					// Found a compaction field
 					if (Bytes.toString(key).equals("data")) {
-						if (startTimestampHour < rowTimestampHours && rowTimestampHours < stopTimestampHour) {
+						if (startTimestampHour <= rowTimestampHours && rowTimestampHours <= stopTimestampHour) {
 							fragment.addSegment(rowTimestampHours, familyMap.get(key));
 						} else {
 							TDeserializer deserializer = new TDeserializer();
