@@ -11,6 +11,14 @@ public class TestLogAppender {
 			logger.info("Testing info log");
 			logger.warn("Testing warn log");
 			logger.debug("Testing debug log");
+			if (i == 33) {
+				try {
+					String x = null;
+					x.toString();
+				} catch (Exception e) {
+					logger.error("Error error", e);
+				}
+			}
 		}
 
 		System.out.println("DONE");
