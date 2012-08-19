@@ -149,6 +149,7 @@ function setupCharts() {
 
 function addQueryHandler(event, noLabel) {
     event.preventDefault();
+ 
     // Serialize the form
     var serializedForm = $('#queryForm').serialize();
 
@@ -191,6 +192,7 @@ function addQueryLabel() {
     $("#labelContainer").append(
         $('<span>').addClass("badge").addClass("badge-info").append(
             $('<a>').attr("id", id).addClass("labelLink").text(labelName).click(resubmitForm)
-        )
+        ),
+        $('<span>').text('  ')
     );
 }
