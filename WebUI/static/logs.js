@@ -117,7 +117,7 @@ function getLogLevelNames(logLevel){
     var level = parseInt(logLevel);
     switch(level){
         case 50010:
-            return "Scan";
+            return "Sync";
         case 50000:
             return "Fatal";
         case 40000:

@@ -1,9 +1,10 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
+
+import de.tum.in.sonar.log4j.appender.Sync;
 
 public class TestLogAppender {
 
-	private static Logger logger = LoggerFactory.getLogger(TestLogAppender.class);
+	private static Logger logger = Logger.getLogger(TestLogAppender.class);
 
 	public static void main(String[] args) {
 		for (int i = 0; i < 100; i++) {
@@ -11,6 +12,7 @@ public class TestLogAppender {
 			logger.info("Testing info log");
 			logger.warn("Testing warn log");
 			logger.debug("Testing debug log");
+			logger.log(Sync.SYNC, "ScaN MESSAGE");
 			if (i == 33) {
 				try {
 					String x = null;
@@ -25,5 +27,4 @@ public class TestLogAppender {
 
 		org.apache.log4j.LogManager.shutdown();
 	}
-
 }
