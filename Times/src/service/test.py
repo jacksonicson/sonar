@@ -1,13 +1,16 @@
 from numpy import *
 from os import listdir
 from service import times_client
+from workload import convolution
 import dtw
 import math
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 import mlpy
+import numpy as np
 import operator
+import scipy
 
 connection = times_client.connect()
 
@@ -22,15 +25,15 @@ def print_matrix(matrix):
 
 def classify0(inX, dataSet, labels, k):
     dataSetSize = dataSet.shape[0]
-    diffMat = tile(inX, (dataSetSize,1)) - dataSet
-    sqDiffMat = diffMat**2
+    diffMat = tile(inX, (dataSetSize, 1)) - dataSet
+    sqDiffMat = diffMat ** 2
     sqDistances = sqDiffMat.sum(axis=1)
-    distances = sqDistances**0.5
+    distances = sqDistances ** 0.5
     sortedDistIndicies = distances.argsort()     
-    classCount={}          
+    classCount = {}          
     for i in range(k):
         voteIlabel = labels[sortedDistIndicies[i]]
-        classCount[voteIlabel] = classCount.get(voteIlabel,0) + 1
+        classCount[voteIlabel] = classCount.get(voteIlabel, 0) + 1
     sortedClassCount = sorted(classCount.iteritems(), key=operator.itemgetter(1), reverse=True)
     return sortedClassCount[0][0]
 
@@ -41,7 +44,7 @@ def dtw(a, b, d=lambda x, y : abs(x - y)):
     matrix = [[0 for _ in xrange(cols)] for _ in xrange(rows)]
     
     # Apply global constraint
-    t = 3
+    t = 60
     for i in xrange(0, rows):
         middle = i
         for j in xrange(0, cols):
@@ -69,8 +72,8 @@ def dtw(a, b, d=lambda x, y : abs(x - y)):
             choices = matrix[i - 1][j], matrix[i][j - 1], matrix[i - 1][j - 1]
             matrix[i][j] = min(choices) + d(a[i], b[j])
 
-    print_matrix(matrix)
-    return matrix[rows-1][cols-1]
+    # print_matrix(matrix)
+    return matrix[rows - 1][cols - 1]
     
 
 def dynamicTimeWarp(seqA, seqB, d=lambda x, y: abs(x - y)):
@@ -104,23 +107,208 @@ items = connection.find('SIS.*')
 for item in items:
     pass # print item
 
-ts = connection.load("SIS_221_cpu_profile")
+
+
+ts = connection.load("O2_retail_ADDORDER")
 ff = []
 for i in ts.elements:
     ff.append(i.value)
 
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.plot(range(0, len(ff)), ff)
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#ax.plot(range(0, len(ff)), ff)
 
 # ax.acorr(load, maxlags=700)
 
 x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0]
 y = [0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0]
 
+def process(value):
+    return value
+
+def normalize(data):
+    mv = np.max(data)
+    if mv > 0:
+        data /= (mv)
+    return data
+
+
+name = 'O2_business_ADDUCP'
+timeSeries = connection.load(name)
+print 'complete'
+
+# Generate patterns
+patterns = []
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(30, 80):
+    synthetic[i] = 1
+patterns.append((synthetic, 'day'))
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(0, 50):
+    synthetic[i] = 1
+patterns.append((synthetic, 'morning'))
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(70, 111):
+    synthetic[i] = 1
+patterns.append((synthetic, 'evening'))
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(0, 40):
+    synthetic[i] = 1
+for i in xrange(40, 80):
+    synthetic[i] = .5
+for i in xrange(80, 111):
+    synthetic[i] = 1
+patterns.append((synthetic, 'bamix'))
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(0, 60):
+    synthetic[i] = 0.3
+for i in xrange(40, 80):
+    synthetic[i] = .8
+for i in xrange(80, 111):
+    synthetic[i] = 0.3
+patterns.append((synthetic, 'longday'))
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(0, 30):
+    synthetic[i] = 0.8
+for i in xrange(40, 80):
+    synthetic[i] = .8
+for i in xrange(90, 111):
+    synthetic[i] = 0.9
+patterns.append((synthetic, 'batchmix'))
+
+synthetic = np.zeros(111, np.float64)
+for i in xrange(0, 111, 30):
+    for j in xrange(i, min(i+30, 111)):
+        synthetic[j] = i % 2
+patterns.append((synthetic, 'scatter'))
+
+time = np.zeros(len(timeSeries.elements))
+load = np.zeros(len(timeSeries.elements))
+for i in range(0, len(timeSeries.elements)):
+    time[i] = timeSeries.elements[i].timestamp
+    load[i] = timeSeries.elements[i].value
+        
+profile = convolution.extract_profile(name, time, load, 60*60)
+print 'len %i' % (len(profile))
+profile = normalize(profile)
+
+profile = synthetic
+
+fig = plt.figure(figsize=(12, 9))
+ax = fig.add_subplot(211)
+ax.plot(range(len(profile)), profile)
+# plt.show() 
+
+names = [('O2_business_UPDATEDSSLINE',60*60),    # Burst in the evening
+               ('O2_business_ADDUCP',60*60),           # Day workload
+               ('O2_business_LINECONFIRM',60*60),      # Day and night workload
+               ('O2_retail_ADDORDER',60*60),           # Night and low day workload
+               ('O2_retail_PIRANHAREQUEST',60*60),     # No shape workload (random spikes) 
+               ('O2_retail_SENDMSG',60*60),            # Day workload flattens till evening
+               ('O2_retail_PORTORDER',60*60),          # Random spikes 
+               ('O2_retail_UPDATEDSS',60*60),          # Night workload
+               ('SIS_221_cpu',5*60),                  # Evening workload 
+               ('SIS_237_cpu',5*60),                  # All day with minor peaks
+               ('SIS_194_cpu',5*60),                  # Average day high evening workload 
+               ('SIS_375_cpu',5*60),                  # Trend to full CPU utilization starting in the morning
+               ('SIS_213_cpu',5*60),                  # High dynamic range 
+               ('SIS_211_cpu',5*60),                  # High dynamic range
+               ('SIS_83_cpu',5*60),                   # Highly volatile varying levels 
+               ('SIS_394_cpu',5*60),                  # Multiple peaks
+               ('SIS_381_cpu',5*60),                  # High volatile 
+               ('SIS_383_cpu',5*60),                  # Bursts and then slow
+               ('SIS_415_cpu',5*60),                  # Volatility bursts  
+               ('SIS_176_cpu',5*60),                  # Spike like flashmobs
+               ('SIS_134_cpu',5*60),                  # Random
+               ('SIS_198_cpu',5*60),                  # Random
+               ('SIS_269_cpu',5*60),                  # Random
+               ]
+for ent in names: 
+    name = ent[0]
+    timeSeries = connection.load(name)
+    print 'complete'
+    
+    time = np.zeros(len(timeSeries.elements))
+    load = np.zeros(len(timeSeries.elements))
+    for i in range(0, len(timeSeries.elements)):
+        time[i] = timeSeries.elements[i].timestamp
+        load[i] = timeSeries.elements[i].value
+    
+    profile2 = convolution.extract_profile(name, time, load, ent[1])
+    profile2 = normalize(profile2)
+    # print profile2
+    # Run the DTW algorithm on both of them
+    # value = dtw(profile, profile2)
+    match = []
+    for opro in patterns:
+        value = dtw(opro[0], profile2)
+        match.append(value)
+        
+#    # Finally use the KNN algorithm to determine the closest match!
+#    from scipy.spatial import KDTree
+#    lookup = KDTree(match)
+#    print lookup.data
+    
+#    pts = np.array([[-3]])
+#    print lookup.query(pts, k=4)
+#    for i in lookup.query(pts, k=1)[1]:
+#        print labels[i]
+    minv = 999
+    mini = 0
+    for i in xrange(len(match)):
+        v = match[i]
+        if v < minv:
+            print 'asdf'
+            minv = v
+            mini = i
+    
+    print 'TYPE: %s - %s' % (name, patterns[mini][1])
+    
+#    fig = plt.figure(figsize=(12,9))
+#    ax = fig.add_subplot(211)
+#    ax.plot(range(len(profile2)), profile2)
+#    plt.show() 
+    
 
 # print dynamicTimeWarp(x,y)
-print dtw(x, y)
+# print dtw(x, y)
+
+# FFT (low pass filtering approach)
+#data = connection.load('SIS_100_cpu')
+#signal = []
+#for element in data.elements:
+#    signal.append(element.value)
+#
+#rawsignal = array(signal) 
+#    
+#fft = scipy.fft(rawsignal) # (G) and (H)
+#
+#print '--'
+#bp = fft[:]
+#print bp
+#
+## filter 
+#print 'len of spectrum %i' % (len(bp))
+#for i in xrange(len(bp)): # (H-red)  
+#    if i >= 20000:
+#        bp[i] = 0 
+#
+#ibp=scipy.ifft(bp) # (I), (J), (K) and (L)
+#print ibp
+#
+#fig = plt.figure(figsize=(12,9))
+#ax = fig.add_subplot(211)
+#ax.plot(range(len(fft)), fft)
+#ax = fig.add_subplot(211)
+#ax.plot(range(len(rawsignal)), rawsignal)
+# plt.show()  
+
 
 #fig = plt.figure(1)
 #ax = fig.add_subplot(111)
