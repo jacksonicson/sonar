@@ -13,4 +13,4 @@ my_logger.addHandler(sonarLogger.SonarLogHandler("localhost", 7921, "jack", "TES
 # Log some messages
 for i in range(20):
     my_logger.debug('debug log %d' % i)
-    my_logger.log(SYNC, 'debuggOffBugger')
+    my_logger.log(SYNC, 'sync statements')
