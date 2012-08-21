@@ -24,20 +24,21 @@ def rain_started(ret, rain_client, client_list):
 
 def rain_connected(rain_clients, client_list):
     print 'releasing load...'
-    from collections import Iterable
-    if isinstance(rain_clients, Iterable) == False:
-        rain_clients = [rain_clients] 
     
+    dlist = []
     for client in rain_clients:
-        print '   * releasing %s' % (client)
-        d = client.startBenchmark(long(base.millis()))
+        print '   * releasing %s' % (client[1])
+        d = client[1].startBenchmark(long(base.millis()))
+        dlist.append(d)
     
+    d = defer.DeferredList(dlist)
     d.addCallback(rain_started, rain_clients, client_list)
     
 
 def trigger_rain_benchmark(ret, client_list):
     print 'connecting with rain drivers...'
     
+    dlist = []
     for driver in hosts.get_hosts('load'):
         print '   * connecting %s' % (driver)
         creator = ClientCreator(reactor,
@@ -45,9 +46,11 @@ def trigger_rain_benchmark(ret, client_list):
                               RainService.Client,
                               TBinaryProtocol.TBinaryProtocolFactory(),
                               ).connectTCP(driver, 7852)
-                          
-    creator.addCallback(lambda conn: conn.client)
-    creator.addCallback(rain_connected, client_list)
+        creator.addCallback(lambda conn: conn.client)
+        dlist.append(creator)
+        
+    d = defer.DeferredList(dlist)                  
+    d.addCallback(rain_connected, client_list)
 
 
 def phase_start_rain(done, client_list):
@@ -65,8 +68,7 @@ def phase_start_rain(done, client_list):
     
     for i in range(0, driver_count):
         driver = drivers[i]
-        print i
-        print targets_per_driver
+        
         # Build targets for configuration
         config_targets = []
         for target in targets[i * targets_per_driver : (i + 1) * targets_per_driver]:
@@ -78,6 +80,7 @@ def phase_start_rain(done, client_list):
                 
         # Configure drone
         drones.prepare_drone('rain_start', 'rain.config.specj.json', targets=config_targets)
+        drones.create_drone('rain_start')
         
         # Launch this drone
         d = base.wait_for_message(client_list, driver, 'rain_start', 'Waiting for start signal...', '/opt/rain/rain.log')
@@ -174,9 +177,9 @@ def phase_configure_glassfish(client_list):
 def start_phase(client_list):
     print 'Connection established'
     print 'Following start sequence now...'
-    # phase_configure_glassfish(client_list)
+    phase_configure_glassfish(client_list)
     # phase_start_rain(None, client_list)
-    trigger_rain_benchmark(None, client_list)
+    # trigger_rain_benchmark(None, client_list)
     
     
 def stop_phase(client_list):
@@ -210,7 +213,7 @@ def main():
     hosts.add_host('mysql4', 'database')
     hosts.add_host('mysql5', 'database')
     hosts.add_host('load0', 'load')
-    # hosts.add_host('load1', 'load')
+    hosts.add_host('load1', 'load')
     
     # Test rain start
     # phase_start_rain(None, None)
