@@ -111,6 +111,21 @@ class Iface:
     """
     pass
 
+  def addHostExtension(self, hostname, virtualHostName):
+    """
+    Parameters:
+     - hostname
+     - virtualHostName
+    """
+    pass
+
+  def getHostExtension(self, hostname):
+    """
+    Parameters:
+     - hostname
+    """
+    pass
+
   def getAllHosts(self, ):
     pass
 
@@ -574,6 +589,66 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     return
 
+  def addHostExtension(self, hostname, virtualHostName):
+    """
+    Parameters:
+     - hostname
+     - virtualHostName
+    """
+    self.send_addHostExtension(hostname, virtualHostName)
+    self.recv_addHostExtension()
+
+  def send_addHostExtension(self, hostname, virtualHostName):
+    self._oprot.writeMessageBegin('addHostExtension', TMessageType.CALL, self._seqid)
+    args = addHostExtension_args()
+    args.hostname = hostname
+    args.virtualHostName = virtualHostName
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_addHostExtension(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = addHostExtension_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    return
+
+  def getHostExtension(self, hostname):
+    """
+    Parameters:
+     - hostname
+    """
+    self.send_getHostExtension(hostname)
+    return self.recv_getHostExtension()
+
+  def send_getHostExtension(self, hostname):
+    self._oprot.writeMessageBegin('getHostExtension', TMessageType.CALL, self._seqid)
+    args = getHostExtension_args()
+    args.hostname = hostname
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getHostExtension(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = getHostExtension_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getHostExtension failed: unknown result");
+
   def getAllHosts(self, ):
     self.send_getAllHosts()
     return self.recv_getAllHosts()
@@ -800,6 +875,8 @@ class Processor(Iface, TProcessor):
     self._processMap["getSensorConfiguration"] = Processor.process_getSensorConfiguration
     self._processMap["getSensorNames"] = Processor.process_getSensorNames
     self._processMap["addHost"] = Processor.process_addHost
+    self._processMap["addHostExtension"] = Processor.process_addHostExtension
+    self._processMap["getHostExtension"] = Processor.process_getHostExtension
     self._processMap["getAllHosts"] = Processor.process_getAllHosts
     self._processMap["delHost"] = Processor.process_delHost
     self._processMap["setHostLabels"] = Processor.process_setHostLabels
@@ -973,6 +1050,28 @@ class Processor(Iface, TProcessor):
     result = addHost_result()
     self._handler.addHost(args.hostname)
     oprot.writeMessageBegin("addHost", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_addHostExtension(self, seqid, iprot, oprot):
+    args = addHostExtension_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = addHostExtension_result()
+    self._handler.addHostExtension(args.hostname, args.virtualHostName)
+    oprot.writeMessageBegin("addHostExtension", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getHostExtension(self, seqid, iprot, oprot):
+    args = getHostExtension_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getHostExtension_result()
+    result.success = self._handler.getHostExtension(args.hostname)
+    oprot.writeMessageBegin("getHostExtension", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -2675,6 +2774,239 @@ class addHost_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('addHost_result')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class addHostExtension_args:
+  """
+  Attributes:
+   - hostname
+   - virtualHostName
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'hostname', None, None, ), # 1
+    (2, TType.STRING, 'virtualHostName', None, None, ), # 2
+  )
+
+  def __init__(self, hostname=None, virtualHostName=None,):
+    self.hostname = hostname
+    self.virtualHostName = virtualHostName
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.hostname = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.virtualHostName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('addHostExtension_args')
+    if self.hostname is not None:
+      oprot.writeFieldBegin('hostname', TType.STRING, 1)
+      oprot.writeString(self.hostname)
+      oprot.writeFieldEnd()
+    if self.virtualHostName is not None:
+      oprot.writeFieldBegin('virtualHostName', TType.STRING, 2)
+      oprot.writeString(self.virtualHostName)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class addHostExtension_result:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('addHostExtension_result')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getHostExtension_args:
+  """
+  Attributes:
+   - hostname
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'hostname', None, None, ), # 1
+  )
+
+  def __init__(self, hostname=None,):
+    self.hostname = hostname
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.hostname = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getHostExtension_args')
+    if self.hostname is not None:
+      oprot.writeFieldBegin('hostname', TType.STRING, 1)
+      oprot.writeString(self.hostname)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getHostExtension_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getHostExtension_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
