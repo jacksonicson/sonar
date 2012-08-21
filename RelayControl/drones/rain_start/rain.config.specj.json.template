@@ -6,7 +6,7 @@
     },
     
     "aggregateStats": true,
-    "waitForStartSignal": false,
+    "waitForStartSignal": true,
     
     "usePipe": false,
     "useThrift": true,
