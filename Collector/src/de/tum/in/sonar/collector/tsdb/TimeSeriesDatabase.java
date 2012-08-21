@@ -318,7 +318,7 @@ public class TimeSeriesDatabase extends Thread {
 			// Time series which holds all the fetched data
 			TimeSeries timeSeries = new TimeSeries();
 			long startTimestampHour = getHourSinceEpoch(query.getStartTime());
-			long stopTimestampHour = getHourSinceEpoch(query.getStopTime());
+			long stopTimestampHour = getHourSinceEpoch(query.getStopTime() + 1);
 
 			Result next;
 			while ((next = scanner.next()) != null) {
@@ -351,6 +351,7 @@ public class TimeSeriesDatabase extends Thread {
 						}
 
 					} else { // Found a non compacted field
+						System.out.println("adding point");
 						long qualifier = Bytes.toLong(key);
 						long timestamp = rowTimestampHours + qualifier;
 						if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
