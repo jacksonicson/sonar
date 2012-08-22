@@ -48,6 +48,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	private LogDatabase logdb;
 
+	private SensorlistCache sensorlistCache = new SensorlistCache();
+
 	public ManagementServiceImpl() {
 		JedisPoolConfig config = new JedisPoolConfig();
 		config.setMaxActive(200);
@@ -72,7 +74,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 				tsPoint.setTimestamp(point.getTimestamp());
 				tsPoint.setValue(point.getValue());
-				tsPoint.setLabels(point.getLabels());
+
+				if (point.getLabels() != null) {
+					Set<String> labels = new HashSet<String>();
+					Collections.addAll(labels, point.getLabels());
+					tsPoint.setLabels(labels);
+				}
 			}
 
 			return tsPoints;
@@ -80,7 +87,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		} catch (QueryException e) {
 			logger.error("Error while executing query", e);
 		} catch (UnresolvableException e) {
-			logger.error("Error while mapping in query", e);
+			logger.trace("Error while mapping in query", e);
 		}
 
 		return new ArrayList<TransferableTimeSeriesPoint>();
@@ -186,8 +193,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		try {
 			String key = key("sensor", name, "md5");
 			String md5 = "";
-			if (jedis.exists(key))
-			{
+			if (jedis.exists(key)) {
 				md5 = jedis.get(key);
 				logger.debug("returning sensor hash: " + md5);
 			}
@@ -217,8 +223,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				byte[] md5 = md.digest(binary.array());
 				BigInteger bigInt = new BigInteger(1, md5);
 				String smd5 = bigInt.toString(16);
-				logger.info("deploy md5: " + smd5); 
-				
+				logger.info("deploy md5: " + smd5);
+
 				key = key("sensor", name, "md5");
 				jedis.set(key, smd5);
 			} catch (NoSuchAlgorithmException e) {
@@ -328,6 +334,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			jedis.set(key, Boolean.toString(activate));
 
 			jedis.save();
+
+			// Invalidate cache
+			sensorlistCache.invalidate(hostname);
+
 		} finally {
 			jedisPool.returnResource(jedis);
 		}
@@ -341,8 +351,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			String key = key("sensors");
 			if (!jedis.exists(key))
 				return Collections.emptySet();
-
-			logger.debug("test1");
 
 			Set<String> sensors = jedis.smembers(key);
 			return sensors;
@@ -371,6 +379,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
 		logger.debug("get all sensors for host: " + hostname);
+
+		// Check cache
+		if (sensorlistCache.get(hostname) != null)
+			return sensorlistCache.get(hostname);
+
 		Jedis jedis = jedisPool.getResource();
 		try {
 			String key = key("host", hostname, "sensor");
@@ -390,6 +403,10 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 					sensors.add(sensor);
 				}
 			}
+
+			// Add data to cache
+			sensorlistCache.put(hostname, sensors);
+
 			return sensors;
 		} finally {
 			jedisPool.returnResource(jedis);
@@ -414,7 +431,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
-		logger.debug("setting sensor configuration: " + sensor);
+		logger.info("setting sensor configuration: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 		try {
 			String key = key("sensor", sensor, "config");
@@ -453,7 +470,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
-		logger.debug("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
+		logger.info("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
 		Jedis jedis = jedisPool.getResource();
 		try {
 			// Set default settings
@@ -527,7 +544,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	public SensorConfiguration getSensorConfiguration(String sensor) throws TException {
-		logger.debug("reading sensor configuration for sensor: " + sensor);
+		logger.info("reading sensor configuration for sensor: " + sensor);
 		Jedis jedis = jedisPool.getResource();
 		try {
 			SensorConfiguration sensorConfig = new SensorConfiguration();
@@ -566,5 +583,17 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Error while getting the list of configured sensors", e);
 		}
 		return result;
+	}
+
+	@Override
+	public void addHostExtension(String hostname, String virtualHostName) throws TException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getHostExtension(String hostname) throws TException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

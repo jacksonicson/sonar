@@ -51,7 +51,8 @@ struct TimeSeriesQuery {
 
 struct Parameter {
 	1:string key,
-	2:string value
+	2:string value,
+    3:string extendSensor
 }
 
 enum SensorType {
@@ -62,7 +63,8 @@ enum SensorType {
 struct SensorConfiguration {
 	1:long interval,
 	2:list<Parameter> parameters, 
-	3:SensorType sensorType
+	3:SensorType sensorType,
+    4:string sensorExtends
 }
 
 struct BundledSensorConfiguration {
@@ -136,6 +138,10 @@ service ManagementService {
 	
 	// Host Section
 	void addHost(1:string hostname),
+    
+    void addHostExtension(1:string hostname, 2:string virtualHostName),
+    
+    string getHostExtension(1:string hostname),
 	
 	set<string> getAllHosts(),
 	

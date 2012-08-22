@@ -738,12 +738,16 @@ TimeSeriesQuery.prototype.write = function(output) {
 var Parameter = module.exports.Parameter = function(args) {
   this.key = null;
   this.value = null;
+  this.extendSensor = null;
   if (args) {
     if (args.key !== undefined) {
       this.key = args.key;
     }
     if (args.value !== undefined) {
       this.value = args.value;
+    }
+    if (args.extendSensor !== undefined) {
+      this.extendSensor = args.extendSensor;
     }
   }
 };
@@ -775,6 +779,13 @@ Parameter.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.extendSensor = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -796,6 +807,11 @@ Parameter.prototype.write = function(output) {
     output.writeString(this.value);
     output.writeFieldEnd();
   }
+  if (this.extendSensor) {
+    output.writeFieldBegin('extendSensor', Thrift.Type.STRING, 3);
+    output.writeString(this.extendSensor);
+    output.writeFieldEnd();
+  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
@@ -805,6 +821,7 @@ var SensorConfiguration = module.exports.SensorConfiguration = function(args) {
   this.interval = null;
   this.parameters = null;
   this.sensorType = null;
+  this.sensorExtends = null;
   if (args) {
     if (args.interval !== undefined) {
       this.interval = args.interval;
@@ -814,6 +831,9 @@ var SensorConfiguration = module.exports.SensorConfiguration = function(args) {
     }
     if (args.sensorType !== undefined) {
       this.sensorType = args.sensorType;
+    }
+    if (args.sensorExtends !== undefined) {
+      this.sensorExtends = args.sensorExtends;
     }
   }
 };
@@ -866,6 +886,13 @@ SensorConfiguration.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 4:
+      if (ftype == Thrift.Type.STRING) {
+        this.sensorExtends = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -899,6 +926,11 @@ SensorConfiguration.prototype.write = function(output) {
   if (this.sensorType) {
     output.writeFieldBegin('sensorType', Thrift.Type.I32, 3);
     output.writeI32(this.sensorType);
+    output.writeFieldEnd();
+  }
+  if (this.sensorExtends) {
+    output.writeFieldBegin('sensorExtends', Thrift.Type.STRING, 4);
+    output.writeString(this.sensorExtends);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -1036,6 +1068,140 @@ BundledSensorConfiguration.prototype.write = function(output) {
   if (this.active) {
     output.writeFieldBegin('active', Thrift.Type.BOOL, 5);
     output.writeBool(this.active);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var SensorToWatch = module.exports.SensorToWatch = function(args) {
+  this.hostname = null;
+  this.sensor = null;
+  if (args) {
+    if (args.hostname !== undefined) {
+      this.hostname = args.hostname;
+    }
+    if (args.sensor !== undefined) {
+      this.sensor = args.sensor;
+    }
+  }
+};
+SensorToWatch.prototype = {};
+SensorToWatch.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.hostname = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.sensor = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+SensorToWatch.prototype.write = function(output) {
+  output.writeStructBegin('SensorToWatch');
+  if (this.hostname) {
+    output.writeFieldBegin('hostname', Thrift.Type.STRING, 1);
+    output.writeString(this.hostname);
+    output.writeFieldEnd();
+  }
+  if (this.sensor) {
+    output.writeFieldBegin('sensor', Thrift.Type.STRING, 2);
+    output.writeString(this.sensor);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+var NotificationData = module.exports.NotificationData = function(args) {
+  this.id = null;
+  this.reading = null;
+  if (args) {
+    if (args.id !== undefined) {
+      this.id = args.id;
+    }
+    if (args.reading !== undefined) {
+      this.reading = args.reading;
+    }
+  }
+};
+NotificationData.prototype = {};
+NotificationData.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.id = new ttypes.Identifier();
+        this.id.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.reading = new ttypes.MetricReading();
+        this.reading.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+NotificationData.prototype.write = function(output) {
+  output.writeStructBegin('NotificationData');
+  if (this.id) {
+    output.writeFieldBegin('id', Thrift.Type.STRUCT, 1);
+    this.id.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.reading) {
+    output.writeFieldBegin('reading', Thrift.Type.STRUCT, 2);
+    this.reading.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

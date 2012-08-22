@@ -26,7 +26,6 @@ public class IdResolver {
 
 	// Caches
 	private Map<String, Integer> forwardMapping = new HashMap<String, Integer>();
-	private Map<Integer, String> reverseMapping = new HashMap<Integer, String>();
 
 	// HBase connection
 	private HBaseUtil hbaseUtil;
@@ -52,15 +51,9 @@ public class IdResolver {
 		}
 
 		long scan = scanNames(name);
+		forwardMapping.put(name, (int) scan);
+
 		return scan;
-	}
-
-	public String resolveId(Integer id) throws UnresolvableException {
-		if (reverseMapping.containsKey(id)) {
-			return reverseMapping.get(id);
-		}
-
-		throw new UnresolvableException();
 	}
 
 	private Long createMapping(String name) throws InvalidLabelException, IOException {
@@ -69,23 +62,23 @@ public class IdResolver {
 
 		HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
-		long value = uidTable.incrementColumnValue(Bytes.toBytes("counter"), Bytes.toBytes("forward"),
-				Bytes.toBytes(type), 1);
+		long value = uidTable.incrementColumnValue(Bytes.toBytes("counter"), Bytes.toBytes("forward"), Bytes.toBytes(type), 1);
 
 		Put put = new Put(Bytes.toBytes(name));
 		put.add(Bytes.toBytes("forward"), Bytes.toBytes(type), Bytes.toBytes(value));
 
-		boolean success = uidTable.checkAndPut(Bytes.toBytes(name), Bytes.toBytes("forward"), Bytes.toBytes(type),
-				null, put);
+		boolean success = uidTable.checkAndPut(Bytes.toBytes(name), Bytes.toBytes("forward"), Bytes.toBytes(type), null, put);
 
 		if (success) {
 			put = new Put(Bytes.toBytes(value));
 			put.add(Bytes.toBytes("backward"), Bytes.toBytes(type), Bytes.toBytes(name));
 			uidTable.put(put);
 
+			uidTable.close();
 			return value;
 		}
 
+		uidTable.close();
 		return null;
 	}
 
@@ -104,15 +97,20 @@ public class IdResolver {
 		throw new UnresolvableException();
 	}
 
-	long scanNames(String name) throws UnresolvableException, InvalidLabelException {
+	private long scanNames(String name) throws UnresolvableException, InvalidLabelException {
 		logger.debug("checking for name: " + name + " of type " + type);
-		
-		try {
-			HTable uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
 
-			if(name == null)
-				throw new UnresolvableException("no name given"); 
-			
+		HTable uidTable = null;
+		try {
+			uidTable = new HTable(hbaseUtil.getConfig(), Const.TABLE_UID);
+
+			if (name == null) {
+				if (uidTable != null)
+					uidTable.close();
+
+				throw new UnresolvableException("no name given");
+			}
+
 			Get get = new Get(Bytes.toBytes(name));
 			Result result = uidTable.get(get);
 
@@ -120,7 +118,6 @@ public class IdResolver {
 				logger.info("creating new mapping");
 				long value = createMappingRetry(name);
 				logger.debug("value: " + value);
-
 				return value;
 			}
 
@@ -129,17 +126,24 @@ public class IdResolver {
 				logger.debug("creating new mapping");
 				long value = createMappingRetry(name);
 				logger.debug("value: " + value);
-
 				return value;
 			}
 
 			byte[] value = kvalue.getValue();
 			long lValue = Bytes.toLong(value);
 			logger.debug("resolved to value: " + lValue);
+
+			uidTable.close();
 			return lValue;
 
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			if (uidTable != null)
+				try {
+					uidTable.close();
+				} catch (IOException e) {
+				}
 		}
 
 		return -1;

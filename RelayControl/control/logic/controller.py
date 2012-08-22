@@ -1,5 +1,5 @@
 
-from collector import NotificationClient, NotificationService
+from collector import NotificationClient, NotificationService, ttypes
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
@@ -39,7 +39,7 @@ class ServiceThread(threading.Thread):
         print 'Starting TSD callback service...'
         server.serve()
 
-def main():
+def main(interface=LISTENING_INTERFACE_IPV4, collector=COLLECTOR_HOST):
     print 'Starting Controller...'
 
     # Start the Receiver    
@@ -48,7 +48,7 @@ def main():
     
     # Register the Receiver in the Controller
     # Make socket
-    transport = TSocket.TSocket(COLLECTOR_HOST, COLLECTOR_PORT)
+    transport = TSocket.TSocket(collector, COLLECTOR_PORT)
     
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TBufferedTransport(transport)
@@ -62,9 +62,13 @@ def main():
     # Connect!
     transport.open()
 
+    # Define hotsts and sensors to listen on
+    srv0_cpu = ttypes.SensorToWatch('srv0', 'psutilcpu')
+    glassfish0_cpu = ttypes.SensorToWatch('glassfish0', 'psutilcpu')
+
     # Subscribe
     print 'Subscribing now...'
-    serviceClient.subscribe(LISTENING_INTERFACE_IPV4, LISTENING_PORT, []),
+    serviceClient.subscribe(interface, LISTENING_PORT, [srv0_cpu, glassfish0_cpu]),
     print 'Done'
     
 

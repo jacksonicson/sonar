@@ -24,7 +24,6 @@ public class CollectServiceImpl implements CollectService.Iface {
 
 	@Override
 	public void logMetric(Identifier id, MetricReading value) throws TException {
-		logger.debug("log metric");
 
 		// Create a new metric point
 		MetricPoint dp = new MetricPoint(id, value);

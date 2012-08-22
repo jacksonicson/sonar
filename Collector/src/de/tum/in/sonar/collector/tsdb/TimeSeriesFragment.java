@@ -18,7 +18,7 @@ public class TimeSeriesFragment implements Iterable<TimeSeriesPoint> {
 
 	private List<TimeSeriesPoint> dataPoints = new ArrayList<TimeSeriesPoint>(60);
 
-	public TimeSeriesFragment() {
+	TimeSeriesFragment() {
 		// Default constructor
 	}
 
@@ -27,20 +27,16 @@ public class TimeSeriesFragment implements Iterable<TimeSeriesPoint> {
 	}
 
 	void addSegment(long hoursSinceEpoch, byte[] data) throws TException {
-		logger.info("deserializing segment");
-
 		TDeserializer deserializer = new TDeserializer();
 		CompactTimeseries ts = new CompactTimeseries();
 		deserializer.deserialize(ts, data);
 
 		for (CompactPoint point : ts.getPoints()) {
-			TimeSeriesPoint dp = new TimeSeriesPoint();
-			dp.setTimestamp(hoursSinceEpoch + point.getTimestamp());
-			dp.setValue(point.getValue());
+			long timestamp = hoursSinceEpoch + point.getTimestamp();
+			double value = point.getValue();
+			TimeSeriesPoint dp = new TimeSeriesPoint(timestamp, value);
 			dataPoints.add(dp);
 		}
-
-		logger.info("segment data points: " + dataPoints.size());
 	}
 
 	public int size() {

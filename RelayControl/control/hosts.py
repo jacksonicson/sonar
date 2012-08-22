@@ -14,6 +14,9 @@ def get_index(host):
 
 
 def get_hosts(drone_type):
+    if not hosts_map.has_key(drone_type):
+        return []
+    
     hostnames = hosts_map[drone_type]
     result = []
     for host in hostnames:

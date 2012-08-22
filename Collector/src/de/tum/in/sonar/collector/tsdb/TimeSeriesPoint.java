@@ -1,20 +1,23 @@
 package de.tum.in.sonar.collector.tsdb;
 
-import java.util.HashSet;
-import java.util.Set;
+public final class TimeSeriesPoint {
 
-public class TimeSeriesPoint {
-
-	private long timestamp;
+	private final long timestamp;
 	private double value;
-	private Set<String> labels = new HashSet<String>();
+	private final String[] labels;
+
+	public TimeSeriesPoint(long timestamp, double value, String[] labels) {
+		this.timestamp = timestamp;
+		this.value = value;
+		this.labels = labels;
+	}
+
+	public TimeSeriesPoint(long timestamp, double value) {
+		this(timestamp, value, null);
+	}
 
 	public long getTimestamp() {
 		return timestamp;
-	}
-
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
 	}
 
 	public double getValue() {
@@ -25,11 +28,7 @@ public class TimeSeriesPoint {
 		this.value = value;
 	}
 
-	public Set<String> getLabels() {
+	public String[] getLabels() {
 		return labels;
-	}
-
-	public void setLabels(Set<String> labels) {
-		this.labels = labels;
 	}
 }

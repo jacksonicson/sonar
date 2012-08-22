@@ -1,8 +1,14 @@
-import drones, hosts, base
 from twisted.internet import defer, reactor
+import drones
+import hosts
+import base
 
 def finished(done, client_list):
     print "execution successful"
+    print "Status:"
+    for i in done: 
+        print i[0]
+        
     reactor.stop()
  
  
@@ -26,7 +32,8 @@ def main():
     drones.main()
     
     # Add hosts
-    hosts.add_host('playground', 'deploy')
+    hosts.add_host('load0', 'deploy')
+    hosts.add_host('load1', 'deploy')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()

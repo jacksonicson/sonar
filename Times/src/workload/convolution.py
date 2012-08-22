@@ -1,7 +1,7 @@
 from service import times_client
 import matplotlib.pyplot as plt
 import numpy as np
-from times import ttypes
+from service.times import ttypes
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -19,9 +19,11 @@ def to_positive(value):
         value = 0
     return value
  
-def extract_profile(name, time, signal):
+def extract_profile(name, time, signal, sampling_frequency=None):
     cycle_time = 24 * 60 * 60
-    sampling_frequency = 5 * 60 # 5 * 60 is SIS # 60 * 60 is O2
+    
+    if sampling_frequency == None:
+        sampling_frequency = 60 * 60 # 5 * 60 is SIS # 60 * 60 is O2
      
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
@@ -109,7 +111,7 @@ def extract_profile(name, time, signal):
             noise_array = np.hstack((noise_array, noise))
     
     noise_profile = np.resize(noise_profile, len(noise_array))
-    noise_profile = noise_profile + noise_array
+    noise_profile = noise_profile # + noise_array # NO NOISE
     
     tv = np.vectorize(to_positive)
     noise_profile = tv(noise_profile)
@@ -130,8 +132,9 @@ def extract_profile(name, time, signal):
     
     
      
-def process_trace(connection, name):
+def process_trace(connection, tupel):
     print 'Downloading...'
+    name = tupel[0]
     timeSeries = connection.load(name)
     print 'complete'
 
@@ -142,12 +145,15 @@ def process_trace(connection, name):
         load[i] = timeSeries.elements[i].value
         
     
-    profile = extract_profile(name, time, load)
+    profile = extract_profile(name, time, load, tupel[1])
     print 'len %i' % (len(profile))
     
     # Store it
+    print 'Storing profile...'
+    
     name = name + '_profile'
-    connection.create(name, 60 * 60)
+    # TODO: Adapt the frequency here!
+    connection.create(name, 60)
     
     elements = []
     for i in range(0, len(profile)):
@@ -158,42 +164,46 @@ def process_trace(connection, name):
         element.value = item 
         elements.append(element)
 
-    print 'storing profile'    
     connection.append(name, elements)
     
-    plt.show()
-    # plt.savefig('C:/temp/convolution/' + name + '.png')
+    print 'Finished'
+    
+    # plt.show()
+    plt.savefig('C:/temp/convolution/' + name + '.png')
 
 if __name__ == '__main__':
     connection = times_client.connect()
     result = connection.find('^SIS_158_cpu\Z')
     
-    selected = ['O2_business_UPDATEDSSLINE',    # Burst in the evening
-                'O2_business_ADDUCP',           # Day workload
-                'O2_business_LINECONFIRM',      # Day and night workload
-                'O2_retail_ADDORDER',           # Night and low day workload
-                'O2_retail_PIRANHAREQUEST',     # No shape workload (random spikes) 
-                'O2_retail_SENDMSG',            # Day workload flattens till evening
-                'O2_retail_PORTORDER',          # Random spikes 
-                'O2_retail_UPDATEDSS',          # Night workload
-                'SIS_221_cpu',                  # Evening workload 
-                'SIS_237_cpu',                  # All day with minor peaks
-                'SIS_194_cpu',                  # Average day high evening workload 
-                'SIS_375_cpu',                  # Trend to full CPU utilization starting in the morning
-                'SIS_213_cpu',                  # High dynamic range 
-                'SIS_211_cpu',                  # High dynamic range
-                'SIS_83_cpu',                   # Highly volatile varying levels 
-                'SIS_394_cpu',                  # Multiple peaks
-                'SIS_381_cpu',                  # High volatile 
-                'SIS_383_cpu',                  # Bursts and then slow
-                'SIS_415_cpu',                  # Volatility bursts  
-                'SIS_176_cpu',                  # Spike like flashmobs
+    selected = [('O2_business_UPDATEDSSLINE',60*60),    # Burst in the evening
+                ('O2_business_ADDUCP',60*60),           # Day workload
+                ('O2_business_LINECONFIRM',60*60),      # Day and night workload
+                ('O2_retail_ADDORDER',60*60),           # Night and low day workload
+                ('O2_retail_PIRANHAREQUEST',60*60),     # No shape workload (random spikes) 
+                ('O2_retail_SENDMSG',60*60),            # Day workload flattens till evening
+                ('O2_retail_PORTORDER',60*60),          # Random spikes 
+                ('O2_retail_UPDATEDSS',60*60),          # Night workload
+                ('SIS_221_cpu',5*60),                  # Evening workload 
+                ('SIS_237_cpu',5*60),                  # All day with minor peaks
+                ('SIS_194_cpu',5*60),                  # Average day high evening workload 
+                ('SIS_375_cpu',5*60),                  # Trend to full CPU utilization starting in the morning
+                ('SIS_213_cpu',5*60),                  # High dynamic range 
+                ('SIS_211_cpu',5*60),                  # High dynamic range
+                ('SIS_83_cpu',5*60),                   # Highly volatile varying levels 
+                ('SIS_394_cpu',5*60),                  # Multiple peaks
+                ('SIS_381_cpu',5*60),                  # High volatile 
+                ('SIS_383_cpu',5*60),                  # Bursts and then slow
+                ('SIS_415_cpu',5*60),                  # Volatility bursts  
+                ('SIS_176_cpu',5*60),                  # Spike like flashmobs
+                ('SIS_134_cpu',5*60),                  # Random
+                ('SIS_198_cpu',5*60),                  # Random
+                ('SIS_269_cpu',5*60),                  # Random
                 ]
     
 #    for s in selected:
 #        result = connection.find(r'^' + s + r'\Z')
     
-    for r in result: 
+    for r in selected: 
         print r
         process_trace(connection, r)
     
