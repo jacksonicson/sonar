@@ -121,6 +121,13 @@ public class LogDatabase {
 			InvalidLabelException {
 		List<LogMessage> logMessages = null;
 		try {
+			
+			// determine if start range and end range of log priority is
+			// provided
+			boolean logPriorityFlag = false;
+			if (-1 != logQuery.getLogStartRange() && -1 != logQuery.getLogEndRange()) {
+				logPriorityFlag = true;
+			}
 
 			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
 			Scan scan = new Scan();
@@ -139,8 +146,6 @@ public class LogDatabase {
 			index += appendToKey(endRow, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
 			index += appendToKey(endRow, index, Bytes.toBytes(hostnameResolver.resolveName(logQuery.getHostname())));
 			index += appendToKey(endRow, index, logQuery.getStopTime());
-			System.out.println(logQuery.getStopTime());
-			System.out.println(System.currentTimeMillis()); 
 			scan.setStopRow(endRow);
 			
 			ResultScanner scanner = table.getScanner(scan);
@@ -162,7 +167,19 @@ public class LogDatabase {
 					LogMessage logMsg = new LogMessage();
 					try {
 						deserializer.deserialize(logMsg, data);
-						logMessages.add(logMsg);
+						if (logPriorityFlag) {
+							// if log priority is specified
+							if (logQuery.getLogStartRange() >= logMsg.getLogLevel()
+									|| logQuery.getLogEndRange() <= logMsg.getLogLevel()) {
+								// add only when the log message range matches
+								// that of the current log level
+								logMessages.add(logMsg);
+							}
+						} else {
+							// add messages when log priority range is not
+							// specified
+							logMessages.add(logMsg);
+						}
 					} catch (TException e) {
 						continue;
 					}

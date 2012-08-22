@@ -282,6 +282,8 @@ var LogsQuery = module.exports.LogsQuery = function(args) {
   this.stopTime = null;
   this.sensor = null;
   this.hostname = null;
+  this.logStartRange = -1;
+  this.logEndRange = -1;
   if (args) {
     if (args.startTime !== undefined) {
       this.startTime = args.startTime;
@@ -294,6 +296,12 @@ var LogsQuery = module.exports.LogsQuery = function(args) {
     }
     if (args.hostname !== undefined) {
       this.hostname = args.hostname;
+    }
+    if (args.logStartRange !== undefined) {
+      this.logStartRange = args.logStartRange;
+    }
+    if (args.logEndRange !== undefined) {
+      this.logEndRange = args.logEndRange;
     }
   }
 };
@@ -339,6 +347,20 @@ LogsQuery.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 5:
+      if (ftype == Thrift.Type.I32) {
+        this.logStartRange = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.I32) {
+        this.logEndRange = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -368,6 +390,16 @@ LogsQuery.prototype.write = function(output) {
   if (this.hostname) {
     output.writeFieldBegin('hostname', Thrift.Type.STRING, 4);
     output.writeString(this.hostname);
+    output.writeFieldEnd();
+  }
+  if (this.logStartRange) {
+    output.writeFieldBegin('logStartRange', Thrift.Type.I32, 5);
+    output.writeI32(this.logStartRange);
+    output.writeFieldEnd();
+  }
+  if (this.logEndRange) {
+    output.writeFieldBegin('logEndRange', Thrift.Type.I32, 6);
+    output.writeI32(this.logEndRange);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
