@@ -139,8 +139,6 @@ public class LogDatabase {
 			index += appendToKey(endRow, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
 			index += appendToKey(endRow, index, Bytes.toBytes(hostnameResolver.resolveName(logQuery.getHostname())));
 			index += appendToKey(endRow, index, logQuery.getStopTime());
-			System.out.println(logQuery.getStopTime());
-			System.out.println(System.currentTimeMillis()); 
 			scan.setStopRow(endRow);
 			
 			ResultScanner scanner = table.getScanner(scan);

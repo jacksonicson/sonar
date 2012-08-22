@@ -87,6 +87,7 @@ function addQueryHandler(event) {
 function renderLogs(list){
     var logTable = $('#logResultsTableBody');
     logTable.children('tr').remove();
+    $("#logsFoundtext").text(list.length + " logs found");
 
     for(var i = 0; i < list.length ; i++)
     {
@@ -115,39 +116,37 @@ function renderLogs(list){
 function getLogLevelNames(logLevel){
     var level = parseInt(logLevel);
     switch(level){
-        case 0:
-            return "Emergency";
-        case 1:
-            return "Alert";
-        case 2:
-            return "Critical";
-        case 3:
+        case 50010:
+            return "Sync";
+        case 50000:
+            return "Fatal";
+        case 40000:
             return "Error";
-        case 4:
+        case 30000:
             return "Warning";
-        case 5:
-            return "Notice";
-        case 6:
+        case 20000:
             return "Info";
-        case 7:
+        case 10000:
             return "Debug";
+        case 5000:
+            return "Trace";
     }
 }
 
 function getLogLevelImage(logLevel){
     var level = parseInt(logLevel);
     switch(level){
-        case 0:
-        case 1:
-        case 2:
-        case 3:
+        case 50010:
+            return "images/debug_level.png";
+        case 50000:
+        case 40000:
             return "images/error_level.png";
-        case 4:
-        case 5:
+        case 30000:
             return "images/warn_level.png";
-        case 6:
+        case 20000:
             return "images/info_level.png";
-        case 7:
+        case 10000:
+        case 5000:
             return "images/debug_level.png";
     }
 }

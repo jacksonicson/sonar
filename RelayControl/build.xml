@@ -16,7 +16,7 @@
 			<arg value="py:twisted" />
 			<arg value="../Thrift/rain.thrift" />
 		</exec>
-
+		
 		<exec executable="thrift">
 			<arg value="-out" />
 			<arg value="." />
@@ -28,7 +28,7 @@
 
 	<target name="dependencies" depends="thrift">
 		<!-- Create deployment packages -->
-
+		
 		<!-- SensorHub -->
 		<ant inheritall="false" antfile="build.xml" target="main" dir="../SensorHub/" />
 		<copy file="../SensorHub/build/sensorhub.zip" todir="drones/sensorhub_deploy" overwrite="true" />

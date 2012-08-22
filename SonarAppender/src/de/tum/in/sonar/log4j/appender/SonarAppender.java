@@ -70,8 +70,19 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		// we can get the syslog equivalent log level for putting the log level
 		// into the server
 		LogMessage message = new LogMessage();
-		message.setLogLevel(event.getLevel().getSyslogEquivalent());
+		message.setLogLevel(event.getLevel().toInt());
 		message.setLogMessage(event.getMessage().toString());
+		if (null != event.getThrowableInformation()) {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append(message.getLogMessage());
+			buffer.append("\n");
+			String[] str = event.getThrowableStrRep();
+			for (String s : str) {
+				buffer.append(s);
+				buffer.append("\n");
+			}
+			message.setLogMessage(buffer.toString());
+		}
 		message.setProgramName(event.getLoggerName());
 		message.setTimestamp(timestamp);
 
