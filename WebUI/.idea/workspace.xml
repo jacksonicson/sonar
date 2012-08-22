@@ -22,19 +22,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="browse.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/static/browse.js">
+      <file leaf-file-name="logs.html" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/logs.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="116" column="26" selection-start="2496" selection-end="2496" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="logs.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/static/logs.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="142" column="43" selection-start="3855" selection-end="3855" vertical-scroll-proportion="0.60714287">
+            <state line="63" column="43" selection-start="2388" selection-end="2403" vertical-scroll-proportion="0.33830845">
               <folding />
             </state>
           </provider>
@@ -59,13 +50,13 @@
         <option value="$PROJECT_DIR$/static/bootstrap/js/bootstrap-datepicker.js" />
         <option value="$PROJECT_DIR$/static/config.html" />
         <option value="$PROJECT_DIR$/static/sonar.css" />
-        <option value="$PROJECT_DIR$/static/logs.html" />
         <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/template.html" />
         <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/browse.js" />
         <option value="$PROJECT_DIR$/static/config.js" />
         <option value="$PROJECT_DIR$/static/logs.js" />
+        <option value="$PROJECT_DIR$/static/logs.html" />
       </list>
     </option>
   </component>
@@ -363,11 +354,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/xdate.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/xdate2.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
@@ -446,7 +432,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="142" column="43" selection-start="3855" selection-end="3855" vertical-scroll-proportion="0.60714287">
+        <state line="135" column="23" selection-start="3638" selection-end="3638" vertical-scroll-proportion="0.41396105">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/logs.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="63" column="43" selection-start="2388" selection-end="2403" vertical-scroll-proportion="0.33830845">
           <folding />
         </state>
       </provider>
