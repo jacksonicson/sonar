@@ -38,6 +38,9 @@ class Iface(Interface):
   def getTrackNames():
     pass
 
+  def getRampUpTime():
+    pass
+
 
 class Client:
   implements(Iface)
@@ -142,6 +145,34 @@ class Client:
       return d.callback(result.success)
     return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getTrackNames failed: unknown result"))
 
+  def getRampUpTime(self, ):
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
+    self.send_getRampUpTime()
+    return d
+
+  def send_getRampUpTime(self, ):
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('getRampUpTime', TMessageType.CALL, self._seqid)
+    args = getRampUpTime_args()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def recv_getRampUpTime(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
+    result = getRampUpTime_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getRampUpTime failed: unknown result"))
+
 
 class Processor(TProcessor):
   implements(Iface)
@@ -152,6 +183,7 @@ class Processor(TProcessor):
     self._processMap["startBenchmark"] = Processor.process_startBenchmark
     self._processMap["dynamicLoadProfile"] = Processor.process_dynamicLoadProfile
     self._processMap["getTrackNames"] = Processor.process_getTrackNames
+    self._processMap["getRampUpTime"] = Processor.process_getRampUpTime
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -211,6 +243,22 @@ class Processor(TProcessor):
   def write_results_success_getTrackNames(self, success, result, seqid, oprot):
     result.success = success
     oprot.writeMessageBegin("getTrackNames", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getRampUpTime(self, seqid, iprot, oprot):
+    args = getRampUpTime_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getRampUpTime_result()
+    d = defer.maybeDeferred(self._handler.getRampUpTime, )
+    d.addCallback(self.write_results_success_getRampUpTime, result, seqid, oprot)
+    return d
+
+  def write_results_success_getRampUpTime(self, success, result, seqid, oprot):
+    result.success = success
+    oprot.writeMessageBegin("getRampUpTime", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -547,6 +595,107 @@ class getTrackNames_result:
       for iter6 in self.success:
         oprot.writeString(iter6)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRampUpTime_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRampUpTime_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRampUpTime_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.I64, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.I64:
+          self.success = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRampUpTime_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.I64, 0)
+      oprot.writeI64(self.success)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

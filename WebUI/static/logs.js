@@ -136,8 +136,6 @@ function getLogLevelNames(logLevel){
 function getLogLevelImage(logLevel){
     var level = parseInt(logLevel);
     switch(level){
-        case 50010:
-            return "images/debug_level.png";
         case 50000:
         case 40000:
             return "images/error_level.png";
@@ -148,6 +146,8 @@ function getLogLevelImage(logLevel){
         case 10000:
         case 5000:
             return "images/debug_level.png";
+        case 50010:
+            return "images/sync.png";
     }
 }
 

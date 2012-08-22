@@ -26,6 +26,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool startBenchmark(long controllerTimestamp)'
   print '  bool dynamicLoadProfile(Profile profile)'
   print '   getTrackNames()'
+  print '  long getRampUpTime()'
   print ''
   sys.exit(0)
 
@@ -94,6 +95,12 @@ elif cmd == 'getTrackNames':
     print 'getTrackNames requires 0 args'
     sys.exit(1)
   pp.pprint(client.getTrackNames())
+
+elif cmd == 'getRampUpTime':
+  if len(args) != 0:
+    print 'getRampUpTime requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.getRampUpTime())
 
 else:
   print 'Unrecognized method %s' % cmd

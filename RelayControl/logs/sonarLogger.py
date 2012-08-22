@@ -6,6 +6,11 @@ import time
 
 logLevels = {60: 50010, 50:50000, 40:40000, 30:30000, 20:20000, 10:10000} 
 
+# Set up a specific logger with our desired output level
+SYNC = 60
+logging.addLevelName(SYNC, 'SYNC')
+
+# Log handler
 class SonarLogHandler(logging.Handler): # Inherit from logging.Handler
     def __init__(self, server, port, hostname, sensor, programName):
             # run the regular Handler __init__
