@@ -101,7 +101,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 			messageProcessor = new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("Thread started");
+					System.out.println("Sonar Appender Thread started");
 					while (true) {
 						try {
 							Object payload = messageQueue.take();
@@ -157,6 +157,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	@Override
 	public synchronized void close() {
+		System.out.println("Sonar Appender Thread Close Called");
 		messageQueue.offer(new PoisonPill());
 	}
 
