@@ -59,7 +59,7 @@ def main():
         print migrations
         
         print 'Migrating...'
-        # virt.handleMigrations(migrations)
+        virt.handleMigrations(migrations)
         
         
     else:
