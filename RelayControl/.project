@@ -3,6 +3,7 @@
 	<name>RelayControl</name>
 	<comment></comment>
 	<projects>
+		<project>Times</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

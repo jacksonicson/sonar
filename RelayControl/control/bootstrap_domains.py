@@ -1,6 +1,6 @@
 from virtual import allocation as virt
 from ipmodels import ssapv
-import times_client
+from service import times_client
 from numpy import empty
 import numpy as np
 import matplotlib.pyplot as plt
