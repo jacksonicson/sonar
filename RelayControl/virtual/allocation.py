@@ -23,7 +23,7 @@ def handleMigrations(allocation):
     connections = []
     
     # shutdown all VMs 
-    for host in hosts: 
+    for host in HOSTS: 
         conn_str = "qemu+ssh://root@%s/system" % (host)
         print 'connecting with %s' % (conn_str)
         conn = libvirt.open(conn_str)
@@ -67,6 +67,7 @@ def handleMigrations(allocation):
         conn.close()
 
 def main():
+    print 'Loading test allocation...'
     allocation = [ ('glassfish0', 0),
                ('glassfish1', 1),
                ('glassfish2', 2),

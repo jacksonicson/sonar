@@ -1,6 +1,6 @@
-import convolution
 from service import times_client
 from times import ttypes
+import convolution
 
 selected = [('O2_business_UPDATEDSSLINE', 60 * 60), # Burst in the evening
             ('O2_business_ADDUCP', 60 * 60), # Day workload
@@ -24,7 +24,9 @@ selected = [('O2_business_UPDATEDSSLINE', 60 * 60), # Burst in the evening
             ]
     
 
-mix0 =      [('O2_business_UPDATEDSSLINE', 60 * 60), # Burst in the evening
+mix0_profile_cycle = 24 * 60 * 60
+mix0_profile_width = 120
+mix0 = [('O2_business_UPDATEDSSLINE', 60 * 60), # Burst in the evening
             ('O2_business_ADDUCP', 60 * 60), # Day workload
             ('O2_business_LINECONFIRM', 60 * 60), # Day and night workload
             ('O2_retail_ADDORDER', 60 * 60), # Night and low day workload

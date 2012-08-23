@@ -15,46 +15,67 @@ def normalize(data):
     return data
 
 
+domain_service_mapping = [
+                   ('glassfish0', 4),
+                   ('glassfish1', 10),
+                   ('glassfish2', 2),
+                   ('glassfish3', 4),
+                   ('glassfish4', 5),
+                   ('glassfish5', 6),
+                   ('mysql0', 4),
+                   ('mysql1', 10),
+                   ('mysql2', 2),
+                   ('mysql3', 3),
+                   ('mysql4', 4),
+                   ('mysql5', 5),
+                   ]
+
 def main():
     print 'Connecting with Times'
     connection = times_client.connect()
     
-    print 'Querying for TS data...'
+    # Loading services to combine the dmain_service_mapping with    
     services = profiles.mix0
-    service_count = len(services)
-    
-    service_matrix = np.zeros((service_count, 111), dtype=float)
+    service_count = len(domain_service_mapping)
+    service_matrix = np.zeros((service_count, profiles.mix0_profile_width), dtype=float)
     
     for s in xrange(service_count):
-        service = services[s][0] + '_profile'
-        ts = connection.load(service)
+        mapping = domain_service_mapping[s]
         
+        service = services[mapping[1]][0] + '_profile'
+        ts = connection.load(service)
         ts_len = len(ts.elements)
-        print '%s - %i' % (service, ts_len)
     
         data = np.empty((ts_len), float)
         for i in xrange(ts_len):
             data[i] = ts.elements[i].value
             
         data = normalize(data)
-        try:
-            service_matrix[s] = data
-        except:
-            print 'WARN: PROFILE CONSITENCY PROBLEM OCCURED'
+        service_matrix[s] = data
         
     
     times_client.close()
     
+    
     print 'Solving model...'
-    server, assignment = ssapv.solve(len(virt.HOSTS), 400, service_matrix)
+    server, assignment = ssapv.solve(len(virt.HOSTS), 300, service_matrix)
     if assignment != None:
-        print server
+        
+        print 'Required servers: %i' % (server)
         print assignment
         
         print 'Assigning domains to servers'
-        domain_workload_mapping = {
-                   'glassfish0' : 0, 
-                   }
+        migrations = []
+        for key in assignment.keys():
+            mapping = domain_service_mapping[key]
+            migration = (mapping[0], assignment[key])
+            migrations.append(migration)
+            
+        print migrations
+        
+        print 'Migrating...'
+        virt.handleMigrations(migrations)
+        
         
     else:
         print 'model infeasible'
@@ -63,3 +84,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
