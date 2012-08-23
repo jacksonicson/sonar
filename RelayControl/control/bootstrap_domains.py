@@ -40,7 +40,7 @@ def main():
         try:
             service_matrix[s] = data
         except:
-            print 'Invalid width'
+            print 'WARN: PROFILE CONSITENCY PROBLEM OCCURED'
         
     
     times_client.close()
