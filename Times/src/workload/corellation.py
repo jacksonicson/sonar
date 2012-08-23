@@ -6,54 +6,54 @@ import scipy as sp
 
 def process_trace(connection, name):
     print 'Downloading...'
-    timeSeries = connection.load(name)
+    timeSeries = connection.demand(name)
     print 'complete'
 
     time = np.zeros(len(timeSeries.elements))
-    load = np.zeros(len(timeSeries.elements))
+    demand = np.zeros(len(timeSeries.elements))
     for i in range(0, len(timeSeries.elements)):
         time[i] = timeSeries.elements[i].timestamp
-        load[i] = timeSeries.elements[i].value
+        demand[i] = timeSeries.elements[i].value
         
     
-    mean = np.mean(load)
+    mean = np.mean(demand)
     
-    print len(load)
+    print len(demand)
     
-    #load = load - mean
+    #demand = demand - mean
     
     
     # http://www.simafore.com/blog/bid/105815/Time-series-analysis-using-R-for-cost-forecasting-models-in-8-steps
     
     
-    # load = np.array([np.sin(i) for i in range(0,500)])
+    # demand = np.array([np.sin(i) for i in range(0,500)])
     
-    # load = np.log10(load)    
-    # result = np.correlate(load, load, 'full')
+    # demand = np.log10(demand)    
+    # result = np.correlate(demand, demand, 'full')
     # result = result[0:len(result)]
     
     from scipy import signal
-    # load = sp.signal.detrend(load, axis=0)
+    # demand = sp.signal.detrend(demand, axis=0)
     
-    t = np.arange(len(load))
-    sp = np.fft.fft(load)
+    t = np.arange(len(demand))
+    sp = np.fft.fft(demand)
     freq = np.fft.fftfreq(t.shape[-1])
     
     from pandas.tools.plotting import autocorrelation_plot
-    autocorrelation_plot(load)
+    autocorrelation_plot(demand)
         
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # ax.plot(range(0, len(ff)), ff)
     ax.plot(freq, sp.real, freq, sp.imag)
-    # ax.acorr(load, maxlags=700)
+    # ax.acorr(demand, maxlags=700)
     
     
     
     
     print 'pandas'    
     from pandas import Series
-    s = Series(load, index=range(0, len(load)))
+    s = Series(demand, index=range(0, len(demand)))
     corr = s.autocorr()
     print corr
     

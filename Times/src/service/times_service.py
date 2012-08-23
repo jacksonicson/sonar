@@ -113,7 +113,7 @@ class TimeSeries(object):
 
 class TimesHandler(TimeSeries):
     
-    def load(self, name):
+    def demand(self, name):
         ts = super(TimesHandler, self)._loadFile(name)
         return ts
         

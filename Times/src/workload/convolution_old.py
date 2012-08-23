@@ -308,7 +308,7 @@ def load_trace(filename):
 def process_trace(name):
     print 'Downloading...'
     connection = times_client.connect()
-    timeSeries = connection.load(name)
+    timeSeries = connection.demand(name)
     times_client.close()
     print 'complete'
     

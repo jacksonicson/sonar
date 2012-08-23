@@ -135,17 +135,17 @@ def extract_profile(name, time, signal, sampling_frequency=None):
 def process_trace(connection, tupel):
     print 'Downloading...'
     name = tupel[0]
-    timeSeries = connection.load(name)
+    timeSeries = connection.demand(name)
     print 'complete'
 
     time = np.zeros(len(timeSeries.elements))
-    load = np.zeros(len(timeSeries.elements))
+    demand = np.zeros(len(timeSeries.elements))
     for i in range(0, len(timeSeries.elements)):
         time[i] = timeSeries.elements[i].timestamp
-        load[i] = timeSeries.elements[i].value
+        demand[i] = timeSeries.elements[i].value
         
     
-    profile = extract_profile(name, time, load, tupel[1])
+    profile = extract_profile(name, time, demand, tupel[1])
     print 'len %i' % (len(profile))
     
     # Store it
