@@ -2,6 +2,14 @@ from service import times_client
 from times import ttypes
 import convolution
 
+'''
+List of workload profiles used by the benchmark (stored in Times)
+Times profile names use the prefix "_profile"
+(name, frequency)
+'''
+
+selected_profile_cycle = 24 * 60 * 60
+selected_profile_width = 120
 selected = [('O2_business_UPDATEDSSLINE', 60 * 60), # Burst in the evening
             ('O2_business_ADDUCP', 60 * 60), # Day workload
             ('O2_business_LINECONFIRM', 60 * 60), # Day and night workload

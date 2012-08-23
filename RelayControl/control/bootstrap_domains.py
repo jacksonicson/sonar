@@ -5,7 +5,7 @@ from virtual import allocation as virt
 from workload import profiles
 import matplotlib.pyplot as plt
 import numpy as np
-
+import domains
 
 def normalize(data):
     mv = np.max(data)
@@ -15,32 +15,17 @@ def normalize(data):
     return data
 
 
-domain_service_mapping = [
-                   ('glassfish0', 4),
-                   ('glassfish1', 10),
-                   ('glassfish2', 2),
-                   ('glassfish3', 4),
-                   ('glassfish4', 5),
-                   ('glassfish5', 6),
-                   ('mysql0', 4),
-                   ('mysql1', 10),
-                   ('mysql2', 2),
-                   ('mysql3', 3),
-                   ('mysql4', 4),
-                   ('mysql5', 5),
-                   ]
-
 def main():
     print 'Connecting with Times'
     connection = times_client.connect()
     
     # Loading services to combine the dmain_service_mapping with    
     services = profiles.mix0
-    service_count = len(domain_service_mapping)
+    service_count = len(domains.domain_profile_mapping)
     service_matrix = np.zeros((service_count, profiles.mix0_profile_width), dtype=float)
     
     for s in xrange(service_count):
-        mapping = domain_service_mapping[s]
+        mapping = domains.domain_profile_mapping[s]
         
         service = services[mapping[1]][0] + '_profile'
         ts = connection.load(service)
@@ -67,7 +52,7 @@ def main():
         print 'Assigning domains to servers'
         migrations = []
         for key in assignment.keys():
-            mapping = domain_service_mapping[key]
+            mapping = domains.domain_profile_mapping[key]
             migration = (mapping[0], assignment[key])
             migrations.append(migration)
             
