@@ -7,7 +7,8 @@ from twisted.internet.protocol import ClientCreator
 import logic.controller as controller
 import math
 import logs.sonarLogger as sonarLogger
-import logging 
+import logging
+import domains 
 
 # Setup logging
 my_logger = logging.getLogger('start_benchmark')
@@ -103,7 +104,7 @@ def phase_start_rain(done, client_list):
         for target in targets[i * targets_per_driver : (i + 1) * targets_per_driver]:
             config_target = {}
             config_target['target'] = target
-            config_target['profile'] = 'SIS_221_cpu_profile'
+            config_target['profile'] = domains.profile_by_name(target)
             config_targets.append(config_target)
 
         print config_targets
