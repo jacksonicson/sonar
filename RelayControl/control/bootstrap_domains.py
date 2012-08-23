@@ -55,11 +55,11 @@ def main():
             mapping = domains.domain_profile_mapping[key]
             migration = (mapping[0], assignment[key])
             migrations.append(migration)
-            
+        
         print migrations
         
         print 'Migrating...'
-        virt.handleMigrations(migrations)
+        virt.resetAllocation(migrations)
         
         
     else:

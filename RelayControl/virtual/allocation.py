@@ -22,7 +22,49 @@ List of all hosts/nodes in the infrastructure
 HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
 ###############################################
 
-def handleMigrations(allocation):
+def __find_domain(connections, domain_name):
+    for connection in connections:
+        try:
+            domain = connection.lookupByName(domain_name)
+            if domain.isActive():
+                return connection.getHostname()
+        except:
+            print 'error'
+
+def migrateAllocation(allocation):
+    connections = []
+    
+    # connect 
+    for host in HOSTS: 
+        conn_str = "qemu+ssh://root@%s/system" % (host)
+        print 'connecting with %s' % (conn_str)
+        conn = libvirt.open(conn_str)
+        connections.append(conn)
+    
+    for migration in allocation:
+        domain_name = migration[0]
+        target_index = migration[1]
+        
+        print __find_domain(connections, domain_name)
+        
+#        # Check if target host has the VM description
+#        print domain_name
+#        print target_index
+#        domain = None
+#        try:
+#            domain = connections[target_index].lookupByName(domain_name)
+#        except:
+#            print 'Defining domain...'
+#            domain = connections[0].lookupByName(domain_name)
+#            xml_desc = domain.XMLDesc(0)
+#            domain = connections[target_index].defineXML(xml_desc)
+#            
+#        # Migrate domain
+#        print 'Launching domain...'
+#        domain.create()
+        
+
+def resetAllocation(allocation):
     connections = []
     
     # shutdown all VMs 
@@ -39,7 +81,7 @@ def handleMigrations(allocation):
             domain.destroy()
     
     try:
-        # Setup initial allocation
+        # Setup allocation
         for migration in allocation:
             domain_name = migration[0]
             target_index = migration[1]
@@ -84,7 +126,7 @@ def main():
                ('mysql4', 4),
                ('mysql5', 5), ]
     
-    handleMigrations(allocation)
+    resetAllocation(allocation)
     
     
 if __name__ == '__main__':
