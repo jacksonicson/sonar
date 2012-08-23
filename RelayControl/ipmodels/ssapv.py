@@ -91,13 +91,13 @@ def solve(_server_count, _server_capacity, _demand_raw,):
     createVariables(model)
     setupConstraints(model) 
     setupObjective(model)
+    model.setParam( 'OutputFlag', False )
     model.optimize()
-
-    assignment = getAssignment()
-    print assignment
     
-    server_count = getServerCount()
-    print server_count
+    if model.getAttr(GRB.attr.SolCount) > 0:
+        return (getServerCount(), getAssignment())
+    else:
+        return (None, None)
 
 if __name__ == '__main__':
     demand_duration = 24

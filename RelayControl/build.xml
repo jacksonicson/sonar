@@ -24,6 +24,14 @@
 			<arg value="py" />
 			<arg value="../Thrift/collector.thrift" />
 		</exec>
+		
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="." />
+			<arg value="--gen" />
+			<arg value="py" />
+			<arg value="../Thrift/times.thrift" />
+		</exec>
 	</target>
 
 	<target name="dependencies" depends="thrift">

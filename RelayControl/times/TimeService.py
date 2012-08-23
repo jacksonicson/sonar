@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py:twisted
+#  options string: py
 #
 
 from thrift.Thrift import TType, TMessageType, TException, TApplicationException
@@ -16,174 +16,211 @@ try:
 except:
   fastbinary = None
 
-from zope.interface import Interface, implements
-from twisted.internet import defer
-from thrift.transport import TTwisted
 
-class Iface(Interface):
-  def startBenchmark(controllerTimestamp):
+class Iface:
+  def find(self, pattern):
     """
     Parameters:
-     - controllerTimestamp
+     - pattern
     """
     pass
 
-  def dynamicLoadProfile(profile):
+  def load(self, name):
     """
     Parameters:
-     - profile
+     - name
     """
     pass
 
-  def getTrackNames():
+  def remove(self, name):
+    """
+    Parameters:
+     - name
+    """
     pass
 
-  def getRampUpTime():
+  def create(self, name, frequency):
+    """
+    Parameters:
+     - name
+     - frequency
+    """
+    pass
+
+  def append(self, name, elements):
+    """
+    Parameters:
+     - name
+     - elements
+    """
     pass
 
 
-class Client:
-  implements(Iface)
-
-  def __init__(self, transport, oprot_factory):
-    self._transport = transport
-    self._oprot_factory = oprot_factory
+class Client(Iface):
+  def __init__(self, iprot, oprot=None):
+    self._iprot = self._oprot = iprot
+    if oprot is not None:
+      self._oprot = oprot
     self._seqid = 0
-    self._reqs = {}
 
-  def startBenchmark(self, controllerTimestamp):
+  def find(self, pattern):
     """
     Parameters:
-     - controllerTimestamp
+     - pattern
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_startBenchmark(controllerTimestamp)
-    return d
+    self.send_find(pattern)
+    return self.recv_find()
 
-  def send_startBenchmark(self, controllerTimestamp):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('startBenchmark', TMessageType.CALL, self._seqid)
-    args = startBenchmark_args()
-    args.controllerTimestamp = controllerTimestamp
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+  def send_find(self, pattern):
+    self._oprot.writeMessageBegin('find', TMessageType.CALL, self._seqid)
+    args = find_args()
+    args.pattern = pattern
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
 
-  def recv_startBenchmark(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
+  def recv_find(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = startBenchmark_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = find_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
     if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "startBenchmark failed: unknown result"))
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "find failed: unknown result");
 
-  def dynamicLoadProfile(self, profile):
+  def load(self, name):
     """
     Parameters:
-     - profile
+     - name
     """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_dynamicLoadProfile(profile)
-    return d
+    self.send_load(name)
+    return self.recv_load()
 
-  def send_dynamicLoadProfile(self, profile):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('dynamicLoadProfile', TMessageType.CALL, self._seqid)
-    args = dynamicLoadProfile_args()
-    args.profile = profile
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+  def send_load(self, name):
+    self._oprot.writeMessageBegin('load', TMessageType.CALL, self._seqid)
+    args = load_args()
+    args.name = name
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
 
-  def recv_dynamicLoadProfile(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
+  def recv_load(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = dynamicLoadProfile_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = load_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
     if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "dynamicLoadProfile failed: unknown result"))
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "load failed: unknown result");
 
-  def getTrackNames(self, ):
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_getTrackNames()
-    return d
+  def remove(self, name):
+    """
+    Parameters:
+     - name
+    """
+    self.send_remove(name)
+    self.recv_remove()
 
-  def send_getTrackNames(self, ):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('getTrackNames', TMessageType.CALL, self._seqid)
-    args = getTrackNames_args()
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+  def send_remove(self, name):
+    self._oprot.writeMessageBegin('remove', TMessageType.CALL, self._seqid)
+    args = remove_args()
+    args.name = name
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
 
-  def recv_getTrackNames(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
+  def recv_remove(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = getTrackNames_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getTrackNames failed: unknown result"))
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = remove_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    return
 
-  def getRampUpTime(self, ):
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_getRampUpTime()
-    return d
+  def create(self, name, frequency):
+    """
+    Parameters:
+     - name
+     - frequency
+    """
+    self.send_create(name, frequency)
+    self.recv_create()
 
-  def send_getRampUpTime(self, ):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('getRampUpTime', TMessageType.CALL, self._seqid)
-    args = getRampUpTime_args()
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+  def send_create(self, name, frequency):
+    self._oprot.writeMessageBegin('create', TMessageType.CALL, self._seqid)
+    args = create_args()
+    args.name = name
+    args.frequency = frequency
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
 
-  def recv_getRampUpTime(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
+  def recv_create(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = getRampUpTime_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getRampUpTime failed: unknown result"))
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = create_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    return
+
+  def append(self, name, elements):
+    """
+    Parameters:
+     - name
+     - elements
+    """
+    self.send_append(name, elements)
+    self.recv_append()
+
+  def send_append(self, name, elements):
+    self._oprot.writeMessageBegin('append', TMessageType.CALL, self._seqid)
+    args = append_args()
+    args.name = name
+    args.elements = elements
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_append(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = append_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    return
 
 
-class Processor(TProcessor):
-  implements(Iface)
-
+class Processor(Iface, TProcessor):
   def __init__(self, handler):
-    self._handler = Iface(handler)
+    self._handler = handler
     self._processMap = {}
-    self._processMap["startBenchmark"] = Processor.process_startBenchmark
-    self._processMap["dynamicLoadProfile"] = Processor.process_dynamicLoadProfile
-    self._processMap["getTrackNames"] = Processor.process_getTrackNames
-    self._processMap["getRampUpTime"] = Processor.process_getRampUpTime
+    self._processMap["find"] = Processor.process_find
+    self._processMap["load"] = Processor.process_load
+    self._processMap["remove"] = Processor.process_remove
+    self._processMap["create"] = Processor.process_create
+    self._processMap["append"] = Processor.process_append
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -195,70 +232,62 @@ class Processor(TProcessor):
       x.write(oprot)
       oprot.writeMessageEnd()
       oprot.trans.flush()
-      return defer.succeed(None)
+      return
     else:
-      return self._processMap[name](self, seqid, iprot, oprot)
+      self._processMap[name](self, seqid, iprot, oprot)
+    return True
 
-  def process_startBenchmark(self, seqid, iprot, oprot):
-    args = startBenchmark_args()
+  def process_find(self, seqid, iprot, oprot):
+    args = find_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = startBenchmark_result()
-    d = defer.maybeDeferred(self._handler.startBenchmark, args.controllerTimestamp)
-    d.addCallback(self.write_results_success_startBenchmark, result, seqid, oprot)
-    return d
-
-  def write_results_success_startBenchmark(self, success, result, seqid, oprot):
-    result.success = success
-    oprot.writeMessageBegin("startBenchmark", TMessageType.REPLY, seqid)
+    result = find_result()
+    result.success = self._handler.find(args.pattern)
+    oprot.writeMessageBegin("find", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_dynamicLoadProfile(self, seqid, iprot, oprot):
-    args = dynamicLoadProfile_args()
+  def process_load(self, seqid, iprot, oprot):
+    args = load_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = dynamicLoadProfile_result()
-    d = defer.maybeDeferred(self._handler.dynamicLoadProfile, args.profile)
-    d.addCallback(self.write_results_success_dynamicLoadProfile, result, seqid, oprot)
-    return d
-
-  def write_results_success_dynamicLoadProfile(self, success, result, seqid, oprot):
-    result.success = success
-    oprot.writeMessageBegin("dynamicLoadProfile", TMessageType.REPLY, seqid)
+    result = load_result()
+    result.success = self._handler.load(args.name)
+    oprot.writeMessageBegin("load", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getTrackNames(self, seqid, iprot, oprot):
-    args = getTrackNames_args()
+  def process_remove(self, seqid, iprot, oprot):
+    args = remove_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getTrackNames_result()
-    d = defer.maybeDeferred(self._handler.getTrackNames, )
-    d.addCallback(self.write_results_success_getTrackNames, result, seqid, oprot)
-    return d
-
-  def write_results_success_getTrackNames(self, success, result, seqid, oprot):
-    result.success = success
-    oprot.writeMessageBegin("getTrackNames", TMessageType.REPLY, seqid)
+    result = remove_result()
+    self._handler.remove(args.name)
+    oprot.writeMessageBegin("remove", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getRampUpTime(self, seqid, iprot, oprot):
-    args = getRampUpTime_args()
+  def process_create(self, seqid, iprot, oprot):
+    args = create_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getRampUpTime_result()
-    d = defer.maybeDeferred(self._handler.getRampUpTime, )
-    d.addCallback(self.write_results_success_getRampUpTime, result, seqid, oprot)
-    return d
+    result = create_result()
+    self._handler.create(args.name, args.frequency)
+    oprot.writeMessageBegin("create", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
-  def write_results_success_getRampUpTime(self, success, result, seqid, oprot):
-    result.success = success
-    oprot.writeMessageBegin("getRampUpTime", TMessageType.REPLY, seqid)
+  def process_append(self, seqid, iprot, oprot):
+    args = append_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = append_result()
+    self._handler.append(args.name, args.elements)
+    oprot.writeMessageBegin("append", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -266,19 +295,19 @@ class Processor(TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class startBenchmark_args:
+class find_args:
   """
   Attributes:
-   - controllerTimestamp
+   - pattern
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I64, 'controllerTimestamp', None, None, ), # 1
+    (1, TType.STRING, 'pattern', None, None, ), # 1
   )
 
-  def __init__(self, controllerTimestamp=None,):
-    self.controllerTimestamp = controllerTimestamp
+  def __init__(self, pattern=None,):
+    self.pattern = pattern
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -290,8 +319,8 @@ class startBenchmark_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.I64:
-          self.controllerTimestamp = iprot.readI64();
+        if ftype == TType.STRING:
+          self.pattern = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -303,10 +332,10 @@ class startBenchmark_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('startBenchmark_args')
-    if self.controllerTimestamp is not None:
-      oprot.writeFieldBegin('controllerTimestamp', TType.I64, 1)
-      oprot.writeI64(self.controllerTimestamp)
+    oprot.writeStructBegin('find_args')
+    if self.pattern is not None:
+      oprot.writeFieldBegin('pattern', TType.STRING, 1)
+      oprot.writeString(self.pattern)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -326,228 +355,7 @@ class startBenchmark_args:
   def __ne__(self, other):
     return not (self == other)
 
-class startBenchmark_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.BOOL, 'success', None, None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.BOOL:
-          self.success = iprot.readBool();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('startBenchmark_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.BOOL, 0)
-      oprot.writeBool(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class dynamicLoadProfile_args:
-  """
-  Attributes:
-   - profile
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'profile', (Profile, Profile.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, profile=None,):
-    self.profile = profile
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.profile = Profile()
-          self.profile.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('dynamicLoadProfile_args')
-    if self.profile is not None:
-      oprot.writeFieldBegin('profile', TType.STRUCT, 1)
-      self.profile.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class dynamicLoadProfile_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.BOOL, 'success', None, None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.BOOL:
-          self.success = iprot.readBool();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('dynamicLoadProfile_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.BOOL, 0)
-      oprot.writeBool(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getTrackNames_args:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getTrackNames_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getTrackNames_result:
+class find_result:
   """
   Attributes:
    - success
@@ -572,10 +380,10 @@ class getTrackNames_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = iprot.readString();
-            self.success.append(_elem5)
+          (_etype10, _size7) = iprot.readListBegin()
+          for _i11 in xrange(_size7):
+            _elem12 = iprot.readString();
+            self.success.append(_elem12)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -588,12 +396,12 @@ class getTrackNames_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getTrackNames_result')
+    oprot.writeStructBegin('find_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter6 in self.success:
-        oprot.writeString(iter6)
+      for iter13 in self.success:
+        oprot.writeString(iter13)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -614,10 +422,19 @@ class getTrackNames_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getRampUpTime_args:
+class load_args:
+  """
+  Attributes:
+   - name
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
   )
+
+  def __init__(self, name=None,):
+    self.name = name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -628,6 +445,11 @@ class getRampUpTime_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -637,7 +459,11 @@ class getRampUpTime_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getRampUpTime_args')
+    oprot.writeStructBegin('load_args')
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -656,14 +482,14 @@ class getRampUpTime_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getRampUpTime_result:
+class load_result:
   """
   Attributes:
    - success
   """
 
   thrift_spec = (
-    (0, TType.I64, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (TimeSeries, TimeSeries.thrift_spec), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -679,8 +505,9 @@ class getRampUpTime_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.I64:
-          self.success = iprot.readI64();
+        if ftype == TType.STRUCT:
+          self.success = TimeSeries()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -692,11 +519,350 @@ class getRampUpTime_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getRampUpTime_result')
+    oprot.writeStructBegin('load_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I64, 0)
-      oprot.writeI64(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class remove_args:
+  """
+  Attributes:
+   - name
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
+  )
+
+  def __init__(self, name=None,):
+    self.name = name
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('remove_args')
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class remove_result:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('remove_result')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class create_args:
+  """
+  Attributes:
+   - name
+   - frequency
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
+    (2, TType.I32, 'frequency', None, None, ), # 2
+  )
+
+  def __init__(self, name=None, frequency=None,):
+    self.name = name
+    self.frequency = frequency
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.frequency = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('create_args')
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    if self.frequency is not None:
+      oprot.writeFieldBegin('frequency', TType.I32, 2)
+      oprot.writeI32(self.frequency)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class create_result:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('create_result')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class append_args:
+  """
+  Attributes:
+   - name
+   - elements
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
+    (2, TType.LIST, 'elements', (TType.STRUCT,(Element, Element.thrift_spec)), None, ), # 2
+  )
+
+  def __init__(self, name=None, elements=None,):
+    self.name = name
+    self.elements = elements
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.elements = []
+          (_etype17, _size14) = iprot.readListBegin()
+          for _i18 in xrange(_size14):
+            _elem19 = Element()
+            _elem19.read(iprot)
+            self.elements.append(_elem19)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('append_args')
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    if self.elements is not None:
+      oprot.writeFieldBegin('elements', TType.LIST, 2)
+      oprot.writeListBegin(TType.STRUCT, len(self.elements))
+      for iter20 in self.elements:
+        iter20.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class append_result:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('append_result')
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
