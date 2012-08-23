@@ -187,10 +187,17 @@ function resubmitForm(event){
 
 function addQueryLabel() {
     var id = $("#hostname").val() + "$" + $("#sensor").val() + "$" + $("#startdate").val() + "$" + $("#starttime").val() 
-        + "$" + $("#stopdate").val() + "$" + $("#stoptime").val(); 
-    var labelName = $("#hostname").val() + ":" + $("#sensor").val();
+        + "$" + $("#stopdate").val() + "$" + $("#stoptime").val();
+
+    if($("#hostname").val() == '')
+        return
+    if($("#sensor").val() == '')
+        return
+
+    var labelName = $("#hostname").val() + " / " + $("#sensor").val();
+
     $("#labelContainer").append(
-        $('<span>').addClass("badge").addClass("badge-info").append(
+        $('<span>').addClass("label").addClass("label-inverse").append(
             $('<a>').attr("id", id).addClass("labelLink").text(labelName).click(resubmitForm)
         ),
         $('<span>').text('  ')
