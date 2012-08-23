@@ -31,6 +31,7 @@ def log(sensor, logValue):
 
 def connect():
     # Make socket
+    global transportLogging
     transportLogging = TSocket.TSocket(COLLECTOR_IP, LOGGING_PORT)
     
     # Buffering is critical. Raw sockets are very slow
@@ -42,3 +43,7 @@ def connect():
     
     # Open the transports
     transportLogging.open();
+
+def close():
+    transportLogging.close()
+    

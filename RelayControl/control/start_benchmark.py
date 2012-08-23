@@ -229,7 +229,6 @@ def errback(failure):
     print failure
     reactor.stop()
     
-    
 def main():
     # Create drones
     drones.main()
