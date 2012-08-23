@@ -8,40 +8,39 @@ import logic.controller as controller
 import math
 import logs.sonarLogger as sonarLogger
 import logging
-import domains 
+import domains
+from logs import sonarlog 
 
 # Setup logging
-my_logger = logging.getLogger('start_benchmark')
-my_logger.setLevel(logging.DEBUG)
-my_logger.addHandler(sonarLogger.SonarLogHandler("monitor0.dfg", 7921, "Andreas-PC", "control", "start_benchmark"))
+logger = sonarlog.getLogger('start_benchmark')
 
 def finished_end(done, client_list):
     print 'finish phase'
-    my_logger.log(sonarLogger.SYNC, 'end of shutdown sequence')
+    logger.log(sonarLogger.SYNC, 'end of shutdown sequence')
     reactor.stop()
 
 def finished(done, client_list):
     print 'finish phase'
-    my_logger.log(sonarLogger.SYNC, 'end of startup sequence')
+    logger.log(sonarLogger.SYNC, 'end of startup sequence')
     reactor.stop()
 
     # Launch the controller
     print '### CONTROLLER ###############################'
     print 'starting controller'
-    my_logger.info('loading controller')
+    logger.info('loading controller')
     # controller.main() 
 
 
 def ramp_up(ret, rain_client, client_list):
     print 'sleeping during ramp-up for %i seconds' % (ret)
-    my_logger.info('sleeping during ramp-up for %i seconds' % (ret))
+    logger.info('sleeping during ramp-up for %i seconds' % (ret))
     reactor.callLater(ret, finished, None, client_list)
     
 
 def rain_started(ret, rain_client, client_list):
     print 'rain is driving load now, waiting for ramp-up finish'
-    my_logger.log(sonarLogger.SYNC, 'start driving load')
-    my_logger.info('querying ramp-up duration')
+    logger.log(sonarLogger.SYNC, 'start driving load')
+    logger.info('querying ramp-up duration')
     
     d = rain_client[0][1].getRampUpTime()
     d.addCallback(ramp_up, rain_client, client_list) 
@@ -49,12 +48,12 @@ def rain_started(ret, rain_client, client_list):
 
 def rain_connected(rain_clients, client_list):
     print 'releasing load...'
-    my_logger.info('releasing load on rain drivers')
+    logger.info('releasing load on rain drivers')
     
     dlist = []
     for client in rain_clients:
         print '   * releasing %s' % (client[1])
-        my_logger.debug('releasing')
+        logger.debug('releasing')
         
         d = client[1].startBenchmark(long(base.millis()))
         dlist.append(d)
@@ -65,7 +64,7 @@ def rain_connected(rain_clients, client_list):
 
 def trigger_rain_benchmark(ret, client_list):
     print 'connecting with rain drivers...'
-    my_logger.info('connecting with rain drivers')
+    logger.info('connecting with rain drivers')
     
     dlist = []
     for driver in hosts.get_hosts('load'):
@@ -84,7 +83,7 @@ def trigger_rain_benchmark(ret, client_list):
 
 def phase_start_rain(done, client_list):
     print 'starting rain drivers...'
-    my_logger.info('starting rain drivers')
+    logger.info('starting rain drivers')
     
     dlist = []
 
@@ -127,7 +126,7 @@ def phase_start_rain(done, client_list):
 
 def shutdown_glassfish_rain(client_list, ret=None):
     print "stopping glassfish and rain drivers..."
-    my_logger.info('stopping glassfish and rain drivers')
+    logger.info('stopping glassfish and rain drivers')
     
     dlist = []
     
@@ -151,7 +150,7 @@ def phase_start_glassfish_database(done, client_list):
     the Rain Tracks of the SpecJ driver are accessing the Glassfish services. 
     """
     print 'starting glassfish and database...'
-    my_logger.info('starting glassfish and database')
+    logger.info('starting glassfish and database')
     
     try:
         dlist = []
@@ -182,7 +181,7 @@ def phase_start_glassfish_database(done, client_list):
  
 def phase_configure_glassfish(client_list):
     print 'reconfiguring glassfish ...'
-    my_logger.info('reconfiguring glassfish')
+    logger.info('reconfiguring glassfish')
     
     try:
         
@@ -211,7 +210,7 @@ def phase_configure_glassfish(client_list):
  
  
 def start_phase(client_list):
-    my_logger.log(sonarLogger.SYNC, 'start of startup sequence')
+    logger.log(sonarLogger.SYNC, 'start of startup sequence')
     
     print 'Connection established'
     print 'Following start sequence now...'
@@ -221,7 +220,7 @@ def start_phase(client_list):
     
     
 def stop_phase(client_list):
-    my_logger.log(sonarLogger.SYNC, 'start of shutdown sequence')
+    logger.log(sonarLogger.SYNC, 'start of shutdown sequence')
     shutdown_glassfish_rain(client_list)
     
     
@@ -278,4 +277,6 @@ def main():
     reactor.run()
 
 if __name__ == '__main__':
+    sonarlog.connect()
     main()
+    sonarlog.close()
