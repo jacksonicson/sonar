@@ -16,26 +16,10 @@ import libvirt
 ###############################################
 ### CONFIG                                   ##
 RELAY_PORT = 7900
+HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
 ###############################################
 
-hosts = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
-
-allocation = [ ('glassfish0', 0),
-               ('glassfish1', 1),
-               ('glassfish2', 2),
-               ('glassfish3', 3),
-               ('glassfish4', 4),
-               ('glassfish5', 5),
-               ('mysql0', 0),
-               ('mysql1', 1),
-               ('mysql2', 2),
-               ('mysql3', 3),
-               ('mysql4', 4),
-               ('mysql5', 5), ]
-
-
-
-def main():
+def handleMigrations(allocation):
     connections = []
     
     # shutdown all VMs 
@@ -81,7 +65,23 @@ def main():
     for conn in connections:
         print 'closing connection...'
         conn.close()
-        
 
+def main():
+    allocation = [ ('glassfish0', 0),
+               ('glassfish1', 1),
+               ('glassfish2', 2),
+               ('glassfish3', 3),
+               ('glassfish4', 4),
+               ('glassfish5', 5),
+               ('mysql0', 0),
+               ('mysql1', 1),
+               ('mysql2', 2),
+               ('mysql3', 3),
+               ('mysql4', 4),
+               ('mysql5', 5), ]
+    
+    handleMigrations(allocation)
+    
+    
 if __name__ == '__main__':
     main()

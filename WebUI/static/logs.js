@@ -87,7 +87,7 @@ function addQueryHandler(event) {
 function renderLogs(list){
     var logTable = $('#logResultsTableBody');
     logTable.children('tr').remove();
-    $("#logsFoundtext").text(list.length + " logs found");
+    $("#logsFoundtext").text(list.length);
 
     for(var i = 0; i < list.length ; i++)
     {

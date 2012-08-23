@@ -74,7 +74,7 @@ def getServerCount():
             count += 1
     return count
     
-def solve(_server_count, _server_capacity, _demand_raw, ):
+def solve(_server_count, _server_capacity, _demand_raw,):
     global server_count
     global service_count
     global server_capacity
@@ -101,7 +101,7 @@ def solve(_server_count, _server_capacity, _demand_raw, ):
 
 if __name__ == '__main__':
     demand_duration = 24
-    service_count = 24
+    service_count = 20
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
     # Fill demand with random data
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    solve(24, 100, demand_raw)
+    solve(20, 100, demand_raw)
 
     
 

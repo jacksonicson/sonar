@@ -1,7 +1,8 @@
 {% extends 'template.html' %}
 
 {% block jshead %}
-<script type="text/javascript" src="autocomplete.js"></script>
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"
+        src="autocomplete.js"></script>
 <script type="text/javascript" src="logs.js"></script>
 <style type="text/css">
     .top{cursor: pointer;}
@@ -57,7 +58,8 @@
 
             </fieldset>
         </form>
-        <span style="font-size:20px;color:green" id="logsFoundtext">&nbsp;</span>
+        <p style="padding-bottom: 10px; margin-left: 5px"><span style="font-size:12px;">Total log count:</span></p>
+        <p style="margin-left: 8px"><span style="font-size:40px;" id="logsFoundtext">0</span></p>
     </div>
 
     <div class="span8" id="container">
