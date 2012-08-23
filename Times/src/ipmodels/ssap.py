@@ -50,7 +50,7 @@ def setupObjective(model):
     model.update()
 
 
-def getAssignment(model):
+def getAssignment():
     global var_allocation
     
     assignment = {}
@@ -62,6 +62,12 @@ def getAssignment(model):
         
     return assignment
         
+def getServerCount():
+    count = 0
+    for i in xrange(server_count):
+        if var_server_active[i].x > 0:
+            count += 1
+    return count
 
 def solve(_server_count, _server_capacity, _demand):
     global server_count
@@ -80,8 +86,11 @@ def solve(_server_count, _server_capacity, _demand):
     setupObjective(model)
     model.optimize()
 
-    assignment = getAssignment(model)
+    assignment = getAssignment()
     print assignment
+    
+    server_count = getServerCount()
+    print server_count
 
 if __name__ == '__main__':
     solve(5, 100, [30, 2, 33, 44, 66])

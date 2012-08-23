@@ -67,6 +67,12 @@ def getAssignment():
         
     return assignment
     
+def getServerCount():
+    count = 0
+    for i in xrange(server_count):
+        if var_server_active[i].x > 0:
+            count += 1
+    return count
     
 def solve(_server_count, _server_capacity, _demand_raw, ):
     global server_count
@@ -90,10 +96,12 @@ def solve(_server_count, _server_capacity, _demand_raw, ):
     assignment = getAssignment()
     print assignment
     
+    server_count = getServerCount()
+    print server_count
 
 if __name__ == '__main__':
     demand_duration = 24
-    service_count = 12
+    service_count = 24
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
     # Fill demand with random data
@@ -101,7 +109,7 @@ if __name__ == '__main__':
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    solve(12, 100, demand_raw)
+    solve(24, 100, demand_raw)
 
     
 
