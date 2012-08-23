@@ -33,6 +33,7 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
   private static final org.apache.thrift.protocol.TField INTERVAL_FIELD_DESC = new org.apache.thrift.protocol.TField("interval", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField SENSOR_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("sensorType", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.thrift.protocol.TField SENSOR_EXTENDS_FIELD_DESC = new org.apache.thrift.protocol.TField("sensorExtends", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,6 +48,7 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
    * @see SensorType
    */
   public SensorType sensorType; // required
+  public String sensorExtends; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -56,7 +58,8 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
      * 
      * @see SensorType
      */
-    SENSOR_TYPE((short)3, "sensorType");
+    SENSOR_TYPE((short)3, "sensorType"),
+    SENSOR_EXTENDS((short)4, "sensorExtends");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
           return PARAMETERS;
         case 3: // SENSOR_TYPE
           return SENSOR_TYPE;
+        case 4: // SENSOR_EXTENDS
+          return SENSOR_EXTENDS;
         default:
           return null;
       }
@@ -129,6 +134,8 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Parameter.class))));
     tmpMap.put(_Fields.SENSOR_TYPE, new org.apache.thrift.meta_data.FieldMetaData("sensorType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, SensorType.class)));
+    tmpMap.put(_Fields.SENSOR_EXTENDS, new org.apache.thrift.meta_data.FieldMetaData("sensorExtends", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SensorConfiguration.class, metaDataMap);
   }
@@ -139,13 +146,15 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
   public SensorConfiguration(
     long interval,
     List<Parameter> parameters,
-    SensorType sensorType)
+    SensorType sensorType,
+    String sensorExtends)
   {
     this();
     this.interval = interval;
     setIntervalIsSet(true);
     this.parameters = parameters;
     this.sensorType = sensorType;
+    this.sensorExtends = sensorExtends;
   }
 
   /**
@@ -165,6 +174,9 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     if (other.isSetSensorType()) {
       this.sensorType = other.sensorType;
     }
+    if (other.isSetSensorExtends()) {
+      this.sensorExtends = other.sensorExtends;
+    }
   }
 
   public SensorConfiguration deepCopy() {
@@ -177,6 +189,7 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     this.interval = 0;
     this.parameters = null;
     this.sensorType = null;
+    this.sensorExtends = null;
   }
 
   public long getInterval() {
@@ -273,6 +286,30 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
     }
   }
 
+  public String getSensorExtends() {
+    return this.sensorExtends;
+  }
+
+  public SensorConfiguration setSensorExtends(String sensorExtends) {
+    this.sensorExtends = sensorExtends;
+    return this;
+  }
+
+  public void unsetSensorExtends() {
+    this.sensorExtends = null;
+  }
+
+  /** Returns true if field sensorExtends is set (has been assigned a value) and false otherwise */
+  public boolean isSetSensorExtends() {
+    return this.sensorExtends != null;
+  }
+
+  public void setSensorExtendsIsSet(boolean value) {
+    if (!value) {
+      this.sensorExtends = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case INTERVAL:
@@ -299,6 +336,14 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       }
       break;
 
+    case SENSOR_EXTENDS:
+      if (value == null) {
+        unsetSensorExtends();
+      } else {
+        setSensorExtends((String)value);
+      }
+      break;
+
     }
   }
 
@@ -312,6 +357,9 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
 
     case SENSOR_TYPE:
       return getSensorType();
+
+    case SENSOR_EXTENDS:
+      return getSensorExtends();
 
     }
     throw new IllegalStateException();
@@ -330,6 +378,8 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       return isSetParameters();
     case SENSOR_TYPE:
       return isSetSensorType();
+    case SENSOR_EXTENDS:
+      return isSetSensorExtends();
     }
     throw new IllegalStateException();
   }
@@ -371,6 +421,15 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       if (!(this_present_sensorType && that_present_sensorType))
         return false;
       if (!this.sensorType.equals(that.sensorType))
+        return false;
+    }
+
+    boolean this_present_sensorExtends = true && this.isSetSensorExtends();
+    boolean that_present_sensorExtends = true && that.isSetSensorExtends();
+    if (this_present_sensorExtends || that_present_sensorExtends) {
+      if (!(this_present_sensorExtends && that_present_sensorExtends))
+        return false;
+      if (!this.sensorExtends.equals(that.sensorExtends))
         return false;
     }
 
@@ -420,6 +479,16 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetSensorExtends()).compareTo(typedOther.isSetSensorExtends());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSensorExtends()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sensorExtends, typedOther.sensorExtends);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -457,6 +526,14 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       sb.append("null");
     } else {
       sb.append(this.sensorType);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("sensorExtends:");
+    if (this.sensorExtends == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.sensorExtends);
     }
     first = false;
     sb.append(")");
@@ -538,6 +615,14 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // SENSOR_EXTENDS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.sensorExtends = iprot.readString();
+              struct.setSensorExtendsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -573,6 +658,11 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
         oprot.writeI32(struct.sensorType.getValue());
         oprot.writeFieldEnd();
       }
+      if (struct.sensorExtends != null) {
+        oprot.writeFieldBegin(SENSOR_EXTENDS_FIELD_DESC);
+        oprot.writeString(struct.sensorExtends);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -600,7 +690,10 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       if (struct.isSetSensorType()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetSensorExtends()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetInterval()) {
         oprot.writeI64(struct.interval);
       }
@@ -616,12 +709,15 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       if (struct.isSetSensorType()) {
         oprot.writeI32(struct.sensorType.getValue());
       }
+      if (struct.isSetSensorExtends()) {
+        oprot.writeString(struct.sensorExtends);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SensorConfiguration struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.interval = iprot.readI64();
         struct.setIntervalIsSet(true);
@@ -643,6 +739,10 @@ public class SensorConfiguration implements org.apache.thrift.TBase<SensorConfig
       if (incoming.get(2)) {
         struct.sensorType = SensorType.findByValue(iprot.readI32());
         struct.setSensorTypeIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.sensorExtends = iprot.readString();
+        struct.setSensorExtendsIsSet(true);
       }
     }
   }
