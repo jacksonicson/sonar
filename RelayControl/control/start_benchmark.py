@@ -103,6 +103,7 @@ def phase_start_rain(done, client_list):
         for target in targets[i * targets_per_driver : (i + 1) * targets_per_driver]:
             config_target = {}
             config_target['target'] = target
+            config_target['profile'] = 'SIS_221_cpu_profile'
             config_targets.append(config_target)
 
         print config_targets

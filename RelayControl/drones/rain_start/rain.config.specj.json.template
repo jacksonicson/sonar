@@ -47,7 +47,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "${target['profile']}",
 		        }
     		},
     		{
@@ -60,7 +60,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "${target['profile']}",
 		        }
 	    	},
 	    	
