@@ -82,7 +82,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60)
         variance = np.median(np.ravel(variance))
         variance_array_2[i] = variance / 2
     variance_array_2 = np.ravel(variance_array)
-     
+    
     # Increase signal resolution
     resolution_factor = 5
     noise_profile = np.ravel(np.array(zip(*[raw_profile for _ in xrange(resolution_factor)])))
