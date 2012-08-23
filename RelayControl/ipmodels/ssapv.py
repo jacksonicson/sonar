@@ -74,7 +74,7 @@ def getServerCount():
             count += 1
     return count
     
-def solve(_server_count, _server_capacity, _demand_raw,):
+def solve(_server_count, _server_capacity, _demand_raw):
     global server_count
     global service_count
     global server_capacity

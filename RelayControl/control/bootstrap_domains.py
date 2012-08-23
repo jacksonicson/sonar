@@ -1,9 +1,11 @@
-from virtual import allocation as virt
 from ipmodels import ssapv
-from service import times_client
 from numpy import empty
-import numpy as np
+from service import times_client
+from virtual import allocation as virt
+from workload import profiles
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 def normalize(data):
     mv = np.max(data)
@@ -12,52 +14,50 @@ def normalize(data):
         data *= 100
     return data
 
+
 def main():
     print 'Connecting with Times'
     connection = times_client.connect()
     
     print 'Querying for TS data...'
-    items = connection.find('O2.*_profile')
+    services = profiles.mix0
+    service_count = len(services)
     
-    ts = connection.load(items[0])
+    service_matrix = np.zeros((service_count, 111), dtype=float)
     
-    data = empty((len(items), 300), dtype=float)
-    for t in xrange(len(items)):
-        item = items[t]
-        ts = connection.load(item)
+    for s in xrange(service_count):
+        service = services[s][0] + '_profile'
+        ts = connection.load(service)
         
-        for i in xrange(len(ts.elements)):
-            value = ts.elements[i].value
-            data[t,i] = value
+        ts_len = len(ts.elements)
+        print '%s - %i' % (service, ts_len)
+    
+        data = np.empty((ts_len), float)
+        for i in xrange(ts_len):
+            data[i] = ts.elements[i].value
             
-        data[t] = normalize(data[t])
-            
-        fig = plt.figure(figsize=(12, 9))
-        ax = fig.add_subplot(211)
-        ax.plot(range(len(data[t])), data[t])
-        # plt.show()
+        data = normalize(data)
+        try:
+            service_matrix[s] = data
+        except:
+            print 'Invalid width'
+        
     
     times_client.close()
     
     print 'Solving model...'
-    server, assignment = ssapv.solve(len(virt.HOSTS), 100, data)
-    
+    server, assignment = ssapv.solve(len(virt.HOSTS), 400, service_matrix)
     if assignment != None:
-        print 'Transferring assignment to infrastructure'
-        # Create VM target plan
-        domains = []
-        domains.extend('glassfish%i' % (i) for i in xrange(6))
-        domains.extend('mysql%i' % (j) for j in xrange(6))
+        print server
+        print assignment
         
-        allocation = []
-        for key in assignment.keys():
-            allocation.append((domains[key], assignment[key]))
-        
-        print allocation
-        # allocation.handleMigrations(allocation)
+        print 'Assigning domains to servers'
+        domain_workload_mapping = {
+                   'glassfish0' : 0, 
+                   }
         
     else:
-        print 'Model could not be solved!'
+        print 'model infeasible'
     
 
 

@@ -19,17 +19,10 @@ def to_positive(value):
         value = 0
     return value
  
-def extract_profile(name, time, signal, sampling_frequency=None):
-    cycle_time = 24 * 60 * 60
-    
-    if sampling_frequency == None:
-        sampling_frequency = 60 * 60 # 5 * 60 is SIS # 60 * 60 is O2
-     
+def extract_profile(name, time, signal, sampling_frequency=60*60, cycle_time=24*60*60):
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
 
-    print 'Number of cycles %i' % (cycle_count)
-        
     # Remove Weekends/Sundays
     tv = np.vectorize(to_weekday)
     time = tv(time)

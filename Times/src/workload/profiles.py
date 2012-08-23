@@ -72,5 +72,6 @@ def build_and_save(mix):
         
     times_client.close()
     
-# Build profiles and save them
-build_and_save(mix0)
+if __name__ == '__main__':
+    # Build profiles and save them
+    build_and_save(mix0)
