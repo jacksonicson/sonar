@@ -7,7 +7,6 @@ import time
 ##########################
 ## Configuration        ##
 COLLECTOR_IP = 'monitor0'
-MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 HOSTNAME = gethostname()
 ##########################
@@ -30,7 +29,7 @@ def log(sensor, logValue):
     # Send message
     loggingClient.logMetric(ids, value)
 
-def connect(self):
+def connect():
     # Make socket
     transportLogging = TSocket.TSocket(COLLECTOR_IP, LOGGING_PORT)
     
