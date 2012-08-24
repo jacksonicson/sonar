@@ -113,22 +113,22 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60)
     frequency = cycle_time / len(smooth_profile)
     
 
-    # Plotting    
-    fig = plt.figure()
-    fig.suptitle(name)
-    ax = fig.add_subplot(311)
-    ax.plot(range(0, len(smooth_profile)), smooth_profile)
-    
-    ax = fig.add_subplot(312)
-    ax.plot(range(0, len(org_signal)), org_signal)
-    
-    ax = fig.add_subplot(313)
-    ax.plot(range(0, len(variance_array_2)), variance_array_2)
-
-    try:    
-        plt.savefig('C:/temp/convolution/' + name + '.png')
-    except:
-        print 'Warning, could not save plot %s' % (name)
+#    # Plotting    
+#    fig = plt.figure()
+#    fig.suptitle(name)
+#    ax = fig.add_subplot(311)
+#    ax.plot(range(0, len(smooth_profile)), smooth_profile)
+#    
+#    ax = fig.add_subplot(312)
+#    ax.plot(range(0, len(org_signal)), org_signal)
+#    
+#    ax = fig.add_subplot(313)
+#    ax.plot(range(0, len(variance_array_2)), variance_array_2)
+#
+#    try:    
+#        plt.savefig('C:/temp/convolution/' + name + '.png')
+#    except:
+#        print 'Warning, could not save plot %s' % (name)
     
     return noise_profile, frequency
     
