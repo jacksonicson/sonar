@@ -23,6 +23,11 @@ List of all hosts/nodes in the infrastructure
 HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
 ###############################################
 
+def handler(ctxt, err):
+    global errno
+    errno = err
+libvirt.registerErrorHandler(handler, 'context') 
+
 def __find_domain(connections, domain_name):
     for connection in connections:
         try:
@@ -57,7 +62,8 @@ def migrateAllocation(allocation):
                 domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 100)
                 print 'done'
             except:
-                print 'passed'
+                global errno
+                print 'passed: %s' % (errno[2])
     except:
         print 'error while executing migrations'
 
