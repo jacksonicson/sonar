@@ -59,7 +59,7 @@ def main():
         print migrations
         
         print 'Migrating...'
-        virt.resetAllocation(migrations)
+        virt.migrateAllocation(migrations)
         
         
     else:
