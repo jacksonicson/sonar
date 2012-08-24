@@ -1,8 +1,8 @@
 from service import times_client
 from times import ttypes
 import convolution
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 '''
 List of workload profiles used by the benchmark (stored in Times)
@@ -10,29 +10,32 @@ Times profile names use the prefix "_profile"
 (name, frequency, set)
 '''
 
+POSTFIX_RAW = '_profile'
+POSTFIX_NORM = '_profile_norm'
+POSTFIX_USER = '_profile_user'
 SETS = ['O2', 'SIS']
 
 selected_profile_cycle = 24 * 60 * 60
 selected_profile_width = 120
 selected = [('O2_business_UPDATEDSSLINE', 60 * 60, 0), # Burst in the evening
             ('O2_business_ADDUCP', 60 * 60, 0), # Day workload
-#            ('O2_business_LINECONFIRM', 60 * 60, 0), # Day and night workload
-#            ('O2_retail_ADDORDER', 60 * 60, 0), # Night and low day workload
-#            ('O2_retail_SENDMSG', 60 * 60, 0), # Day workload flattens till evening
-#            ('O2_retail_PORTORDER', 60 * 60, 0), # Random spikes 
-#            ('O2_retail_UPDATEDSS', 60 * 60, 0), # Night workload
-#            ('SIS_221_cpu', 5 * 60, 1), # Evening workload 
-#            ('SIS_194_cpu', 5 * 60, 1), # Average day high evening workload 
-#            ('SIS_375_cpu', 5 * 60, 1), # Trend to full CPU utilization starting in the morning
-#            ('SIS_213_cpu', 5 * 60, 1), # High dynamic range 
-#            ('SIS_211_cpu', 5 * 60, 1), # High dynamic range
-#            ('SIS_83_cpu', 5 * 60, 1), # Highly volatile varying levels 
-#            ('SIS_394_cpu', 5 * 60, 1), # Multiple peaks
-#            ('SIS_381_cpu', 5 * 60, 1), # High volatile 
-#            ('SIS_383_cpu', 5 * 60, 1), # Bursts and then slow
-#            ('SIS_415_cpu', 5 * 60, 1), # Volatility bursts  
-#            ('SIS_198_cpu', 5 * 60, 1), # Random
-#            ('SIS_269_cpu', 5 * 60, 1), # Random
+            ('O2_business_LINECONFIRM', 60 * 60, 0), # Day and night workload
+            ('O2_retail_ADDORDER', 60 * 60, 0), # Night and low day workload
+            ('O2_retail_SENDMSG', 60 * 60, 0), # Day workload flattens till evening
+            ('O2_retail_PORTORDER', 60 * 60, 0), # Random spikes 
+            ('O2_retail_UPDATEDSS', 60 * 60, 0), # Night workload
+            ('SIS_221_cpu', 5 * 60, 1), # Evening workload 
+            ('SIS_194_cpu', 5 * 60, 1), # Average day high evening workload 
+            ('SIS_375_cpu', 5 * 60, 1), # Trend to full CPU utilization starting in the morning
+            ('SIS_213_cpu', 5 * 60, 1), # High dynamic range 
+            ('SIS_211_cpu', 5 * 60, 1), # High dynamic range
+            ('SIS_83_cpu', 5 * 60, 1), # Highly volatile varying levels 
+            ('SIS_394_cpu', 5 * 60, 1), # Multiple peaks
+            ('SIS_381_cpu', 5 * 60, 1), # High volatile 
+            ('SIS_383_cpu', 5 * 60, 1), # Bursts and then slow
+            ('SIS_415_cpu', 5 * 60, 1), # Volatility bursts  
+            ('SIS_198_cpu', 5 * 60, 1), # Random
+            ('SIS_269_cpu', 5 * 60, 1), # Random
             ]
     
 
@@ -133,3 +136,4 @@ def _build_and_save(mix):
 if __name__ == '__main__':
     # Build profiles and save them
     _build_and_save(mix0)
+

@@ -9,7 +9,8 @@ import math
 import logs.sonarLogger as sonarLogger
 import logging
 import domains
-from logs import sonarlog 
+from logs import sonarlog
+from workload import profiles 
 
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
@@ -103,7 +104,7 @@ def phase_start_rain(done, client_list):
         for target in targets[i * targets_per_driver : (i + 1) * targets_per_driver]:
             config_target = {}
             config_target['target'] = target
-            config_target['profile'] = domains.profile_by_name(target)
+            config_target['profile'] = domains.profile_by_name(target) + profiles.POSTFIX_USER
             config_targets.append(config_target)
 
         print config_targets

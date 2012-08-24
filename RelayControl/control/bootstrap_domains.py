@@ -3,9 +3,9 @@ from numpy import empty
 from service import times_client
 from virtual import allocation as virt
 from workload import profiles
+import domains
 import matplotlib.pyplot as plt
 import numpy as np
-import domains
 
 def normalize(data):
     mv = np.max(data)
@@ -27,7 +27,7 @@ def main():
     for s in xrange(service_count):
         mapping = domains.domain_profile_mapping[s]
         
-        service = services[mapping[1]][0] + '_profile'
+        service = services[mapping[1]][0] + profiles.POSTFIX_NORM
         ts = connection.load(service)
         ts_len = len(ts.elements)
     
@@ -41,9 +41,8 @@ def main():
     
     times_client.close()
     
-    
     print 'Solving model...'
-    server, assignment = ssapv.solve(len(virt.HOSTS), 300, service_matrix)
+    server, assignment = ssapv.solve(len(virt.HOSTS), 1, service_matrix)
     if assignment != None:
         
         print 'Required servers: %i' % (server)
