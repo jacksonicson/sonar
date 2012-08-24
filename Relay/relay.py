@@ -181,8 +181,8 @@ class ProcessManager(object):
                 # TODO: Solve this without a hard deadline
                 # If the child process finishes .. the polling should stop
                 # This requires to start the target process using exec in bash
-                if (time.time() - base_time) > 60:
-                    print 'ERROR: did not find message within 60 seconds'
+                if (time.time() - base_time) > 120:
+                    print 'ERROR: did not find message within 120 seconds'
                     return False
                 
                 streams = [process.stdout]

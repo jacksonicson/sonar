@@ -46,7 +46,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "O2_retail_SENDMSG_profile_user",
 		        }
     		},
     		{
@@ -59,7 +59,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "O2_retail_SENDMSG_profile_user",
 		        }
 	    	},
 	    	
@@ -73,7 +73,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "O2_retail_PORTORDER_profile_user",
 		        }
     		},
     		{
@@ -86,7 +86,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "O2_retail_PORTORDER_profile_user",
 		        }
 	    	},
 	    	
@@ -100,7 +100,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "O2_retail_UPDATEDSS_profile_user",
 		        }
     		},
     		{
@@ -113,7 +113,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_221_cpu_profile",
+		        	"profile" : "O2_retail_UPDATEDSS_profile_user",
 		        }
 	    	},
 	    	
