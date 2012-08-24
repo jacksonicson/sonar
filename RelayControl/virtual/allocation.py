@@ -1,5 +1,6 @@
 from control import drones, hosts
 from datetime import datetime
+from libvirt import VIR_MIGRATE_LIVE
 from lxml import etree
 from rain import RainService, constants, ttypes
 from relay import RelayService
@@ -27,41 +28,42 @@ def __find_domain(connections, domain_name):
         try:
             domain = connection.lookupByName(domain_name)
             if domain.isActive():
-                return connection.getHostname()
+                return domain, connection
         except:
-            print 'error'
+            pass
 
 def migrateAllocation(allocation):
     connections = []
-    
-    # connect 
-    for host in HOSTS: 
-        conn_str = "qemu+ssh://root@%s/system" % (host)
-        print 'connecting with %s' % (conn_str)
-        conn = libvirt.open(conn_str)
-        connections.append(conn)
-    
-    for migration in allocation:
-        domain_name = migration[0]
-        target_index = migration[1]
+    conn_strs = []
+    try:
+        # connect 
+        for host in HOSTS: 
+            conn_str = "qemu+ssh://root@%s/system" % (host)
+            print 'connecting with %s' % (conn_str)
+            conn = libvirt.open(conn_str)
+            connections.append(conn)
+            conn_strs.append(conn_str)
         
-        print __find_domain(connections, domain_name)
-        
-#        # Check if target host has the VM description
-#        print domain_name
-#        print target_index
-#        domain = None
-#        try:
-#            domain = connections[target_index].lookupByName(domain_name)
-#        except:
-#            print 'Defining domain...'
-#            domain = connections[0].lookupByName(domain_name)
-#            xml_desc = domain.XMLDesc(0)
-#            domain = connections[target_index].defineXML(xml_desc)
-#            
-#        # Migrate domain
-#        print 'Launching domain...'
-#        domain.create()
+        for migration in allocation:
+            domain_name = migration[0]
+            target_index = migration[1]
+            
+            domain, src_conn = __find_domain(connections, domain_name)
+            xml_desc = domain.XMLDesc(0)
+            
+            # migrate to target
+            try:
+                print 'migrating...'
+                domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 100)
+                print 'done'
+            except:
+                print 'passed'
+    except:
+        print 'error while executing migrations'
+
+    for conn in connections:
+        print 'closing connection...'
+        conn.close()
         
 
 def resetAllocation(allocation):
