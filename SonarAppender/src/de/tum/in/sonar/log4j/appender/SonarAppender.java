@@ -49,6 +49,8 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 
 	private ArrayBlockingQueue<Object> messageQueue = null;
 
+	private Thread consumer;
+
 	private Runnable messageProcessor = null;
 
 	/**
@@ -96,13 +98,14 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		}
 	}
 
+	private boolean running = true; 
 	private void startConsumerThread() {
 		if (null == messageProcessor) {
 			messageProcessor = new Runnable() {
 				@Override
 				public void run() {
 					System.out.println("Sonar Appender Thread started");
-					while (true) {
+					while (running || messageQueue.size() > 0) {
 						try {
 							Object payload = messageQueue.take();
 							// check the type of payload
@@ -147,7 +150,8 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 						transport.close();
 				};
 			};
-			Thread consumer = new Thread(messageProcessor);
+
+			consumer = new Thread(messageProcessor);
 			consumer.start();
 		}
 	}
@@ -158,7 +162,14 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	@Override
 	public synchronized void close() {
 		System.out.println("Sonar Appender Thread Close Called");
-		messageQueue.offer(new PoisonPill());
+		// messageQueue.offer(new PoisonPill());
+		running = false; 
+		try {
+			consumer.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("JOINED"); 
 	}
 
 	/**
@@ -186,8 +197,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	}
 
 	/**
-	 * Check if connected, if not , drop the current connection and establish a
-	 * new connection
+	 * Check if connected, if not , drop the current connection and establish a new connection
 	 * 
 	 * @return
 	 */
@@ -232,8 +242,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	void handleError(final String failure, final Exception e) {
 		getErrorHandler().error(
-				"Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=["
-						+ e.getMessage() + "]");
+				"Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=[" + e.getMessage() + "]");
 	}
 
 	/**

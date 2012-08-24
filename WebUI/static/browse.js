@@ -126,7 +126,8 @@ function setupCharts() {
         },
         chart:{
             renderTo:'container',
-            animation:false
+            animation:false,
+            zoomType: 'x'
         },
         plotOptions:{
             series:{
