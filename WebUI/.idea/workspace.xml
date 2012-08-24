@@ -21,26 +21,7 @@
     <favorites_list name="WebUI" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="browse.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/static/browse.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="199" column="63" selection-start="4491" selection-end="4516" vertical-scroll-proportion="0.90555555">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="browse.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/static/browse.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="62" column="0" selection-start="2581" selection-end="2581" vertical-scroll-proportion="-11.807693">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -64,16 +45,16 @@
         <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/config.js" />
         <option value="$PROJECT_DIR$/static/logs.js" />
-        <option value="$PROJECT_DIR$/static/logs.html" />
         <option value="$PROJECT_DIR$/static/browse.js" />
+        <option value="$PROJECT_DIR$/static/logs.html" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1296" />
-    <option name="height" value="1000" />
+    <option name="width" value="1696" />
+    <option name="height" value="1026" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -286,17 +267,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1296" height="1000" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1696" height="1026" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.2100181" sideWeight="0.3048499" order="1" side_tool="true" content_ui="tabs" x="1689" y="355" width="417" height="497" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3890215" sideWeight="0.7485101" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29511166" sideWeight="0.75606936" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25148988" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24393064" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -430,23 +411,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/logs.html">
+    <entry file="file://$PROJECT_DIR$/static/browse.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="22" selection-start="2265" selection-end="2265" vertical-scroll-proportion="0.23880596">
+        <state line="189" column="21" selection-start="4202" selection-end="4202" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="0" selection-start="2581" selection-end="2581" vertical-scroll-proportion="-11.807693">
+        <state line="11" column="22" selection-start="314" selection-end="314" vertical-scroll-proportion="-3.8076923">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.js">
+    <entry file="file://$PROJECT_DIR$/static/logs.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="199" column="63" selection-start="4491" selection-end="4516" vertical-scroll-proportion="0.90555555">
+        <state line="25" column="48" selection-start="807" selection-end="807" vertical-scroll-proportion="0.7048093">
           <folding />
         </state>
       </provider>
