@@ -6,7 +6,7 @@ from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 import logic.controller as controller
 import math
-import logs.sonarLogger as sonarLogger
+from logs import sonarlog
 import logging
 import domains
 from logs import sonarlog
@@ -17,12 +17,12 @@ logger = sonarlog.getLogger('start_benchmark')
 
 def finished_end(done, client_list):
     print 'finish phase'
-    logger.log(sonarLogger.SYNC, 'end of shutdown sequence')
+    logger.log(sonarlog.SYNC, 'end of shutdown sequence')
     reactor.stop()
 
 def finished(done, client_list):
     print 'finish phase'
-    logger.log(sonarLogger.SYNC, 'end of startup sequence')
+    logger.log(sonarlog.SYNC, 'end of startup sequence')
     reactor.stop()
 
     # Launch the controller
@@ -40,7 +40,7 @@ def ramp_up(ret, rain_client, client_list):
 
 def rain_started(ret, rain_client, client_list):
     print 'rain is driving load now, waiting for ramp-up finish'
-    logger.log(sonarLogger.SYNC, 'start driving load')
+    logger.log(sonarlog.SYNC, 'start driving load')
     logger.info('querying ramp-up duration')
     
     d = rain_client[0][1].getRampUpTime()
@@ -211,7 +211,7 @@ def phase_configure_glassfish(client_list):
  
  
 def start_phase(client_list):
-    logger.log(sonarLogger.SYNC, 'start of startup sequence')
+    logger.log(sonarlog.SYNC, 'start of startup sequence')
     
     print 'Connection established'
     print 'Following start sequence now...'
@@ -221,7 +221,7 @@ def start_phase(client_list):
     
     
 def stop_phase(client_list):
-    logger.log(sonarLogger.SYNC, 'start of shutdown sequence')
+    logger.log(sonarlog.SYNC, 'start of shutdown sequence')
     shutdown_glassfish_rain(client_list)
     
     
@@ -235,7 +235,7 @@ def main():
     drones.main()
     
     # Start or stop system
-    start = True
+    start = False
     
     # Add hosts
     hosts.add_host('glassfish0', 'target')

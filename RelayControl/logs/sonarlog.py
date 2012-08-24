@@ -64,7 +64,6 @@ class SonarLogHandler(logging.Handler):
         value.timestamp = ids.timestamp
         
         loggingClient.logMessage(ids, value)
-        print 'emit'
 
 def getLogger(sensor):
     if loggingClient is None:
