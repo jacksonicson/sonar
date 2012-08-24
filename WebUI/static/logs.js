@@ -1,52 +1,72 @@
 // Document ready handler
 $(function () {
-	setupDatePickers();
+    setupDatePickers();
     setupHandlers();
 });
 
 function setupDatePickers() {
 
+
+}
+
+function setupDatePickers() {
+
+    /*var myDate = new Date();
+     var month = myDate.getMonth() + 1;
+     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
+     $("#startdate").val(prettyDate);
+     $("#stopdate").val(prettyDate);
+
+     $('#startdate').datepicker();
+     $('#stopdate').datepicker();
+
+     $('.dropdown-timepicker').timepicker({
+     defaultTime: 'current',
+     minuteStep: 15,
+     disableFocus: false,
+     template: 'dropdown'
+     });*/
+
     var myDate = new Date();
     var month = myDate.getMonth() + 1;
     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
-	$("#startdate").val(prettyDate);
-	$("#stopdate").val(prettyDate);
+    $("#startdate").val(prettyDate);
+    $("#stopdate").val(prettyDate);
 
     $('#startdate').datepicker();
     $('#stopdate').datepicker();
 
-    $('.dropdown-timepicker').timepicker({
-        defaultTime: 'current',
-        minuteStep: 15,
-        disableFocus: false,
-        template: 'dropdown'
+    $(document).ready(function () {
+        $('.timepicker-default').timepicker({
+            showMeridian:false
+        });
     });
 
-    getHostData(function(output){
+    getHostData(function (output) {
         var hosts;
         hosts = new Array;
-        $.each(output, function(index, item){
+        $.each(output, function (index, item) {
             hosts.push(item.hostname);
         });
 
         $('#hostname').typeahead({
-            source: hosts
+            source:hosts
         });
     });
 
-    getSensorData(function(output){
+    getSensorData(function (output) {
         var sensors;
         sensors = new Array;
-        $.each(output, function(index, item){
+        $.each(output, function (index, item) {
             sensors.push(item.name);
         });
         $('#sensor').typeahead({
-            source: sensors
+            source:sensors
         });
     });
 
-    $(".top").live('click', function(){
-        if($(this).children(".mid").is(':visible')){
+    $(".top").live('click', function () {
+        if ($(this).children(".mid").is(':visible')) {
             $(this).children(".mid").slideUp();
         } else {
             $(this).children(".mid").slideDown();
@@ -84,28 +104,28 @@ function addQueryHandler(event) {
     })
 }
 
-function renderLogs(list){
+function renderLogs(list) {
     var logTable = $('#logResultsTableBody');
     logTable.children('tr').remove();
     $("#logsFoundtext").text(list.length);
 
-    for(var i = 0; i < list.length ; i++)
-    {
+    for (var i = 0; i < list.length; i++) {
         var msg = list[i];
         var heading = null;
-        heading =  msg.logMessage.replace(/(\r\n|\n|\r)/gm, "");
-        if(msg.logMessage.length > 60){
+        heading = msg.logMessage.replace(/(\r\n|\n|\r)/gm, "");
+        if (msg.logMessage.length > 60) {
             heading = heading.substr(0, 60) + "...";
         }
         logTable.append(
             $('<tr>').append(
                 $('<td>').text(msg.programName),
                 $('<td>').append(
-                    $('<img>').attr({ src: getLogLevelImage(msg.logLevel), title: getLogLevelNames(msg.logLevel)})
+                    $('<img>').attr({ src:getLogLevelImage(msg.logLevel), title:getLogLevelNames(msg.logLevel)})
                 ),
                 $('<td>').append(
-                    $('<div>').attr({class: "top"}).html(heading).append(
-                        $('<div>').css({"display":"none", "word-wrap": "break-word","padding-left":"10px","padding-right":"10px" ,"background-color":"#E6E6E6", "border-radius":"3px","moz-border-radius":"3px"}).width(450).attr({class: "mid"}).html(msg.logMessage + "<br/>Date: " + timeConverter(msg.timestamp))
+                    $('<div>').attr({class:"top"}).html(heading).append(
+                        $('<div>').css({"display":"none", "word-wrap":"break-word", "padding-left":"10px", "padding-right":"10px", "background-color":"#E6E6E6", "border-radius":"2px", "moz-border-radius":"2px"})
+                            .width(500).attr({class:"mid"}).html(msg.logMessage + "<br/>Date: " + timeConverter(msg.timestamp))
                     )
                 )
             )
@@ -113,9 +133,9 @@ function renderLogs(list){
     }
 }
 
-function getLogLevelNames(logLevel){
+function getLogLevelNames(logLevel) {
     var level = parseInt(logLevel);
-    switch(level){
+    switch (level) {
         case 50010:
             return "Sync";
         case 50000:
@@ -133,9 +153,9 @@ function getLogLevelNames(logLevel){
     }
 }
 
-function getLogLevelImage(logLevel){
+function getLogLevelImage(logLevel) {
     var level = parseInt(logLevel);
-    switch(level){
+    switch (level) {
         case 50000:
         case 40000:
             return "images/error_level.png";
@@ -151,15 +171,15 @@ function getLogLevelImage(logLevel){
     }
 }
 
-function timeConverter(UNIX_timestamp){
-	var a = new Date(UNIX_timestamp*1000);
-	var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-	var year = a.getFullYear();
+function timeConverter(UNIX_timestamp) {
+    var a = new Date(UNIX_timestamp * 1000);
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var year = a.getFullYear();
     var month = months[a.getMonth()];
     var date = a.getDate();
     var hour = a.getHours();
     var min = a.getMinutes();
     var sec = a.getSeconds();
-    var time = date+','+month+' '+year+' '+hour+':'+min+':'+sec ;
+    var time = date + ',' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
     return time;
 }
