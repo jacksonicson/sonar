@@ -103,18 +103,19 @@ def _build_and_save(mix):
         ts = mix[i]
         profile, frequency = profiles[i]
         
-        # Store RAW profiles
+        # Store RAW profiles (-> plots)
         raw_profile = np.array(profile)
         _store_profile(connection, ts[0] + '_profile', profile, frequency)
         
-        # Store NORMALIZED profiles (normalized with the set maximum, see above)
+        # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
         maxval = set_max[ts[2]]
         profile /= maxval
         norm_profile = np.array(profile)
         _store_profile(connection, ts[0] + '_profile_norm', profile, frequency)
         
-        # Store USER profiles
+        # Store USER profiles (-> feed into Rain)
         profile *= 500
+        frequency = 60 # adjust frequency for time condensed benchmarks 
         user_profile = np.array(profile)
         _store_profile(connection, ts[0] + '_profile_user', profile, frequency)
         
@@ -130,7 +131,7 @@ def _build_and_save(mix):
         ax = fig.add_subplot(313)
         ax.plot(range(0, len(user_profile)), user_profile)
         
-    plt.show()
+    # plt.show()
     times_client.close()
     
 if __name__ == '__main__':
