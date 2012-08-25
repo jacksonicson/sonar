@@ -41,7 +41,7 @@ class Sensor(object):
     
     # Threadsafe
     def receive(self, line):
-       raise NotImplementedError("Please Implement this method")
+        raise NotImplementedError("Please Implement this method")
               
     def sensorType(self):
         if self.__configured == False:
@@ -260,19 +260,26 @@ class MetricSensor(Sensor):
         else:
             name = self.name + '.' + elements[2]
                 
+        # Overrides the hostname
+        hostname = None
+        if elements[3] == 'none':
+            hostname = HOSTNAME
+        else:
+            hostname = elements[3]
+                
         # Extract value
         logValue = None
         try:
-            logValue = float(elements[3])
+            logValue = float(elements[4])
         except ValueError:
-            print 'error while parsing value %s: ' % (elements[3])
+            print 'error while parsing value %s: ' % (elements[4])
             return
                     
         # Create new entry    
         ids = ttypes.Identifier();
         ids.timestamp = timestamp
         ids.sensor = name
-        ids.hostname = HOSTNAME
+        ids.hostname = hostname
                 
         value = ttypes.MetricReading();
         value.value = logValue
@@ -773,7 +780,7 @@ class ShutdownHandler(object):
         self.condition.release()
         
         # Shutdown
-        print 'Shutting down now... ',             
+        print 'Shutting down now... ',
         for callback in self.callbacks:
             callback() 
         print 'OK'
