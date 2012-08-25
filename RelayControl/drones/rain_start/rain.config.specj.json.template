@@ -1,8 +1,8 @@
 {
     "timing": {
-        "rampUp": 100,
-        "duration": 100,
-        "rampDown": 100,
+        "rampUp": 600,
+        "duration": 21600,
+        "rampDown": 300,
     },
     
     "aggregateStats": true,

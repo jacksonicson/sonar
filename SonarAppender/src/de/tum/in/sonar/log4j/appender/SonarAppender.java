@@ -47,20 +47,22 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	private TTransport transport = null;
 	private Client client = null;
 
-	private ArrayBlockingQueue<Object> messageQueue = null;
+	private ArrayBlockingQueue<Object> messageQueue = new ArrayBlockingQueue<Object>(bufferSize);
 
 	private Thread consumer;
 
 	private Runnable messageProcessor = null;
 
+	public SonarAppender() {
+		super();
+		startConsumerThread();
+	}
+
 	/**
 	 * Send a log message to the Sonar Log Server.
 	 */
 	@Override
-	protected synchronized void append(LoggingEvent event) {
-		initializeMessageQueueIfRequired();
-		startConsumerThread();
-
+	protected void append(LoggingEvent event) {
 		Identifier id = new Identifier();
 		// convert timestamp to unix timestamp
 		long timestamp = event.getTimeStamp() / 1000;
@@ -92,84 +94,69 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		messageQueue.offer(payload);
 	}
 
-	private void initializeMessageQueueIfRequired() {
-		if (null == messageQueue) {
-			messageQueue = new ArrayBlockingQueue<Object>(bufferSize);
-		}
-	}
+	boolean running = true;
 
-	private boolean running = true; 
 	private void startConsumerThread() {
-		if (null == messageProcessor) {
-			messageProcessor = new Runnable() {
-				@Override
-				public void run() {
-					System.out.println("Sonar Appender Thread started");
-					while (running || messageQueue.size() > 0) {
-						try {
-							Object payload = messageQueue.take();
-							// check the type of payload
-							if (payload instanceof LogPayload) {
-								LogPayload logPayload = (LogPayload) payload;
-								// check if it is needed to connect or the old
-								// connection has been
-								// retained
-								boolean connected = connectIfNeeded();
-								if (!connected) {
-									getErrorHandler().error("No connection to the client");
-									return;
-								}
+		messageProcessor = new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("Sonar Appender Thread started");
+				while (running || messageQueue.isEmpty() == false) {
+					try {
+						Object payload = messageQueue.take();
 
-								try {
-									client.logMessage(logPayload.getId(), logPayload.getMessage());
-								} catch (TException e) {
-									handleError("TException occured while logging", e);
-								} catch (Exception e) {
-									handleError("Exception occured while logging", e);
-								}
-							} else if (payload instanceof PoisonPill) {
-
-								// if a posion pill payload has been received,
-								// it means that we can close the transport
-								// connections and shutdown the thread
-								if (isConnected()) {
-									transport.close();
-								}
-								return;
-							}
-
-						} catch (InterruptedException e) {
-							handleError("InterruptedException occured while logging", e);
+						LogPayload logPayload = (LogPayload) payload;
+						// check if it is needed to connect or the old
+						// connection has been
+						// retained
+						boolean connected = connectIfNeeded();
+						if (!connected) {
+							getErrorHandler().error("No connection to the client");
+							return;
 						}
+
+						try {
+							client.logMessage(logPayload.getId(), logPayload.getMessage());
+						} catch (TException e) {
+							handleError("TException occured while logging", e);
+						} catch (Exception e) {
+							handleError("Exception occured while logging", e);
+						}
+
+					} catch (InterruptedException e) {
+						continue;
+					} catch (ClassCastException e) {
+						continue;
 					}
 				}
+			}
 
-				protected void finalize() throws Throwable {
-					// when garbage collected
-					if (isConnected())
-						transport.close();
-				};
-			};
+		};
 
-			consumer = new Thread(messageProcessor);
-			consumer.start();
-		}
+		consumer = new Thread(messageProcessor);
+		consumer.start();
 	}
 
 	/**
 	 * Close the connection to the server
 	 */
 	@Override
-	public synchronized void close() {
-		System.out.println("Sonar Appender Thread Close Called");
-		// messageQueue.offer(new PoisonPill());
-		running = false; 
+	public void close() {
+		System.out.println("Sonar Appender Thread Close Called2");
+		running = false;
+
+		consumer.interrupt();
 		try {
 			consumer.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		System.out.println("JOINED"); 
+
+		System.out.println("JOINED");
+
+		if (isConnected())
+			transport.close();
+
 	}
 
 	/**
@@ -326,15 +313,5 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	public void setSensor(String sensor) {
 		Validator.notEmptyString(sensor, "Sensor field cannot be empty");
 		this.sensor = sensor;
-	}
-
-	/**
-	 * A dummy class to identify if the thread has to be stopped
-	 * 
-	 * @author User
-	 * 
-	 */
-	class PoisonPill {
-
 	}
 }
