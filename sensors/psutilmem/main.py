@@ -11,6 +11,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'phymem' + ','
+    line += 'none' + ','
     value = str(memusage)
     line += value
     print (line)
@@ -21,6 +22,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'virtmem' + ','
+    line += 'none' + ','
     value = str(virtusage)
     line += value
     print (line)

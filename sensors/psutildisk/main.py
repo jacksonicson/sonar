@@ -37,6 +37,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'readcount' + ','
+    line += 'none' + ','
     value = str(delta_read_count)
     line += value
     print (line)
@@ -44,6 +45,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'writecount' + ','
+    line += 'none' + ','
     value = str(delta_write_count)
     line += value
     print (line)
@@ -51,6 +53,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'readbytes' + ','
+    line += 'none' + ','
     value = str(delta_read_bytes)
     line += value
     print (line)
@@ -58,6 +61,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'writebytes' + ','
+    line += 'none' + ','
     value = str(delta_write_bytes)
     line += value
     print (line)
@@ -65,6 +69,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'readtime' + ','
+    line += 'none' + ','
     value = str(diskio.read_time)
     line += value
     print (line)
@@ -72,6 +77,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'writetime' + ','
+    line += 'none' + ','
     value = str(diskio.write_time)
     line += value
     print (line)

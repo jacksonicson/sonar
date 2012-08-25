@@ -8,6 +8,6 @@ trap 'kill $(jobs -p)' EXIT
 tail -fn0 $3 | \
 while read line ; do
 	((res_timestamp = $(date +%s)))
-	toPrint="$sensor,$res_timestamp,$progName,$line"
+	toPrint="$sensor,$res_timestamp,$progName,none,$line"
 	echo $toPrint
 done

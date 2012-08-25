@@ -23,8 +23,9 @@ function bytesPerSecond()
         
         res_timestamp=$(date +%s)
         res_name='recv'
+        res_hostname = 'none'
         res_value=$bps
-        line="$sensor,$res_timestamp,$res_name,$res_value"
+        line="$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
         echo $line
 }
 

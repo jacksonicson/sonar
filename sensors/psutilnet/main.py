@@ -30,6 +30,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'recv' + ','
+    line += 'none' + ','
     value = str(delta_bytes_recv)
     line += value
     print (line)
@@ -37,6 +38,7 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'sent' + ','
+    line += 'none' + ','
     value = str(delta_bytes_sent)
     line += value
     print (line)

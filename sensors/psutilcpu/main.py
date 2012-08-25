@@ -8,9 +8,11 @@ while True:
     line = NAME + ','
     line += str(time.time()) + ','
     line += 'none' + ','
+    line += 'none' + ','
     
     value = str(psutil.cpu_percent(interval=3))
     line += value
     
     print (line)
     sys.stdout.flush()
+
