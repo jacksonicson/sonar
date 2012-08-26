@@ -19,7 +19,7 @@ def to_positive(value):
         value = 0
     return value
  
-def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60, plot=False):
+def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, plot=False):
     # Remove Weekends/Sundays
     tv = np.vectorize(to_weekday)
     time = tv(time)
@@ -134,9 +134,8 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60,
     return smooth_profile, frequency
     
     
-def process_trace(connection, tupel, plot=False):
+def process_trace(connection, name, sample_frequency, cycle_time, plot=False):
     print 'Downloading...'
-    name = tupel[0]
     timeSeries = connection.load(name)
     print 'complete'
 
@@ -146,6 +145,5 @@ def process_trace(connection, tupel, plot=False):
         time[i] = timeSeries.elements[i].timestamp
         demand[i] = timeSeries.elements[i].value
         
-    
-    return extract_profile(name, time, demand, tupel[1], plot=plot)
+    return extract_profile(name, time, demand, sample_frequency, cycle_time, plot=plot)
 
