@@ -1,20 +1,24 @@
 #!/bin/bash
 
 sensor=$1
-progName=$2
 
-virt-top --script --stream | sed -u '{/virt-top.*/d}' | sed -u '{/ID.*/d}' | awk '{ printf "%s,%s\n",$7,$10; fflush() }' | \
+pid=-1
+
+cleanup()
+{
+        kill $pid
+}
+
+trap cleanup SIGTERM
+
+top -b -d 0.5 | grep --line-buffered Cpu | sed -u 's/^.\{70\}[[:space:]]*//g' | sed -u 's/%st//' | \
 while read line ; do
-        ((res_timestamp = $(date +%s)))
+        ((res_timestamp = $(date +%s) ))
 
-        IIS=$IFS
-        IFS=","
-        tmp=($line)
-        IFS=$IIS
-
-        cpu=${tmp[0]}
-        domain=${tmp[1]}
-
-        toPrint="$sensor,$res_timestamp,none,$domain,$cpu"
+        toPrint="$sensor,$res_timestamp,none,none,$line"
         echo $toPrint
-done
+done &
+
+pid=$!
+
+wait

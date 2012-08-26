@@ -2,7 +2,15 @@
 
 sensor=$1
 
-trap "exit" SIGHUP SIGINT SIGTERM
+
+pid=-1
+
+cleanup()
+{
+        kill $pid
+}
+
+trap "exit" SIGTERM
 
 top -b -d 3 | grep --line-buffered Cpu | sed -u 's/^.\{70\}[[:space:]]*//g' | sed -u 's/%st//' | \
 while read line ; do
@@ -10,4 +18,8 @@ while read line ; do
         
         toPrint="$sensor,$res_timestamp,none,none,$line"
         echo $toPrint
-done
+done &
+
+pid=$!
+
+wait
