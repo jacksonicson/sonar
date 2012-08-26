@@ -19,7 +19,7 @@ def to_positive(value):
         value = 0
     return value
  
-def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60):
+def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60, plot=False):
     # Remove Weekends/Sundays
     tv = np.vectorize(to_weekday)
     time = tv(time)
@@ -113,28 +113,28 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24*60*60)
     frequency = cycle_time / len(smooth_profile)
     
 
-#    # Plotting    
-#    fig = plt.figure()
-#    fig.suptitle(name)
-#    ax = fig.add_subplot(311)
-#    ax.plot(range(0, len(smooth_profile)), smooth_profile)
-#    
-#    ax = fig.add_subplot(312)
-#    ax.plot(range(0, len(org_signal)), org_signal)
-#    
-#    ax = fig.add_subplot(313)
-#    ax.plot(range(0, len(variance_array_2)), variance_array_2)
-#
-#    try:    
-#        plt.savefig('C:/temp/convolution/' + name + '.png')
-#    except:
-#        print 'Warning, could not save plot %s' % (name)
+    # Plotting
+    if plot:    
+        fig = plt.figure()
+        fig.suptitle(name)
+        ax = fig.add_subplot(311)
+        ax.plot(range(0, len(smooth_profile)), smooth_profile)
+        
+        ax = fig.add_subplot(312)
+        ax.plot(range(0, len(org_signal)), org_signal)
+        
+        ax = fig.add_subplot(313)
+        ax.plot(range(0, len(variance_array_2)), variance_array_2)
     
-    return noise_profile, frequency
+        try:    
+            plt.savefig('C:/temp/convolution/' + name + '.png')
+        except:
+            print 'Warning, could not save plot %s' % (name)
+        
+    return smooth_profile, frequency
     
     
-     
-def process_trace(connection, tupel):
+def process_trace(connection, tupel, plot=False):
     print 'Downloading...'
     name = tupel[0]
     timeSeries = connection.load(name)
@@ -147,5 +147,5 @@ def process_trace(connection, tupel):
         demand[i] = timeSeries.elements[i].value
         
     
-    return extract_profile(name, time, demand, tupel[1])
+    return extract_profile(name, time, demand, tupel[1], plot=plot)
 
