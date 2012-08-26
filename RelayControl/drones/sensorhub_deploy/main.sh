@@ -14,7 +14,7 @@ mkdir /mnt/share
 mount -t nfs monitor0:/mnt/arr0/share /mnt/share
 cd /mnt/share/packages/psutil-0.5.1/
 python setup.py install
-cd
+cd $SENSORHUB
 umount /mnt/share
 
 # Unzip

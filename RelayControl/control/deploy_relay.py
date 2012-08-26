@@ -35,7 +35,21 @@ def main():
     drones.main()
     
     # Add hosts
-    hosts.add_host('playground', 'deploy')
+    hosts.add_host('srv0', 'deploy')
+    hosts.add_host('srv1', 'deploy')
+    hosts.add_host('srv2', 'deploy')
+    hosts.add_host('srv3', 'deploy')
+    hosts.add_host('srv4', 'deploy')
+    hosts.add_host('srv5', 'deploy')
+    
+    hosts.add_host('load0', 'deploy')
+    hosts.add_host('load1', 'deploy')
+    
+    hosts.add_host('monitor0', 'deploy')
+    hosts.add_host('monitor1', 'deploy')
+    
+    hosts.add_host('storage0', 'deploy')
+    hosts.add_host('storage1', 'deploy')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()
