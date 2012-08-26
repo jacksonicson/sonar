@@ -482,7 +482,7 @@ class execute_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'code', None, None,), # 1
+    (1, TType.STRING, 'code', None, None, ), # 1
   )
 
   def __init__(self, code=None,):
@@ -585,8 +585,8 @@ class launch_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'data', None, None,), # 1
-    (2, TType.STRING, 'name', None, None,), # 2
+    (1, TType.STRING, 'data', None, None, ), # 1
+    (2, TType.STRING, 'name', None, None, ), # 2
   )
 
   def __init__(self, data=None, name=None,):
@@ -655,7 +655,7 @@ class launch_result:
   """
 
   thrift_spec = (
-    (0, TType.I32, 'success', None, None,), # 0
+    (0, TType.I32, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -716,8 +716,8 @@ class launchNoWait_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'data', None, None,), # 1
-    (2, TType.STRING, 'name', None, None,), # 2
+    (1, TType.STRING, 'data', None, None, ), # 1
+    (2, TType.STRING, 'name', None, None, ), # 2
   )
 
   def __init__(self, data=None, name=None,):
@@ -786,7 +786,7 @@ class launchNoWait_result:
   """
 
   thrift_spec = (
-    (0, TType.I32, 'success', None, None,), # 0
+    (0, TType.I32, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -846,7 +846,7 @@ class isAlive_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'pid', None, None,), # 1
+    (1, TType.I32, 'pid', None, None, ), # 1
   )
 
   def __init__(self, pid=None,):
@@ -905,7 +905,7 @@ class isAlive_result:
   """
 
   thrift_spec = (
-    (0, TType.BOOL, 'success', None, None,), # 0
+    (0, TType.BOOL, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -965,7 +965,7 @@ class kill_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'pid', None, None,), # 1
+    (1, TType.I32, 'pid', None, None, ), # 1
   )
 
   def __init__(self, pid=None,):
@@ -1024,7 +1024,7 @@ class kill_result:
   """
 
   thrift_spec = (
-    (0, TType.BOOL, 'success', None, None,), # 0
+    (0, TType.BOOL, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -1086,9 +1086,9 @@ class pollForMessage_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'data', None, None,), # 1
-    (2, TType.STRING, 'name', None, None,), # 2
-    (3, TType.STRING, 'message', None, None,), # 3
+    (1, TType.STRING, 'data', None, None, ), # 1
+    (2, TType.STRING, 'name', None, None, ), # 2
+    (3, TType.STRING, 'message', None, None, ), # 3
   )
 
   def __init__(self, data=None, name=None, message=None,):
@@ -1167,7 +1167,7 @@ class pollForMessage_result:
   """
 
   thrift_spec = (
-    (0, TType.BOOL, 'success', None, None,), # 0
+    (0, TType.BOOL, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -1230,10 +1230,10 @@ class waitForMessage_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'data', None, None,), # 1
-    (2, TType.STRING, 'name', None, None,), # 2
-    (3, TType.STRING, 'message', None, None,), # 3
-    (4, TType.STRING, 'file', None, None,), # 4
+    (1, TType.STRING, 'data', None, None, ), # 1
+    (2, TType.STRING, 'name', None, None, ), # 2
+    (3, TType.STRING, 'message', None, None, ), # 3
+    (4, TType.STRING, 'file', None, None, ), # 4
   )
 
   def __init__(self, data=None, name=None, message=None, file=None,):
@@ -1322,7 +1322,7 @@ class waitForMessage_result:
   """
 
   thrift_spec = (
-    (0, TType.BOOL, 'success', None, None,), # 0
+    (0, TType.BOOL, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):

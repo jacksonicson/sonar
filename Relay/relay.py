@@ -31,6 +31,9 @@ class ProcessLoader(object):
     VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh')
     
     def decompress(self, data, name):
+        # Ensure tmp directory is here
+        checkEnvironment()
+        
         # Create paths
         target = os.path.join(tempfile.gettempdir(), 'relay', name)
         targetFile = os.path.join(tempfile.gettempdir(), 'relay', name + '.zip')

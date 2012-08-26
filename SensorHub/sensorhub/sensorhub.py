@@ -241,7 +241,7 @@ class MetricSensor(Sensor):
         
         # Check line structure
         elements = string.split(line, ',')
-        if len(elements) != 4:
+        if len(elements) != 5:
             print 'invalid line received: %s' % (line)
             return
                     
