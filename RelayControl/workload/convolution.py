@@ -19,8 +19,8 @@ def to_positive(value):
         value = 0
     return value
  
-def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, plot=False):
     # Remove Weekends/Sundays
+def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, plot=False):
     tv = np.vectorize(to_weekday)
     time = tv(time)
     indices = np.where(time < 5)
@@ -73,7 +73,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
         bucket = buckets[i]
         bucket = np.ravel(bucket)
         var = np.std(bucket)
-        variance_array[i] = var / 20
+        variance_array[i] = var / 30
     variance_array = np.ravel(variance_array)
     
     # Variance calculation two
@@ -86,7 +86,8 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     variance_array_2 = np.ravel(variance_array)
     
     # Increase signal resolution
-    resolution_factor = 5
+    target_bucket_count = cycle_time / (5 * 60)
+    resolution_factor = target_bucket_count / bucket_count
     noise_profile = np.ravel(np.array(zip(*[raw_profile for _ in xrange(resolution_factor)])))
     
     # Smooth
@@ -96,7 +97,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     noise_array = np.array(0, np.float32)
     for i in xrange(0, len(noise_profile), resolution_factor):
         j = i / resolution_factor
-        variance = variance_array_2[j]
+        variance = variance_array[j]
         if variance > 0:
             noise = np.random.normal(0, variance, resolution_factor)
             noise_array = np.hstack((noise_array, noise))

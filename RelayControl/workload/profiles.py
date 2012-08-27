@@ -15,24 +15,30 @@ POSTFIX_RAW = '_profile'
 POSTFIX_NORM = '_profile_norm'
 POSTFIX_USER = '_profile_user'
 
-class ProfileSet:
-    def __init__(self, sid, cap, day=None):
-        self.id = sid 
-        self.cap = cap
-        self.day = day
-
+# Descriptor of one profile
 class Desc:
     def __init__(self, name, sample_frequency, profile_set):
         self.name = name
         self.sample_frequency = sample_frequency
         self.profile_set = profile_set
 
+# Profile set information
+class ProfileSet:
+    def __init__(self, sid, cap, day=None):
+        self.id = sid 
+        self.cap = cap
+        self.day = day
+
+
+# Predefined sets
 SET_O2_BUSINESS = ProfileSet(0, None)
 SET_O2_RETAIL = ProfileSet(1, None)
 SET_SIS = ProfileSet(2, 3000)
+SET_SIS_D3 = ProfileSet(3, 3000, 3)
+SET_SIS_D8 = ProfileSet(3, 3000, 8)
+SET_SIS_D9 = ProfileSet(3, 3000, 9)
 
-mix_selected_cycle_time = 24 * 60 * 60
-mix_selected_profile_length = 120
+MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
 mix_selected = [
             Desc('O2_business_ADDORDER', 60 * 60, SET_O2_BUSINESS),
             Desc('O2_business_ADDLINEORDER', 60 * 60, SET_O2_BUSINESS),
@@ -81,76 +87,76 @@ mix_selected = [
             Desc('SIS_394_cpu', 5 * 60, SET_SIS),
             Desc('SIS_397_cpu', 5 * 60, SET_SIS),
             
-            Desc('SIS_21_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_24_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_27_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_29_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_31_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_110_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_145_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_147_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_150_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_162_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_209_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_210_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_236_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_243_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_252_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_253_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_272_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
-            Desc('SIS_373_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_21_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_24_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_27_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_29_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_31_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_110_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_145_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_147_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_150_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_162_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_209_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_210_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_236_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_243_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_252_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_253_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_272_cpu', 5 * 60, SET_SIS_D3),
+            Desc('SIS_373_cpu', 5 * 60, SET_SIS_D3),
             
-            Desc('SIS_29_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_31_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_123_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_124_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_125_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_145_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_147_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_148_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_149_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_192_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_199_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_211_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_283_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_337_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_344_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_345_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_350_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_352_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_354_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_357_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
-            Desc('SIS_383_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_29_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_31_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_123_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_124_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_125_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_145_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_147_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_148_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_149_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_192_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_199_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_211_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_283_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_337_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_344_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_345_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_350_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_352_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_354_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_357_cpu', 5 * 60, SET_SIS_D8),
+            Desc('SIS_383_cpu', 5 * 60, SET_SIS_D8),
             
-            Desc('SIS_207_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_208_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_210_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_211_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_213_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_214_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_216_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_219_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_220_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_221_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_222_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_223_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_225_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_234_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_235_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_243_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_245_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_264_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_269_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_270_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_271_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_275_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_279_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_312_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_315_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_328_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_385_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_386_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
-            Desc('SIS_387_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_207_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_208_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_210_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_211_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_213_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_214_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_216_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_219_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_220_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_221_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_222_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_223_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_225_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_234_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_235_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_243_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_245_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_264_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_269_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_270_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_271_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_275_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_279_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_312_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_315_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_328_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_385_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_386_cpu', 5 * 60, SET_SIS_D9),
+            Desc('SIS_387_cpu', 5 * 60, SET_SIS_D9),
             ]
 
 
@@ -177,8 +183,7 @@ def _build_profile(mix, save=False):
     profiles = []
     for desc in mix:
         print 'processing %s' % (desc.name)
-        cdesc = (desc.name, desc.sample_frequency, mix_selected_cycle_time)
-        profile = convolution.process_trace(connection, *cdesc)
+        profile = convolution.process_trace(connection, desc.name, desc.sample_frequency, MIX_SELECTED_CYCLE_TIME)
         profiles.append(profile)
         
     # Get maximum for each set (key is set_id)
@@ -213,8 +218,10 @@ def _build_profile(mix, save=False):
             _store_profile(connection, desc.name + '_profile_norm', profile, frequency)
         
         # Store USER profiles (-> feed into Rain)
+        # Adapt frequency for the benchmark duration
         profile *= 500
-        frequency = 60 # adjust frequency for time condensed benchmarks 
+        BENCHMARK_DURATION = 6 * 60 * 60
+        frequency = frequency / (MIX_SELECTED_CYCLE_TIME / BENCHMARK_DURATION)
         user_profile = np.array(profile)
         if save:
             _store_profile(connection, desc.name + '_profile_user', profile, frequency)
@@ -239,8 +246,7 @@ def _build_sample_day(mix, save):
     profiles = []
     for desc in mix:
         print 'processing %s' % (desc.name)
-        cdesc = (desc.name, desc.sample_frequency, mix_selected_cycle_time)
-        profile = sampleday.process_trace(connection, *cdesc, plot=False)
+        profile = sampleday.process_trace(connection, desc.name, desc.sample_frequency, MIX_SELECTED_CYCLE_TIME, day=desc.profile_set.day, plot=False)
         profiles.append(profile)
         
     # Get maximum for each set (key is set_id)
@@ -278,8 +284,8 @@ def _build_sample_day(mix, save):
         
         # Store USER profiles (-> feed into Rain)
         profile *= 500
-        frequency = 60 # adjust frequency for time condensed benchmarks 
         user_profile = np.array(profile)
+        frequency = frequency / (MIX_SELECTED_CYCLE_TIME / BENCHMARK_DURATION)
         if save:
             _store_profile(connection, desc.name + '_profile_user', profile, frequency)
         
@@ -330,7 +336,7 @@ def _build(mix, save):
             profile.append(desc)
             
     print 'Build sample days %i' % (len(sample_day))
-    _build_sample_day(sample_day, save)
+    #_build_sample_day(sample_day, save)
     print 'Build profiles %i' % (len(profile))
     _build_profile(profile, save)
     

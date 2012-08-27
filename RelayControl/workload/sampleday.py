@@ -19,7 +19,7 @@ def to_positive(value):
         value = 0
     return value
  
-def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, plot=False):
+def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, day=8, plot=False):
     # Remove Weekends/Sundays
     tv = np.vectorize(to_weekday)
     time = tv(time)
@@ -42,6 +42,17 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
     # Reshape the signal (each cycle in its on row)    
     signal = np.reshape(signal, (-1, elements_per_cycle))
     
+    # Extract day 
+    day_signal = signal[day]
+    
+    # Get Buckets
+    bucket_count = cycle_time / (5 * 60)
+    assert bucket_count == np.shape(day_signal)[0]
+
+    smooth_profile = simple_moving_average(day_signal, 7)
+    
+    frequency = cycle_time / len(smooth_profile)
+    
     # Plotting
     if plot:    
         fig = plt.figure()
@@ -54,14 +65,10 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
         except:
             print 'Warning, could not save plot %s' % (name)
         
-    try:
-        return simple_moving_average(signal[9]), 9
-    except:
-        return ([], 0)
-    # return signal[8], 0
+    return smooth_profile, frequency
     
     
-def process_trace(connection, name, sample_frequency, cycle_time, plot=False):
+def process_trace(connection, name, sample_frequency, cycle_time, day, plot=False):
     print 'Downloading...'
     timeSeries = connection.load(name)
     print 'complete'
@@ -72,5 +79,5 @@ def process_trace(connection, name, sample_frequency, cycle_time, plot=False):
         time[i] = timeSeries.elements[i].timestamp
         demand[i] = timeSeries.elements[i].value
         
-    return sample_day(name, time, demand, sample_frequency, cycle_time, plot=plot)
+    return sample_day(name, time, demand, sample_frequency, cycle_time, day=day, plot=plot)
 
