@@ -38,6 +38,7 @@ SET_SIS_D3 = ProfileSet(3, 3000, 3)
 SET_SIS_D8 = ProfileSet(3, 3000, 8)
 SET_SIS_D9 = ProfileSet(3, 3000, 9)
 
+BENCHMARK_DURATION = 6 * 60 * 60
 MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
 mix_selected = [
             Desc('O2_business_ADDORDER', 60 * 60, SET_O2_BUSINESS),
@@ -290,7 +291,6 @@ def _build_profile(mix, save=False):
         # Store USER profiles (-> feed into Rain)
         # Adapt frequency for the benchmark duration
         profile *= 500
-        BENCHMARK_DURATION = 6 * 60 * 60
         frequency = frequency / (MIX_SELECTED_CYCLE_TIME / BENCHMARK_DURATION)
         user_profile = np.array(profile)
         if save:
@@ -406,11 +406,11 @@ def _build(mix, save):
             profile.append(desc)
             
     print 'Build sample days %i' % (len(sample_day))
-    #_build_sample_day(sample_day, save)
+    _build_sample_day(sample_day, save)
     print 'Build profiles %i' % (len(profile))
     _build_profile(profile, save)
     
 if __name__ == '__main__':
-    _build(mix_selected, save=False)
+    _build(mix_0, save=False)
     # _build_all_profiles()
 
