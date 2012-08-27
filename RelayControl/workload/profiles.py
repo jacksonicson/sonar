@@ -16,9 +16,10 @@ POSTFIX_NORM = '_profile_norm'
 POSTFIX_USER = '_profile_user'
 
 class ProfileSet:
-    def __init__(self, sid, cap):
+    def __init__(self, sid, cap, day=None):
         self.id = sid 
         self.cap = cap
+        self.day = day
 
 class Desc:
     def __init__(self, name, sample_frequency, profile_set):
@@ -79,6 +80,77 @@ mix_selected = [
             Desc('SIS_393_cpu', 5 * 60, SET_SIS),
             Desc('SIS_394_cpu', 5 * 60, SET_SIS),
             Desc('SIS_397_cpu', 5 * 60, SET_SIS),
+            
+            Desc('SIS_21_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_24_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_27_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_29_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_31_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_110_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_145_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_147_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_150_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_162_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_209_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_210_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_236_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_243_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_252_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_253_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_272_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            Desc('SIS_373_cpu', 5 * 60, ProfileSet(3, 3000, 3)),
+            
+            Desc('SIS_29_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_31_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_123_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_124_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_125_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_145_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_147_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_148_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_149_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_192_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_199_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_211_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_283_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_337_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_344_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_345_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_350_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_352_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_354_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_357_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            Desc('SIS_383_cpu', 5 * 60, ProfileSet(3, 3000, 8)),
+            
+            Desc('SIS_207_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_208_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_210_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_211_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_213_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_214_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_216_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_219_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_220_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_221_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_222_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_223_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_225_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_234_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_235_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_243_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_245_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_264_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_269_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_270_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_271_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_275_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_279_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_312_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_315_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_328_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_385_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_386_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
+            Desc('SIS_387_cpu', 5 * 60, ProfileSet(3, 3000, 9)),
             ]
 
 
@@ -218,7 +290,7 @@ def _build_sample_day(mix, save):
         ax.axis([0.0, len(norm_profile), 0, 1])
         ax.plot(range(0, len(norm_profile)), norm_profile)
         
-        plt.savefig('C:/temp/convolution/' + desc.name + '.png')
+        plt.savefig('C:/temp/convolution/' + desc.name + '_sd.png')
         
     # plt.show()
     times_client.close()
@@ -230,8 +302,8 @@ def _build_all_profiles():
     # Because of the 32bit memory limitation not all 
     # TS data can be processes at once. 
     queries = [#('O2_business_[A-Z]+$', 60 * 60, SET_O2_BUSINESS),
-               ('O2_retail_[A-Z]+$', 60 * 60, SET_O2_RETAIL),
-               #('SIS_1[0-9]*_cpu$', 5 * 60, SET_SIS),
+               #('O2_retail_[A-Z]+$', 60 * 60, SET_O2_RETAIL),
+               ('SIS_1[0-9]*_cpu$', 5 * 60, SET_SIS),
                #('SIS_2[0-9]*_cpu$', 5 * 60, SET_SIS),
                #('SIS_3[0-9]*_cpu$', 5 * 60, SET_SIS)
                ]
@@ -247,8 +319,22 @@ def _build_all_profiles():
     # _build_profile(mix, save=False)
     _build_sample_day(mix, save=False)
 
+
+def _build(mix, save):
+    sample_day = []
+    profile = []
+    for desc in mix: 
+        if desc.profile_set.day != None:
+            sample_day.append(desc)
+        else:
+            profile.append(desc)
+            
+    print 'Build sample days %i' % (len(sample_day))
+    _build_sample_day(sample_day, save)
+    print 'Build profiles %i' % (len(profile))
+    _build_profile(profile, save)
     
 if __name__ == '__main__':
-    #_build(selected, save=True)
-    _build_all_profiles()
+    _build(mix_selected, save=False)
+    # _build_all_profiles()
 

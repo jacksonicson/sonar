@@ -24,14 +24,20 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
     tv = np.vectorize(to_weekday)
     time = tv(time)
     indices = np.where(time < 5)
-#    time = np.take(time, indices)
-#    signal = np.ravel(np.take(signal, indices))
+    time = np.take(time, indices)
+    signal = np.ravel(np.take(signal, indices))
     
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
     
     # Remove the remainder elements
     signal = np.resize(signal, cycle_count * elements_per_cycle)
+
+    # Get 95%tile
+    pcntile = np.percentile(signal, 99)
+    mean = np.mean(signal)
+    indices = np.where(signal > pcntile)
+    signal[indices] = mean
 
     # Reshape the signal (each cycle in its on row)    
     signal = np.reshape(signal, (-1, elements_per_cycle))
@@ -48,8 +54,11 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
         except:
             print 'Warning, could not save plot %s' % (name)
         
-    #return simple_moving_average(signal[3]), 0
-    return signal[8], 0
+    try:
+        return simple_moving_average(signal[9]), 9
+    except:
+        return ([], 0)
+    # return signal[8], 0
     
     
 def process_trace(connection, name, sample_frequency, cycle_time, plot=False):
