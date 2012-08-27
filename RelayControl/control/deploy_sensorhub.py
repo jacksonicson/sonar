@@ -25,21 +25,35 @@ def main():
     drones.main()
     
     # Add hosts
-    hosts.add_host('srv0', 'deploy')
-    hosts.add_host('srv1', 'deploy')
-    hosts.add_host('srv2', 'deploy')
-    hosts.add_host('srv3', 'deploy')
-    hosts.add_host('srv4', 'deploy')
-    hosts.add_host('srv5', 'deploy')
-    
-    hosts.add_host('load0', 'deploy')
-    hosts.add_host('load1', 'deploy')
-    
-    hosts.add_host('monitor0', 'deploy')
-    hosts.add_host('monitor1', 'deploy')
-    
-    hosts.add_host('storage0', 'deploy')
-    hosts.add_host('storage1', 'deploy')
+#    hosts.add_host('srv0', 'deploy')
+#    hosts.add_host('srv1', 'deploy')
+#    hosts.add_host('srv2', 'deploy')
+#    hosts.add_host('srv3', 'deploy')
+#    hosts.add_host('srv4', 'deploy')
+#    hosts.add_host('srv5', 'deploy')
+#    
+#    hosts.add_host('load0', 'deploy')
+#    hosts.add_host('load1', 'deploy')
+#    
+#    hosts.add_host('monitor0', 'deploy')
+#    hosts.add_host('monitor1', 'deploy')
+#    
+#    hosts.add_host('storage0', 'deploy')
+#    hosts.add_host('storage1', 'deploy')
+
+    # Add VMs
+    hosts.add_host('glassfish0', 'deploy')
+    hosts.add_host('glassfish1', 'deploy')
+    hosts.add_host('glassfish2', 'deploy')
+    hosts.add_host('glassfish3', 'deploy')
+    hosts.add_host('glassfish4', 'deploy')
+    hosts.add_host('glassfish5', 'deploy')
+    hosts.add_host('mysql0', 'deploy')
+    hosts.add_host('mysql1', 'deploy')
+    hosts.add_host('mysql2', 'deploy')
+    hosts.add_host('mysql3', 'deploy')
+    hosts.add_host('mysql4', 'deploy')
+    hosts.add_host('mysql5', 'deploy')
     
     # Connect
     hosts_map = hosts.get_hosts_list()
