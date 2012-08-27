@@ -316,7 +316,7 @@ def _build_sample_day(mix, save):
     profiles = []
     for desc in mix:
         print 'processing %s' % (desc.name)
-        profile = sampleday.process_trace(connection, desc.name, desc.sample_frequency, MIX_SELECTED_CYCLE_TIME, day=desc.profile_set.day, plot=False)
+        profile = sampleday.process_trace(connection, desc.name, desc.sample_frequency, MIX_SELECTED_CYCLE_TIME, desc.profile_set.day)
         profiles.append(profile)
         
     # Get maximum for each set (key is set_id)

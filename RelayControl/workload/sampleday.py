@@ -58,7 +58,7 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
         fig = plt.figure()
         fig.suptitle(name)
         ax = fig.add_subplot(111)
-        ax.plot(signal[1,])
+        ax.plot(signal[1, ])
     
         try:    
             plt.savefig('C:/temp/convolution/' + name + '_sampleday.png')
@@ -68,7 +68,7 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
     return smooth_profile, frequency
     
     
-def process_trace(connection, name, sample_frequency, cycle_time, day, plot=False):
+def process_trace(connection, name, sample_frequency, cycle_time, day):
     print 'Downloading...'
     timeSeries = connection.load(name)
     print 'complete'
@@ -79,5 +79,5 @@ def process_trace(connection, name, sample_frequency, cycle_time, day, plot=Fals
         time[i] = timeSeries.elements[i].timestamp
         demand[i] = timeSeries.elements[i].value
         
-    return sample_day(name, time, demand, sample_frequency, cycle_time, day=day, plot=plot)
+    return sample_day(name, time, demand, sample_frequency, cycle_time, day=day)
 

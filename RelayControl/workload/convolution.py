@@ -3,23 +3,27 @@ from times import ttypes
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
     return np.convolve(array, weights)[0:-5]
 
+
 def average_bucket(floor_array):
     return np.mean(floor_array)
+
 
 def to_weekday(value):
     day = long(long(value) / (24 * 60 * 60)) % 7
     return day
+
  
 def to_positive(value):
     if value < 0:
         value = 0
     return value
+
  
-    # Remove Weekends/Sundays
 def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, plot=False):
     tv = np.vectorize(to_weekday)
     time = tv(time)
@@ -117,36 +121,41 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     
 
     # Plotting
-    if plot:    
-        fig = plt.figure()
-        fig.suptitle(name)
-        ax = fig.add_subplot(311)
-        ax.plot(range(0, len(smooth_profile)), smooth_profile)
+    if plot: _plot(name, smooth_profile, org_signal, variance_array_2)   
         
-        ax = fig.add_subplot(312)
-        ax.plot(range(0, len(org_signal)), org_signal)
-        
-        ax = fig.add_subplot(313)
-        ax.plot(range(0, len(variance_array_2)), variance_array_2)
-    
-        try:    
-            plt.savefig('C:/temp/convolution/' + name + '.png')
-        except:
-            print 'Warning, could not save plot %s' % (name)
         
     return smooth_profile, frequency
     
-    
-def process_trace(connection, name, sample_frequency, cycle_time, plot=False):
-    print 'Downloading...'
-    timeSeries = connection.load(name)
-    print 'complete'
 
+def _plot(name, smooth_profile, org_signal, variance_array_2):
+    fig = plt.figure()
+    fig.suptitle(name)
+    ax = fig.add_subplot(311)
+    ax.plot(range(0, len(smooth_profile)), smooth_profile)
+    
+    ax = fig.add_subplot(312)
+    ax.plot(range(0, len(org_signal)), org_signal)
+    
+    ax = fig.add_subplot(313)
+    ax.plot(range(0, len(variance_array_2)), variance_array_2)
+
+    try:    
+        plt.savefig('C:/temp/convolution/' + name + '.png')
+    except:
+        print 'Warning, could not save plot %s' % (name)
+    
+    
+def process_trace(connection, name, sample_frequency, cycle_time):
+    # Download Times TS elements
+    timeSeries = connection.load(name)
+
+    # Create a data and time array from the Times TS elements
     time = np.zeros(len(timeSeries.elements))
-    demand = np.zeros(len(timeSeries.elements))
+    data = np.zeros(len(timeSeries.elements))
     for i in range(0, len(timeSeries.elements)):
         time[i] = timeSeries.elements[i].timestamp
-        demand[i] = timeSeries.elements[i].value
+        data[i] = timeSeries.elements[i].value
         
-    return extract_profile(name, time, demand, sample_frequency, cycle_time, plot=plot)
+    # Extract profile from the array
+    return extract_profile(name, time, data, sample_frequency, cycle_time)
 
