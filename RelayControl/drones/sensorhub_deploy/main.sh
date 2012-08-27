@@ -1,5 +1,7 @@
 #!/bin/bash
 
+systemctl stop sensorhub.service
+
 SENSORHUB=/opt/sensorhub
 
 # Remove old files and create the directory

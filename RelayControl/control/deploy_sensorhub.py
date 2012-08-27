@@ -2,7 +2,7 @@ import drones, hosts, base
 from twisted.internet import defer, reactor
 
 def finished(done, client_list):
-    print "execution successful"
+    print "execution successful: %s" % (done)
     reactor.stop()
 
 def deploy_phase(client_list):

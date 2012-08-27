@@ -38,13 +38,13 @@ class CompactionQueue extends Thread {
 	public void schedule(byte[] key) {
 		RowKeyJob rowKeyJob = new RowKeyJob(TIME_DELAY, key);
 		if (delayQueue.contains(rowKeyJob)) {
-			logger.debug("Removing: " + key);
+			logger.trace("Removing: " + key);
 			delayQueue.remove(rowKeyJob);
 		}
 
-		logger.debug("Adding: " + key );
+		logger.trace("Adding: " + key );
 		delayQueue.add(rowKeyJob);
-		logger.debug("length: " + delayQueue.size());
+		logger.trace("length: " + delayQueue.size());
 	} 
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {

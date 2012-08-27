@@ -333,9 +333,13 @@ public class TimeSeriesDatabase extends Thread {
 
 					// Found a compaction field
 					if (Bytes.toString(key).equals("data")) {
+						logger.debug("compaction field"); 
+						
 						if (startTimestampHour <= rowTimestampHours && rowTimestampHours <= stopTimestampHour) {
+							logger.debug("segment"); 
 							fragment.addSegment(rowTimestampHours, familyMap.get(key));
 						} else {
+							logger.debug("partially"); 
 							TDeserializer deserializer = new TDeserializer();
 							CompactTimeseries ts = new CompactTimeseries();
 							deserializer.deserialize(ts, familyMap.get(key));
@@ -351,7 +355,8 @@ public class TimeSeriesDatabase extends Thread {
 						}
 
 					} else { // Found a non compacted field
-						System.out.println("adding point");
+						logger.debug("point"); 
+						
 						long qualifier = Bytes.toLong(key);
 						long timestamp = rowTimestampHours + qualifier;
 						if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {

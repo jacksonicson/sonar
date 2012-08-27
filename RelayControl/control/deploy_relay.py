@@ -4,7 +4,7 @@ import drones
 import hosts
 
 def finished(done, client_list):
-    print "execution successful"
+    print "execution successful: %s" % (done)
     reactor.stop()
 
 

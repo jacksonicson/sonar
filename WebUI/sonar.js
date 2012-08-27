@@ -468,8 +468,8 @@ function logdbHandler(req, resp){
 		var startDate = body.startdate + body.starttime;
 		var stopDate = body.stopdate + body.stoptime;;
 		
-        var startUnix = moment(startDate, "MM/DD/YYYY hh:mm a")/1000;
-        var endUnix = moment(stopDate, "MM/DD/YYYY hh:mm a")/1000;
+        var startUnix = moment(startDate, "MM/DD/YYYY hh:mm")/1000;
+        var endUnix = moment(stopDate, "MM/DD/YYYY HH:mm")/1000;
         var hostname = body.hostname;
         var sensor = body.sensor;
 
@@ -529,8 +529,8 @@ function tsdbHandler(req, resp) {
         var startDate = body.startdate + body.starttime;
 		var stopDate = body.stopdate + body.stoptime;;
 		
-        var startUnix = moment(startDate, "MM/DD/YYYY hh:mm a")/1000;
-        var endUnix = moment(stopDate, "MM/DD/YYYY hh:mm a")/1000;
+        var startUnix = moment(startDate, "MM/DD/YYYY HH:mm")/1000;
+        var endUnix = moment(stopDate, "MM/DD/YYYY HH:mm")/1000;
 
         var labels = body.labels;
         var hostname = body.hostname;

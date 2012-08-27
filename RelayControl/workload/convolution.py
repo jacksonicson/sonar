@@ -8,7 +8,7 @@ def simple_moving_average(array, window=5):
     return np.convolve(array, weights)[0:-5]
 
 def average_bucket(floor_array):
-    return np.median(floor_array)
+    return np.mean(floor_array)
 
 def to_weekday(value):
     day = long(long(value) / (24 * 60 * 60)) % 7
@@ -34,7 +34,6 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     org_signal = signal
         
     # TODO: Filter extreme values > the 95th percentile
-    # TODO: Signal normalization
         
     # Remove the remainder elements
     signal = np.resize(signal, cycle_count * elements_per_cycle)
@@ -51,18 +50,21 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     buckets = np.hsplit(signal, bucket_count)
     
     # Reduce buckets
-    bucket_array = np.empty((signal.shape[0], 0), np.float32)
+#    bucket_array = np.empty((signal.shape[0], 0), np.float32)
+    bucket_array = np.empty(bucket_count, np.float32)
+    i = 0
     for bucket in buckets:
-        bucket = np.apply_along_axis(average_bucket, 1, bucket)
-        bucket = np.reshape(bucket, (signal.shape[0], 1))
-        bucket_array = np.hstack((bucket_array, bucket))
+#        bucket = np.apply_along_axis(average_bucket, 1, bucket)
+#        bucket = np.reshape(bucket, (signal.shape[0], 1))
+#        bucket_array = np.hstack((bucket_array, bucket))
+        np.reshape(bucket, (signal.shape[0] * elements_per_bucket,1))
+        value = np.mean(bucket)
+        bucket_array[i] = value
+        i += 1
 
     # Get averaged bucket
-    raw_profile = np.apply_along_axis(average_bucket, 0, bucket_array)
-    if len(raw_profile) != 24:
-        print '############################################### LENGTH %i' % (len(raw_profile))
-#    raw_profile = np.reshape(raw_profile, (raw_profile.shape[0], 1))
-#    print raw_profile
+#    raw_profile = np.apply_along_axis(average_bucket, 0, bucket_array)
+    raw_profile = bucket_array
 
     # Variance
     # TODO: Consider only values between the 5th and 95th percentile
