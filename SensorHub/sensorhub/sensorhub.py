@@ -438,7 +438,7 @@ class DiscreteWatcher(Thread, ProcessLoader):
    
 class ContinuouseWatcher(Thread, ProcessLoader):
     
-    SLEEP = 0.5
+    SLEEP = 5
     
     def __init__(self, shutdownHandler):
         super(ContinuouseWatcher, self).__init__()
@@ -772,7 +772,7 @@ class ShutdownHandler(object):
         # Spinning until shutdown signal is received        
         while self.flag == False:
             try:
-                self.condition.wait(1)
+                self.condition.wait(10)
             except KeyboardInterrupt:
                 self.flag = True
                 continue
