@@ -66,15 +66,12 @@ mix_selected = [
             Desc('SIS_189_cpu', 5 * 60, SET_SIS),
             Desc('SIS_198_cpu', 5 * 60, SET_SIS),
             Desc('SIS_194_cpu', 5 * 60, SET_SIS),
-            
-            
             Desc('SIS_209_cpu', 5 * 60, SET_SIS),
             Desc('SIS_240_cpu', 5 * 60, SET_SIS),
             Desc('SIS_253_cpu', 5 * 60, SET_SIS),
             Desc('SIS_269_cpu', 5 * 60, SET_SIS),
             Desc('SIS_292_cpu', 5 * 60, SET_SIS),
             Desc('SIS_298_cpu', 5 * 60, SET_SIS),
-            
             Desc('SIS_305_cpu', 5 * 60, SET_SIS),
             Desc('SIS_308_cpu', 5 * 60, SET_SIS),
             Desc('SIS_309_cpu', 5 * 60, SET_SIS),
@@ -158,6 +155,79 @@ mix_selected = [
             Desc('SIS_386_cpu', 5 * 60, SET_SIS_D9),
             Desc('SIS_387_cpu', 5 * 60, SET_SIS_D9),
             ]
+
+mix_0 = [
+            Desc('O2_business_ADDORDER', 60 * 60, SET_O2_BUSINESS),
+            Desc('O2_business_SENDMSG', 60 * 60, SET_O2_BUSINESS),
+            Desc('O2_business_UPDATEACCOUNT', 60 * 60, SET_O2_BUSINESS),
+            Desc('O2_retail_ADDORDER', 60 * 60, SET_O2_RETAIL),
+            
+            Desc('SIS_161_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_162_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_163_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_175_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_177_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_179_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_188_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_269_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_298_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_305_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_308_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_310_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_340_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_393_cpu', 5 * 60, SET_SIS),
+            Desc('SIS_397_cpu', 5 * 60, SET_SIS),
+            
+            Desc('SIS_29_cpu', 5 * 60, SET_SIS_D3),
+            ]
+
+mix_1 = [
+         Desc('SIS_397_cpu', 5 * 60, SET_SIS),
+         
+         Desc('SIS_199_cpu', 5 * 60, SET_SIS_D8),
+         Desc('SIS_207_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_211_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_213_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_216_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_221_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_222_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_225_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_234_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_245_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_264_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_271_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_275_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_279_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_344_cpu', 5 * 60, SET_SIS_D8),
+         Desc('SIS_345_cpu', 5 * 60, SET_SIS_D8),
+         Desc('SIS_350_cpu', 5 * 60, SET_SIS_D8),
+         Desc('SIS_385_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_387_cpu', 5 * 60, SET_SIS_D9),
+         ]
+
+mix_2 = [
+         Desc('O2_business_ADDORDER', 60 * 60, SET_O2_BUSINESS),
+         Desc('O2_business_SENDMSG', 60 * 60, SET_O2_BUSINESS),
+         Desc('O2_business_UPDATEACCOUNT', 60 * 60, SET_O2_BUSINESS),
+         
+         Desc('SIS_163_cpu', 5 * 60, SET_SIS),
+         Desc('SIS_175_cpu', 5 * 60, SET_SIS),
+         Desc('SIS_179_cpu', 5 * 60, SET_SIS),
+         Desc('SIS_298_cpu', 5 * 60, SET_SIS),
+         Desc('SIS_310_cpu', 5 * 60, SET_SIS),
+         Desc('SIS_340_cpu', 5 * 60, SET_SIS),
+         
+         Desc('SIS_29_cpu', 5 * 60, SET_SIS_D3),
+         Desc('SIS_199_cpu', 5 * 60, SET_SIS_D8),
+         Desc('SIS_211_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_216_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_225_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_234_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_264_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_279_cpu', 5 * 60, SET_SIS_D9),
+         Desc('SIS_345_cpu', 5 * 60, SET_SIS_D8),
+         Desc('SIS_387_cpu', 5 * 60, SET_SIS_D9),
+         ]
 
 
 def _store_profile(connection, name, profile_ts, frequency):
