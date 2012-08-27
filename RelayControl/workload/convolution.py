@@ -2,6 +2,7 @@ from service import times_client
 from times import ttypes
 import matplotlib.pyplot as plt
 import numpy as np
+import util
 
 
 def simple_moving_average(array, window=5):
@@ -61,7 +62,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
 #        bucket = np.apply_along_axis(average_bucket, 1, bucket)
 #        bucket = np.reshape(bucket, (signal.shape[0], 1))
 #        bucket_array = np.hstack((bucket_array, bucket))
-        np.reshape(bucket, (signal.shape[0] * elements_per_bucket,1))
+        np.reshape(bucket, (signal.shape[0] * elements_per_bucket, 1))
         value = np.mean(bucket)
         bucket_array[i] = value
         i += 1
@@ -145,17 +146,8 @@ def _plot(name, smooth_profile, org_signal, variance_array_2):
         print 'Warning, could not save plot %s' % (name)
     
     
-def process_trace(connection, name, sample_frequency, cycle_time):
-    # Download Times TS elements
+def process_trace(connection, name, ifreq, cycle_time):
     timeSeries = connection.load(name)
-
-    # Create a data and time array from the Times TS elements
-    time = np.zeros(len(timeSeries.elements))
-    data = np.zeros(len(timeSeries.elements))
-    for i in range(0, len(timeSeries.elements)):
-        time[i] = timeSeries.elements[i].timestamp
-        data[i] = timeSeries.elements[i].value
-        
-    # Extract profile from the array
-    return extract_profile(name, time, data, sample_frequency, cycle_time)
+    time, demand = util.to_array(timeSeries)
+    return extract_profile(name, time, demand, ifreq, cycle_time)
 

@@ -2,6 +2,7 @@ from service import times_client
 from times import ttypes
 import matplotlib.pyplot as plt
 import numpy as np
+import util
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -68,16 +69,8 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
     return smooth_profile, frequency
     
     
-def process_trace(connection, name, sample_frequency, cycle_time, day):
-    print 'Downloading...'
+def process_trace(connection, name, ifreq, cycle_time, day):
     timeSeries = connection.load(name)
-    print 'complete'
-
-    time = np.zeros(len(timeSeries.elements))
-    demand = np.zeros(len(timeSeries.elements))
-    for i in range(0, len(timeSeries.elements)):
-        time[i] = timeSeries.elements[i].timestamp
-        demand[i] = timeSeries.elements[i].value
-        
-    return sample_day(name, time, demand, sample_frequency, cycle_time, day=day)
+    time,demand = util.to_array(timeSeries)        
+    return sample_day(name, time, demand, ifreq, cycle_time, day=day)
 
