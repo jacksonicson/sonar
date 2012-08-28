@@ -48,7 +48,7 @@ class CompactionQueue extends Thread {
 	} 
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
-		logger.info("running compaction...");
+		logger.debug("running compaction...");
 
 		Get get = new Get(key);
 		Result result = table.get(get);
