@@ -179,7 +179,7 @@ public class TimeSeriesDatabase extends Thread {
 								long time = System.currentTimeMillis();
 								table.put(puts);
 								time = System.currentTimeMillis() - time;
-								logger.info("time: " + time);
+								logger.debug("time: " + time);
 								puts.clear();
 							}
 						}
@@ -333,13 +333,13 @@ public class TimeSeriesDatabase extends Thread {
 
 					// Found a compaction field
 					if (Bytes.toString(key).equals("data")) {
-						logger.debug("compaction field"); 
-						
+						logger.debug("compaction field");
+
 						if (startTimestampHour <= rowTimestampHours && rowTimestampHours <= stopTimestampHour) {
-							logger.debug("segment"); 
+							logger.debug("segment");
 							fragment.addSegment(rowTimestampHours, familyMap.get(key));
 						} else {
-							logger.debug("partially"); 
+							logger.debug("partially");
 							TDeserializer deserializer = new TDeserializer();
 							CompactTimeseries ts = new CompactTimeseries();
 							deserializer.deserialize(ts, familyMap.get(key));
@@ -355,8 +355,8 @@ public class TimeSeriesDatabase extends Thread {
 						}
 
 					} else { // Found a non compacted field
-						logger.debug("point"); 
-						
+						logger.debug("point");
+
 						long qualifier = Bytes.toLong(key);
 						long timestamp = rowTimestampHours + qualifier;
 						if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {

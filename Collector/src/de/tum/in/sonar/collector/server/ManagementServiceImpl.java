@@ -225,7 +225,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				byte[] md5 = md.digest(binary.array());
 				BigInteger bigInt = new BigInteger(1, md5);
 				String smd5 = bigInt.toString(16);
-				logger.info("deploy md5: " + smd5);
+				logger.debug("deploy md5: " + smd5);
 
 				key = key("sensor", name, "md5");
 				jedis.set(key, smd5);
@@ -372,7 +372,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			jedis.save();
 
 			// Invalidate cache
-			sensorlistCache.invalidate(hostname);
+			sensorlistCache.invalidateAll();
 
 		} finally {
 			jedisPool.returnResource(jedis);
@@ -440,6 +440,13 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				}
 			}
 
+			// Get the sensors from extensions
+			String extendedKey = key("host", hostname, "extends");
+			if (jedis.exists(extendedKey)) {
+				String virtualHost = jedis.get(extendedKey);
+				sensors.addAll(getSensors(virtualHost));
+			}
+
 			// Add data to cache
 			sensorlistCache.put(hostname, sensors);
 
@@ -467,7 +474,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setSensorConfiguration(String sensor, SensorConfiguration configuration) throws TException {
-		logger.info("setting sensor configuration: " + sensor);
+		logger.debug("setting sensor configuration: " + sensor);
 
 		Jedis jedis = jedisPool.getResource();
 		try {
@@ -533,7 +540,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
-		logger.info("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
+		logger.debug("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
 
 		Jedis jedis = jedisPool.getResource();
 		try {
@@ -599,7 +606,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	public SensorConfiguration getSensorConfiguration(String sensor) throws TException {
-		logger.info("reading sensor configuration for sensor: " + sensor);
+		logger.debug("reading sensor configuration for sensor: " + sensor);
 
 		Jedis jedis = jedisPool.getResource();
 		try {

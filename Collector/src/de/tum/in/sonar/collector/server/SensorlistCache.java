@@ -40,4 +40,8 @@ public class SensorlistCache {
 		sensorCache.remove(hostname);
 	}
 
+	void invalidateAll() {
+		sensorCache.clear();
+	}
+
 }
