@@ -108,6 +108,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :host:[hostname]:sensor:[sensorname] - enables or disables a sensor
 	// :host:[hostname]:sensor:[sensorname]/config:[item] - overrides a sensor
 	// configuration
+	// TODO: add inheritence to the documentation
 
 	private String key(String... args) {
 		StringBuilder builder = new StringBuilder();
