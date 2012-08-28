@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -292,6 +293,43 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	@Override
+	public void addHostExtension(String hostname, String virtualHostName) throws TException {
+		Jedis jedis = jedisPool.getResource();
+		try {
+			if (virtualHostName.equalsIgnoreCase("-1")) {
+				// if extends host is not selected -1 is passed and key removed
+				String key = key("host", hostname, "extends");
+				if (jedis.exists(key)) {
+					logger.debug("Removing extends host extension for host: " + hostname);
+					jedis.del(key);
+				}
+				jedis.save();
+			} else {
+				// if extends host is not -1 => host name is passed and key
+				// saved
+				logger.debug("Setting host extension for host: " + hostname + " with " + virtualHostName);
+				String key = key("host", hostname, "extends");
+				if (jedis.exists(key))
+					jedis.del(key);
+				jedis.set(key, virtualHostName);
+				jedis.save();
+			}
+		} finally {
+			jedisPool.returnResource(jedis);
+		}
+	}
+
+	@Override
+	public String getHostExtension(String hostname) throws TException {
+		Jedis jedis = jedisPool.getResource();
+		String key = key("host", hostname, "extends");
+		if (jedis.exists(key)) {
+			return jedis.get(key);
+		}
+		return null;
+	}
+
+	@Override
 	public void setHostLabels(String hostname, Set<String> labels) throws TException {
 		logger.debug("Setting labels for host: " + hostname);
 		Jedis jedis = jedisPool.getResource();
@@ -439,6 +477,12 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			if (configuration.getInterval() != 0)
 				jedis.set(key(key, "interval"), Long.toString(configuration.getInterval()));
 
+			// if None is selected in the GUI
+			// TODO: This code ist not GUI dependent! - Needs review
+			if (configuration.getSensorExtends() != null && !configuration.getSensorExtends().equals("-1")) {
+				jedis.set(key(key, "extends"), configuration.getSensorExtends());
+			}
+
 			if (null != configuration.getParameters() && configuration.getParameters().size() > 0) {
 				key = key(key, "properties");
 				for (Parameter param : configuration.getParameters()) {
@@ -468,9 +512,32 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 		}
 	}
 
+	private boolean getSensorActiveState(String hostname, String sensor, Jedis jedis) {
+		// if this host does not extends any other host return the status
+		String exKey = key("host", hostname, "extends");
+		boolean result = false;
+		if (jedis.exists(exKey)) {
+			String virtualHost = jedis.get(exKey);
+			boolean actResult = getSensorActiveState(virtualHost, sensor, jedis);
+			result = result | actResult;
+		} else {
+			String key = key("host", hostname, "sensor", sensor);
+			logger.debug("checking sensor with key: " + key);
+			if (jedis.exists(key)) {
+				logger.debug("found");
+				boolean status = Boolean.parseBoolean(jedis.get(key));
+				logger.debug("status " + status);
+				return status;
+			} else {
+				return false;
+			}
+		}
+		return result;
+	}
+
 	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
 		logger.info("reading bundled sensor configuration for sensor: " + sensor + " and hostname: " + hostname);
-		
+
 		Jedis jedis = jedisPool.getResource();
 		try {
 			// Set default settings
@@ -479,20 +546,14 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			config.setHostname(hostname);
 
 			// Get the sensor activation state
-			String key = key("host", hostname, "sensor", sensor);
-			if (jedis.exists(key)) {
-				boolean status = Boolean.parseBoolean(jedis.get(key));
-				config.setActive(status);
-			} else {
-				config.setActive(false);
-			}
+			config.setActive(getSensorActiveState(hostname, sensor, jedis));
 
 			// Get sensor configuration
 			SensorConfiguration sensorConfig = getSensorConfiguration(sensor);
 			config.setConfiguration(sensorConfig);
 
 			// Get all labels (aggregation of host and sensor)
-			key = key("sensor", sensor, "labels");
+			String key = key("sensor", sensor, "labels");
 			Set<String> sensorLabels = null;
 			if (jedis.exists(key))
 				sensorLabels = jedis.smembers(key);
@@ -542,16 +603,48 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	public SensorConfiguration getSensorConfiguration(String sensor) throws TException {
 		logger.info("reading sensor configuration for sensor: " + sensor);
-		
+
 		Jedis jedis = jedisPool.getResource();
 		try {
 			SensorConfiguration sensorConfig = new SensorConfiguration();
 			String key = key("sensor", sensor, "config");
-			
+
 			if (jedis.exists(key(key, "interval")))
 				sensorConfig.setInterval(Long.parseLong(jedis.get(key(key, "interval"))));
 			else
 				sensorConfig.setInterval(0);
+
+			// Get the properties
+			// if the sensor extends a virtual sensor, add the parameters too
+			if (jedis.exists(key(key, "extends"))) {
+				String virtualSensor = jedis.get(key(key, "extends"));
+				sensorConfig.setSensorExtends(virtualSensor);
+			} else {
+				sensorConfig.setSensorExtends(null);
+			}
+
+			// Get the properties
+			sensorConfig.setParameters(getSensorConfigParameters(sensor));
+
+			return sensorConfig;
+		} finally {
+			jedisPool.returnResourceObject(jedis);
+		}
+	}
+
+	private List<Parameter> getSensorConfigParameters(String sensor) {
+		logger.debug("reading sensor parameters for sensor: " + sensor);
+		Jedis jedis = jedisPool.getResource();
+		List<Parameter> paramsList = new ArrayList<Parameter>();
+		try {
+			String key = key("sensor", sensor, "config");
+
+			// if the sensor extends a virtual sensor, add the parameters too
+			if (jedis.exists(key(key, "extends"))) {
+				String virtualSensor = jedis.get(key(key, "extends"));
+				List<Parameter> extendParams = getSensorConfigParameters(virtualSensor);
+				paramsList.addAll(extendParams);
+			}
 
 			// Get the properties
 			key = key("sensor", sensor, "config", "properties");
@@ -559,15 +652,33 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			for (String name : parameters) {
 				String value = jedis.get(name);
 				Parameter param = new Parameter();
-				param.setKey(key.substring(key.lastIndexOf(":") + 1, key.length()));
+				String keyStr = getKeyValueFromRedisKey(name);
+				param.setKey(keyStr);
 				param.setValue(value);
-				sensorConfig.addToParameters(param);
+				param.setExtendSensor(sensor);
+				// to override the keys of child in paremnt
+				deleteKeyFromParamList(keyStr, paramsList);
+				paramsList.add(param);
 			}
-			
-			return sensorConfig;
+
+			return paramsList;
 		} finally {
 			jedisPool.returnResourceObject(jedis);
 		}
+	}
+
+	private void deleteKeyFromParamList(String key, List<Parameter> paramList) {
+		Iterator<Parameter> iter = paramList.iterator();
+		while (iter.hasNext()) {
+			Parameter temp = iter.next();
+			if (temp.getKey().equalsIgnoreCase(key)) {
+				iter.remove();
+			}
+		}
+	}
+
+	private String getKeyValueFromRedisKey(String key) {
+		return key.substring(key.lastIndexOf(":") + 1, key.length());
 	}
 
 	public Set<String> getSensorNames() throws TException {
@@ -578,16 +689,5 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Error while getting the list of configured sensors", e);
 		}
 		return result;
-	}
-
-	@Override
-	public void addHostExtension(String hostname, String virtualHostName) throws TException {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public String getHostExtension(String hostname) throws TException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
