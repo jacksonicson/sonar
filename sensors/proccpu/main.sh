@@ -1,20 +1,25 @@
 #!/bin/bash
 
+# Name of the sensor passed as first cmdline argument
+sensor=$1
+
 # Fields
 # echo "USER    NICE    SYS   IDLE   IOWAIT  IRQ  SOFTIRQ  STEAL  GUEST"
 
+# End flag which is use to terminate the main loop
 end=0
 exitThis() 
 {
   end=1
 }
 
+# Register sigkill handle
 trap exitThis SIGKILL
 
-
+# Main loop which reads the /proc/stat file regularly
 while [ $end -eq 0 ] 
 do
-	# Read all words to the array CPU
+	# Read all words from /proc/stat to the array CPU
 	read -a CPU < /proc/stat
 	
 	# Check fi there are 5 words and if the first word is "cpu"
@@ -36,28 +41,32 @@ do
 
 	# Iterate over all array indices
   	for i in ${!CPU[*]}; do
-		# Calc percentage and shift comma to the right
+		# Calc percentage
+		# Comma to the right which allows float representation
 		OUT_INT=$((1000*(${CPU[$i]}-${PREV_STAT[$i]:-0})/DIFF_TOTAL))
 		
-		# Extract separate values by using modulo
+		# Extract float representation using modulo operation
 		OUT[$((i*2))]=$((OUT_INT/10))
 		OUT[$((i*2+1))]=$((OUT_INT%10))
 	done
 
-	# steal time
+	# indices in the OUT array which contains the steal time 
 	index=$((7*2))
 	index2=$(($index+1))
-	sensor=$1
+	
+	# log the value
 	res_timestamp=$(date +%s)
 	res_name='steal'
 	res_hostname='none'
 	res_value="${OUT[$index]}.${OUT[$index2]}"
 	echo "$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
 		
-
+	# store cpu counters for next iteration
 	PREV_STAT=("${CPU[@]}")
 	PREV_TOTAL="$TOTAL"
-	sleep 1
+	
+	# sleep until next run
+	sleep 3
 done
 exit 0
 
