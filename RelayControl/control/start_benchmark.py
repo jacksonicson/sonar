@@ -1,16 +1,15 @@
 from control import drones, hosts, base
+from logs import sonarlog, sonarlog
 from rain import RainService
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
+from workload import profiles
+import domains
+import logging
 import logic.controller as controller
 import math
-from logs import sonarlog
-import logging
-import domains
-from logs import sonarlog
-from workload import profiles 
 
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
@@ -173,8 +172,8 @@ def phase_start_glassfish_database(done, client_list):
         # Wait for all drones to finish and set phase
         dl = defer.DeferredList(dlist)
         
-        dl.addCallback(phase_start_rain, client_list)
-        # dl.addCallback(finished, client_list)
+        # dl.addCallback(phase_start_rain, client_list)
+        dl.addCallback(finished, client_list)
     except Exception, e:
         print e
         finished(None, client_list)
@@ -239,19 +238,19 @@ def main():
     
     # Add hosts
     hosts.add_host('glassfish0', 'target')
-    hosts.add_host('glassfish1', 'target')
-    hosts.add_host('glassfish2', 'target')
-    hosts.add_host('glassfish3', 'target')
-    hosts.add_host('glassfish4', 'target')
-    hosts.add_host('glassfish5', 'target')
+#    hosts.add_host('glassfish1', 'target')
+#    hosts.add_host('glassfish2', 'target')
+#    hosts.add_host('glassfish3', 'target')
+#    hosts.add_host('glassfish4', 'target')
+#    hosts.add_host('glassfish5', 'target')
     hosts.add_host('mysql0', 'database')
-    hosts.add_host('mysql1', 'database')
-    hosts.add_host('mysql2', 'database')
-    hosts.add_host('mysql3', 'database')
-    hosts.add_host('mysql4', 'database')
-    hosts.add_host('mysql5', 'database')
-    hosts.add_host('load0', 'load')
-    hosts.add_host('load1', 'load')
+#    hosts.add_host('mysql1', 'database')
+#    hosts.add_host('mysql2', 'database')
+#    hosts.add_host('mysql3', 'database')
+#    hosts.add_host('mysql4', 'database')
+#    hosts.add_host('mysql5', 'database')
+#    hosts.add_host('load0', 'load')
+#    hosts.add_host('load1', 'load')
     
     # Test rain start
     # phase_start_rain(None, None)
