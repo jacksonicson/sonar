@@ -20,5 +20,9 @@ service RainService {
 	
 	list<string> getTrackNames();
 	
-	long getRampUpTime(); 
+	long getRampUpTime();
+	
+	long getRampDownTime();
+	
+	long getDurationTime();
 }

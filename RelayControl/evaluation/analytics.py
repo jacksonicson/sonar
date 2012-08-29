@@ -73,6 +73,9 @@ def __fetch_rain_data(sonar, hosts, frame):
         logs = sonar.queryLogs(query)
         print 'logs loaded...'
         
+        rampup_finished = '[TRACK: track5] Ramp up finished!'
+        rain_stopped = 'Rain stopped'
+        
         for log in logs:
             if log.logMessage.startswith('[{"result":"DealerMetrics","description":"description"},'):
                 data = json.loads(log.logMessage)
