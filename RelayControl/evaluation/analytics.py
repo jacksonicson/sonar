@@ -75,9 +75,12 @@ def __fetch_rain_data(sonar, hosts, frame):
         
         rampup_finished = '[TRACK: track5] Ramp up finished!'
         rain_stopped = 'Rain stopped'
+        track_finished = '[TRACK: track2] finished!'
+        track_results = '[{"result":"DealerMetrics","description":"description"},' 
         
+        # scan logs for results
         for log in logs:
-            if log.logMessage.startswith('[{"result":"DealerMetrics","description":"description"},'):
+            if log.logMessage.startswith(track_results):
                 data = json.loads(log.logMessage)
                 print data
                 
@@ -86,8 +89,6 @@ def __fetch_rain_data(sonar, hosts, frame):
                 break
              
     return result
-        
-
 
 def __fetch_controller_data(connection, host, frame):
     pass

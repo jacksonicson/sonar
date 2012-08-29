@@ -31,19 +31,28 @@ def finished(done, client_list):
     # controller.main() 
 
 
-def ramp_up(ret, rain_client, client_list):
+def ram_up_finished(ret, rain_clients, client_list):
+    print 'end of startup sequence'
+    logger.log(sonarlog.SYNC, 'end of startup sequence')
+    
+    # TODO Get duration and wait for duration
+    
+    finished(ret, client_list)
+
+
+def ramp_up(ret, rain_clients, client_list):
     print 'sleeping during ramp-up for %i seconds' % (ret)
     logger.info('sleeping during ramp-up for %i seconds' % (ret))
-    reactor.callLater(ret, finished, None, client_list)
+    reactor.callLater(ret, ram_up_finished, rain_clients, client_list)
     
 
-def rain_started(ret, rain_client, client_list):
+def rain_started(ret, rain_clients, client_list):
     print 'rain is driving load now, waiting for ramp-up finish'
     logger.log(sonarlog.SYNC, 'start driving load')
     logger.info('querying ramp-up duration')
     
-    d = rain_client[0][1].getRampUpTime()
-    d.addCallback(ramp_up, rain_client, client_list) 
+    d = rain_clients[0][1].getRampUpTime()
+    d.addCallback(ramp_up, rain_clients, client_list) 
 
 
 def rain_connected(rain_clients, client_list):
