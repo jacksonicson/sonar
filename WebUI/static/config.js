@@ -67,7 +67,7 @@ function addRowToParamTable(parameter, disabledRow){
                     $('<textarea>').attr("name", "sensorParamValue").attr("placeholder","Value..").val(parameter.value)
                 ),
                 $('<td>').append(
-                    $('<a>').addClass("btn").addClass("btn-primary").attr("href", "#").append($('<i>').addClass('icon-trash').addClass('icon-white'))
+                    $('<a>').addClass("btn").addClass("btn-primary").attr("href", "javascript:void(0)").append($('<i>').addClass('icon-trash').addClass('icon-white'))
                 )
             )
         );
@@ -533,7 +533,7 @@ function updateHostsList() {
                             $('<a>').append($('<i>').addClass('icon-trash'), "Delete").addClass("btn").attr("id", host.hostname).click(deleteHost)
                         ),
                         $('<td>').append(
-                            $('<a>').text(host.hostname).click(editHost).attr("href", "#").attr("id", host.hostname)
+                            $('<a>').text(host.hostname).click(editHost).attr("href", "javascript:void(0)").attr("id", host.hostname)
                         ),
                         $('<td>').append(list)
                     )
@@ -591,7 +591,7 @@ function updateSensorList() {
                             $('<a>').append($('<i>').addClass('icon-cog'), "Extend").addClass("btn").attr("id", "ext_" + sensor.name).click(editSensorExtend)
                         ),
 						$('<td>').append(
-                            $('<a>').text(sensor.name).click(editSensor).attr("href", "#").attr("id", sensor.name)
+                            $('<a>').text(sensor.name).click(editSensor).attr("href", "javascript:void(0)").attr("id", sensor.name)
                         ),
                         $('<td>').text(sensor.binary),
                         $('<td>').text(labelString)
