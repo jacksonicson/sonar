@@ -41,6 +41,12 @@ class Iface(Interface):
   def getRampUpTime():
     pass
 
+  def getRampDownTime():
+    pass
+
+  def getDurationTime():
+    pass
+
 
 class Client:
   implements(Iface)
@@ -173,6 +179,62 @@ class Client:
       return d.callback(result.success)
     return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getRampUpTime failed: unknown result"))
 
+  def getRampDownTime(self, ):
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
+    self.send_getRampDownTime()
+    return d
+
+  def send_getRampDownTime(self, ):
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('getRampDownTime', TMessageType.CALL, self._seqid)
+    args = getRampDownTime_args()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def recv_getRampDownTime(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
+    result = getRampDownTime_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getRampDownTime failed: unknown result"))
+
+  def getDurationTime(self, ):
+    self._seqid += 1
+    d = self._reqs[self._seqid] = defer.Deferred()
+    self.send_getDurationTime()
+    return d
+
+  def send_getDurationTime(self, ):
+    oprot = self._oprot_factory.getProtocol(self._transport)
+    oprot.writeMessageBegin('getDurationTime', TMessageType.CALL, self._seqid)
+    args = getDurationTime_args()
+    args.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def recv_getDurationTime(self, iprot, mtype, rseqid):
+    d = self._reqs.pop(rseqid)
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      return d.errback(x)
+    result = getDurationTime_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return d.callback(result.success)
+    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "getDurationTime failed: unknown result"))
+
 
 class Processor(TProcessor):
   implements(Iface)
@@ -184,6 +246,8 @@ class Processor(TProcessor):
     self._processMap["dynamicLoadProfile"] = Processor.process_dynamicLoadProfile
     self._processMap["getTrackNames"] = Processor.process_getTrackNames
     self._processMap["getRampUpTime"] = Processor.process_getRampUpTime
+    self._processMap["getRampDownTime"] = Processor.process_getRampDownTime
+    self._processMap["getDurationTime"] = Processor.process_getDurationTime
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -259,6 +323,38 @@ class Processor(TProcessor):
   def write_results_success_getRampUpTime(self, success, result, seqid, oprot):
     result.success = success
     oprot.writeMessageBegin("getRampUpTime", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getRampDownTime(self, seqid, iprot, oprot):
+    args = getRampDownTime_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getRampDownTime_result()
+    d = defer.maybeDeferred(self._handler.getRampDownTime, )
+    d.addCallback(self.write_results_success_getRampDownTime, result, seqid, oprot)
+    return d
+
+  def write_results_success_getRampDownTime(self, success, result, seqid, oprot):
+    result.success = success
+    oprot.writeMessageBegin("getRampDownTime", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getDurationTime(self, seqid, iprot, oprot):
+    args = getDurationTime_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getDurationTime_result()
+    d = defer.maybeDeferred(self._handler.getDurationTime, )
+    d.addCallback(self.write_results_success_getDurationTime, result, seqid, oprot)
+    return d
+
+  def write_results_success_getDurationTime(self, success, result, seqid, oprot):
+    result.success = success
+    oprot.writeMessageBegin("getDurationTime", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -693,6 +789,208 @@ class getRampUpTime_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('getRampUpTime_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.I64, 0)
+      oprot.writeI64(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRampDownTime_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRampDownTime_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getRampDownTime_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.I64, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.I64:
+          self.success = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getRampDownTime_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.I64, 0)
+      oprot.writeI64(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getDurationTime_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getDurationTime_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getDurationTime_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.I64, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.I64:
+          self.success = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getDurationTime_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.I64, 0)
       oprot.writeI64(self.success)

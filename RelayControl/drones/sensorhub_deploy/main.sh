@@ -19,6 +19,9 @@ python setup.py install
 cd $SENSORHUB
 umount /mnt/share
 
+# Remove old sensor dir
+rm -rf /tmp/sonar
+
 # Unzip
 cd $SENSORHUB
 unzip sensorhub.zip

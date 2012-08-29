@@ -25,7 +25,7 @@ DEBUG = False
 ##########################
 
 def gettempdir():
-    return '/var/sonar'
+    return '/var'
 
 class Sensor(object):
 
