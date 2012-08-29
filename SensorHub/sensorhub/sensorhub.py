@@ -10,7 +10,6 @@ import sched
 import shutil
 import signal
 import string
-import tempfile
 import thread
 import threading
 import time
@@ -24,6 +23,9 @@ MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
 ##########################
+
+def gettempdir():
+    return '/var/sonar'
 
 class Sensor(object):
 
@@ -65,12 +67,12 @@ class Sensor(object):
             return self.md5
                 
         # Ensure that the temp directoy is there
-        tmpdir = os.path.join(tempfile.gettempdir(), 'sonar')
+        tmpdir = os.path.join(gettempdir(), 'sonar')
         if os.path.exists(tmpdir) == False:
             os.makedirs(tmpdir)        
                 
         # Remove old sensor package
-        tmpfile = os.path.join(tempfile.gettempdir(), 'sonar', self.name + '.zip')
+        tmpfile = os.path.join(gettempdir(), 'sonar', self.name + '.zip')
         if os.path.exists(tmpfile):
             os.remove(tmpfile)
             
@@ -120,16 +122,16 @@ class Sensor(object):
         exists = False
         
         for main in Sensor.VALID_MAINS:
-            target = os.path.join(tempfile.gettempdir(), 'sonar', self.name, main)
+            target = os.path.join(gettempdir(), 'sonar', self.name, main)
             exists |= os.path.exists(target)
         
         return exists
 
     
     def __decompress(self):
-        zf = zipfile.ZipFile(os.path.join(tempfile.gettempdir(), 'sonar', self.name + ".zip"))
+        zf = zipfile.ZipFile(os.path.join(gettempdir(), 'sonar', self.name + ".zip"))
         
-        target = os.path.join(tempfile.gettempdir(), 'sonar', self.name)
+        target = os.path.join(gettempdir(), 'sonar', self.name)
         
         if os.path.exists(target):
             shutil.rmtree(target, True)
@@ -297,7 +299,7 @@ class ProcessLoader(object):
         # determine the executable
         mainFile = None
         for main in Sensor.VALID_MAINS:
-            target = os.path.join(tempfile.gettempdir(), 'sonar', sensor.name, main)
+            target = os.path.join(gettempdir(), 'sonar', sensor.name, main)
             if os.path.exists(target):
                 mainFile = main
                 break
@@ -328,7 +330,7 @@ class ProcessLoader(object):
         
         # create a new process 
         try:
-            path = os.path.join(tempfile.gettempdir(), 'sonar', sensor.name, main)
+            path = os.path.join(gettempdir(), 'sonar', sensor.name, main)
             
             # configure executable and main file
             if executable is None:
