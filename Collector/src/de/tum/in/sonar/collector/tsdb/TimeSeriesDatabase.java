@@ -68,12 +68,15 @@ public class TimeSeriesDatabase extends Thread {
 
 	private int keyWidth(int labels) {
 		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_ID_WIDTH + Const.LABEL_ID_WIDTH * labels;
-
 		return keyWidth;
 	}
 
 	byte[] buildKey(MetricPoint point) throws UnresolvableException, InvalidLabelException {
-		int keyWidth = keyWidth(point.getLabels().size());
+		int labels = 0;
+		if (point.getLabels() != null)
+			labels = point.getLabels().size();
+
+		int keyWidth = keyWidth(labels);
 		byte[] key = new byte[keyWidth];
 
 		int index = 0;
@@ -90,10 +93,11 @@ public class TimeSeriesDatabase extends Thread {
 		index += 8;
 
 		// Labels
-		for (String label : point.getLabels()) {
-			appendToKey(key, index, labelResolver.resolveName(label));
-			index += 8;
-		}
+		if (point.getLabels() != null)
+			for (String label : point.getLabels()) {
+				appendToKey(key, index, labelResolver.resolveName(label));
+				index += 8;
+			}
 
 		return key;
 	}
