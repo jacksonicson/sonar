@@ -62,7 +62,7 @@ def main(interface=LISTENING_INTERFACE_IPV4, collector=COLLECTOR_HOST):
     # Connect!
     transport.open()
 
-    # Define hotsts and sensors to listen on
+    # Define hosts and sensors to listen on
     srv0_cpu = ttypes.SensorToWatch('srv0', 'psutilcpu')
     glassfish0_cpu = ttypes.SensorToWatch('glassfish0', 'psutilcpu')
 
