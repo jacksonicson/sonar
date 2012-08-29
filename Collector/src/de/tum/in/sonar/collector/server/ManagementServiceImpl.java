@@ -485,7 +485,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 			// if None is selected in the GUI
 			// TODO: Replace '-1' by null
-			if (configuration.getSensorExtends().equals("-1"))
+			if (configuration.getSensorExtends() == null || configuration.getSensorExtends().equals("-1"))
 				jedis.del(key(key, "extends"));
 			else
 				jedis.set(key(key, "extends"), configuration.getSensorExtends());
