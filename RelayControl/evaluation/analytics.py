@@ -6,6 +6,7 @@ from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import json
+import numpy as np
 import sys
 import time
 import traceback
@@ -62,7 +63,10 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     return None
 
 def __fetch_rain_data(sonar, hosts, frame):
-    result = []
+    schedule_metrics = {}
+    rain_metric = {}
+    sonar_metrics = {}
+     
     for host in hosts:
         query = ttypes.LogsQuery()
         query.hostname = host
@@ -71,30 +75,69 @@ def __fetch_rain_data(sonar, hosts, frame):
         query.stopTime = frame[1]
         
         logs = sonar.queryLogs(query)
-        print 'logs loaded...'
         
-        rampup_finished = '[TRACK: track5] Ramp up finished!'
-        rain_stopped = 'Rain stopped'
-        track_finished = '[TRACK: track2] finished!'
-        track_results = '[{"result":"DealerMetrics","description":"description"},' 
+        STR_BENCHMARK_SCHEDULE = 'Schedule: '
+        for log in logs:
+            if log.logMessage.startswith(STR_BENCHMARK_SCHEDULE):
+                msg = log.logMessage[len(STR_BENCHMARK_SCHEDULE):]
+                data = json.loads(msg)
+                schedule_metrics[host] = data
+                frame = (frame[0], int(data['endRun'] / 1000))
+        
+        
+        STR_RAIN_METRICS = 'Rain metrics: '
+        STR_DEALER_METRICS = 'Dealer metrics: '
+        STR_MFG_METRICS = 'Mfg metrics: ' 
         
         # scan logs for results
         for log in logs:
-            if log.logMessage.startswith(track_results):
-                data = json.loads(log.logMessage)
-                print data
-                
-                result.append(data)
-                
+            if log.timestamp > (frame[1] + 5 * 60) * 1000:
+                print 'skipping log message, out of time frame'
                 break
-             
-    return result
+            
+            if log.logMessage.startswith(STR_RAIN_METRICS):
+                msg = log.logMessage[len(STR_RAIN_METRICS):]
+                data = json.loads(msg)
+                
+                if rain_metric.has_key(host) == False:
+                    rain_metric[host] = []
+                    
+                rain_metric[host].append(data)
+                
+            if log.logMessage.startswith(STR_DEALER_METRICS):
+                msg = log.logMessage[len(STR_DEALER_METRICS):]
+                data = json.loads(msg)
+                
+                if sonar_metrics.has_key(host) == False:
+                    sonar_metrics[host] = []
+                    
+                sonar_metrics[host].append(data)
+                
+            if log.logMessage.startswith(STR_MFG_METRICS):
+                msg = log.logMessage[len(STR_MFG_METRICS):]
+                data = json.loads(msg)
+                
+                if sonar_metrics.has_key(host) == False:
+                    sonar_metrics[host] = []
+                    
+                sonar_metrics[host].append(data) 
+                
+            
+    return (schedule_metrics, rain_metric, sonar_metrics)
 
-def __fetch_controller_data(connection, host, frame):
-    pass
 
+def __to_array(sonar_ts):
+    data = np.empty(len(sonar_ts), dtype=float)
+    
+    index = 0
+    for element in sonar_ts:
+        data[index] = element.value 
+        index += 1
+    
+    return data
 
 def __fetch_srv_data(sonar, hosts, sensor, frame):
+    results = []
     for host in hosts:
         query = ttypes.TimeSeriesQuery()
         query.hostname = host
@@ -103,9 +146,10 @@ def __fetch_srv_data(sonar, hosts, sensor, frame):
         query.sensor = sensor
         
         result = sonar.query(query)
-        return result
+        result = __to_array(result)
+        results.append(result)
         
-
+    return results
 
 def __to_timestamp(date):
     res = time.strptime(date, '%d.%m.%Y %H:%M')    
@@ -118,43 +162,35 @@ def main():
     
     try:
         # Configure experiment
-        start = __to_timestamp('24.08.2012 17:10')
-        stop = __to_timestamp('28.08.2012 8:00')
+        start = __to_timestamp('30.08.2012 12:13')
+        stop = __to_timestamp('31.08.2012 8:00')
         frame = (start, stop)
         
+        hosts = ('Andreas-PC',) 
         syncs = __fetch_start_benchamrk_syncs(sonar_client, 'Andreas-PC', frame)
         if syncs == None:
-            print 'No start marker found'
+            print 'error: no start marker found'
             return
-        
         frame = (syncs, frame[1])
-        rain = __fetch_rain_data(sonar_client, ('load0', 'load1'), frame)
-        if rain == None:
-            print 'No Rain stats found'
-            
-        for set in rain:
-            for element in set:
-                if element['description'] == 'Purchase: Vehicle Purchasing Rate (/sec)':
-                    print element['result']
-
         
-        # No controller active
-        # Load controller data
-        # control = __fetch_controller_data(sonar_client, ('Andreas-PC'), frame)
+        rain_schedule, rain_metrics, sonar_metrics = __fetch_rain_data(sonar_client, ['Andreas-PC'], frame)
         
-        # Load srv* data
-        srvs = [ 'srv%i' % i for i in range(0, 6)]
+        # Update frame
+        endRun = int(rain_schedule[hosts[0]]['endRun'] / 1000)
+        frame = (frame[0], endRun)
+        print frame
+              
+        # Load srv data
+        srvs = [ 'srv%i' % i for i in range(0, 1)]
         res_cpu = __fetch_srv_data(sonar_client, srvs, 'psutilcpu', frame)
-        print len(res_cpu)
+        phy_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.phymem', frame)
+        vir_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.virtmem', frame)
         
+        # Analytics
+        # todo
         
     except:
         traceback.print_exc(file=sys.stdout)
-     
-    
-
-
-
     
     __disconnect()
 

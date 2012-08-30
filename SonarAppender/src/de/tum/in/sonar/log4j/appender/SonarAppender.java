@@ -43,6 +43,9 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	// name of the sensor to be logged to
 	private String sensor = null;
 
+	// Is used to ensure the order
+	private long timestampCounter = 0;
+
 	// Sonar client
 	private TTransport transport = null;
 	private Client client = null;
@@ -66,7 +69,11 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		Identifier id = new Identifier();
 		// convert timestamp to unix timestamp
 		long timestamp = event.getTimeStamp() / 1000;
-		id.setTimestamp(timestamp);
+
+		// TODO: Ordering needs to be fixed
+		timestampCounter = (timestampCounter + 1) % 100;
+
+		id.setTimestamp(timestamp + timestampCounter);
 		id.setSensor(getSensor());
 		id.setHostname(getHostname());
 
@@ -228,8 +235,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 * @param e
 	 */
 	void handleError(final String failure, final Exception e) {
-		getErrorHandler().error(
-				"Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=[" + e.getMessage() + "]");
+		getErrorHandler().error("Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=[" + e.getMessage() + "]");
 	}
 
 	/**
