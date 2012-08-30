@@ -23,6 +23,8 @@
         	],
     	},
     	
+    	"sonarServer" : "monitor0",
+    	
     	"specj" : {
     	 	"### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
 		    "### scale and txrate is the same for SpecJ":"###",
