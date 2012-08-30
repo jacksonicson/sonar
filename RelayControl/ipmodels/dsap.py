@@ -113,6 +113,7 @@ def solve(_server_count, _server_capacity, _demand_raw, ):
     print server_counts
     
 
+# Test program
 if __name__ == '__main__':
     demand_duration = 24
     service_count = 12

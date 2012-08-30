@@ -99,6 +99,7 @@ def solve(_server_count, _server_capacity, _demand_raw):
     else:
         return (None, None)
 
+# Test program
 if __name__ == '__main__':
     demand_duration = 24
     service_count = 20

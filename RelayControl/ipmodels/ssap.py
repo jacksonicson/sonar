@@ -92,6 +92,7 @@ def solve(_server_count, _server_capacity, _demand):
     server_count = getServerCount()
     print server_count
 
+# Test program
 if __name__ == '__main__':
     solve(5, 100, [30, 2, 33, 44, 66])
 
