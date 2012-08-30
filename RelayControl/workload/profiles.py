@@ -248,6 +248,10 @@ selected = mix_2
 ##############################
 
 
+def byindex(index):
+    return selected[index]
+
+
 def __write_profile(connection, name, profile_ts, frequency):
     print 'storing profile with name %s' % (name)
     connection.create(name, frequency)
