@@ -17,7 +17,7 @@ def build_allocation(server_capacity=150, migrate=False):
     for s in xrange(service_count):
         mapping = domains.domain_profile_mapping[s]
         
-        service = services[mapping[1]].name + profiles.POSTFIX_NORM
+        service = services[mapping.profile].name + profiles.POSTFIX_NORM
         print 'loading service: %s' % (service)
         
         ts = connection.load(service)
@@ -44,7 +44,7 @@ def build_allocation(server_capacity=150, migrate=False):
         migrations = []
         for key in assignment.keys():
             mapping = domains.domain_profile_mapping[key]
-            migration = (mapping[0], assignment[key])
+            migration = (mapping.domain, assignment[key])
             migrations.append(migration)
         
         print migrations
