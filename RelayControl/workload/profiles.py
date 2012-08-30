@@ -22,6 +22,7 @@ Experiment specific settings
 EXPERIMENT_DURATION = 6 * 60 * 60
 MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
 PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60)
+MAX_USERS = 500
 
 '''
 Describes a single TS which is used to generate a profile
@@ -269,7 +270,10 @@ def __plot(profile, filename):
     ax.axis([0.0, len(profile), 0, 1])
     ax.plot(range(0, len(profile)), profile)
     
-    plt.savefig('C:/temp/convolution/' + filename) 
+    try:
+        plt.savefig('C:/temp/convolution/' + filename)
+    except:
+        pass 
 
 def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     pset = desc.profile_set
@@ -277,22 +281,24 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     # Store RAW profiles (-> plots)
     raw_profile = np.array(profile)
     if save:
-        __write_profile(connection, desc.name + '_profile', profile, frequency)
+        __write_profile(connection, desc.name + POSTFIX_RAW, profile, frequency)
     
     # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
-    maxval = set_max[pset.id]
+    maxval = float(set_max[pset.id])
     profile /= maxval
+    profile *= 100
     norm_profile = np.array(profile)
     if save:
-        __write_profile(connection, desc.name + '_profile_norm', profile, frequency)
+        __write_profile(connection, desc.name + POSTFIX_NORM, profile, frequency)
+    
     
     # Store USER profiles (-> feed into Rain)
     # Adapt frequency for the benchmark duration
-    profile *= 500
+    profile *= MAX_USERS
     frequency = frequency / (MIX_SELECTED_CYCLE_TIME / EXPERIMENT_DURATION)
     user_profile = np.array(profile)
     if save:
-        __write_profile(connection, desc.name + '_profile_user', profile, frequency)
+        __write_profile(connection, desc.name + POSTFIX_USER, profile, frequency)
     
     # Plotting    
     __plot(norm_profile, desc.name + '.png')
@@ -399,6 +405,8 @@ def _build(mix, save):
     print 'Build profiles %i' % (len(profile))
     _build_profile(profile, save)
     
+    
+# Builds the profiles and saves them in Times
 if __name__ == '__main__':
     _build(selected, save=True)
     # _build_all_profiles()
