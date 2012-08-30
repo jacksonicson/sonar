@@ -121,7 +121,8 @@ def resetAllocation(allocation):
 
 def main():
     print 'Loading test allocation...'
-    allocation = [ ('glassfish0', 0),
+    allocation = [ 
+               ('glassfish0', 0),
                ('glassfish1', 1),
                ('glassfish2', 2),
                ('glassfish3', 3),
@@ -133,8 +134,9 @@ def main():
                ('mysql3', 3),
                ('mysql4', 4),
                ('mysql5', 5), ]
-    
-    resetAllocation(allocation)
+
+    migrateAllocation(allocation)    
+    # resetAllocation(allocation)
     
     
 if __name__ == '__main__':
