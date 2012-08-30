@@ -163,7 +163,7 @@ def main():
     
     try:
         # Configure experiment
-        start = __to_timestamp('30.08.2012 14:32')
+        start = __to_timestamp('30.08.2012 15:40')
         stop = __to_timestamp('31.08.2012 8:00')
         frame = (start, stop)
         

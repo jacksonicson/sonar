@@ -240,7 +240,7 @@ def main():
     drones.main()
     
     # Start or stop system
-    start = False
+    start = True
     
     # Add hosts
     hosts.add_host('glassfish0', 'target')
