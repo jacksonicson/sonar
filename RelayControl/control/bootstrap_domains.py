@@ -4,7 +4,6 @@ from service import times_client
 from virtual import allocation as virt
 from workload import profiles
 import domains
-import matplotlib.pyplot as plt
 import numpy as np
 
 def normalize(data):
@@ -15,14 +14,14 @@ def normalize(data):
     return data
 
 
-def main():
+def build_allocation(migrate=False):
     print 'Connecting with Times'
     connection = times_client.connect()
     
     # Loading services to combine the dmain_service_mapping with    
-    services = profiles.mix0
+    services = profiles.selected
     service_count = len(domains.domain_profile_mapping)
-    service_matrix = np.zeros((service_count, profiles.mix0_profile_width), dtype=float)
+    service_matrix = np.zeros((service_count, profiles.PROFILE_WIDTH), dtype=float)
     
     for s in xrange(service_count):
         mapping = domains.domain_profile_mapping[s]
@@ -57,16 +56,16 @@ def main():
         
         print migrations
         
-        print 'Migrating...'
-        virt.migrateAllocation(migrations)
+        if migrate:
+            print 'Migrating...'
+            virt.migrateAllocation(migrations)
         
         
     else:
         print 'model infeasible'
     
 
-
 if __name__ == '__main__':
-    main()
+    build_allocation()
 
 

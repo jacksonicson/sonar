@@ -21,6 +21,7 @@ Experiment specific settings
 '''
 EXPERIMENT_DURATION = 6 * 60 * 60
 MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
+PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60)
 
 '''
 Describes a single TS which is used to generate a profile
