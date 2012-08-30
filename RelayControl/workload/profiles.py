@@ -240,6 +240,11 @@ mix_2 = [
          Desc('SIS_387_cpu', SET_SIS_D9),
          ]
 
+##############################
+## CONFIGURATION            ##
+selected = mix_2
+##############################
+
 
 def __write_profile(connection, name, profile_ts, frequency):
     print 'storing profile with name %s' % (name)
@@ -292,7 +297,7 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     __plot(norm_profile, desc.name + '.png')
 
 
-def _build_profile(mix, save=False):
+def _build_profile(mix, save):
     connection = times_client.connect()
 
     # Calculate profiles
@@ -309,7 +314,7 @@ def _build_profile(mix, save=False):
     for i in xrange(len(mix)):
         desc = mix[i]
         profile, frequency = profiles[i]
-        __store_profile(connection, desc, set_max, profile, frequency)
+        __store_profile(connection, desc, set_max, profile, frequency, save)
         
     times_client.close()
 
@@ -349,7 +354,7 @@ def _build_sample_day(mix, save):
     for i in xrange(len(mix)):
         desc = mix[i]
         profile, frequency = profiles[i]
-        __store_profile(connection, desc, set_max, profile, frequency)
+        __store_profile(connection, desc, set_max, profile, frequency, save)
         
     times_client.close()
  
@@ -394,6 +399,6 @@ def _build(mix, save):
     _build_profile(profile, save)
     
 if __name__ == '__main__':
-    _build(mix_0, save=False)
+    _build(selected, save=True)
     # _build_all_profiles()
 

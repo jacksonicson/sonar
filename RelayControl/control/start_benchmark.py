@@ -34,9 +34,6 @@ def finished(done, client_list):
 def ram_up_finished(ret, rain_clients, client_list):
     print 'end of startup sequence'
     logger.log(sonarlog.SYNC, 'end of startup sequence')
-    
-    # TODO Get duration and wait for duration
-    
     finished(ret, client_list)
 
 
@@ -181,8 +178,8 @@ def phase_start_glassfish_database(done, client_list):
         # Wait for all drones to finish and set phase
         dl = defer.DeferredList(dlist)
         
-        # dl.addCallback(phase_start_rain, client_list)
-        dl.addCallback(finished, client_list)
+        dl.addCallback(phase_start_rain, client_list)
+        # dl.addCallback(finished, client_list)
     except Exception, e:
         print e
         finished(None, client_list)
@@ -258,7 +255,7 @@ def main():
 #    hosts.add_host('mysql3', 'database')
 #    hosts.add_host('mysql4', 'database')
 #    hosts.add_host('mysql5', 'database')
-#    hosts.add_host('load0', 'load')
+    hosts.add_host('load0', 'load')
 #    hosts.add_host('load1', 'load')
     
     # Test rain start

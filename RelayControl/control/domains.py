@@ -21,19 +21,19 @@ domain_profile_mapping = [
 
 def profile_by_index(domain):
     entry = domain_profile_mapping[domain]
-    return profiles.selected[entry[1]][0]
+    return profiles.selected[entry[1]].name
     
     
 def profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry[0] == domain:
-            return profiles.selected[entry[1]][0]
+            return profiles.selected[entry[1]].name
     return None
             
 
 def print_mapping():
     for entry in domain_profile_mapping:
-        profile = profiles.selected[entry[1]][0]
+        profile = profiles.selected[entry[1]].name
         print '%s --- load --> %s' % (profile, entry[0])
         
 if __name__ == '__main__':
