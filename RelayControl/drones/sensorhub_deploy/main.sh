@@ -14,7 +14,12 @@ cp sensorhub.zip $SENSORHUB
 # Install psutil
 mkdir /mnt/share
 mount -t nfs monitor0:/mnt/arr0/share /mnt/share
-cd /mnt/share/packages/psutil-0.5.1/
+cd /mnt/share/packages/
+rm -f /tmp/psutil-0.5.1.tar.gz
+cp psutil-0.5.1.tar.gz /tmp
+cd /tmp
+tar -xzf psutil-0.5.1.tar.gz
+cd psutil-0.5.1
 python setup.py install
 cd $SENSORHUB
 umount /mnt/share
@@ -34,3 +39,5 @@ cp sensorhub.service /etc/systemd/system/
 systemctl enable sensorhub.service
 systemctl stop sensorhub.service
 systemctl start sensorhub.service
+
+exit 0
