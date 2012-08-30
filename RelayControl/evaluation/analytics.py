@@ -168,7 +168,7 @@ def main():
         frame = (start, stop)
         
         controller = 'Andreas-PC'
-        load = ['load0',]
+        load = ['load0', ]
         syncs = __fetch_start_benchamrk_syncs(sonar_client, controller, frame)
         if syncs == None:
             print 'error: no start marker found'
@@ -178,9 +178,11 @@ def main():
         rain_schedule, rain_metrics, sonar_metrics = __fetch_rain_data(sonar_client, load, frame)
         
         # Update frame
-        endRun = int(rain_schedule[load[0]]['endRun'] / 1000)
-        frame = (frame[0], endRun)
+        startRun = int(rain_schedule[load[0]]['startSteadyState'] / 1000)
+        endRun = int(rain_schedule[load[0]]['endSteadyState'] / 1000)
+        frame = (startRun, endRun)
         duration = frame[1] - frame[0]
+        print duration
               
         # Load srv data
         srvs = [ 'srv%i' % i for i in range(0, 6)]
@@ -193,7 +195,6 @@ def main():
         avg_cpu_load = []
         for i in xrange(len(srvs)):
             cpu = res_cpu[i]
-            print cpu
             avg = np.average(cpu)
             avg_cpu_load.append(avg)
             print 'average load on %s: %f' % (srvs[i], avg) 
