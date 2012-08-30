@@ -83,6 +83,7 @@ def __fetch_rain_data(sonar, hosts, frame):
                 data = json.loads(msg)
                 schedule_metrics[host] = data
                 frame = (frame[0], int(data['endRun'] / 1000))
+                break
         
         
         STR_RAIN_METRICS = 'Rain metrics: '
@@ -123,7 +124,7 @@ def __fetch_rain_data(sonar, hosts, frame):
                 sonar_metrics[host].append(data) 
                 
             
-    return (schedule_metrics, rain_metric, sonar_metrics)
+    return schedule_metrics, rain_metric, sonar_metrics
 
 
 def __to_array(sonar_ts):
@@ -162,32 +163,49 @@ def main():
     
     try:
         # Configure experiment
-        start = __to_timestamp('30.08.2012 12:13')
+        start = __to_timestamp('30.08.2012 14:32')
         stop = __to_timestamp('31.08.2012 8:00')
         frame = (start, stop)
         
-        hosts = ('Andreas-PC',) 
-        syncs = __fetch_start_benchamrk_syncs(sonar_client, 'Andreas-PC', frame)
+        controller = 'Andreas-PC'
+        load = ['load0',]
+        syncs = __fetch_start_benchamrk_syncs(sonar_client, controller, frame)
         if syncs == None:
             print 'error: no start marker found'
             return
         frame = (syncs, frame[1])
         
-        rain_schedule, rain_metrics, sonar_metrics = __fetch_rain_data(sonar_client, ['Andreas-PC'], frame)
+        rain_schedule, rain_metrics, sonar_metrics = __fetch_rain_data(sonar_client, load, frame)
         
         # Update frame
-        endRun = int(rain_schedule[hosts[0]]['endRun'] / 1000)
+        endRun = int(rain_schedule[load[0]]['endRun'] / 1000)
         frame = (frame[0], endRun)
-        print frame
+        duration = frame[1] - frame[0]
               
         # Load srv data
-        srvs = [ 'srv%i' % i for i in range(0, 1)]
+        srvs = [ 'srv%i' % i for i in range(0, 6)]
         res_cpu = __fetch_srv_data(sonar_client, srvs, 'psutilcpu', frame)
         phy_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.phymem', frame)
         vir_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.virtmem', frame)
         
         # Analytics
-        # todo
+        # Server ours for each server
+        avg_cpu_load = []
+        for i in xrange(len(srvs)):
+            cpu = res_cpu[i]
+            print cpu
+            avg = np.average(cpu)
+            avg_cpu_load.append(avg)
+            print 'average load on %s: %f' % (srvs[i], avg) 
+        
+        # Prints
+        for rain_metric in rain_metrics.keys():
+            rain_metric_ist = rain_metrics[rain_metric]
+            for rain_metric in rain_metric_ist:
+                print 'track: %s' % (rain_metric['track'])
+                print '   average_operation_response_time(s): %s' % (rain_metric['average_operation_response_time(s)'])
+                print '   effective_load(req/sec): %s' % (rain_metric['effective_load(req/sec)'])
+                print '   effective_load(ops/sec): %s' % (rain_metric['effective_load(ops/sec)'])
         
     except:
         traceback.print_exc(file=sys.stdout)

@@ -154,6 +154,8 @@ function addQueryHandler(event, noLabel) {
     // Serialize the form
     var serializedForm = $('#queryForm').serialize();
 
+    doAlert("Loading...");
+
     // Ajax call to get the time series
     $.ajax({
         type:"POST",
@@ -162,6 +164,8 @@ function addQueryHandler(event, noLabel) {
         data:serializedForm,
 
         success:function (list) {
+            stopAlert();
+
             // Ensure that the list contains at least one element
             if (list.length == 0)
                 list.push([0, 0])

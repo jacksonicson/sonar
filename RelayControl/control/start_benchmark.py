@@ -34,13 +34,13 @@ def finished(done, client_list):
 def ram_up_finished(rain_clients, client_list):
     print 'end of startup sequence'
     logger.log(sonarlog.SYNC, 'end of startup sequence')
-    finished(ret, client_list)
+    finished(None, client_list)
 
 
 def ramp_up(ret, rain_clients, client_list):
     print 'sleeping during ramp-up for %i seconds' % (ret)
     logger.info('sleeping during ramp-up for %i seconds' % (ret))
-    reactor.callLater(ram_up_finished, rain_clients, client_list)
+    reactor.callLater(ret, ram_up_finished, rain_clients, client_list)
     
 
 def rain_started(ret, rain_clients, client_list):
@@ -240,7 +240,7 @@ def main():
     drones.main()
     
     # Start or stop system
-    start = True
+    start = False
     
     # Add hosts
     hosts.add_host('glassfish0', 'target')
