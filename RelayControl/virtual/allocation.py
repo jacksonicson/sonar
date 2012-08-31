@@ -108,7 +108,7 @@ def resetAllocation(allocation):
                 
             # Launch domain
             print 'Launching domain...'
-            # domain.create()
+            domain.create()
             
             
     except Exception, e:
@@ -120,20 +120,30 @@ def resetAllocation(allocation):
         conn.close()
 
 def main():
-    print 'Loading test allocation...'
-    allocation = [ 
-               ('glassfish0', 0),
-               ('glassfish1', 1),
-               ('glassfish2', 2),
-               ('glassfish3', 3),
-               ('glassfish4', 4),
-               ('glassfish5', 5),
-               ('mysql0', 0),
-               ('mysql1', 1),
-               ('mysql2', 2),
-               ('mysql3', 3),
-               ('mysql4', 4),
-               ('mysql5', 5), ]
+    print 'Distributing domains over all servers ...'
+    from control.domains import domain_profile_mapping as mapping
+    
+    allocation = []
+    node_index = 0
+    for maps in mapping:
+        allocation.append((maps.domain, node_index))
+        node_index = (node_index + 1) % len(HOSTS)
+    
+#    allocation = [ 
+#               ('glassfish0', 0),
+#               ('glassfish1', 1),
+#               ('glassfish2', 2),
+#               ('glassfish3', 3),
+#               ('glassfish4', 4),
+#               ('glassfish5', 5),
+#               ('mysql0', 0),
+#               ('mysql1', 1),
+#               ('mysql2', 2),
+#               ('mysql3', 3),
+#               ('mysql4', 4),
+#               ('mysql5', 5), ]
+
+    print allocation
 
     # migrateAllocation(allocation)    
     resetAllocation(allocation)
