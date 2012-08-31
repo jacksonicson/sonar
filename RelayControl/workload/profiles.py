@@ -244,7 +244,7 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected = mix_2
+selected = mix_1
 ##############################
 
 
@@ -293,7 +293,7 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     norm_profile = np.array(profile)
     norm_profile *= 100 # Times does not support float values
     if save:
-        __write_profile(connection, desc.name + POSTFIX_NORM, profile, frequency)
+        __write_profile(connection, desc.name + POSTFIX_NORM, norm_profile, frequency)
     
     
     # Store USER profiles (-> feed into Rain)
