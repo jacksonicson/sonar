@@ -1,8 +1,8 @@
 {
     "timing": {
-        "rampUp": 60,
-        "duration": 120,
-        "rampDown": 30,
+        "rampUp": 600,
+        "duration": 21600,
+        "rampDown": 600,
     },
     
     "aggregateStats": true,
@@ -48,7 +48,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "O2_business_UPDATEACCOUNT_profile_user",
+		        	"profile" : "SIS_397_cpu_profile_user",
 		        }
     		},
     		{
@@ -61,7 +61,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "O2_business_UPDATEACCOUNT_profile_user",
+		        	"profile" : "SIS_397_cpu_profile_user",
 		        }
 	    	},
 	    	

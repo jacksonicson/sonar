@@ -11,6 +11,12 @@ import logging
 import logic.controller as controller
 import math
 
+######################
+## CONFIGURATION    ##
+######################
+INIT_DB = True
+######################
+
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
 
@@ -177,10 +183,11 @@ def phase_start_glassfish_database(done, client_list):
             dlist.append(d)
         
         # Fill database in parallel
-#        for target in hosts.get_hosts('database'):
-#            print '   * initializing database on target %s' % (target)
-#            d = base.launch(client_list, target, 'spec_dbload')
-#            dlist.append(d)
+        if INIT_DB:
+            for target in hosts.get_hosts('database'):
+                print '   * initializing database on target %s' % (target)
+                d = base.launch(client_list, target, 'spec_dbload')
+                dlist.append(d)
         
         # Wait for all drones to finish and set phase
         dl = defer.DeferredList(dlist)
