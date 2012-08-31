@@ -108,7 +108,7 @@ def resetAllocation(allocation):
                 
             # Launch domain
             print 'Launching domain...'
-            domain.create()
+            # domain.create()
             
             
     except Exception, e:
@@ -135,8 +135,8 @@ def main():
                ('mysql4', 4),
                ('mysql5', 5), ]
 
-    migrateAllocation(allocation)    
-    # resetAllocation(allocation)
+    # migrateAllocation(allocation)    
+    resetAllocation(allocation)
     
     
 if __name__ == '__main__':

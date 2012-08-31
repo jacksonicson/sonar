@@ -4,10 +4,10 @@ sleep 1
 
 # Release dhclient
 dhclient -r
-ifdown eth0
+# ifdown eth0
 
 # Update hostname
-sed -i "s/vmt/mysql5/g" /etc/sysconfig/network
+sed -i "s/vmt/service1/g" /etc/sysconfig/network
 
 # Change scripts
 cp ifcfg-eth0 /etc/sysconfig/network-scripts/

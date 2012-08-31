@@ -4,7 +4,7 @@ sleep 1
 
 # Release dhclient
 dhclient -r
-ifdown eth0
+# ifdown eth0
 
 # Update hostname
 sed -i "s/vmt/$hostname/g" /etc/sysconfig/network

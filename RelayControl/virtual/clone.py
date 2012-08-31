@@ -44,8 +44,6 @@ def done(ret, vm):
         data = ''.join(data)
         config.close()
         
-        # print data
-    
         templ = Template(data)
         d = dict(hostname=vm)
         templ = templ.substitute(d)
@@ -53,8 +51,6 @@ def done(ret, vm):
         config = open('drones/setup_vm/main.sh', 'w')
         config.writelines(templ)
         config.close()
-    
-        print templ
     except Exception, e:
         print e
         reactor.stop()
@@ -66,11 +62,14 @@ def done(ret, vm):
     drone = drones.load_drone('setup_vm')
     
     # Do the setup process
+    print 'Waiting for drone...'
     ret.launchNoWait(drone.data, drone.name).addCallback(update_done, ret)
         
 
 def error(err, vm):
     print 'Warn %s' % (err)
+    import time
+    time.sleep(5)
     setup(vm)
     
 
@@ -145,24 +144,37 @@ def clone(source, target):
    
    
 count = 0
-clone_names = [('playground', 'glassfish0'),
-               ('playground', 'glassfish1'),
-               ('playground', 'glassfish2'),
-               ('playground', 'glassfish3'),
-               ('playground', 'glassfish4'),
-               ('playground', 'glassfish5'),
-               ('playdb', 'mysql0'),
-               ('playdb', 'mysql1'),
-               ('playdb', 'mysql2'),
-               ('playdb', 'mysql3'),
-               ('playdb', 'mysql4'),
-               ('playdb', 'mysql5'), ]
+#clone_names = [('playground', 'glassfish0'),
+#               ('playground', 'glassfish1'),
+#               ('playground', 'glassfish2'),
+#               ('playground', 'glassfish3'),
+#               ('playground', 'glassfish4'),
+#               ('playground', 'glassfish5'),
+#               ('playdb', 'mysql0'),
+#               ('playdb', 'mysql1'),
+#               ('playdb', 'mysql2'),
+#               ('playdb', 'mysql3'),
+#               ('playdb', 'mysql4'),
+#               ('playdb', 'mysql5'), ]
+
+clone_names = [
+               ('playglassdb', 'service0'),
+               ('playglassdb', 'service1'),
+               ]
 
 def next_vm():   
     global count
     
     if count >= len(clone_names):
         print 'exiting...'
+        
+        print 'Domains cloned'
+        print ''
+        print 'Following configuration steps need to be executed:'
+        print '   * UPDATE: relay service'
+        print '   * UPDATE: sensorhub service'
+        print ''
+        
         conn.close()
         reactor.stop()  
         return
@@ -189,3 +201,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+#    reactor.callLater(0, setup, 'service0')
+#    reactor.run()

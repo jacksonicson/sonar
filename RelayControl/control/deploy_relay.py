@@ -52,18 +52,21 @@ def main():
 #    hosts.add_host('storage1', 'deploy')
     
     # Add VMs
-    hosts.add_host('glassfish0', 'deploy')
-    hosts.add_host('glassfish1', 'deploy')
-    hosts.add_host('glassfish2', 'deploy')
-    hosts.add_host('glassfish3', 'deploy')
-    hosts.add_host('glassfish4', 'deploy')
-    hosts.add_host('glassfish5', 'deploy')
-    hosts.add_host('mysql0', 'deploy')
-    hosts.add_host('mysql1', 'deploy')
-    hosts.add_host('mysql2', 'deploy')
-    hosts.add_host('mysql3', 'deploy')
-    hosts.add_host('mysql4', 'deploy')
-    hosts.add_host('mysql5', 'deploy')
+#    hosts.add_host('glassfish0', 'deploy')
+#    hosts.add_host('glassfish1', 'deploy')
+#    hosts.add_host('glassfish2', 'deploy')
+#    hosts.add_host('glassfish3', 'deploy')
+#    hosts.add_host('glassfish4', 'deploy')
+#    hosts.add_host('glassfish5', 'deploy')
+#    hosts.add_host('mysql0', 'deploy')
+#    hosts.add_host('mysql1', 'deploy')
+#    hosts.add_host('mysql2', 'deploy')
+#    hosts.add_host('mysql3', 'deploy')
+#    hosts.add_host('mysql4', 'deploy')
+#    hosts.add_host('mysql5', 'deploy')
+
+    # Special hosts (VM templates)
+#    hosts.add_host('192.168.110.246', 'deploy')
     
     
     # Connect with all drone relays
