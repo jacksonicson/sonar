@@ -11,7 +11,7 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
-
+import time
 
 ###############################################
 ### CONFIG                                   ##
@@ -24,12 +24,27 @@ All Domains (VMs) are setup on the srv0 system! This is the initialization syste
 to another system it's configuration has to be created on the target system. 
 '''
 
-
+killed_vms = []
 conn = None
 
-def update_done(ret, relay_conn):
+def update_done(ret, vm, relay_conn):
     print 'Update executed'
     
+    # Sometimes VMs stall while shutting down
+    # Wait until VM is dead for max. 60 seconds then kill it
+    new_domain = conn.lookupByName(vm)
+    state = 0
+    wait_time = 0
+    while state != 5 and wait_time < 60:
+        print state
+        time.sleep(5)
+        wait_time += 5
+        state = new_domain.state(0)[0]
+        
+    if wait_time >= 60:
+        print 'Killing domain %s' % (vm)
+        new_domain.destroy()
+        killed_vms.appen(vm)
     
     # Schedule next VM clone
     reactor.callLater(0, next_vm)
@@ -63,12 +78,11 @@ def done(ret, vm):
     
     # Do the setup process
     print 'Waiting for drone...'
-    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, ret)
+    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, ret)
         
 
 def error(err, vm):
-    print 'Warn %s' % (err)
-    import time
+    print 'Connection failed, trying again...'
     time.sleep(5)
     setup(vm)
     
@@ -157,7 +171,7 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [('playglassdb', 'target%i' % i) for i in range(3,19)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(13, 18)]
 
 def next_vm():   
     global count
