@@ -158,8 +158,8 @@ count = 0
 #               ('playdb', 'mysql5'), ]
 
 clone_names = [
-               ('playglassdb', 'service0'),
-               ('playglassdb', 'service1'),
+               ('playglassdb', 'target0'),
+               ('playglassdb', 'target1'),
                ]
 
 def next_vm():   
