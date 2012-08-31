@@ -196,7 +196,8 @@ def phase_configure_glassfish(client_list):
         for target in hosts.get_hosts('target'):
             print '   * configuring glassfish on target %s' % (target)
             
-            mysql_name = target.replace('glassfish', 'mysql')
+            # mysql_name = target.replace('glassfish', 'mysql')
+            mysql_name = 'localhost'
             print '     using mysql name: %s' % (mysql_name)
             drones.prepare_drone('glassfish_configure', 'domain.xml', mysql_server=mysql_name)
             drones.create_drone('glassfish_configure')
@@ -243,13 +244,16 @@ def main():
     start = True
     
     # Add hosts
-    hosts.add_host('glassfish0', 'target')
+    hosts.add_host('service0', 'target')
+    hosts.add_host('service0', 'database')
+    
+#    hosts.add_host('glassfish0', 'target')
 #    hosts.add_host('glassfish1', 'target')
 #    hosts.add_host('glassfish2', 'target')
 #    hosts.add_host('glassfish3', 'target')
 #    hosts.add_host('glassfish4', 'target')
 #    hosts.add_host('glassfish5', 'target')
-    hosts.add_host('mysql0', 'database')
+#    hosts.add_host('mysql0', 'database')
 #    hosts.add_host('mysql1', 'database')
 #    hosts.add_host('mysql2', 'database')
 #    hosts.add_host('mysql3', 'database')

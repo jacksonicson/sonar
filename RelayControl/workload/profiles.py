@@ -290,8 +290,8 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
     maxval = float(set_max[pset.id])
     profile /= maxval
-    profile *= 100
     norm_profile = np.array(profile)
+    norm_profile *= 100 # Times does not support float values
     if save:
         __write_profile(connection, desc.name + POSTFIX_NORM, profile, frequency)
     

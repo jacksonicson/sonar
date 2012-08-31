@@ -11,6 +11,7 @@ class Map:
         self.rain_target = rain_target
 
 domain_profile_mapping = [
+    Map('service0', 4, True),
     Map('glassfish0', 4, True),
     Map('glassfish1', 10, True),
     Map('glassfish2', 2, True),
@@ -24,6 +25,13 @@ domain_profile_mapping = [
     Map('mysql4', 4),
     Map('mysql5', 5),
     ]
+
+
+def profile_by_name(domain):
+    for entry in domain_profile_mapping:
+        if entry.domain == domain:
+            return profiles.selected[entry.profile].name
+    return None
 
 
 def print_mapping():
