@@ -12,15 +12,12 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
+import nodes
 
 
 ###############################################
 ### CONFIG                                   ##
 RELAY_PORT = 7900
-'''
-List of all hosts/nodes in the infrastructure
-'''
-HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
 ###############################################
 
 def handler(ctxt, err):
@@ -42,7 +39,7 @@ def migrateAllocation(allocation):
     conn_strs = []
     try:
         # connect 
-        for host in HOSTS: 
+        for host in nodes.HOSTS: 
             conn_str = "qemu+ssh://root@%s/system" % (host)
             print 'connecting with %s' % (conn_str)
             conn = libvirt.open(conn_str)
@@ -76,7 +73,7 @@ def resetAllocation(allocation):
     connections = []
     
     # shutdown all VMs 
-    for host in HOSTS: 
+    for host in nodes.HOSTS: 
         conn_str = "qemu+ssh://root@%s/system" % (host)
         print 'connecting with %s' % (conn_str)
         conn = libvirt.open(conn_str)
@@ -127,7 +124,7 @@ def main():
     node_index = 0
     for maps in mapping:
         allocation.append((maps.domain, node_index))
-        node_index = (node_index + 1) % len(HOSTS)
+        node_index = (node_index + 1) % len(nodes.HOSTS)
     
 #    allocation = [ 
 #               ('glassfish0', 0),

@@ -1,5 +1,7 @@
-import drones, hosts, base
 from twisted.internet import defer, reactor
+import drones
+import hosts
+import base
 
 def finished(done, client_list):
     print "execution successful: %s" % (done)
@@ -24,7 +26,10 @@ def main():
     # Create drones
     drones.main()
     
-    # Add hosts
+    ######################################################
+    ## DOMAINS CONFIGURATION                            ##
+    ######################################################
+    
 #    hosts.add_host('srv0', 'deploy')
 #    hosts.add_host('srv1', 'deploy')
 #    hosts.add_host('srv2', 'deploy')
@@ -55,6 +60,8 @@ def main():
 #    hosts.add_host('mysql4', 'deploy')
 #    hosts.add_host('mysql5', 'deploy')
     hosts.add_host('target0', 'deploy')
+    
+    ######################################################
     
     # Connect
     hosts_map = hosts.get_hosts_list()
