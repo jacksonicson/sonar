@@ -17,6 +17,9 @@ COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
+
+START = '31.08.2012 16:45'
+END = '31.08.2012 17:30'
 ##########################
 
 def __disconnect():
@@ -57,7 +60,7 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     for log in logs:
         if log.logLevel == 50010:
             if log.logMessage == 'start driving load':
-                print log
+                print 'found: start driving load'
                 return log.timestamp
             
     return None
@@ -163,8 +166,8 @@ def main():
     
     try:
         # Configure experiment
-        start = __to_timestamp('30.08.2012 15:40')
-        stop = __to_timestamp('31.08.2012 8:00')
+        start = __to_timestamp(START)
+        stop = __to_timestamp(END)
         frame = (start, stop)
         
         controller = 'Andreas-PC'
@@ -182,7 +185,7 @@ def main():
         endRun = int(rain_schedule[load[0]]['endSteadyState'] / 1000)
         frame = (startRun, endRun)
         duration = frame[1] - frame[0]
-        print duration
+        print 'benchmark duration %ss' % duration
               
         # Load srv data
         srvs = [ 'srv%i' % i for i in range(0, 6)]
@@ -201,12 +204,15 @@ def main():
         
         # Prints
         for rain_metric in rain_metrics.keys():
+            print '---'
+            print 'load generator: %s' % (rain_metric)
             rain_metric_ist = rain_metrics[rain_metric]
             for rain_metric in rain_metric_ist:
                 print 'track: %s' % (rain_metric['track'])
                 print '   average_operation_response_time(s): %s' % (rain_metric['average_operation_response_time(s)'])
                 print '   effective_load(req/sec): %s' % (rain_metric['effective_load(req/sec)'])
                 print '   effective_load(ops/sec): %s' % (rain_metric['effective_load(ops/sec)'])
+        
         
     except:
         traceback.print_exc(file=sys.stdout)
