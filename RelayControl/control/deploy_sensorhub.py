@@ -54,6 +54,7 @@ def main():
 #    hosts.add_host('mysql3', 'deploy')
 #    hosts.add_host('mysql4', 'deploy')
 #    hosts.add_host('mysql5', 'deploy')
+    hosts.add_host('target0', 'deploy')
     
     # Connect
     hosts_map = hosts.get_hosts_list()

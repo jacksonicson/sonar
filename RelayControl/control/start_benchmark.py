@@ -51,6 +51,12 @@ def rain_started(ret, rain_clients, client_list):
     d = rain_clients[0][1].getRampUpTime()
     d.addCallback(ramp_up, rain_clients, client_list) 
 
+def rain_connection_failed(rain_clients, client_list):
+    print 'Connection with Rain failed'
+    print 'Known reasons: '
+    print '   * System was started the first time - Glassfish&SpecJ did not find the database initialized'
+    print '   * Rain crashed - see rain.log on the load servers'
+    reactor.callLater(5, rain_clients, client_list)
 
 def rain_connected(rain_clients, client_list):
     print 'releasing load...'
@@ -66,6 +72,7 @@ def rain_connected(rain_clients, client_list):
     
     d = defer.DeferredList(dlist)
     d.addCallback(rain_started, rain_clients, client_list)
+    d.addErrback(rain_connection_failed, rain_clients, client_list)
     
 
 def trigger_rain_benchmark(ret, client_list):
@@ -244,8 +251,8 @@ def main():
     start = True
     
     # Add hosts
-    hosts.add_host('service0', 'target')
-    hosts.add_host('service0', 'database')
+    hosts.add_host('target0', 'target')
+    hosts.add_host('target0', 'database')
     
 #    hosts.add_host('glassfish0', 'target')
 #    hosts.add_host('glassfish1', 'target')

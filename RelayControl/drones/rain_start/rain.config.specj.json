@@ -42,7 +42,7 @@
     			type:"dealer",
     			
 		        "target": {
-		          "hostname": "service0",
+		          "hostname": "target0",
 		          "port": 8080
 		        },
 		        "loadScheduleCreatorParameters" : {
@@ -55,7 +55,7 @@
 	    		type:"mfg",
 	    		
 		        "target": {
-		          "hostname": "service0",
+		          "hostname": "target0",
 		          "port": 8080,
 		        },
 		        "loadScheduleCreatorParameters" : {
