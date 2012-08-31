@@ -1,6 +1,7 @@
 from ipmodels import ssapv
 from service import times_client
 from virtual import allocation as virt
+from virtual import nodes
 from workload import profiles
 import domains
 import numpy as np
@@ -34,7 +35,7 @@ def build_allocation(server_capacity=150, migrate=False):
     times_client.close()
     
     print 'Solving model...'
-    server, assignment = ssapv.solve(len(virt.HOSTS), server_capacity, service_matrix)
+    server, assignment = ssapv.solve(len(nodes.HOSTS), server_capacity, service_matrix)
     if assignment != None:
         
         print 'Required servers: %i' % (server)

@@ -126,20 +126,6 @@ def main():
         allocation.append((maps.domain, node_index))
         node_index = (node_index + 1) % len(nodes.HOSTS)
     
-#    allocation = [ 
-#               ('glassfish0', 0),
-#               ('glassfish1', 1),
-#               ('glassfish2', 2),
-#               ('glassfish3', 3),
-#               ('glassfish4', 4),
-#               ('glassfish5', 5),
-#               ('mysql0', 0),
-#               ('mysql1', 1),
-#               ('mysql2', 2),
-#               ('mysql3', 3),
-#               ('mysql4', 4),
-#               ('mysql5', 5), ]
-
     print allocation
 
     # migrateAllocation(allocation)    
