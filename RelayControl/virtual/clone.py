@@ -15,7 +15,7 @@ import libvirt
 
 ###############################################
 ### CONFIG                                   ##
-DEFAULT_SETUP_IP = '192.168.110.246'
+DEFAULT_SETUP_IP = 'vmt'
 RELAY_PORT = 7900
 ###############################################
 
@@ -157,10 +157,7 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [
-               ('playglassdb', 'target0'),
-               ('playglassdb', 'target1'),
-               ]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(3,19)]
 
 def next_vm():   
     global count
@@ -191,7 +188,10 @@ def main():
     # Create drones
     drones.main()
     
-    print 'connecting'
+    print 'Cloning:'
+    print clone_names
+    
+    print 'connecting...'
     global conn
     conn = libvirt.open("qemu+ssh://root@srv0/system")
 
