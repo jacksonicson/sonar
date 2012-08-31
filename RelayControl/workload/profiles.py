@@ -22,7 +22,7 @@ Experiment specific settings
 EXPERIMENT_DURATION = 6 * 60 * 60
 MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
 PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60)
-MAX_USERS = 500
+MAX_USERS = 300
 
 '''
 Describes a single TS which is used to generate a profile
@@ -267,11 +267,11 @@ def __write_profile(connection, name, profile_ts, frequency):
 
     connection.append(name, elements)
 
-def __plot(profile, filename):
+def __plot(profile, filename, max=1):
     fig = plt.figure()
     
     ax = fig.add_subplot(111)
-    ax.axis([0.0, len(profile), 0, 1])
+    ax.axis([0.0, len(profile), 0, max])
     ax.plot(range(0, len(profile)), profile)
     
     try:
@@ -305,7 +305,7 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
         __write_profile(connection, desc.name + POSTFIX_USER, profile, frequency)
     
     # Plotting    
-    __plot(norm_profile, desc.name + '.png')
+    __plot(user_profile, desc.name + '.png', MAX_USERS)
 
 
 def _build_profile(mix, save):
