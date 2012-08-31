@@ -30,6 +30,7 @@ def build_allocation(server_capacity=150, migrate=False):
             
         data = data[0:profiles.PROFILE_WIDTH]
         service_matrix[s] = data
+        # print data
         
     
     times_client.close()
@@ -59,6 +60,6 @@ def build_allocation(server_capacity=150, migrate=False):
     
 
 if __name__ == '__main__':
-    build_allocation()
+    build_allocation(300, False)
 
 
