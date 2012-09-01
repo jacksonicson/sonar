@@ -19,11 +19,12 @@ POSTFIX_USER = '_profile_user'
 '''
 Experiment specific settings
 '''
-EXPERIMENT_DURATION = 6 * 60 * 60
-MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
-PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60)
-# MAX_USERS = 250 # produces almost 100% load
-MAX_USERS = 225
+EXPERIMENT_DURATION = 6 * 60 * 60 # 6 hours
+MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60 # 24 hours cycle
+PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60) # For each 5 minutes there is one data point in the profile
+MAX_USERS = 200 # Maximum number of users
+RAMP_UP = 10 * 60
+RAMP_DOWN = 10 * 60
 
 '''
 Describes a single TS which is used to generate a profile
@@ -299,11 +300,13 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     
     # Store USER profiles (-> feed into Rain)
     # Adapt frequency for the benchmark duration
+    # Add padding for ramp up and ramp down
     profile *= MAX_USERS
     frequency = frequency / (MIX_SELECTED_CYCLE_TIME / EXPERIMENT_DURATION)
     user_profile = np.array(profile)
+    user_profile, frequency = _padprofile((user_profile, frequency))
     if save:
-        __write_profile(connection, desc.name + POSTFIX_USER, profile, frequency)
+        __write_profile(connection, desc.name + POSTFIX_USER, user_profile, frequency)
     
     # Plotting    
     __plot(user_profile, desc.name + '.png', MAX_USERS)
@@ -348,6 +351,24 @@ def _get_set_max(mix, profiles):
             set_max[pset.id] = min(pset.cap, set_max[pset.id])
             
     return set_max
+
+def _padprofile(profile):
+    elements = RAMP_UP / profile[1]
+    print 'padding ramp up: %i' % (elements)
+    
+    ramup_pad = np.zeros(elements, np.float)
+    mean = np.mean(profile[0])
+    ramup_pad[range(elements)] = mean
+    
+    elements = RAMP_DOWN / profile[1]
+    print 'padding ramp down: %i' % (elements)
+    rampdown_pad = np.zeros(elements, np.float)
+    
+    curve = np.concatenate((ramup_pad, profile[0], rampdown_pad))
+    profile = (curve, profile[1])
+    
+    # print profile
+    return profile 
 
 def _build_sample_day(mix, save):
     connection = times_client.connect()
