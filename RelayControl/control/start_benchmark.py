@@ -1,5 +1,5 @@
 from control import drones, hosts, base
-from logs import sonarlog, sonarlog
+from logs import sonarlog
 from rain import RainService
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTwisted
@@ -7,14 +7,13 @@ from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 from workload import profiles
 import domains
-import logging
-import logic.controller as controller
 import math
 
 ######################
 ## CONFIGURATION    ##
 ######################
 INIT_DB = True
+start = True
 ######################
 
 # Setup logging
@@ -54,31 +53,41 @@ def rain_started(ret, rain_clients, client_list):
     logger.log(sonarlog.SYNC, 'start driving load')
     logger.info('querying ramp-up duration')
     
-    d = rain_clients[0][1].getRampUpTime()
+    d = rain_clients[0].getRampUpTime()
     d.addCallback(ramp_up, rain_clients, client_list) 
 
-def rain_connection_failed(rain_clients, client_list):
+def rain_connection_failed(ret, client_list):
+    print ret
     print 'Connection with Rain failed'
     print 'Known reasons: '
+    print '   * Rain startup process took long which caused Twisted to time out'
     print '   * System was started the first time - Glassfish&SpecJ did not find the database initialized'
     print '   * Rain crashed - see rain.log on the load servers'
-    reactor.callLater(5, rain_clients, client_list)
+    reactor.callLater(10, trigger_rain_benchmark, None, client_list)
 
 def rain_connected(rain_clients, client_list):
     print 'releasing load...'
     logger.info('releasing load on rain drivers')
+
+    # Extract clients
+    _rain_clients = []
+    for client in rain_clients:
+        _rain_clients.append(client[1].client)
+        if client[0] == False:
+            print 'Warn: Could not connect with all Rain servers'            
+    rain_clients = _rain_clients
     
+    # Release load
     dlist = []
     for client in rain_clients:
-        print '   * releasing %s' % (client[1])
+        print '   * releasing %s' % (client)
         logger.debug('releasing')
         
-        d = client[1].startBenchmark(long(base.millis()))
+        d = client.startBenchmark(long(base.millis()))
         dlist.append(d)
     
     d = defer.DeferredList(dlist)
     d.addCallback(rain_started, rain_clients, client_list)
-    d.addErrback(rain_connection_failed, rain_clients, client_list)
     
 
 def trigger_rain_benchmark(ret, client_list):
@@ -93,12 +102,11 @@ def trigger_rain_benchmark(ret, client_list):
                               RainService.Client,
                               TBinaryProtocol.TBinaryProtocolFactory(),
                               ).connectTCP(driver, 7852)
-        creator.addCallback(lambda conn: conn.client)
         dlist.append(creator)
         
     d = defer.DeferredList(dlist)                  
     d.addCallback(rain_connected, client_list)
-
+    d.addErrback(rain_connection_failed, client_list)
 
 def phase_start_rain(done, client_list):
     print 'starting rain drivers...'
@@ -254,12 +262,17 @@ def main():
     # Create drones
     drones.main()
     
-    # Start or stop system
-    start = True
-    
     # Add hosts
     hosts.add_host('target0', 'target')
     hosts.add_host('target0', 'database')
+    
+    hosts.add_host('target1', 'target')
+    hosts.add_host('target1', 'database')
+    
+    hosts.add_host('target2', 'target')
+    hosts.add_host('target2', 'database')
+    
+   
     
 #    hosts.add_host('glassfish0', 'target')
 #    hosts.add_host('glassfish1', 'target')

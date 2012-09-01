@@ -48,7 +48,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_397_cpu_profile_user",
+		        	"profile" : "O2_business_ADDORDER_profile_user",
 		        }
     		},
     		{
@@ -61,7 +61,61 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_397_cpu_profile_user",
+		        	"profile" : "O2_business_ADDORDER_profile_user",
+		        }
+	    	},
+	    	
+	    	{
+    			type:"dealer",
+    			
+		        "target": {
+		          "hostname": "target1",
+		          "port": 8080
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "O2_business_SENDMSG_profile_user",
+		        }
+    		},
+    		{
+	    		type:"mfg",
+	    		
+		        "target": {
+		          "hostname": "target1",
+		          "port": 8080,
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "O2_business_SENDMSG_profile_user",
+		        }
+	    	},
+	    	
+	    	{
+    			type:"dealer",
+    			
+		        "target": {
+		          "hostname": "target2",
+		          "port": 8080
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "O2_business_UPDATEACCOUNT_profile_user",
+		        }
+    		},
+    		{
+	    		type:"mfg",
+	    		
+		        "target": {
+		          "hostname": "target2",
+		          "port": 8080,
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "O2_business_UPDATEACCOUNT_profile_user",
 		        }
 	    	},
 	    	

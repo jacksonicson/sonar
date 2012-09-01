@@ -59,7 +59,10 @@ def main():
 #    hosts.add_host('mysql3', 'deploy')
 #    hosts.add_host('mysql4', 'deploy')
 #    hosts.add_host('mysql5', 'deploy')
-    hosts.add_host('target0', 'deploy')
+#    hosts.add_host('target0', 'deploy')
+    hosts.add_host('target1', 'deploy')
+    hosts.add_host('target2', 'deploy')
+    hosts.add_host('target3', 'deploy')
     
     ######################################################
     

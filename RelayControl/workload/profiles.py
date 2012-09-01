@@ -22,7 +22,8 @@ Experiment specific settings
 EXPERIMENT_DURATION = 6 * 60 * 60
 MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60
 PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60)
-MAX_USERS = 300
+# MAX_USERS = 250 # produces almost 100% load
+MAX_USERS = 225
 
 '''
 Describes a single TS which is used to generate a profile
@@ -244,7 +245,7 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected = mix_1
+selected = mix_0
 ##############################
 
 
