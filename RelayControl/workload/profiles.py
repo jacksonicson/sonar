@@ -198,7 +198,6 @@ mix_0 = [
 
 mix_1 = [
          Desc('SIS_397_cpu', SET_SIS),
-         
          Desc('SIS_199_cpu', SET_SIS_D8),
          Desc('SIS_207_cpu', SET_SIS_D9),
          Desc('SIS_211_cpu', SET_SIS_D9),
@@ -246,7 +245,7 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected = mix_0
+selected = mix_1
 ##############################
 
 

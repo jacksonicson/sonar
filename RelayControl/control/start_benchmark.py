@@ -262,7 +262,7 @@ def main():
     # Create drones
     drones.main()
     
-    # Add hosts
+    # Add host
     hosts.add_host('target0', 'target')
     hosts.add_host('target0', 'database')
     
@@ -272,6 +272,17 @@ def main():
     hosts.add_host('target2', 'target')
     hosts.add_host('target2', 'database')
     
+    hosts.add_host('target3', 'target')
+    hosts.add_host('target3', 'database')
+    
+    hosts.add_host('target4', 'target')
+    hosts.add_host('target4', 'database')
+    
+    hosts.add_host('target5', 'target')
+    hosts.add_host('target5', 'database')
+    
+#    hosts.add_host('target14', 'target')
+#    hosts.add_host('target14', 'database')
    
     
 #    hosts.add_host('glassfish0', 'target')
