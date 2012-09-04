@@ -116,21 +116,24 @@ def resetAllocation(allocation):
         print 'closing connection...'
         conn.close()
 
-def main():
-    print 'Distributing domains over all servers ...'
-    from control.domains import domain_profile_mapping as mapping
-    
+def get_null_allocation():
     allocation = []
     node_index = 0
     for maps in mapping:
         allocation.append((maps.domain, node_index))
         node_index = (node_index + 1) % len(nodes.HOSTS)
-    
-    print allocation
+        
+    return allocation
 
+def main():
+    print 'Distributing domains over all servers ...'
+    from control.domains import domain_profile_mapping as mapping
+    
+    allocation = get_null_allocation()
+    print allocation
+    
     # migrateAllocation(allocation)    
     resetAllocation(allocation)
-    
-    
+ 
 if __name__ == '__main__':
     main()

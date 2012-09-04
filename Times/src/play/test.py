@@ -118,7 +118,7 @@ for i in ts.elements:
 #ax = fig.add_subplot(111)
 #ax.plot(range(0, len(ff)), ff)
 
-# ax.acorr(load, maxlags=700)
+# ax.acorr(drivers, maxlags=700)
 
 x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0]
 y = [0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0]
@@ -189,12 +189,12 @@ for i in xrange(0, 111, 30):
 patterns.append((synthetic, 'scatter'))
 
 time = np.zeros(len(timeSeries.elements))
-load = np.zeros(len(timeSeries.elements))
+drivers = np.zeros(len(timeSeries.elements))
 for i in range(0, len(timeSeries.elements)):
     time[i] = timeSeries.elements[i].timestamp
-    load[i] = timeSeries.elements[i].value
+    drivers[i] = timeSeries.elements[i].value
         
-profile = convolution.extract_profile(name, time, load, 60*60)
+profile = convolution.extract_profile(name, time, drivers, 60*60)
 print 'len %i' % (len(profile))
 profile = normalize(profile)
 
@@ -235,12 +235,12 @@ for ent in names:
     print 'complete'
     
     time = np.zeros(len(timeSeries.elements))
-    load = np.zeros(len(timeSeries.elements))
+    drivers = np.zeros(len(timeSeries.elements))
     for i in range(0, len(timeSeries.elements)):
         time[i] = timeSeries.elements[i].timestamp
-        load[i] = timeSeries.elements[i].value
+        drivers[i] = timeSeries.elements[i].value
     
-    profile2 = convolution.extract_profile(name, time, load, ent[1])
+    profile2 = convolution.extract_profile(name, time, drivers, ent[1])
     profile2 = normalize(profile2)
     # print profile2
     # Run the DTW algorithm on both of them
@@ -280,7 +280,7 @@ for ent in names:
 # print dtw(x, y)
 
 # FFT (low pass filtering approach)
-#data = connection.load('SIS_100_cpu')
+#data = connection.drivers('SIS_100_cpu')
 #signal = []
 #for element in data.elements:
 #    signal.append(element.value)
@@ -322,13 +322,13 @@ for ent in names:
 
 # plt.show()
 
-# ts = connection.load("SIS_194_cpu_profile_profile")
+# ts = connection.drivers("SIS_194_cpu_profile_profile")
 # print ts
 #result = connection.find('^SIS_194_cpu_profile_profile')
 #timestamp = None
 #print 'Starting...'
 #for ts in result:
-#    ts = connection.load(ts)
+#    ts = connection.drivers(ts)
 #    print len(ts.elements)
     
 

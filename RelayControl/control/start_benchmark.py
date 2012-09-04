@@ -12,7 +12,7 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-INIT_DB = True
+INIT_DB = False
 start = True
 ######################
 
@@ -134,7 +134,7 @@ def phase_start_rain(done, client_list):
             config_targets.append(config_target)
 
         print config_targets
-                
+
         # Configure drone
         drones.prepare_drone('rain_start', 'rain.config.specj.json', targets=config_targets)
         drones.create_drone('rain_start')
@@ -261,6 +261,9 @@ def errback(failure):
 def main():
     # Create drones
     drones.main()
+    
+    # Log server allocation
+    logger.info('Domain Node Allocation: %s' % ())
     
     # Add host
     hosts.add_host('target11', 'target')
