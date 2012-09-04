@@ -42,13 +42,40 @@
     			type:"dealer",
     			
 		        "target": {
+		          "hostname": "target11",
+		          "port": 8080
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "SIS_264_cpu_profile_user",
+		        }
+    		},
+    		{
+	    		type:"mfg",
+	    		
+		        "target": {
+		          "hostname": "target11",
+		          "port": 8080,
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "SIS_264_cpu_profile_user",
+		        }
+	    	},
+	    	
+	    	{
+    			type:"dealer",
+    			
+		        "target": {
 		          "hostname": "target0",
 		          "port": 8080
 		        },
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_397_cpu_profile_user",
+		        	"profile" : "SIS_385_cpu_profile_user",
 		        }
     		},
     		{
@@ -61,7 +88,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_397_cpu_profile_user",
+		        	"profile" : "SIS_385_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -75,7 +102,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_199_cpu_profile_user",
+		        	"profile" : "SIS_387_cpu_profile_user",
 		        }
     		},
     		{
@@ -88,115 +115,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_199_cpu_profile_user",
-		        }
-	    	},
-	    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "target2",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_207_cpu_profile_user",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "target2",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_207_cpu_profile_user",
-		        }
-	    	},
-	    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "target3",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_211_cpu_profile_user",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "target3",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_211_cpu_profile_user",
-		        }
-	    	},
-	    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "target4",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_213_cpu_profile_user",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "target4",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_213_cpu_profile_user",
-		        }
-	    	},
-	    	
-	    	{
-    			type:"dealer",
-    			
-		        "target": {
-		          "hostname": "target5",
-		          "port": 8080
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_216_cpu_profile_user",
-		        }
-    		},
-    		{
-	    		type:"mfg",
-	    		
-		        "target": {
-		          "hostname": "target5",
-		          "port": 8080,
-		        },
-		        "loadScheduleCreatorParameters" : {
-			        "host": "monitor0",
-		        	"mix": "default",
-		        	"profile" : "SIS_216_cpu_profile_user",
+		        	"profile" : "SIS_387_cpu_profile_user",
 		        }
 	    	},
 	    	

@@ -11,9 +11,9 @@ class Map:
         self.rain_target = rain_target
 
 domain_profile_mapping = [
-    Map('target0', 0, True),
-    Map('target1', 1, True),
-    Map('target2', 2, True),
+    Map('target0', 18, True),
+    Map('target1', 19, True),
+    Map('target2', 20, True),
     Map('target3', 3, True),
     Map('target4', 4, True),
     Map('target5', 5, True),
@@ -21,14 +21,13 @@ domain_profile_mapping = [
     Map('target6', 6, True),
     Map('target7', 7, True),
     Map('target8', 8, True),
-    
     Map('target9', 9, True),
     Map('target10', 10, True),
     Map('target11', 11, True),
+    # next
     Map('target12', 12, True),
     Map('target13', 13, True),
     Map('target14', 14, True),
-    
     Map('target15', 15, True),
     Map('target16', 16, True),
     Map('target17', 17, True),

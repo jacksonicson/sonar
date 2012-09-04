@@ -263,23 +263,15 @@ def main():
     drones.main()
     
     # Add host
+    hosts.add_host('target11', 'target')
+    hosts.add_host('target11', 'database')
+    
     hosts.add_host('target0', 'target')
     hosts.add_host('target0', 'database')
     
     hosts.add_host('target1', 'target')
     hosts.add_host('target1', 'database')
     
-    hosts.add_host('target2', 'target')
-    hosts.add_host('target2', 'database')
-    
-    hosts.add_host('target3', 'target')
-    hosts.add_host('target3', 'database')
-    
-    hosts.add_host('target4', 'target')
-    hosts.add_host('target4', 'database')
-    
-    hosts.add_host('target5', 'target')
-    hosts.add_host('target5', 'database')
     
 #    hosts.add_host('target14', 'target')
 #    hosts.add_host('target14', 'database')
