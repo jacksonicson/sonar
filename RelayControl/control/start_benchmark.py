@@ -262,9 +262,6 @@ def main():
     # Create drones
     drones.main()
     
-    # Log server allocation
-    logger.info('Domain Node Allocation: %s' % ())
-    
     # Add host
     hosts.add_host('target11', 'target')
     hosts.add_host('target11', 'database')
