@@ -18,8 +18,10 @@ MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
 
-START = '31.08.2012 16:45'
-END = '31.08.2012 17:30'
+START = '1.09.2012 21:38'
+END = '2.09.2012 6:00'
+controller = 'Andreas-PC'
+load = ['load0', ]
 ##########################
 
 def __disconnect():
@@ -69,6 +71,7 @@ def __fetch_rain_data(sonar, hosts, frame):
     schedule_metrics = {}
     rain_metric = {}
     sonar_metrics = {}
+    rain_config = {}
      
     for host in hosts:
         query = ttypes.LogsQuery()
@@ -79,19 +82,22 @@ def __fetch_rain_data(sonar, hosts, frame):
         
         logs = sonar.queryLogs(query)
         
+        # Refine timings
         STR_BENCHMARK_SCHEDULE = 'Schedule: '
         for log in logs:
             if log.logMessage.startswith(STR_BENCHMARK_SCHEDULE):
                 msg = log.logMessage[len(STR_BENCHMARK_SCHEDULE):]
                 data = json.loads(msg)
                 schedule_metrics[host] = data
-                frame = (frame[0], int(data['endRun'] / 1000))
+                # frame = (frame[0], int(data['endRun'] / 1000) + 120)
                 break
         
         
+        # Metric constants
         STR_RAIN_METRICS = 'Rain metrics: '
         STR_DEALER_METRICS = 'Dealer metrics: '
-        STR_MFG_METRICS = 'Mfg metrics: ' 
+        STR_MFG_METRICS = 'Mfg metrics: '
+        STR_TRACK_CONFIG = 'Track configuration: '
         
         # scan logs for results
         for log in logs:
@@ -99,6 +105,13 @@ def __fetch_rain_data(sonar, hosts, frame):
                 print 'skipping log message, out of time frame'
                 break
             
+            # Read track configuration
+            if log.logMessage.startswith(STR_TRACK_CONFIG):
+                msg = log.logMessage[len(STR_TRACK_CONFIG):]
+                data = json.loads(msg)
+                rain_config[host] = data
+                
+            # Read rain metrics
             if log.logMessage.startswith(STR_RAIN_METRICS):
                 msg = log.logMessage[len(STR_RAIN_METRICS):]
                 data = json.loads(msg)
@@ -108,6 +121,7 @@ def __fetch_rain_data(sonar, hosts, frame):
                     
                 rain_metric[host].append(data)
                 
+            # Read Dealer metrics
             if log.logMessage.startswith(STR_DEALER_METRICS):
                 msg = log.logMessage[len(STR_DEALER_METRICS):]
                 data = json.loads(msg)
@@ -117,6 +131,7 @@ def __fetch_rain_data(sonar, hosts, frame):
                     
                 sonar_metrics[host].append(data)
                 
+            # Read MFG metrics
             if log.logMessage.startswith(STR_MFG_METRICS):
                 msg = log.logMessage[len(STR_MFG_METRICS):]
                 data = json.loads(msg)
@@ -127,7 +142,8 @@ def __fetch_rain_data(sonar, hosts, frame):
                 sonar_metrics[host].append(data) 
                 
             
-    return schedule_metrics, rain_metric, sonar_metrics
+            
+    return schedule_metrics, rain_metric, sonar_metrics, rain_config
 
 
 def __to_array(sonar_ts):
@@ -170,37 +186,53 @@ def main():
         stop = __to_timestamp(END)
         frame = (start, stop)
         
-        controller = 'Andreas-PC'
-        load = ['load0', ]
+        # Get sync markers from control 
         syncs = __fetch_start_benchamrk_syncs(sonar_client, controller, frame)
         if syncs == None:
             print 'error: no start marker found'
             return
-        frame = (syncs, frame[1])
         
-        rain_schedule, rain_metrics, sonar_metrics = __fetch_rain_data(sonar_client, load, frame)
+        # Fetch rain data
+        rain_schedule, rain_metrics, sonar_metrics, rain_config = __fetch_rain_data(sonar_client, load, frame)
         
-        # Update frame
+        targets = {}
+        for host in load:
+            config = rain_config[host]
+            for track in config.keys():
+                target = config[track]['target']['hostname']
+                if targets.has_key(target) == False:
+                    targets[target] = []
+                targets[target].append(config[track])
+        
+        print targets.keys()
+        for target in targets:
+            print '## TARGET ###'
+            print target
+            for track in targets[target]: 
+                print track['target']
+        
+        
+        # Update frame using rain markers (higher precision than the markers from control)
         startRun = int(rain_schedule[load[0]]['startSteadyState'] / 1000)
         endRun = int(rain_schedule[load[0]]['endSteadyState'] / 1000)
         frame = (startRun, endRun)
         duration = frame[1] - frame[0]
-        print 'benchmark duration %ss' % duration
+        print 'benchmark duration: %ss' % duration
               
-        # Load srv data
+        # Load data for nodes (servers)
         srvs = [ 'srv%i' % i for i in range(0, 6)]
-        res_cpu = __fetch_srv_data(sonar_client, srvs, 'psutilcpu', frame)
-        phy_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.phymem', frame)
-        vir_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.virtmem', frame)
+#        res_cpu = __fetch_srv_data(sonar_client, srvs, 'psutilcpu', frame)
+#        phy_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.phymem', frame)
+#        vir_mem = __fetch_srv_data(sonar_client, srvs, 'psutilmem.virtmem', frame)
         
         # Analytics
         # Server ours for each server
-        avg_cpu_load = []
-        for i in xrange(len(srvs)):
-            cpu = res_cpu[i]
-            avg = np.average(cpu)
-            avg_cpu_load.append(avg)
-            print 'average load on %s: %f' % (srvs[i], avg) 
+#        avg_cpu_load = []
+#        for i in xrange(len(srvs)):
+#            cpu = res_cpu[i]
+#            avg = np.average(cpu)
+#            avg_cpu_load.append(avg)
+#            print 'average load on %s: %f' % (srvs[i], avg) 
         
         # Prints
         for rain_metric in rain_metrics.keys():
@@ -212,7 +244,8 @@ def main():
                 print '   average_operation_response_time(s): %s' % (rain_metric['average_operation_response_time(s)'])
                 print '   effective_load(req/sec): %s' % (rain_metric['effective_load(req/sec)'])
                 print '   effective_load(ops/sec): %s' % (rain_metric['effective_load(ops/sec)'])
-        
+     
+        print 'end'
         
     except:
         traceback.print_exc(file=sys.stdout)
