@@ -18,8 +18,8 @@ MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
 
-START = '1.09.2012 21:38'
-END = '2.09.2012 6:00'
+START = '4.09.2012 23:25'
+END = '5.09.2012 6:00'
 controller = 'Andreas-PC'
 drivers = 'load0'
 ##########################
@@ -73,6 +73,8 @@ Extracts all important data from a rain log
 def __fetch_rain_data(sonar, host, frame):
     rain_config = None # Todo
     track_config = None
+    track_metrics = []
+    track_scorecards = []
     schedule = None
     rain_metrics = []
     spec_metrics = { 'dealer':[], 'mfg':[]}
@@ -128,9 +130,23 @@ def __fetch_rain_data(sonar, host, frame):
             msg = log.logMessage[len(STR_MFG_METRICS):]
             data = json.loads(msg)
             spec_metrics['mfg'].append(data) 
-                
+              
+        # Read track metrics
+        STR_TRACK_METRICS = 'Track metrics: '
+        if log.logMessage.startswith(STR_TRACK_METRICS):
+            msg = log.logMessage[len(STR_TRACK_METRICS):]
+            data = json.loads(msg)
+            track_metrics.append(data)
+        
+        # Read track scorecard
+        STR_TRACK_SCORECARD = 'Track scorecard: '
+        if log.logMessage.startswith(STR_TRACK_SCORECARD):
+            msg = log.logMessage[len(STR_TRACK_SCORECARD):]
+            data = json.loads(msg)
+            track_scorecards.append(data)
+          
             
-    return rain_config, track_config, schedule, rain_metrics, spec_metrics
+    return rain_config, track_config, schedule, rain_metrics, spec_metrics, track_metrics
 
 
 def __to_array(sonar_ts):
@@ -182,7 +198,7 @@ def main():
         ### Reporting #######################################################################
         
         # Fetch rain data
-        rain_config, track_config, schedule, rain_metrics, spec_metrics = __fetch_rain_data(sonar_client, drivers, frame)
+        rain_config, track_config, schedule, rain_metrics, spec_metrics, track_metrics = __fetch_rain_data(sonar_client, drivers, frame)
         
         # process schedule
         print '## SCHEDULE ##'
@@ -211,6 +227,16 @@ def main():
             if workload not in host_workload_map[host]:
                 host_workload_map[host].append(workload)
             
+        print '## TRACK METRICS ##'
+        for metric in track_metrics: 
+            track = metric['track']
+            effective_load = metric['effective_load(req/sec)']
+            offered_load = metric['offered_load(ops/sec)']
+             
+            elements = (track, effective_load, offered_load)
+            __dump_elements(elements)
+            
+                        
         print '## HOST - TRACK MAP ##'
         print host_track_map
         print host_workload_map
@@ -229,8 +255,6 @@ def main():
             track = metric['track']
             if track.find('DealerGenerator') > 0: track = 'Dealer'
             else: track = 'MFG'
-            
-            # print metric
             
             op_initiated = metric['operations_initiated']
             op_successful = metric['operations_successfully_completed']
