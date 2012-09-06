@@ -1,5 +1,6 @@
 from gurobipy import *
 from numpy import empty, random
+import numpy as np
 
 ###############################
 ### Configuration            ##
@@ -87,7 +88,7 @@ def getServerCounts():
     return server_counts
         
 
-def solve(_server_count, _server_capacity, _demand_raw, ):
+def solve(_server_count, _server_capacity, _demand_raw,):
     global server_count
     global service_count
     global server_capacity
@@ -104,14 +105,20 @@ def solve(_server_count, _server_capacity, _demand_raw, ):
     createVariables(model)
     setupConstraints(model) 
     setupObjective(model)
+    model.setParam('OutputFlag', False)
     model.optimize()
 
     assignment = getAssignment()
-    print assignment
+    i = 0
+    for interval in assignment: 
+        print '%i: %s' % (i, interval)
+        i += 1
     
     server_counts = getServerCounts()
-    print server_counts
+    print 'Servers per interval: %s' % server_counts
+    print 'Average server count: %f' % (np.mean(server_counts))
     
+    return server_counts, assignment
 
 # Test program
 if __name__ == '__main__':

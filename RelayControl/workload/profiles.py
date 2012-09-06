@@ -1,9 +1,11 @@
 from service import times_client
 from times import ttypes
+import compaction
 import convolution
 import matplotlib.pyplot as plt
 import numpy as np
 import sampleday
+import util
 
 '''
 List of TS and workload profiles used by the benchmark (stored in Times)
@@ -12,9 +14,10 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 '''
 Prefix and postfixes used to store data in Times
 '''
-POSTFIX_RAW = '_profile'
-POSTFIX_NORM = '_profile_norm'
-POSTFIX_USER = '_profile_user'
+POSTFIX_RAW = '_profile' # raw profile e.g. from SIS or O2
+POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum
+POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. number of users
+POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
 
 '''
 Experiment specific settings
@@ -245,7 +248,7 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected = mix_1
+selected = mix_2
 ##############################
 
 
@@ -430,9 +433,53 @@ def _build(mix, save):
     print 'Build profiles %i' % (len(profile))
     _build_profile(profile, save)
     
+
+def process(name, trace, timestamps, save=False):
+    agg_count = len(trace) / PROFILE_WIDTH
+    profile = np.zeros(PROFILE_WIDTH, dtype=float)
+    for i in xrange(PROFILE_WIDTH):
+        start = agg_count * i
+        end = min(agg_count * (i + 1), len(trace))
+        profile[i] = np.mean(trace[start:end])
+        
+    # Calculate Frequency
+    frequency = EXPERIMENT_DURATION / PROFILE_WIDTH
+        
+    # Connect with times
+    connection = times_client.connect()
+        
+    # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
+    if save:
+        __write_profile(connection, name + POSTFIX_TRACE, profile, frequency)
+        
+    # Close times connection
+    times_client.close()
+    
+    
+def _plot():
+    # Connect with times
+    connection = times_client.connect()
+
+    for desc in selected:    
+        timeSeries = connection.load(desc.name + POSTFIX_USER + POSTFIX_TRACE)
+        time, demand = util.to_array(timeSeries)
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(range(0, len(demand)), demand)
+
+        plt.show()
+    
+    # Close times connection
+    times_client.close()
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    _build(selected, save=True)
+    # _build(selected, save=True)
     # _build_all_profiles()
+    _plot()
+
+
+
+
 

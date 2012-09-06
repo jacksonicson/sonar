@@ -31,7 +31,7 @@ class Iface(Interface):
   def dynamicLoadProfile(profile):
     """
     Parameters:
-     - profile
+     - profileId
     """
     pass
 
@@ -93,7 +93,7 @@ class Client:
   def dynamicLoadProfile(self, profile):
     """
     Parameters:
-     - profile
+     - profileId
     """
     self._seqid += 1
     d = self._reqs[self._seqid] = defer.Deferred()
@@ -104,7 +104,7 @@ class Client:
     oprot = self._oprot_factory.getProtocol(self._transport)
     oprot.writeMessageBegin('dynamicLoadProfile', TMessageType.CALL, self._seqid)
     args = dynamicLoadProfile_args()
-    args.profile = profile
+    args.profileId = profile
     args.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -284,7 +284,7 @@ class Processor(TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = dynamicLoadProfile_result()
-    d = defer.maybeDeferred(self._handler.dynamicLoadProfile, args.profile)
+    d = defer.maybeDeferred(self._handler.dynamicLoadProfile, args.profileId)
     d.addCallback(self.write_results_success_dynamicLoadProfile, result, seqid, oprot)
     return d
 
@@ -484,16 +484,16 @@ class startBenchmark_result:
 class dynamicLoadProfile_args:
   """
   Attributes:
-   - profile
+   - profileId
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'profile', (Profile, Profile.thrift_spec), None, ), # 1
+    (1, TType.STRUCT, 'profileId', (Profile, Profile.thrift_spec), None, ), # 1
   )
 
   def __init__(self, profile=None,):
-    self.profile = profile
+    self.profileId = profile
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -506,8 +506,8 @@ class dynamicLoadProfile_args:
         break
       if fid == 1:
         if ftype == TType.STRUCT:
-          self.profile = Profile()
-          self.profile.read(iprot)
+          self.profileId = Profile()
+          self.profileId.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -520,9 +520,9 @@ class dynamicLoadProfile_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('dynamicLoadProfile_args')
-    if self.profile is not None:
-      oprot.writeFieldBegin('profile', TType.STRUCT, 1)
-      self.profile.write(oprot)
+    if self.profileId is not None:
+      oprot.writeFieldBegin('profileId', TType.STRUCT, 1)
+      self.profileId.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

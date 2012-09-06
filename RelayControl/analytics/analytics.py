@@ -1,10 +1,13 @@
 from collector import CollectService, ManagementService, ttypes
 from datetime import datetime
 from select import select
+from service import times_client
 from subprocess import Popen, PIPE
 from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
+from times import ttypes as times_ttypes
+from workload import profiles
 import json
 import numpy as np
 import sys
@@ -18,8 +21,8 @@ MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
 
-START = '4.09.2012 23:25'
-END = '5.09.2012 6:00'
+START = '04/09/2012 09:41:00'
+END = '04/09/2012 16:07:00'
 controller = 'Andreas-PC'
 drivers = 'load0'
 ##########################
@@ -71,11 +74,11 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
 Extracts all important data from a rain log
 '''
 def __fetch_rain_data(sonar, host, frame):
-    rain_config = None # Todo
+    schedule = None
+    rain_config = None
     track_config = None
     track_metrics = []
     track_scorecards = []
-    schedule = None
     rain_metrics = []
     spec_metrics = { 'dealer':[], 'mfg':[]}
      
@@ -93,7 +96,7 @@ def __fetch_rain_data(sonar, host, frame):
         if log.logMessage.startswith(STR_BENCHMARK_SCHEDULE):
             msg = log.logMessage[len(STR_BENCHMARK_SCHEDULE):]
             schedule = json.loads(msg)
-            # frame = (frame[0], int(data['endRun'] / 1000) + 120)
+            schedule = (schedule['startSteadyState'], schedule['endSteadyState'])
             break
     
     
@@ -146,18 +149,20 @@ def __fetch_rain_data(sonar, host, frame):
             track_scorecards.append(data)
           
             
-    return rain_config, track_config, schedule, rain_metrics, spec_metrics, track_metrics
+    return schedule, rain_config, track_config, rain_metrics, spec_metrics, track_metrics
 
 
 def __to_array(sonar_ts):
     data = np.empty(len(sonar_ts), dtype=float)
+    time = np.empty(len(sonar_ts), dtype=float)
     
     index = 0
     for element in sonar_ts:
-        data[index] = element.value 
+        data[index] = element.value
+        time[index] = element.timestamp 
         index += 1
     
-    return data
+    return data, time
 
 def __fetch_srv_data(sonar, host, sensor, frame):
     query = ttypes.TimeSeriesQuery()
@@ -167,12 +172,12 @@ def __fetch_srv_data(sonar, host, sensor, frame):
     query.sensor = sensor
     
     result = sonar.query(query)
-    result = __to_array(result)
+    result, time = __to_array(result)
         
-    return result
+    return result, time
 
 def __to_timestamp(date):
-    res = time.strptime(date, '%d.%m.%Y %H:%M')    
+    res = time.strptime(date, '%d/%m/%Y %H:%M:%S')    
     return int(time.mktime(res))
 
 
@@ -198,20 +203,18 @@ def main():
         ### Reporting #######################################################################
         
         # Fetch rain data
-        rain_config, track_config, schedule, rain_metrics, spec_metrics, track_metrics = __fetch_rain_data(sonar_client, drivers, frame)
+        schedule, rain_config, track_config, rain_metrics, spec_metrics, track_metrics = __fetch_rain_data(sonar_client, drivers, frame)
         
-        # process schedule
         print '## SCHEDULE ##'
-        steady_start = schedule['startSteadyState']
-        steady_end = schedule['endSteadyState']
-        
+        print schedule
+        steady_start, steady_end = schedule
         elements = (steady_start, steady_end)
         __dump_elements(elements)
         
-        # process track_config
+        print '## DOMAIN WORKLOAD MAPS ##'
         domains = []
-        host_track_map = {}
-        host_workload_map = {}
+        domain_track_map = {}
+        domain_workload_map = {}
         for track in track_config:
             host = track_config[track]['target']['hostname']
             workload = track_config[track]['loadScheduleCreatorParameters']['profile']
@@ -219,14 +222,20 @@ def main():
             if host not in domains:
                 domains.append(host)
             
-            if host_track_map.has_key(host) == False:
-                host_track_map[host] = []
-                host_workload_map[host] = []
+            if domain_track_map.has_key(host) == False:
+                domain_track_map[host] = []
                 
-            host_track_map[host].append(track)
-            if workload not in host_workload_map[host]:
-                host_workload_map[host].append(workload)
-            
+            domain_track_map[host].append(track)
+
+            if domain_workload_map.has_key(host) == False:
+                domain_workload_map[host] = workload
+            else:
+                if domain_workload_map[host] != workload:
+                    print 'WARN: Multiple load profiles on the same target'
+                    
+        print 'domain track map: %s' % domain_track_map
+        print 'domain workload map: %s' % domain_workload_map
+                                                       
         print '## TRACK METRICS ##'
         for metric in track_metrics: 
             track = metric['track']
@@ -238,10 +247,9 @@ def main():
             
                         
         print '## HOST - TRACK MAP ##'
-        print host_track_map
-        print host_workload_map
+        print domain_track_map
+        print domain_workload_map
         
-        # Process rain_metrics
         print '## RAIN METRICS SUMMARY ##'
         total_op_initiated = 0
         total_op_successful = 0
@@ -294,22 +302,32 @@ def main():
         mem = {}
         print '## CPU LOAD SERVERS ##'
         for srv in srvs:
-            res_cpu = __fetch_srv_data(sonar_client, srv, 'psutilcpu', frame)
-            res_mem = __fetch_srv_data(sonar_client, srv, 'psutilmem.phymem', frame)
+            res_cpu, tim_cpu = __fetch_srv_data(sonar_client, srv, 'psutilcpu', frame)
+            res_mem, tim_mem = __fetch_srv_data(sonar_client, srv, 'psutilmem.phymem', frame)
             cpu[srv] = res_cpu
             mem[srv] = res_mem
-            print '%s cpu= %s' % (srv, res_cpu)
-            print '%s mem= %s' % (srv, res_mem)
+#            print '%s cpu= %s' % (srv, res_cpu)
+#            print '%s mem= %s' % (srv, res_mem)
         
         print '## CPU LOAD DOMAINS ##'
         for domain in domains:
-            res_cpu = __fetch_srv_data(sonar_client, domain, 'psutilcpu', frame)
-            res_mem = __fetch_srv_data(sonar_client, domain, 'psutilmem.phymem', frame)
-            cpu[srv] = res_cpu
-            mem[srv] = res_mem
-            print '%s cpu= %s' % (domain, res_cpu)
-            print '%s mem= %s' % (domain, res_mem)
+            res_cpu, tim_cpu = __fetch_srv_data(sonar_client, domain, 'psutilcpu', frame)
+            res_mem, tim_mem = __fetch_srv_data(sonar_client, domain, 'psutilmem.phymem', frame)
+            cpu[domain] = (res_cpu, tim_cpu)
+            mem[domain] = (res_mem, tim_mem)
+#            print '%s cpu= %s' % (domain, res_cpu)
+#            print '%s mem= %s' % (domain, res_mem)
         
+        ### Generate and write CPU profiles to Times ########################################
+        for domain in domain_workload_map.keys():
+            print '###'
+            print domain
+            print domain_workload_map[domain]
+            
+            # Create profile from cpu load
+            name = domain_workload_map[domain]
+            profiles.process(name, cpu[domain][0], cpu[domain][1], True)
+            
         
         ### Analytics #######################################################################
         print '## AVG CPU,MEM LOAD ##'

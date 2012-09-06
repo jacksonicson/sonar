@@ -95,7 +95,7 @@ def solve(_server_count, _server_capacity, _demand_raw):
     model.optimize()
     
     if model.getAttr(GRB.attr.SolCount) > 0:
-        return (getServerCount(), getAssignment())
+        return getServerCount(), getAssignment()
     else:
         return (None, None)
 
