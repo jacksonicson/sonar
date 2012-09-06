@@ -4,6 +4,10 @@ from service import times_client
 from workload import profiles
 import domains
 import numpy as np
+from logs import sonarlog
+
+# Setup logging
+# logger = sonarlog.getLogger('allocate_domains')
 
 def build_allocation(nodecount, node_capacity=150, migrate=False):
     print 'Connecting with Times'
@@ -36,7 +40,6 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
     
     print 'Solving model...'
     server, assignment = dsap.solve(nodecount, node_capacity, service_matrix)
-    
     
     server, assignment = ssapv.solve(nodecount, node_capacity, service_matrix)
     if assignment != None:

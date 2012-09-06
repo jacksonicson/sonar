@@ -20,6 +20,7 @@ import nodes
 RELAY_PORT = 7900
 ###############################################
 
+# Error handler for libvirt
 def handler(ctxt, err):
     global errno
     errno = err
