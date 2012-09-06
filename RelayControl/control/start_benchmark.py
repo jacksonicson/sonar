@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = False
-start = False
+start = True
 ######################
 
 # Setup logging
@@ -263,38 +263,12 @@ def main():
     drones.main()
     
     # Add host
-    hosts.add_host('target11', 'target')
-    hosts.add_host('target11', 'database')
+    for i in xrange(0,18):
+        hosts.add_host('target%i' % i, 'target')
+        hosts.add_host('target%i' % i, 'database')
     
-    hosts.add_host('target0', 'target')
-    hosts.add_host('target0', 'database')
-    
-    hosts.add_host('target1', 'target')
-    hosts.add_host('target1', 'database')
-    
-    
-#    hosts.add_host('target14', 'target')
-#    hosts.add_host('target14', 'database')
-   
-    
-#    hosts.add_host('glassfish0', 'target')
-#    hosts.add_host('glassfish1', 'target')
-#    hosts.add_host('glassfish2', 'target')
-#    hosts.add_host('glassfish3', 'target')
-#    hosts.add_host('glassfish4', 'target')
-#    hosts.add_host('glassfish5', 'target')
-#    hosts.add_host('mysql0', 'database')
-#    hosts.add_host('mysql1', 'database')
-#    hosts.add_host('mysql2', 'database')
-#    hosts.add_host('mysql3', 'database')
-#    hosts.add_host('mysql4', 'database')
-#    hosts.add_host('mysql5', 'database')
     hosts.add_host('load0', 'load')
-#    hosts.add_host('load1', 'load')
-    
-    # Test rain start
-    # phase_start_rain(None, None)
-    # return
+    hosts.add_host('load1', 'load')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()
