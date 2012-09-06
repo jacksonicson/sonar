@@ -7,12 +7,20 @@ import numpy as np
 server_count = None
 service_count = None
 server_capacity_CPU = None
+server_capacity_MEM = None
 demand_duration = None
 demand_raw = None
+demand_mem = None
 ###############################
 
-def demand(service, time):
-    return demand_raw[service, time] 
+CPU = 0
+MEM = 1
+
+def demand(service, resource, time):
+    if resource == 0:
+        return demand_raw[service, time]
+    else:
+        return demand_mem 
 
 def createVariables(model):
     global var_allocation
@@ -45,8 +53,11 @@ def setupConstraints(model):
     # Capacity constraint
     for d in xrange(demand_duration):
         for i in xrange(server_count):
-            server_load = quicksum((demand(j, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
+            server_load = quicksum((demand(j, CPU, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
             model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_CPU))
+            
+            server_load = quicksum((demand(j, MEM, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
+            model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_MEM))
         
     model.update()
 
@@ -88,20 +99,24 @@ def getServerCounts():
     return server_counts
         
 
-def solve(_server_count, _server_capacity, _demand_raw,):
+def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw, _demand_mem):
     global server_count
     global service_count
     global server_capacity_CPU
+    global server_capacity_MEM
     global demand_duration
     global demand_raw
+    global demand_mem
     
     server_count = _server_count
     service_count = len(_demand_raw)
-    server_capacity_CPU = _server_capacity
+    server_capacity_CPU = _server_capacity_cpu
+    server_capacity_MEM = _server_capacity_mem
     demand_duration = len(_demand_raw[0])
     demand_raw = _demand_raw
+    demand_mem = _demand_mem
     
-    model = Model("ssap"); 
+    model = Model("dsap"); 
     createVariables(model)
     setupConstraints(model) 
     setupObjective(model)
