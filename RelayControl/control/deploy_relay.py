@@ -35,6 +35,8 @@ def main():
     drones.main()
     
     # Add hosts
+    hosts.add_host('target2', 'deploy')
+    hosts.add_host('target13', 'deploy')
 #    hosts.add_host('srv0', 'deploy')
 #    hosts.add_host('srv1', 'deploy')
 #    hosts.add_host('srv2', 'deploy')
