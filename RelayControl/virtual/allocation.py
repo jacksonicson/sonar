@@ -47,6 +47,7 @@ def migrateAllocation(allocation):
             connections.append(conn)
             conn_strs.append(conn_str)
         
+        # trigger migrations
         for migration in allocation:
             domain_name = migration[0]
             target_index = migration[1]
@@ -56,12 +57,15 @@ def migrateAllocation(allocation):
             
             # migrate to target
             try:
-                print 'migrating...'
+                print 'migrating %s -> %s ...'% (domain_name, connections[target_index].getHostname())
                 domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 100)
                 print 'done'
             except:
                 global errno
                 print 'passed: %s' % (errno[2])
+                
+            # if not running start on target
+            
     except:
         print 'error while executing migrations'
 

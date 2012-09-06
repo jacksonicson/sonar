@@ -1,6 +1,6 @@
 from ipmodels import ssapv, dsap
 from service import times_client
-#from virtual import allocation as virt, nodes
+from virtual import allocation as virt, nodes
 from workload import profiles
 import domains
 import numpy as np
@@ -39,8 +39,6 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
     times_client.close()
     
     print 'Solving model...'
-    server, assignment = dsap.solve(nodecount, node_capacity, service_matrix)
-    
     server, assignment = ssapv.solve(nodecount, node_capacity, service_matrix)
     if assignment != None:
         
@@ -54,8 +52,8 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
             migration = (mapping.domain, assignment[key])
             migrations.append(migration)
         
-        print migrations
         
+        print 'Migrations: %s' % migrations
         if migrate:
             print 'Migrating...'
             virt.migrateAllocation(migrations)
@@ -65,7 +63,7 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
     
 
 if __name__ == '__main__':
-    nodecount = 6 # len(nodes.HOSTS)
-    build_allocation(nodecount, 300, False)
+    nodecount = len(nodes.HOSTS)
+    build_allocation(nodecount, 300, True)
 
 
