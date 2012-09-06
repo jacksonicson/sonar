@@ -16,6 +16,7 @@ import nodes
 import traceback
 import sys
 import time
+from control.domains import domain_profile_mapping as mapping
 
 
 ###############################################
@@ -152,8 +153,7 @@ def get_null_allocation():
 
 def main():
     print 'Distributing domains over all servers ...'
-    from control.domains import domain_profile_mapping as mapping
-    
+        
     allocation = get_null_allocation()
     print allocation
     
