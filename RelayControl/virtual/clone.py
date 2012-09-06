@@ -47,7 +47,7 @@ def update_done(ret, vm, relay_conn):
     if wait_time >= 60:
         print 'Killing domain %s' % (vm)
         new_domain.destroy()
-        killed_vms.appen(vm)
+        killed_vms.append(vm)
     
     # Schedule next VM clone
     reactor.callLater(0, next_vm)
