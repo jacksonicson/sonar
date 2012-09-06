@@ -1,3 +1,3 @@
 #!/bin/bash
 
-shutdown
+shutdown -h now

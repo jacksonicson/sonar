@@ -23,18 +23,9 @@ def main():
     drones.main()
     
     # Add hosts
-    hosts.add_host('monitor0', 'node')
-    hosts.add_host('monitor1', 'node')
-    hosts.add_host('storage0', 'node')
-    hosts.add_host('storage1', 'node')
-    hosts.add_host('load0', 'node')
-    hosts.add_host('load1', 'node')
-    hosts.add_host('srv0', 'node')
-    hosts.add_host('srv1', 'node')
-    hosts.add_host('srv2', 'node')
-    hosts.add_host('srv3', 'node')
-    hosts.add_host('srv4', 'node')
-    hosts.add_host('srv5', 'node')
+    for i in xrange(0, 18):
+        hosts.add_host('target%i' % i, 'action')
+        
     hosts_map = hosts.get_hosts_list()
     
     # Connect with all drone relays
