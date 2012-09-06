@@ -11,7 +11,10 @@ from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
+import nodes
+import sys
 import time
+import traceback
 
 ###############################################
 ### CONFIG                                   ##
@@ -44,7 +47,7 @@ def update_done(ret, vm, relay_conn):
     if wait_time >= 60:
         print 'Killing domain %s' % (vm)
         new_domain.destroy()
-        killed_vms.appen(vm)
+        killed_vms.append(vm)
     
     # Schedule next VM clone
     reactor.callLater(0, next_vm)
@@ -103,9 +106,29 @@ def setup(vm):
 
 
 def clone(source, target):
-    # Load VM
-    domain = conn.lookupByName(source)
+    # Get storage pool
     pool = conn.storagePoolLookupByName("s0a0")
+    
+    # Delete target if it exists
+    try:
+        print 'Undefining old domain description...'
+        dom_target = conn.lookupByName(target)
+        print dom_target.undefine()
+        
+    except:
+        print 'did not remove existing domain'
+        # raceback.print_exc(file=sys.stdout)
+        
+    try:
+        print 'Removing old volume...'
+        volume_target = pool.storageVolLookupByName(target + ".qcow")
+        print volume_target.delete(0)
+    except:
+        print 'did not remove existing volume'
+        # traceback.print_exc(file=sys.stdout)
+    
+    # Load source domain
+    domain = conn.lookupByName(source)
     volume = pool.storageVolLookupByName(source + ".qcow")
 
     # Reconfigure the volume     
@@ -171,7 +194,11 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [('playglassdb', 'target%i' % i) for i in range(13, 18)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
+
+
+# clone_names = [('playglassdb', 'target2')]
+
 
 def next_vm():   
     global count
@@ -198,9 +225,28 @@ def next_vm():
     setup(job[1])
 
 
+def shutdownall():
+    # shutdown all VMs 
+    for host in nodes.HOSTS: 
+        conn_str = "qemu+ssh://root@%s/system" % (host)
+        print 'connecting with %s' % (conn_str)
+        conn = libvirt.open(conn_str)
+        
+        ids = conn.listDomainsID()
+        for domain_id in ids:
+            print '   Shutting down: %s' % (domain_id) 
+            domain = conn.lookupByID(domain_id)
+            domain.destroy()
+            
+        conn.close()
+
+
 def main():
     # Create drones
     drones.main()
+    
+    # Shutdown all running VMs 
+    shutdownall()
     
     print 'Cloning:'
     print clone_names
