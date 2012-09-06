@@ -13,6 +13,9 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
 import nodes
+import traceback
+import sys
+import time
 
 
 ###############################################
@@ -30,10 +33,11 @@ def __find_domain(connections, domain_name):
     for connection in connections:
         try:
             domain = connection.lookupByName(domain_name)
-            if domain.isActive():
-                return domain, connection
+            return domain, connection
         except:
             pass
+        
+    return None, None
 
 def migrateAllocation(allocation):
     connections = []
@@ -53,21 +57,37 @@ def migrateAllocation(allocation):
             target_index = migration[1]
             
             domain, src_conn = __find_domain(connections, domain_name)
+            if domain == None:
+                print 'Domain not found: %s' % (domain_name)
+                continue
+            
             xml_desc = domain.XMLDesc(0)
+            
+            # if not running start on target
+            state = domain.state(0)[0]
+            print 'domain state: %i' % (state)
+            if state != 1: 
+                print 'resetting domain %s' % (domain_name)
+                try:
+                    domain.destroy()
+                except: pass
+                try:
+                    domain.create()
+                    time.sleep(10)
+                except: pass
             
             # migrate to target
             try:
-                print 'migrating %s -> %s ...'% (domain_name, connections[target_index].getHostname())
-                domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 100)
+                print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
+                domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 100)
                 print 'done'
             except:
                 global errno
                 print 'passed: %s' % (errno[2])
-                
-            # if not running start on target
             
     except:
-        print 'error while executing migrations'
+        print 'error while executing migrations: %s' % errno[2]
+        traceback.print_exc(file=sys.stdout)
 
     for conn in connections:
         print 'closing connection...'
