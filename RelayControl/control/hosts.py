@@ -6,7 +6,9 @@ def add_host(hostname, drone_type):
         hosts_map[drone_type] = []
         
     hosts_map[drone_type].append(hostname)
-    hosts.append(hostname)
+    
+    if hostname not in hosts:
+        hosts.append(hostname)
 
 
 def get_index(host):

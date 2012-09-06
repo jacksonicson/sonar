@@ -12,7 +12,7 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-INIT_DB = False
+INIT_DB = True
 start = True
 ######################
 
@@ -200,8 +200,8 @@ def phase_start_glassfish_database(done, client_list):
         # Wait for all drones to finish and set phase
         dl = defer.DeferredList(dlist)
         
-        dl.addCallback(phase_start_rain, client_list)
-        # dl.addCallback(finished, client_list)
+        # dl.addCallback(phase_start_rain, client_list)
+        dl.addCallback(finished, client_list)
     except Exception, e:
         print e
         finished(None, client_list)
