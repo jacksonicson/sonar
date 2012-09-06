@@ -5,7 +5,7 @@ from virtual import nodes
 from workload import profiles
 import domains
 import numpy as np
-# from virtual import allocation as virt, nodes
+from virtual import allocation as virt
 
 # Setup logging
 # logger = sonarlog.getLogger('allocate_domains')
@@ -40,7 +40,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     times_client.close()
     
     print 'Solving model...'
-    server, assignment = dsap.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
+    # server, assignment = dsap.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     server, assignment = ssapv.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     if assignment != None:
         
@@ -58,7 +58,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
         print 'Migrations: %s' % migrations
         if migrate:
             print 'Migrating...'
-            # virt.migrateAllocation(migrations)
+            virt.migrateAllocation(migrations)
         
     else:
         print 'model infeasible'
@@ -66,6 +66,6 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
 
 if __name__ == '__main__':
     nodecount = len(nodes.HOSTS)
-    build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, False)
+    build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, True)
 
 
