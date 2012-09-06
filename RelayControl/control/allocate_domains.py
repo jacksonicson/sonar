@@ -1,15 +1,16 @@
 from ipmodels import ssapv, dsap
+from logs import sonarlog
 from service import times_client
-from virtual import allocation as virt, nodes
+from virtual import nodes
 from workload import profiles
 import domains
 import numpy as np
-from logs import sonarlog
+# from virtual import allocation as virt, nodes
 
 # Setup logging
 # logger = sonarlog.getLogger('allocate_domains')
 
-def build_allocation(nodecount, node_capacity=150, migrate=False):
+def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_demand_mem, migrate=False):
     print 'Connecting with Times'
     connection = times_client.connect()
     
@@ -39,7 +40,7 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
     times_client.close()
     
     print 'Solving model...'
-    server, assignment = ssapv.solve(nodecount, node_capacity, service_matrix)
+    server, assignment = ssapv.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     if assignment != None:
         
         print 'Required servers: %i' % (server)
@@ -56,7 +57,7 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
         print 'Migrations: %s' % migrations
         if migrate:
             print 'Migrating...'
-            virt.migrateAllocation(migrations)
+            # virt.migrateAllocation(migrations)
         
     else:
         print 'model infeasible'
@@ -64,6 +65,6 @@ def build_allocation(nodecount, node_capacity=150, migrate=False):
 
 if __name__ == '__main__':
     nodecount = len(nodes.HOSTS)
-    build_allocation(nodecount, 300, True)
+    build_allocation(nodecount, 300, 15 * 1024, 2048, False)
 
 

@@ -6,7 +6,7 @@ import numpy as np
 ### Configuration            ##
 server_count = None
 service_count = None
-server_capacity = None
+server_capacity_CPU = None
 demand_duration = None
 demand_raw = None
 ###############################
@@ -46,7 +46,7 @@ def setupConstraints(model):
     for d in xrange(demand_duration):
         for i in xrange(server_count):
             server_load = quicksum((demand(j, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
-            model.addConstr(server_load <= (var_server_active[d, i] * server_capacity))
+            model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_CPU))
         
     model.update()
 
@@ -91,13 +91,13 @@ def getServerCounts():
 def solve(_server_count, _server_capacity, _demand_raw,):
     global server_count
     global service_count
-    global server_capacity
+    global server_capacity_CPU
     global demand_duration
     global demand_raw
     
     server_count = _server_count
     service_count = len(_demand_raw)
-    server_capacity = _server_capacity
+    server_capacity_CPU = _server_capacity
     demand_duration = len(_demand_raw[0])
     demand_raw = _demand_raw
     

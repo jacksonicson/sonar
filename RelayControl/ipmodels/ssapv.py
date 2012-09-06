@@ -5,13 +5,21 @@ from numpy import empty, random
 ### Configuration            ##
 server_count = None
 service_count = None
-server_capacity = None
+server_capacity_CPU = None
+server_capacity_MEM = None
 demand_duration = None
 demand_raw = None
+demand_mem = None
 ###############################
 
-def demand(service, time):
-    return demand_raw[service, time] 
+CPU = 0
+MEM = 1
+
+def demand(service, resource, time):
+    if resource == 0:
+        return demand_raw[service, time]
+    else:
+        return demand_mem 
 
 def createVariables(model):
     global var_allocation
@@ -41,8 +49,11 @@ def setupConstraints(model):
     # Capacity constraint
     for d in xrange(demand_duration):
         for i in xrange(server_count):
-            server_load = quicksum((demand(j, d) * var_allocation[i, j]) for j in xrange(0, service_count))
-            model.addConstr(server_load <= (var_server_active[i] * server_capacity))
+            server_load = quicksum((demand(j, CPU, d) * var_allocation[i, j]) for j in xrange(0, service_count))
+            model.addConstr(server_load <= (var_server_active[i] * server_capacity_CPU))
+            
+            server_load = quicksum((demand(j, MEM, d) * var_allocation[i, j]) for j in xrange(0, service_count))
+            model.addConstr(server_load <= (var_server_active[i] * server_capacity_MEM))
         
     model.update()
 
@@ -74,24 +85,28 @@ def getServerCount():
             count += 1
     return count
     
-def solve(_server_count, _server_capacity, _demand_raw):
+def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw, _demand_mem):
     global server_count
     global service_count
-    global server_capacity
+    global server_capacity_CPU
+    global server_capacity_MEM
     global demand_duration
     global demand_raw
+    global demand_mem
     
     server_count = _server_count
     service_count = len(_demand_raw)
-    server_capacity = _server_capacity
+    server_capacity_CPU = _server_capacity_cpu
+    server_capacity_MEM = _server_capacity_mem
     demand_duration = len(_demand_raw[0])
     demand_raw = _demand_raw
+    demand_mem = _demand_mem
     
     model = Model("ssap"); 
     createVariables(model)
     setupConstraints(model) 
     setupObjective(model)
-    model.setParam( 'OutputFlag', False )
+    model.setParam('OutputFlag', False)
     model.optimize()
     
     if model.getAttr(GRB.attr.SolCount) > 0:
@@ -110,7 +125,9 @@ if __name__ == '__main__':
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    solve(20, 100, demand_raw)
+    servers, assignment = solve(20, 200, 16000, demand_raw)
+    print 'servercount: %i' % servers
+    print 'assignment: %s' % assignment
 
     
 
