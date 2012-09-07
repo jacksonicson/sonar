@@ -26,8 +26,8 @@ DEBUG = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '07/09/2012 09:00:00'
-END = '07/09/2012 16:07:00'
+START = '07/09/2012 17:15:00'
+END = '07/09/2012 22:07:00'
 ##########################
 
 
