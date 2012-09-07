@@ -13,32 +13,37 @@ import numpy as np
 import sys
 import time
 import traceback
+from workload import util
 
 ##########################
 ## Configuration        ##
+##########################
 COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
 
-START = '04/09/2012 09:41:00'
-END = '04/09/2012 16:07:00'
-controller = 'Andreas-PC'
-drivers = 'load0'
+CONTROLLER_NODE = 'Andreas-PC'
+DRIVER_NODES = ['load0', 'load1']
+
+START = '07/09/2012 09:00:00'
+END = '07/09/2012 16:07:00'
 ##########################
 
+'''
+Disconnect from Sonar collector
+'''
 def __disconnect():
     transportManagement.close()
 
+'''
+Connect with Sonar collector 
+'''
 def __connect():
     # Make socket
     global transportManagement
     transportManagement = TSocket.TSocket(COLLECTOR_IP, MANAGEMENT_PORT)
-    
-    # Buffering is critical. Raw sockets are very slow
     transportManagement = TTransport.TBufferedTransport(transportManagement)
-    
-    # Setup the clients
     global managementClient
     managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
     
@@ -54,6 +59,11 @@ def __connect():
     return managementClient 
 
 
+'''
+Reads the sync markers from the start_benchmark skript: 
+- start driving load  (releasing load)
+- end of startup sequence (after ramp-up)
+'''
 def __fetch_start_benchamrk_syncs(sonar, host, frame):
     query = ttypes.LogsQuery()
     query.hostname = host
@@ -62,48 +72,51 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     query.stopTime = frame[1]
     
     logs = sonar.queryLogs(query)
+    release_load = None
+    end_startup = None
     for log in logs:
         if log.logLevel == 50010:
-            if log.logMessage == 'start driving drivers':
-                print 'found: start driving drivers'
-                return log.timestamp
+            if log.logMessage == 'start driving load':
+                release_load = log.timestamp
+            elif log.logMessage == 'end of startup sequence':
+                end_startup = log.timestamp
             
-    return None
+    return release_load, end_startup
 
 '''
-Extracts all important data from a rain log
+Extracts all JSON configuration and metric information from the Rain log
 '''
-def __fetch_rain_data(sonar, host, frame):
+def __fetch_rain_data(connection, load_host, timeframe):
+    # Configuration
     schedule = None
-    rain_config = None
     track_config = None
-    track_metrics = []
-    track_scorecards = []
+    
+    # Metrics
+    global_metrics = None
     rain_metrics = []
-    spec_metrics = { 'dealer':[], 'mfg':[]}
+    track_metrics = []
+    spec_metrics = []
      
+    # Build query
     query = ttypes.LogsQuery()
-    query.hostname = host
+    query.hostname = load_host
     query.sensor = 'rain'
-    query.startTime = frame[0]
-    query.stopTime = frame[1]
+    query.startTime = timeframe[0]
+    query.stopTime = timeframe[1]
+    logs = connection.queryLogs(query)
     
-    logs = sonar.queryLogs(query)
-    
-    # Refine timings
-    STR_BENCHMARK_SCHEDULE = 'Schedule: '
+    # scan logs for results
     for log in logs:
+        if log.timestamp > (timeframe[1] + 5 * 60) * 1000:
+            print 'skipping remaining log messages - out of time timeframe'
+            break
+
+        # Track schedule
+        STR_BENCHMARK_SCHEDULE = 'Schedule: '
         if log.logMessage.startswith(STR_BENCHMARK_SCHEDULE):
             msg = log.logMessage[len(STR_BENCHMARK_SCHEDULE):]
             schedule = json.loads(msg)
             schedule = (schedule['startSteadyState'], schedule['endSteadyState'])
-            break
-    
-    
-    # scan logs for results
-    for log in logs:
-        if log.timestamp > (frame[1] + 5 * 60) * 1000:
-            print 'skipping remaining log messages - out of time frame'
             break
         
         # Track configuration
@@ -120,90 +133,89 @@ def __fetch_rain_data(sonar, host, frame):
             data = json.loads(msg)
             rain_metrics.append(data)
             
-        # Read specj metrics
-        STR_DEALER_METRICS = 'Dealer metrics: '
-        if log.logMessage.startswith(STR_DEALER_METRICS):
-            msg = log.logMessage[len(STR_DEALER_METRICS):]
-            data = json.loads(msg)
-            spec_metrics['dealer'].append(data)
+        # Read global metrics
+        STR_GLOBAL_METRICS = 'Global metrics: '
+        if log.logMessage.startswith(STR_GLOBAL_METRICS):
+            msg = log.logMessage[len(STR_GLOBAL_METRICS):]
+            global_metrics = json.loads(msg)
+            break
             
-        # Read MFG metrics
-        STR_MFG_METRICS = 'Mfg metrics: '
-        if log.logMessage.startswith(STR_MFG_METRICS):
-            msg = log.logMessage[len(STR_MFG_METRICS):]
-            data = json.loads(msg)
-            spec_metrics['mfg'].append(data) 
-              
         # Read track metrics
         STR_TRACK_METRICS = 'Track metrics: '
         if log.logMessage.startswith(STR_TRACK_METRICS):
             msg = log.logMessage[len(STR_TRACK_METRICS):]
             data = json.loads(msg)
             track_metrics.append(data)
-        
-        # Read track scorecard
-        STR_TRACK_SCORECARD = 'Track scorecard: '
-        if log.logMessage.startswith(STR_TRACK_SCORECARD):
-            msg = log.logMessage[len(STR_TRACK_SCORECARD):]
-            data = json.loads(msg)
-            track_scorecards.append(data)
-          
             
-    return schedule, rain_config, track_config, rain_metrics, spec_metrics, track_metrics
+        # Read specj metrics
+        STR_DEALER_METRICS = 'Dealer metrics: '
+        if log.logMessage.startswith(STR_DEALER_METRICS):
+            msg = log.logMessage[len(STR_DEALER_METRICS):]
+            data = json.loads(msg)
+            spec_metrics.append(data)
+            
+        # Read MFG metrics
+        STR_MFG_METRICS = 'Mfg metrics: '
+        if log.logMessage.startswith(STR_MFG_METRICS):
+            msg = log.logMessage[len(STR_MFG_METRICS):]
+            data = json.loads(msg)
+            spec_metrics.append(data) 
+              
+        
+    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics 
 
-
-def __to_array(sonar_ts):
-    data = np.empty(len(sonar_ts), dtype=float)
-    time = np.empty(len(sonar_ts), dtype=float)
-    
-    index = 0
-    for element in sonar_ts:
-        data[index] = element.value
-        time[index] = element.timestamp 
-        index += 1
-    
-    return data, time
-
-def __fetch_srv_data(sonar, host, sensor, frame):
+'''
+Fetch a timeseries
+'''
+def __fetch_timeseries(connection, host, sensor, timeframe):
     query = ttypes.TimeSeriesQuery()
     query.hostname = host
-    query.startTime = frame[0]
-    query.stopTime = frame[1]
+    query.startTime = timeframe[0]
+    query.stopTime = timeframe[1]
     query.sensor = sensor
     
-    result = sonar.query(query)
-    result, time = __to_array(result)
+    result = connection.query(query)
+    time, result = util.to_array(result)
         
     return result, time
 
+'''
+Convert a datetime from a string to a UNIX timestamp
+'''
 def __to_timestamp(date):
     res = time.strptime(date, '%d/%m/%Y %H:%M:%S')    
     return int(time.mktime(res))
 
-
+'''
+Dump all elements from a tupel as a CSV row
+'''
 def __dump_elements(elements):
     result = ['%s,' for _ in xrange(len(elements))]
     result = ' '.join(result)
     result = result[0:-1] # remove trailing comma
     print result % elements
 
-def main():
-    # Connect with services
-    sonar_client = __connect()
+def main(connection):
+    # Configure experiment
+    start = __to_timestamp(START)
+    stop = __to_timestamp(END)
+    frame = (start, stop)
     
-    try:
-        # Configure experiment
-        start = __to_timestamp(START)
-        stop = __to_timestamp(END)
-        frame = (start, stop)
+    # Get sync markers from control 
+    sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, frame)
+    print '## SYNC MARKERS ##'
+    print sync_markers
+    
+    #####################################################################################################################################
+    ### Reading Results from Rain #######################################################################################################
+    #####################################################################################################################################
+    
+    # Fetch rain data
+    for host in DRIVER_NODES:
+        print '## HOST: %s ##' % host
         
-        # Get sync markers from control 
-        sync_markers = __fetch_start_benchamrk_syncs(sonar_client, controller, frame)
-        
-        ### Reporting #######################################################################
-        
-        # Fetch rain data
-        schedule, rain_config, track_config, rain_metrics, spec_metrics, track_metrics = __fetch_rain_data(sonar_client, drivers, frame)
+        rain_data = __fetch_rain_data(connection, host, frame)
+        schedule, track_config, rain_metrics, global_metrics, track_metrics, spec_metrics = rain_data
         
         print '## SCHEDULE ##'
         print schedule
@@ -239,8 +251,9 @@ def main():
         print '## TRACK METRICS ##'
         for metric in track_metrics: 
             track = metric['track']
-            effective_load = metric['effective_load(req/sec)']
-            offered_load = metric['offered_load(ops/sec)']
+            sc = metric['final_scorecard']
+            effective_load = sc['effective_load_ops']
+            offered_load = sc['offered_load_ops']
              
             elements = (track, effective_load, offered_load)
             __dump_elements(elements)
@@ -295,55 +308,60 @@ def main():
         __dump_elements(elements)
         # process spec_metrics
         # not required at this point
-        
-        # process CPU load of servers
-        srvs = [ 'srv%i' % i for i in range(0, 6)]
-        cpu = {}
-        mem = {}
-        print '## CPU LOAD SERVERS ##'
-        for srv in srvs:
-            res_cpu, tim_cpu = __fetch_srv_data(sonar_client, srv, 'psutilcpu', frame)
-            res_mem, tim_mem = __fetch_srv_data(sonar_client, srv, 'psutilmem.phymem', frame)
-            cpu[srv] = res_cpu
-            mem[srv] = res_mem
+    
+    #####################################################################################################################################
+    ### Resource Readings ###############################################################################################################
+    #####################################################################################################################################
+    
+    # Results
+    srvs = [ 'srv%i' % i for i in range(0, 6)]
+    cpu = {}
+    mem = {}
+    
+    print '## CPU LOAD SERVERS ##'
+    for srv in srvs:
+        res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', frame)
+        res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', frame)
+        cpu[srv] = res_cpu
+        mem[srv] = res_mem
 #            print '%s cpu= %s' % (srv, res_cpu)
 #            print '%s mem= %s' % (srv, res_mem)
-        
-        print '## CPU LOAD DOMAINS ##'
-        for domain in domains:
-            res_cpu, tim_cpu = __fetch_srv_data(sonar_client, domain, 'psutilcpu', frame)
-            res_mem, tim_mem = __fetch_srv_data(sonar_client, domain, 'psutilmem.phymem', frame)
-            cpu[domain] = (res_cpu, tim_cpu)
-            mem[domain] = (res_mem, tim_mem)
+    
+    print '## CPU LOAD DOMAINS ##'
+    for domain in domains:
+        res_cpu, tim_cpu = __fetch_timeseries(connection, domain, 'psutilcpu', frame)
+        res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', frame)
+        cpu[domain] = (res_cpu, tim_cpu)
+        mem[domain] = (res_mem, tim_mem)
 #            print '%s cpu= %s' % (domain, res_cpu)
 #            print '%s mem= %s' % (domain, res_mem)
-        
-        ### Generate and write CPU profiles to Times ########################################
-        for domain in domain_workload_map.keys():
-            print '###'
-            print domain
-            print domain_workload_map[domain]
-            
-            # Create profile from cpu load
-            name = domain_workload_map[domain]
-            profiles.process(name, cpu[domain][0], cpu[domain][1], True)
-            
-        
-        ### Analytics #######################################################################
-        print '## AVG CPU,MEM LOAD ##'
-        for srv in srvs: 
-            load = cpu[srv]
-            _cpu = np.average(load)
-            load = mem[srv]
-            _mem = np.average(load)
-            print '%s cpu: %f mem: %f' % (srv, _cpu, _mem)
-        
-        
-        
-    except:
-        traceback.print_exc(file=sys.stdout)
     
-    __disconnect()
+    # Generate and write CPU profiles to Times
+    for domain in domain_workload_map.keys():
+        print '###'
+        print domain
+        print domain_workload_map[domain]
+        
+        # Create profile from cpu load
+        name = domain_workload_map[domain]
+        profiles.process(name, cpu[domain][0], cpu[domain][1], True)
+        
+    #####################################################################################################################################
+    ### Analytics #######################################################################################################################
+    #####################################################################################################################################
+    print '## AVG CPU,MEM LOAD ##'
+    for srv in srvs: 
+        load = cpu[srv]
+        _cpu = np.average(load)
+        load = mem[srv]
+        _mem = np.average(load)
+        print '%s cpu: %f mem: %f' % (srv, _cpu, _mem)
+    
 
 if __name__ == '__main__':
-    main()
+    connection = __connect()
+    try:
+        main(connection)
+    except:
+        traceback.print_exc(file=sys.stdout)
+    __disconnect()

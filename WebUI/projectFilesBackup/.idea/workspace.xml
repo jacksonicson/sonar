@@ -17,7 +17,6 @@
   <component name="DaemonCodeAnalyzer">
     <disable_hints />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="WebUI" />
   </component>
@@ -26,7 +25,7 @@
       <file leaf-file-name="browse.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="76" selection-start="1188" selection-end="1188" vertical-scroll-proportion="0.79902756">
+            <state line="27" column="0" selection-start="1067" selection-end="1067" vertical-scroll-proportion="0.11038961">
               <folding />
             </state>
           </provider>
@@ -53,7 +52,7 @@
       <file leaf-file-name="logs.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/logs.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="22" selection-start="2325" selection-end="2325" vertical-scroll-proportion="0.0">
+            <state line="56" column="22" selection-start="2325" selection-end="2325" vertical-scroll-proportion="-6.769231">
               <folding />
             </state>
           </provider>
@@ -206,11 +205,11 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="options.lastSelected" value="preferences.keymap" />
     <property name="recentsLimit" value="5" />
+    <property name="options.lastSelected" value="preferences.keymap" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -228,13 +227,13 @@
       <recent name="D:\work\sonar\sonar\WebUI" />
     </key>
   </component>
-  <component name="RunManager" selected="Node.js.Sonar">
-    <configuration default="false" name="sonar.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" path-to-node="C:/Program Files (x86)/nodejs/node" path-to-js-file="sonar.js" working-dir="$PROJECT_DIR$" coffeescript-run="false">
+  <component name="RunManager" selected="Node JS.sonar.js">
+    <configuration default="false" name="sonar.js" type="NodeJSConfigurationType" factoryName="Node JS" temporary="true" path-to-node="C:/Program Files (x86)/nodejs/node" path-to-js-file="sonar.js" working-dir="$PROJECT_DIR$" coffeescript-run="false">
       <RunnerSettings RunnerId="NodeJS.run" />
       <ConfigurationWrapper RunnerId="NodeJS.run" />
       <method />
     </configuration>
-    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" working-dir="$PROJECT_DIR$" coffeescript-run="false">
+    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node JS" working-dir="$PROJECT_DIR$" coffeescript-run="false">
       <method />
     </configuration>
     <configuration default="true" type="JavascriptDebugSession" factoryName="Local">
@@ -244,7 +243,7 @@
       </JSDebuggerConfigurationSettings>
       <method />
     </configuration>
-    <configuration default="false" name="Sonar" type="NodeJSConfigurationType" factoryName="Node.js" path-to-node="C:/Program Files (x86)/nodejs/node" path-to-js-file="sonar.js" working-dir="$PROJECT_DIR$" coffeescript-run="false">
+    <configuration default="false" name="Sonar" type="NodeJSConfigurationType" factoryName="Node JS" path-to-node="C:/Program Files (x86)/nodejs/node" path-to-js-file="sonar.js" working-dir="$PROJECT_DIR$" coffeescript-run="false">
       <RunnerSettings RunnerId="NodeJS.debug" />
       <RunnerSettings RunnerId="NodeJS.run" />
       <ConfigurationWrapper RunnerId="NodeJS.debug" />
@@ -252,8 +251,8 @@
       <method />
     </configuration>
     <list size="2">
-      <item index="0" class="java.lang.String" itemvalue="Node.js.Sonar" />
-      <item index="1" class="java.lang.String" itemvalue="Node.js.sonar.js" />
+      <item index="0" class="java.lang.String" itemvalue="Node JS.sonar.js" />
+      <item index="1" class="java.lang.String" itemvalue="Node JS.Sonar" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -306,16 +305,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1696" height="1026" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.2100181" sideWeight="0.3048499" order="1" side_tool="true" content_ui="tabs" x="1689" y="355" width="417" height="497" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1913096" sideWeight="0.77225435" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2045866" sideWeight="0.77109826" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995381" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22774567" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22890173" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
+      <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -324,7 +324,6 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.249694" sideWeight="0.75606936" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -349,6 +348,7 @@
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
     <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="false" />
+    <option name="ENABLE_BACKGROUND_PROCESSES" value="false" />
     <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
     <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
@@ -358,6 +358,7 @@
     <option name="SOFT_WRAPS_IN_SHORT_DIFF" value="true" />
     <option name="INCLUDE_TEXT_INTO_PATCH" value="false" />
     <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
+    <option name="CREATE_PATCH_EXPAND_DETAILS_DEFAULT" value="true" />
     <option name="SHOW_FILE_HISTORY_DETAILS" value="true" />
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
@@ -377,15 +378,7 @@
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <default-breakpoints>
-        <breakpoint type="javascript-exception">
-          <properties />
-          <option name="timeStamp" value="1" />
-        </breakpoint>
-      </default-breakpoints>
-      <option name="time" value="5" />
-    </breakpoint-manager>
+    <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/EcmaScript5.js">
@@ -440,42 +433,34 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="80" column="15" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="80" column="15" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="157" column="0" selection-start="3271" selection-end="3271" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="157" column="0" selection-start="3271" selection-end="3271" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/template.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="122" column="18" selection-start="3431" selection-end="3431" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="122" column="18" selection-start="3431" selection-end="3431" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/sonar.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="8" selection-start="309" selection-end="309" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="19" column="8" selection-start="309" selection-end="309" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="22" selection-start="2325" selection-end="2325" vertical-scroll-proportion="0.0">
+        <state line="56" column="22" selection-start="2325" selection-end="2325" vertical-scroll-proportion="-6.769231">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="76" selection-start="1188" selection-end="1188" vertical-scroll-proportion="0.79902756">
+        <state line="27" column="0" selection-start="1067" selection-end="1067" vertical-scroll-proportion="0.11038961">
           <folding />
         </state>
       </provider>

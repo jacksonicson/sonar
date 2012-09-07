@@ -67,7 +67,7 @@ def rain_connection_failed(ret, client_list):
 
 def rain_connected(rain_clients, client_list):
     print 'releasing load...'
-    logger.info('releasing load on rain drivers')
+    logger.info('releasing load on rain DRIVER_NODES')
 
     # Extract clients
     _rain_clients = []
@@ -91,8 +91,8 @@ def rain_connected(rain_clients, client_list):
     
 
 def trigger_rain_benchmark(ret, client_list):
-    print 'connecting with rain drivers...'
-    logger.info('connecting with rain drivers')
+    print 'connecting with rain DRIVER_NODES...'
+    logger.info('connecting with rain DRIVER_NODES')
     
     dlist = []
     for driver in hosts.get_hosts('load'):
@@ -109,21 +109,21 @@ def trigger_rain_benchmark(ret, client_list):
     d.addErrback(rain_connection_failed, client_list)
 
 def phase_start_rain(done, client_list):
-    print 'starting rain drivers...'
-    logger.info('starting rain drivers')
+    print 'starting rain DRIVER_NODES...'
+    logger.info('starting rain DRIVER_NODES')
     
     dlist = []
 
     targets = hosts.get_hosts('target')
     target_count = len(targets)
     
-    drivers = hosts.get_hosts('load')
-    driver_count = len(drivers)
+    DRIVER_NODES = hosts.get_hosts('load')
+    driver_count = len(DRIVER_NODES)
     
     targets_per_driver = int(math.ceil(float(target_count) / float(driver_count)))
     
     for i in range(0, driver_count):
-        driver = drivers[i]
+        driver = DRIVER_NODES[i]
         
         # Build targets for configuration
         config_targets = []
@@ -144,7 +144,7 @@ def phase_start_rain(done, client_list):
         dlist.append(d)
     
     
-    # Wait for all load drivers to start
+    # Wait for all load DRIVER_NODES to start
     dl = defer.DeferredList(dlist)
     
     dl.addCallback(trigger_rain_benchmark, client_list)
@@ -152,8 +152,8 @@ def phase_start_rain(done, client_list):
 
 
 def shutdown_glassfish_rain(client_list, ret=None):
-    print "stopping glassfish and rain drivers..."
-    logger.info('stopping glassfish and rain drivers')
+    print "stopping glassfish and rain DRIVER_NODES..."
+    logger.info('stopping glassfish and rain DRIVER_NODES')
     
     dlist = []
     
@@ -200,8 +200,8 @@ def phase_start_glassfish_database(done, client_list):
         # Wait for all drones to finish and set phase
         dl = defer.DeferredList(dlist)
         
-        # dl.addCallback(phase_start_rain, client_list)
-        dl.addCallback(finished, client_list)
+        dl.addCallback(phase_start_rain, client_list)
+        # dl.addCallback(finished, client_list)
     except Exception, e:
         print e
         finished(None, client_list)
