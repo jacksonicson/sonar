@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = False
-start = True
+start = False
 ######################
 
 # Setup logging
