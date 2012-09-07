@@ -7,6 +7,7 @@ from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 from times import ttypes as times_ttypes
+from virtual import nodes
 from workload import profiles, util
 import json
 import numpy as np
@@ -176,7 +177,7 @@ def __fetch_timeseries(connection, host, sensor, timeframe):
     query.sensor = sensor
     
     result = connection.query(query)
-    time, result = util.to_array(result)
+    time, result = util.to_array_collector(result)
         
     return result, time
 
@@ -242,7 +243,7 @@ Dump the contents of a spec metric
 '''
 def __dump_spec(spec, title=True):
     dealer = ('track', 'description', 'Purchase: Average Vehicles per Order', 'Purchase: Vehicle Purchasing Rate (/sec)', 'Purchase: Large Order Purchasing Rate (/sec)',
-            'Purchase: Large Order Vehicle Purchasing Rate (/sec)', 'Purchase: Regular Order Vehicle Purchasing Rate (/sec)', 'Purchase: Immediate Order Purchasing Rate (/sec)', 
+            'Purchase: Large Order Vehicle Purchasing Rate (/sec)', 'Purchase: Regular Order Vehicle Purchasing Rate (/sec)', 'Purchase: Immediate Order Purchasing Rate (/sec)',
             'Purchase: Deferred Orders Purchasing Rate (/sec)', 'Purchase: Cart Clear Rate (/sec)', 'Purchase: Order Line Rate removed from Cart (/sec)',
             'Purchase: Bad Credit Rate (/sec)', 'Manage: Deferred Orders cancelled (/sec)', 'Manage: Vehicles sold from lot (/sec)', 'Browse: forwards (/sec)',
             'Browse: backwards (/sec)')
@@ -317,8 +318,17 @@ def main(connection):
         
         
     print '## SCHEDULE ##'
+    schedule_starts = []
+    schedule_ends = []
     for schedule in _schedules:
+        schedule_starts.append(schedule[0])
+        schedule_ends.append(schedule[1])
         __dump_elements(schedule)
+       
+    # refine data frame
+    data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
+    print data_frame
+    print 'Frame duration is: %i' % (data_frame[1] - data_frame[0])
     
     print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
     # Results
@@ -376,29 +386,29 @@ def main(connection):
     ### Resource Readings ###############################################################################################################
     #####################################################################################################################################
     
-#    # Results
-#    srvs = [ 'srv%i' % i for i in range(0, 6)]
-#    cpu = {}
-#    mem = {}
-#    
-#    print '## CPU LOAD SERVERS ##'
-#    for srv in srvs:
-#        res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', frame)
-#        res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', frame)
-#        cpu[srv] = res_cpu
-#        mem[srv] = res_mem
-##            print '%s cpu= %s' % (srv, res_cpu)
-##            print '%s mem= %s' % (srv, res_mem)
-#    
-#    print '## CPU LOAD DOMAINS ##'
-#    for domain in domains:
-#        res_cpu, tim_cpu = __fetch_timeseries(connection, domain, 'psutilcpu', frame)
-#        res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', frame)
-#        cpu[domain] = (res_cpu, tim_cpu)
-#        mem[domain] = (res_mem, tim_mem)
-##            print '%s cpu= %s' % (domain, res_cpu)
-##            print '%s mem= %s' % (domain, res_mem)
-#    
+    # Results
+    srvs = nodes.NODES
+    cpu = {}
+    mem = {}
+    
+    print '## CPU LOAD SERVERS ##'
+    for srv in srvs:
+        res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', data_frame)
+        res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', data_frame)
+        cpu[srv] = res_cpu
+        mem[srv] = res_mem
+#        print '%s cpu= %s' % (srv, res_cpu)
+#        print '%s mem= %s' % (srv, res_mem)
+    
+    print '## CPU LOAD DOMAINS ##'
+    for domain in domains:
+        res_cpu, tim_cpu = __fetch_timeseries(connection, domain, 'psutilcpu', data_frame)
+        res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', data_frame)
+        cpu[domain] = (res_cpu, tim_cpu)
+        mem[domain] = (res_mem, tim_mem)
+#        print '%s cpu= %s' % (domain, res_cpu)
+#        print '%s mem= %s' % (domain, res_mem)
+    
 #    # Generate and write CPU profiles to Times
 #    for domain in domain_workload_map.keys():
 #        print '###'
@@ -408,18 +418,20 @@ def main(connection):
 #        # Create profile from cpu load
 #        name = domain_workload_map[domain]
 #        profiles.process(name, cpu[domain][0], cpu[domain][1], True)
-#        
-#    #####################################################################################################################################
-#    ### Analytics #######################################################################################################################
-#    #####################################################################################################################################
-#    print '## AVG CPU,MEM LOAD ##'
-#    for srv in srvs: 
-#        load = cpu[srv]
-#        _cpu = np.average(load)
-#        load = mem[srv]
-#        _mem = np.average(load)
-#        print '%s cpu: %f mem: %f' % (srv, _cpu, _mem)
+        
+    #####################################################################################################################################
+    ### Analytics #######################################################################################################################
+    #####################################################################################################################################
+    print '## AVG CPU,MEM LOAD ##'
     
+    dump = ('node', 'cpu, mem')
+    __dump_elements(dump)
+    for srv in srvs: 
+        _cpu = np.average(cpu[srv])
+        _mem = np.average(mem[srv])
+        
+        data = [srv, _cpu, _mem]
+        __dump_elements(tuple(data))
 
 if __name__ == '__main__':
     connection = __connect()

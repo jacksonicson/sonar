@@ -9,3 +9,13 @@ def to_array(timeSeries):
         demand[i] = timeSeries.elements[i].value
         
     return time, demand
+
+def to_array_collector(timeSeries):
+    time = np.empty(len(timeSeries))
+    demand = np.empty(len(timeSeries))
+    
+    for i in range(0, len(timeSeries)):
+        time[i] = timeSeries[i].timestamp
+        demand[i] = timeSeries[i].value
+        
+    return time, demand
