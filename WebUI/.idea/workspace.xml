@@ -26,7 +26,7 @@
       <file leaf-file-name="browse.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/browse.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="25" selection-start="508" selection-end="508" vertical-scroll-proportion="0.4132901">
+            <state line="20" column="43" selection-start="740" selection-end="740" vertical-scroll-proportion="0.55105346">
               <folding />
             </state>
           </provider>
@@ -384,7 +384,7 @@
           <option name="timeStamp" value="1" />
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="6" />
+      <option name="time" value="8" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -475,7 +475,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/browse.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="25" selection-start="508" selection-end="508" vertical-scroll-proportion="0.4132901">
+        <state line="20" column="43" selection-start="740" selection-end="740" vertical-scroll-proportion="0.55105346">
           <folding />
         </state>
       </provider>
