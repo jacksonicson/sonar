@@ -7,13 +7,12 @@ from threading import Thread
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 from times import ttypes as times_ttypes
-from workload import profiles
+from workload import profiles, util
 import json
 import numpy as np
 import sys
 import time
 import traceback
-from workload import util
 
 ##########################
 ## Configuration        ##
@@ -30,11 +29,13 @@ START = '07/09/2012 09:00:00'
 END = '07/09/2012 16:07:00'
 ##########################
 
+
 '''
 Disconnect from Sonar collector
 '''
 def __disconnect():
     transportManagement.close()
+
 
 '''
 Connect with Sonar collector 
@@ -83,6 +84,7 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
             
     return release_load, end_startup
 
+
 '''
 Extracts all JSON configuration and metric information from the Rain log
 '''
@@ -117,7 +119,6 @@ def __fetch_rain_data(connection, load_host, timeframe):
             msg = log.logMessage[len(STR_BENCHMARK_SCHEDULE):]
             schedule = json.loads(msg)
             schedule = (schedule['startSteadyState'], schedule['endSteadyState'])
-            break
         
         # Track configuration
         STR_TRACK_CONFIG = 'Track configuration: '
@@ -138,7 +139,6 @@ def __fetch_rain_data(connection, load_host, timeframe):
         if log.logMessage.startswith(STR_GLOBAL_METRICS):
             msg = log.logMessage[len(STR_GLOBAL_METRICS):]
             global_metrics = json.loads(msg)
-            break
             
         # Read track metrics
         STR_TRACK_METRICS = 'Track metrics: '
@@ -164,6 +164,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
         
     return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics 
 
+
 '''
 Fetch a timeseries
 '''
@@ -179,6 +180,7 @@ def __fetch_timeseries(connection, host, sensor, timeframe):
         
     return result, time
 
+
 '''
 Convert a datetime from a string to a UNIX timestamp
 '''
@@ -186,14 +188,98 @@ def __to_timestamp(date):
     res = time.strptime(date, '%d/%m/%Y %H:%M:%S')    
     return int(time.mktime(res))
 
+
 '''
 Dump all elements from a tupel as a CSV row
 '''
-def __dump_elements(elements):
+def __dump_elements(elements, title=None):
+    if title is not None:
+        __dump_elements(title)
+    
     result = ['%s,' for _ in xrange(len(elements))]
     result = ' '.join(result)
     result = result[0:-1] # remove trailing comma
     print result % elements
+
+
+'''
+Dump the contents of a scorecard
+'''
+def __dump_scorecard(scoreboard, title=True, prefix_dump=None, prefix_data=None):
+    dump = ('track', 'interval_duration', 'total_ops_successful', 'max_response_time', 'average_operation_response_time', 'min_response_time', 'effective_load_ops', 'effective_load_req', 'total_operations_failed')
+    data = []
+    for element in dump:
+        value = scoreboard[element]
+        data.append(str(value))
+
+    # Prefix
+    if prefix_dump != None and prefix_data != None:
+        prefix_dump = list(prefix_dump)
+        prefix_dump.extend(dump)
+        dump = prefix_dump
+        prefix_data.extend(data)
+        data = prefix_data
+        
+    if title:
+        __dump_elements(tuple(data), tuple(dump))
+    else:
+        __dump_elements(tuple(data))
+
+'''
+Dump the contents of a scoreboard
+'''
+def __dump_scoreboard(track, title=True):
+    dump = ('target_host',)
+    data = []
+    for element in dump:
+        value = track[element]
+        data.append(str(value))
+    
+    __dump_scorecard(track['final_scorecard'], title, dump, data)
+
+'''
+Dump the contents of a spec metric
+'''
+def __dump_spec(spec, title=True):
+    dealer = ('track', 'description', 'Purchase: Average Vehicles per Order', 'Purchase: Vehicle Purchasing Rate (/sec)', 'Purchase: Large Order Purchasing Rate (/sec)',
+            'Purchase: Large Order Vehicle Purchasing Rate (/sec)', 'Purchase: Regular Order Vehicle Purchasing Rate (/sec)', 'Purchase: Immediate Order Purchasing Rate (/sec)', 
+            'Purchase: Deferred Orders Purchasing Rate (/sec)', 'Purchase: Cart Clear Rate (/sec)', 'Purchase: Order Line Rate removed from Cart (/sec)',
+            'Purchase: Bad Credit Rate (/sec)', 'Manage: Deferred Orders cancelled (/sec)', 'Manage: Vehicles sold from lot (/sec)', 'Browse: forwards (/sec)',
+            'Browse: backwards (/sec)')
+    
+    mfg = ('track', 'description', 'EJB Planned Line Production Rate (/sec)', 'WS Planned Line Production Rate (/sec)', 'EJB Planned Line Vehicle Production Rate (/sec)',
+           'WS Planned Line Vehicle Production Rate (/sec)')
+    
+    # Use keys of dealer or mfg result
+    dump = None
+    if spec[0]['result'] == 'DealerMetrics':
+        dump = dealer
+    elif spec[0]['result'] == 'MfgMetrics':
+        dump = mfg
+    else:
+        return
+    
+    # Transform results into map
+    mapping = {}
+    for block in spec:
+        descr = block['description']
+        if block.has_key('result'):
+            result = block['result']
+            
+        if mapping.has_key(descr) == False:
+            mapping[descr] = result
+            
+    # Extract results and print csv row
+    data = []
+    for element in dump:
+        value = mapping[element]
+        data.append(str(value))
+        
+    if title:
+        __dump_elements(tuple(data), dump)
+    else:
+        __dump_elements(tuple(data))
+    
 
 def main(connection):
     # Configure experiment
@@ -204,29 +290,43 @@ def main(connection):
     # Get sync markers from control 
     sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, frame)
     print '## SYNC MARKERS ##'
-    print sync_markers
+    __dump_elements(sync_markers)
     
     #####################################################################################################################################
     ### Reading Results from Rain #######################################################################################################
     #####################################################################################################################################
     
+    _schedules = []
+    _track_configs = []
+    _global_metrics = []
+    _rain_metrics = []
+    _track_metrics = []
+    _spec_metrics = []
+    
     # Fetch rain data
     for host in DRIVER_NODES:
-        print '## HOST: %s ##' % host
-        
+        print '## DRIVER NODE: %s ##' % host
         rain_data = __fetch_rain_data(connection, host, frame)
-        schedule, track_config, rain_metrics, global_metrics, track_metrics, spec_metrics = rain_data
+        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics = rain_data
+        _schedules.append(schedule)
+        _track_configs.append(track_config)
+        _global_metrics.append(global_metrics)
+        _rain_metrics.extend(rain_metrics)
+        _track_metrics.extend(track_metrics)
+        _spec_metrics.extend(spec_metrics)
         
-        print '## SCHEDULE ##'
-        print schedule
-        steady_start, steady_end = schedule
-        elements = (steady_start, steady_end)
-        __dump_elements(elements)
         
-        print '## DOMAIN WORKLOAD MAPS ##'
-        domains = []
-        domain_track_map = {}
-        domain_workload_map = {}
+    print '## SCHEDULE ##'
+    for schedule in _schedules:
+        __dump_elements(schedule)
+    
+    print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
+    # Results
+    domains = []
+    domain_track_map = {}
+    domain_workload_map = {}
+    
+    for track_config in _track_configs:
         for track in track_config:
             host = track_config[track]['target']['hostname']
             workload = track_config[track]['loadScheduleCreatorParameters']['profile']
@@ -236,126 +336,89 @@ def main(connection):
             
             if domain_track_map.has_key(host) == False:
                 domain_track_map[host] = []
-                
             domain_track_map[host].append(track)
-
+    
             if domain_workload_map.has_key(host) == False:
                 domain_workload_map[host] = workload
             else:
                 if domain_workload_map[host] != workload:
                     print 'WARN: Multiple load profiles on the same target'
                     
-        print 'domain track map: %s' % domain_track_map
-        print 'domain workload map: %s' % domain_workload_map
-                                                       
-        print '## TRACK METRICS ##'
-        for metric in track_metrics: 
-            track = metric['track']
-            sc = metric['final_scorecard']
-            effective_load = sc['effective_load_ops']
-            offered_load = sc['offered_load_ops']
-             
-            elements = (track, effective_load, offered_load)
-            __dump_elements(elements)
-            
-                        
-        print '## HOST - TRACK MAP ##'
-        print domain_track_map
-        print domain_workload_map
+    print 'domain track map: %s' % domain_track_map
+    print 'domain workload map: %s' % domain_workload_map
+
+                  
+    print '## GLOBAL METRICS ###'
+    first = True
+    for global_metric in _global_metrics:
+        __dump_scorecard(global_metric, first)
+        first = False
         
-        print '## RAIN METRICS SUMMARY ##'
-        total_op_initiated = 0
-        total_op_successful = 0
-        total_offered_load = 0
-        total_ops_sec = 0
-        total_req_sec = 0
-        total_resp_time = 0
-        total_max_resp_time = 0
-        total_min_resp_time = 999
-        for metric in rain_metrics:
-            track = metric['track']
-            if track.find('DealerGenerator') > 0: track = 'Dealer'
-            else: track = 'MFG'
+    for metric in _rain_metrics:
+        __dump_scorecard(metric, first) 
+
+        
+    print '## TRACK METRICS ##'
+    first = True
+    for track in _track_metrics:
+        __dump_scoreboard(track, first)
+        first = False
             
-            op_initiated = metric['operations_initiated']
-            op_successful = metric['operations_successfully_completed']
-            offered_load = float(metric['offered_load(ops/sec)'])
-            ops_sec = float(metric['effective_load(ops/sec)'])
-            req_sec = float(metric['effective_load(req/sec)'])
-            resp_time = float(metric['average_operation_response_time(s)'])
-            
-            total_op_initiated += op_initiated
-            total_op_successful += op_successful
-            total_offered_load += offered_load
-            total_ops_sec += ops_sec
-            total_req_sec += req_sec
-            total_resp_time = (total_resp_time + resp_time) / 2.0
-            
-            min_resp_time = 999
-            max_resp_time = 0
-            for operation in metric['operational']['operations']:
-                min_resp_time = min(min_resp_time, operation['min_response'])
-                max_resp_time = max(max_resp_time, operation['max_response'])
-                
-            total_max_resp_time = max(max_resp_time, total_max_resp_time)
-            total_min_resp_time = min(total_min_resp_time, min_resp_time)
-            
-            elements = (track, op_initiated, op_successful, offered_load, ops_sec, req_sec, resp_time, max_resp_time, min_resp_time)
-            __dump_elements(elements)
-            
-        print '## TOTAL ##'
-        elements = (total_op_initiated, total_op_successful, total_offered_load, total_ops_sec, total_req_sec, total_resp_time, total_max_resp_time, total_min_resp_time)
-        __dump_elements(elements)
-        # process spec_metrics
-        # not required at this point
+    print '## SPEC METRICS ##'
+    for spectype in ('DealerMetrics', 'MfgMetrics'):
+        first = True 
+        for spec in _spec_metrics:
+            if spec[0]['result'] != spectype: continue
+            __dump_spec(spec, first)
+            first = False
     
     #####################################################################################################################################
     ### Resource Readings ###############################################################################################################
     #####################################################################################################################################
     
-    # Results
-    srvs = [ 'srv%i' % i for i in range(0, 6)]
-    cpu = {}
-    mem = {}
-    
-    print '## CPU LOAD SERVERS ##'
-    for srv in srvs:
-        res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', frame)
-        res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', frame)
-        cpu[srv] = res_cpu
-        mem[srv] = res_mem
-#            print '%s cpu= %s' % (srv, res_cpu)
-#            print '%s mem= %s' % (srv, res_mem)
-    
-    print '## CPU LOAD DOMAINS ##'
-    for domain in domains:
-        res_cpu, tim_cpu = __fetch_timeseries(connection, domain, 'psutilcpu', frame)
-        res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', frame)
-        cpu[domain] = (res_cpu, tim_cpu)
-        mem[domain] = (res_mem, tim_mem)
-#            print '%s cpu= %s' % (domain, res_cpu)
-#            print '%s mem= %s' % (domain, res_mem)
-    
-    # Generate and write CPU profiles to Times
-    for domain in domain_workload_map.keys():
-        print '###'
-        print domain
-        print domain_workload_map[domain]
-        
-        # Create profile from cpu load
-        name = domain_workload_map[domain]
-        profiles.process(name, cpu[domain][0], cpu[domain][1], True)
-        
-    #####################################################################################################################################
-    ### Analytics #######################################################################################################################
-    #####################################################################################################################################
-    print '## AVG CPU,MEM LOAD ##'
-    for srv in srvs: 
-        load = cpu[srv]
-        _cpu = np.average(load)
-        load = mem[srv]
-        _mem = np.average(load)
-        print '%s cpu: %f mem: %f' % (srv, _cpu, _mem)
+#    # Results
+#    srvs = [ 'srv%i' % i for i in range(0, 6)]
+#    cpu = {}
+#    mem = {}
+#    
+#    print '## CPU LOAD SERVERS ##'
+#    for srv in srvs:
+#        res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', frame)
+#        res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', frame)
+#        cpu[srv] = res_cpu
+#        mem[srv] = res_mem
+##            print '%s cpu= %s' % (srv, res_cpu)
+##            print '%s mem= %s' % (srv, res_mem)
+#    
+#    print '## CPU LOAD DOMAINS ##'
+#    for domain in domains:
+#        res_cpu, tim_cpu = __fetch_timeseries(connection, domain, 'psutilcpu', frame)
+#        res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', frame)
+#        cpu[domain] = (res_cpu, tim_cpu)
+#        mem[domain] = (res_mem, tim_mem)
+##            print '%s cpu= %s' % (domain, res_cpu)
+##            print '%s mem= %s' % (domain, res_mem)
+#    
+#    # Generate and write CPU profiles to Times
+#    for domain in domain_workload_map.keys():
+#        print '###'
+#        print domain
+#        print domain_workload_map[domain]
+#        
+#        # Create profile from cpu load
+#        name = domain_workload_map[domain]
+#        profiles.process(name, cpu[domain][0], cpu[domain][1], True)
+#        
+#    #####################################################################################################################################
+#    ### Analytics #######################################################################################################################
+#    #####################################################################################################################################
+#    print '## AVG CPU,MEM LOAD ##'
+#    for srv in srvs: 
+#        load = cpu[srv]
+#        _cpu = np.average(load)
+#        load = mem[srv]
+#        _mem = np.average(load)
+#        print '%s cpu: %f mem: %f' % (srv, _cpu, _mem)
     
 
 if __name__ == '__main__':
