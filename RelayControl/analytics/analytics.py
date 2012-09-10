@@ -22,12 +22,13 @@ COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
+TRACE_EXTRACT = True
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '01/09/2012 21:39:00'
-END = '02/09/2012 04:00:00'
+START = '04/09/2012 09:41:00'
+END = '04/09/2012 16:07:00'
 ##########################
 
 
@@ -85,9 +86,9 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
             
     return release_load, end_startup
 
-
 '''
-Extracts all JSON configuration and metric information from the Rain log
+Extracts all JSON configuration and metric information from the Rain log. This
+method only works this the most recent version of Rain dumps!
 '''
 def __fetch_rain_data(connection, load_host, timeframe):
     # Configuration
@@ -177,7 +178,7 @@ def __fetch_timeseries(connection, host, sensor, timeframe):
     query.sensor = sensor
     
     result = connection.query(query)
-    time, result = util.to_array_collector(result)
+    time, result = util.to_array_collector(result, timeframe)
         
     return result, time
 
@@ -210,8 +211,11 @@ def __dump_scorecard(scoreboard, title=True, prefix_dump=None, prefix_data=None)
     dump = ('track', 'interval_duration', 'total_ops_successful', 'max_response_time', 'average_response_time', 'min_response_time', 'effective_load_ops', 'effective_load_req', 'total_operations_failed')
     data = []
     for element in dump:
-        value = scoreboard[element]
-        data.append(str(value))
+        try:
+            value = scoreboard[element]
+            data.append(str(value))
+        except:
+            pass
 
     # Prefix
     if prefix_dump != None and prefix_data != None:
@@ -296,7 +300,6 @@ def main(connection):
     #####################################################################################################################################
     ### Reading Results from Rain #######################################################################################################
     #####################################################################################################################################
-    
     _schedules = []
     _track_configs = []
     _global_metrics = []
@@ -309,12 +312,12 @@ def main(connection):
         print 'Loading driver node: %s ...' % host
         rain_data = __fetch_rain_data(connection, host, frame)
         schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics = rain_data
-        _schedules.append(schedule)
-        _track_configs.append((track_config, host))
-        _global_metrics.append(global_metrics)
-        _rain_metrics.extend(rain_metrics)
-        _track_metrics.extend(track_metrics)
-        _spec_metrics.extend(spec_metrics)
+        if schedule is not None: _schedules.append(schedule)
+        if track_config is not None: _track_configs.append((track_config, host))
+        if global_metrics is not None: _global_metrics.append(global_metrics)
+        if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
+        if track_metrics is not None: _track_metrics.extend(track_metrics)
+        if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
         
         
     print '## SCHEDULE ##'
@@ -329,7 +332,8 @@ def main(connection):
     print '## REFINED TIME FRAME ##'
     data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
     __dump_elements(data_frame)
-    print 'Frame duration is: %i' % (data_frame[1] - data_frame[0])
+    duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
+    print 'Frame duration is: %f hours' % (duration)
     
     print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
     # Results
@@ -410,15 +414,16 @@ def main(connection):
 #        print '%s cpu= %s' % (domain, res_cpu)
 #        print '%s mem= %s' % (domain, res_mem)
     
-#    # Generate and write CPU profiles to Times
-#    for domain in domain_workload_map.keys():
-#        print '###'
-#        print domain
-#        print domain_workload_map[domain]
-#        
-#        # Create profile from cpu load
-#        name = domain_workload_map[domain]
-#        profiles.process(name, cpu[domain][0], cpu[domain][1], True)
+    # Generate and write CPU profiles to Times
+    print '## GENERATING CPU LOAD PROFILES ##'
+    for domain in domain_workload_map.keys():
+        workload = domain_workload_map[domain]
+        workload = workload.replace(profiles.POSTFIX_USER, '')
+        print 'domain: %s workload: %s' % (domain, workload)
+        
+        if TRACE_EXTRACT:
+            # Create profile from cpu load
+            profiles.process(workload, cpu[domain][0], cpu[domain][1], True)
         
     #####################################################################################################################################
     ### Analytics #######################################################################################################################

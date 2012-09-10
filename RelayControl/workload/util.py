@@ -10,11 +10,16 @@ def to_array(timeSeries):
         
     return time, demand
 
-def to_array_collector(timeSeries):
+def to_array_collector(timeSeries, timeframe):
     time = np.empty(len(timeSeries))
     demand = np.empty(len(timeSeries))
     
     for i in range(0, len(timeSeries)):
+        test = timeSeries[i].timestamp
+        if test < timeframe[0] or test > timeframe[1]:
+            time[i] = 0
+            demand[i] = 0
+            continue
         time[i] = timeSeries[i].timestamp
         demand[i] = timeSeries[i].value
         
