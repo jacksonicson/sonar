@@ -26,8 +26,8 @@ DEBUG = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '08/09/2012 0:15:00'
-END = '08/09/2012 22:07:00'
+START = '09/09/2012 23:41:00'
+END = '10/09/2012 8:40:00'
 ##########################
 
 
@@ -207,7 +207,7 @@ def __dump_elements(elements, title=None):
 Dump the contents of a scorecard
 '''
 def __dump_scorecard(scoreboard, title=True, prefix_dump=None, prefix_data=None):
-    dump = ('track', 'interval_duration', 'total_ops_successful', 'max_response_time', 'average_operation_response_time', 'min_response_time', 'effective_load_ops', 'effective_load_req', 'total_operations_failed')
+    dump = ('track', 'interval_duration', 'total_ops_successful', 'max_response_time', 'average_response_time', 'min_response_time', 'effective_load_ops', 'effective_load_req', 'total_operations_failed')
     data = []
     for element in dump:
         value = scoreboard[element]
