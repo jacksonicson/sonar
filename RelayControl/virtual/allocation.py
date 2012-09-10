@@ -31,14 +31,19 @@ def handler(ctxt, err):
 libvirt.registerErrorHandler(handler, 'context') 
 
 def __find_domain(connections, domain_name):
+    last = None
     for connection in connections:
         try:
             domain = connection.lookupByName(domain_name)
-            return domain, connection
+            last = (domain, connection)
+            
+            state = domain.state(0)[0]
+            if state == 1:
+                return domain, connection
         except:
             pass
         
-    return None, None
+    return last
 
 def migrateAllocation(allocation):
     connections = []
@@ -64,18 +69,28 @@ def migrateAllocation(allocation):
             
             xml_desc = domain.XMLDesc(0)
             
-            # if not running start on target
+            # if not running start on source (necessary for migrations?)
             state = domain.state(0)[0]
             print 'domain state: %i' % (state)
             if state != 1: 
+                # stop domain
                 print 'resetting domain %s' % (domain_name)
                 try:
                     domain.destroy()
                 except: pass
+                # start domain
                 try:
                     domain.create()
                     time.sleep(10)
                 except: pass
+            
+            # remove xml desc from target if exists
+            try:
+                dom_target = connections[target_index].lookupByName(domain_name)
+                dom_target.undefine()
+                print 'successful undefined target'
+            except:
+                pass
             
             # migrate to target
             try:
