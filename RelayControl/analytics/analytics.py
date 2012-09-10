@@ -26,8 +26,8 @@ DEBUG = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '09/09/2012 23:41:00'
-END = '10/09/2012 8:40:00'
+START = '10/09/2012 10:41:00'
+END = '10/09/2012 12:40:00'
 ##########################
 
 
@@ -306,11 +306,11 @@ def main(connection):
     
     # Fetch rain data
     for host in DRIVER_NODES:
-        print '## DRIVER NODE: %s ##' % host
+        print 'Loading driver node: %s ...' % host
         rain_data = __fetch_rain_data(connection, host, frame)
         schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics = rain_data
         _schedules.append(schedule)
-        _track_configs.append(track_config)
+        _track_configs.append((track_config, host))
         _global_metrics.append(global_metrics)
         _rain_metrics.extend(rain_metrics)
         _track_metrics.extend(track_metrics)
@@ -326,8 +326,9 @@ def main(connection):
         __dump_elements(schedule)
        
     # refine data frame
+    print '## REFINED TIME FRAME ##'
     data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
-    print data_frame
+    __dump_elements(data_frame)
     print 'Frame duration is: %i' % (data_frame[1] - data_frame[0])
     
     print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
@@ -336,7 +337,7 @@ def main(connection):
     domain_track_map = {}
     domain_workload_map = {}
     
-    for track_config in _track_configs:
+    for track_config, source_host in _track_configs:
         for track in track_config:
             host = track_config[track]['target']['hostname']
             workload = track_config[track]['loadScheduleCreatorParameters']['profile']
@@ -346,7 +347,7 @@ def main(connection):
             
             if domain_track_map.has_key(host) == False:
                 domain_track_map[host] = []
-            domain_track_map[host].append(track)
+            domain_track_map[host].append((source_host, track))
     
             if domain_workload_map.has_key(host) == False:
                 domain_workload_map[host] = workload
