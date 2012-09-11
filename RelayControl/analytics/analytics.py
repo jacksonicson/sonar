@@ -22,13 +22,13 @@ COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
-TRACE_EXTRACT = True
+TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '04/09/2012 09:41:00'
-END = '04/09/2012 16:07:00'
+START = '10/09/2012 22:17:00'
+END = '11/09/2012 04:50:00'
 ##########################
 
 
