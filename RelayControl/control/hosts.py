@@ -12,8 +12,8 @@ def add_host(hostname, drone_type):
 
 
 def get_index(host):
-    return hosts.index(host)
-
+    index = hosts.index(host)
+    return index
 
 def get_hosts(drone_type):
     if not hosts_map.has_key(drone_type):

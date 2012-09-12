@@ -95,7 +95,7 @@ def migrateAllocation(allocation):
             # migrate to target
             try:
                 print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
-                domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 100)
+                domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
                 print 'done'
             except:
                 global errno
