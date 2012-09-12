@@ -22,7 +22,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     for s in xrange(service_count):
         mapping = domains.domain_profile_mapping[s]
         
-        service = services[mapping.profileId].name + profiles.POSTFIX_USER + profiles.POSTFIX_TRACE
+        service = services[mapping.profileId].name + profiles.POSTFIX_TRACE
         print 'loading service: %s' % (service)
         
         ts = connection.load(service)
