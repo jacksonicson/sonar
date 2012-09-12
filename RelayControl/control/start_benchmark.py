@@ -12,7 +12,7 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-INIT_DB = True
+INIT_DB = False
 start = True
 ######################
 

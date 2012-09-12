@@ -26,10 +26,28 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-
-START = '10/09/2012 22:17:00'
-END = '11/09/2012 04:50:00'
+    
+START = '10/09/2012 10:09:00'
+END = '11/09/2012 16:35:00'
 ##########################
+
+
+'''
+Dump the configuration
+'''
+def __dump_configuration():
+    print '## CONFIGURATION ##'
+    print "COLLECTOR_IP = '%s'" % (COLLECTOR_IP)
+    print 'MANAGEMENT_PORT = %i' % (MANAGEMENT_PORT)
+    print 'LOGGING_PORT = %i' % (LOGGING_PORT)
+    print 'DEBUG = %s' % (DEBUG)
+    print 'TRACE_EXTRACT = %s' % (TRACE_EXTRACT)
+    print ''
+    print "CONTROLLER_NODE = '%s'" % (CONTROLLER_NODE)
+    print "DRIVER_NODES = %s" % DRIVER_NODES
+    print ''
+    print "START = '%s'" % START
+    print "END = '%s'" % END
 
 
 '''
@@ -287,6 +305,9 @@ def __dump_spec(spec, title=True):
     
 
 def main(connection):
+    # Dump the configuration
+    __dump_configuration()
+    
     # Configure experiment
     start = __to_timestamp(START)
     stop = __to_timestamp(END)
@@ -309,7 +330,7 @@ def main(connection):
     
     # Fetch rain data
     for host in DRIVER_NODES:
-        print 'Loading driver node: %s ...' % host
+        print 'Fetching driver node: %s ...' % host
         rain_data = __fetch_rain_data(connection, host, frame)
         schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics = rain_data
         if schedule is not None: _schedules.append(schedule)
@@ -396,7 +417,7 @@ def main(connection):
     cpu = {}
     mem = {}
     
-    print '## CPU LOAD SERVERS ##'
+    print '## FETCHING CPU LOAD SERVERS ... ##'
     for srv in srvs:
         res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', data_frame)
         res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', data_frame)
@@ -405,7 +426,7 @@ def main(connection):
 #        print '%s cpu= %s' % (srv, res_cpu)
 #        print '%s mem= %s' % (srv, res_mem)
     
-    print '## CPU LOAD DOMAINS ##'
+    print '## FETCHIN CPU LOAD DOMAINS ... ##'
     for domain in domains:
         res_cpu, tim_cpu = __fetch_timeseries(connection, domain, 'psutilcpu', data_frame)
         res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', data_frame)
@@ -432,12 +453,23 @@ def main(connection):
     
     dump = ('node', 'cpu, mem')
     __dump_elements(dump)
+    _total_cpu = []
+    _total_mem = []
     for srv in srvs: 
         _cpu = np.average(cpu[srv])
         _mem = np.average(mem[srv])
         
+        _total_cpu.extend(cpu[srv])
+        _total_mem.extend(mem[srv])
+        
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
+        
+    _cpu = np.average(cpu[srv])
+    _mem = np.average(mem[srv])
+    data = ['total', _cpu, _mem]
+    __dump_elements(tuple(data))
+    
 
 if __name__ == '__main__':
     connection = __connect()
