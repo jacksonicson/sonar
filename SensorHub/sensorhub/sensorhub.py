@@ -580,11 +580,16 @@ class SensorHub(Thread, object):
         # Private variables
         self.shutdown = shutdown
         
-        # Connect
-        self.__connect()
-        
-        # Register
-        self.__registerSensorHub()
+        while True:
+            try:
+                # Connect
+                self.__connect()
+                
+                # Register
+                self.__registerSensorHub()
+                break
+            except:
+                self.__disconnect()
         
         # Map of all sensors (key = sensor name, value = instance of Sensor)
         self.sensors = {}
@@ -614,14 +619,25 @@ class SensorHub(Thread, object):
             
         print 'joined: sensorhub'
       
+    def __disconnect(self):
+        try:
+            print 'Closing transport management connection'
+            self.transportManagement.close()
+        except: pass
+        try:
+            print 'Closing transport logging connection'
+            self.transportLogging.close()
+        except: pass
+        
+      
     def __connect(self):
         # Make socket
         transportManagement = TSocket.TSocket(COLLECTOR_IP, MANAGEMENT_PORT)
         transportLogging = TSocket.TSocket(COLLECTOR_IP, LOGGING_PORT)
         
         # Buffering is critical. Raw sockets are very slow
-        transportManagement = TTransport.TBufferedTransport(transportManagement)
-        transportLogging = TTransport.TBufferedTransport(transportLogging) 
+        self.transportManagement = TTransport.TBufferedTransport(transportManagement)
+        self.transportLogging = TTransport.TBufferedTransport(transportLogging) 
         
         # Setup the clients
         self.managementClient = ManagementService.Client(TBinaryProtocol.TBinaryProtocol(transportManagement));
@@ -631,10 +647,17 @@ class SensorHub(Thread, object):
         # Open the transports
         while True:
             try:
-                transportManagement.open();
-                transportLogging.open();
+                self.transportManagement.open();
+                self.transportLogging.open();
                 break
             except Exception as e:
+                try:
+                    self.transportManagement.close()
+                except: pass
+                try:
+                    self.transportLogging.close()
+                except: pass
+                
                 print 'Retrying connection...'
                 time.sleep(1)
         
