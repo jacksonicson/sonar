@@ -1,6 +1,6 @@
 from control import drones, hosts
 from datetime import datetime
-from libvirt import VIR_MIGRATE_LIVE
+from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE
 from lxml import etree
 from rain import RainService, constants, ttypes
 from relay import RelayService
@@ -86,12 +86,12 @@ def migrateAllocation(allocation):
                 except: pass
             
             # remove xml desc from target if exists
-#            try:
-#                dom_target = connections[target_index].lookupByName(domain_name)
-#                dom_target.undefine()
-#                print 'successful undefined target'
-#            except:
-#                pass
+            try:
+                dom_target = connections[target_index].lookupByName(domain_name)
+                dom_target.undefine()
+                print 'successful undefined target'
+            except:
+                pass
             
             # migrate to target
             try:
@@ -212,20 +212,20 @@ def migrationtest():
             time.sleep(10)
         except: pass
             
-#    # remove xml desc from target if exists
-#    try:
-#        dom_target = connections[target_index].lookupByName(domain_name)
-#        dom_target.undefine()
-#        print 'successful undefined target'
-#    except:
-#        pass
+    # remove xml desc from target if exists
+    try:
+        dom_target = connections[target_index].lookupByName(domain_name)
+        dom_target.undefine()
+        print 'successful undefined target'
+    except:
+        pass
             
     # migrate to target
     try:
         print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
         # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
         
-        domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE, domain_name, None, 0)
+        domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE, domain_name, None, 0)
         
         print 'done'
     except:
