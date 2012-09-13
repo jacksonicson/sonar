@@ -1,6 +1,7 @@
 from control import drones, hosts
 from datetime import datetime
-from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE
+from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE,\
+    VIR_MIGRATE_PERSIST_DEST
 from lxml import etree
 from rain import RainService, constants, ttypes
 from relay import RelayService
@@ -97,7 +98,7 @@ def migrateAllocation(allocation):
             try:
                 print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
                 # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
-                domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE, domain_name, None, 0)
+                domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain_name, None, 0)
                 print 'done'
             except:
                 global errno
