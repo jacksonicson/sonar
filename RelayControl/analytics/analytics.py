@@ -534,14 +534,15 @@ def main(connection):
         _cpu = np.average(cpu[srv])
         _mem = np.average(mem[srv])
         
-        _total_cpu.extend(cpu[srv])
-        _total_mem.extend(mem[srv])
+        if _cpu > 3:        
+            _total_cpu.extend(cpu[srv])
+            _total_mem.extend(mem[srv])
         
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
         
-    _cpu = np.average(cpu[srv])
-    _mem = np.average(mem[srv])
+    _cpu = np.average(_total_cpu)
+    _mem = np.average(_total_mem)
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
     
