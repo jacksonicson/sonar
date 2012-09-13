@@ -13,6 +13,9 @@ After=network.target
 User=root
 ExecStart=/usr/bin/python /opt/sensorhub/sensorhub.py
 Restart=always
+StartLimitInterval=3min
+StartLimitBurst=120
+StartLimitAction=none
 
 [Install]
 WantedBy=multi-user.target
