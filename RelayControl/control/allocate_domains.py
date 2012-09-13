@@ -1,14 +1,14 @@
 from ipmodels import ssapv, dsap
-from logs import sonarlog
 from service import times_client
 from virtual import nodes
 from workload import profiles
 import domains
 import numpy as np
 from virtual import allocation as virt
+from logs import sonarlog
 
 # Setup logging
-# logger = sonarlog.getLogger('allocate_domains')
+logger = sonarlog.getLogger('allocate_domains', 'Andreas-PC')
 
 def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_demand_mem, migrate=False):
     print 'Connecting with Times'
@@ -28,24 +28,27 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
         ts = connection.load(service)
         ts_len = len(ts.elements)
     
+        # put TS into service matrix
         data = np.empty((ts_len), dtype=float)
         for i in xrange(ts_len):
             data[i] = ts.elements[i].value
             
         data = data[0:profiles.PROFILE_WIDTH]
+
         service_matrix[service_index] = data
         # print data
-        
-    
+
+    # Close Times connection
     times_client.close()
     
     print 'Solving model...'
     # server, assignment = dsap.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     server, assignment = ssapv.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     if assignment != None:
-        
         print 'Required servers: %i' % (server)
+        logger.info('Required servers: %i' % server)
         print assignment
+        logger.info('Assignment: %s' % assignment)
         
         print 'Assigning domains to servers'
         migrations = []
@@ -55,7 +58,9 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
             migrations.append(migration)
         
         
-        print 'Migrations: %service_index' % migrations
+        print 'Migrations: %s' % migrations
+        logger.info('Migrations: %s' % migrations)
+
         if migrate:
             print 'Migrating...'
             virt.migrateAllocation(migrations)
