@@ -86,7 +86,7 @@ def done(ret, vm):
 
 def error(err, vm):
     print 'Connection failed, trying again...'
-    time.sleep(5)
+    time.sleep(20)
     setup(vm)
     
 
