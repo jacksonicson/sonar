@@ -11,12 +11,12 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 
 def finished(done, client_list):
-    print "execution successful"
+    print "execution successful %s" % done
     reactor.stop()
 
 def start_phase(client_list):
     print 'All Systems alive!'
-    finished(None, client_list)
+    finished(client_list, client_list)
     
 def main():
     # Create drones

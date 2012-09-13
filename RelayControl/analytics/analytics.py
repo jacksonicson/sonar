@@ -26,9 +26,9 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-    
-START = '10/09/2012 10:09:00'
-END = '11/09/2012 16:35:00'
+
+START = '1/09/2012 21:38:00'
+END = '2/09/2012 06:15:00'
 ##########################
 
 
@@ -79,6 +79,53 @@ def __connect():
             
     return managementClient 
 
+
+'''
+Read allocation configuration
+'''
+def __fetch_allocation_config(sonar, host, frame):
+    query = ttypes.LogsQuery()
+    query.hostname = host
+    query.sensor = 'allocate_domains'
+    query.startTime = frame[0] - 10 * 60 # Scan 10 minutes before the start_benchmark
+    query.stopTime = frame[1]
+    
+    servers = 0
+    assignment = None
+    migrations = None
+    placement = None
+    matrix = None
+    
+    logs = sonar.queryLogs(query)
+    for log in logs:
+        # Track configuration
+        CONFIG = 'Required servers: '
+        if log.logMessage.startswith(CONFIG):
+            msg = log.logMessage[len(CONFIG):]
+            servers = int(msg)
+            
+        CONFIG = 'Assignment: '
+        if log.logMessage.startswith(CONFIG):
+            msg = log.logMessage[len(CONFIG):]
+            assignment = msg
+            
+        CONFIG = 'Migrations: '
+        if log.logMessage.startswith(CONFIG):
+            msg = log.logMessage[len(CONFIG):]
+            migrations = msg
+            
+        CONFIG = 'Placement strategy: '
+        if log.logMessage.startswith(CONFIG):
+            msg = log.logMessage[len(CONFIG):]
+            placement = msg
+        
+        CONFIG = 'Service matrix: '
+        if log.logMessage.startswith(CONFIG):
+            msg = log.logMessage[len(CONFIG):]
+            matrix = msg
+            
+    return servers, assignment, migrations, placement, matrix
+    
 
 '''
 Reads the sync markers from the start_benchmark skript: 
@@ -317,6 +364,17 @@ def main(connection):
     sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, frame)
     print '## SYNC MARKERS ##'
     __dump_elements(sync_markers)
+    
+    #####################################################################################################################################
+    ### Reading Allocation Config #######################################################################################################
+    #####################################################################################################################################
+    servers, assignment, migrations, placement, matrix = __fetch_allocation_config(connection, CONTROLLER_NODE, frame)
+    print '## ALLOCATION ##'
+    print 'Placement Strategy: %s' % placement
+    print 'Number of servers %i' % servers
+    print 'Assignment: %s' % assignment
+    print 'Migrations: %s' % migrations
+    print 'Service matrix: %s' % matrix
     
     #####################################################################################################################################
     ### Reading Results from Rain #######################################################################################################
