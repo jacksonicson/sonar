@@ -4,4 +4,4 @@ List of all hosts/nodes in the infrastructure
 NODES = HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
 NODE_MEM = 15*1024 # MByte (available memory of the node estimated)
 DOMAIN_MEM = 2048 + 100 # MByte (domain memory  + KVM overhead estimated)
-NODE_CPU = 180
+NODE_CPU = 200

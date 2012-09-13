@@ -19,11 +19,11 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     service_count = len(domains.domain_profile_mapping)
     service_matrix = np.zeros((service_count, profiles.PROFILE_WIDTH), dtype=float)
     
-    for s in xrange(service_count):
-        mapping = domains.domain_profile_mapping[s]
+    for service_index in xrange(service_count):
+        mapping = domains.domain_profile_mapping[service_index]
         
         service = services[mapping.profileId].name + profiles.POSTFIX_TRACE
-        print 'loading service: %s' % (service)
+        print 'loading service: %service_index' % (service)
         
         ts = connection.load(service)
         ts_len = len(ts.elements)
@@ -33,7 +33,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
             data[i] = ts.elements[i].value
             
         data = data[0:profiles.PROFILE_WIDTH]
-        service_matrix[s] = data
+        service_matrix[service_index] = data
         # print data
         
     
@@ -55,7 +55,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
             migrations.append(migration)
         
         
-        print 'Migrations: %s' % migrations
+        print 'Migrations: %service_index' % migrations
         if migrate:
             print 'Migrating...'
             virt.migrateAllocation(migrations)
