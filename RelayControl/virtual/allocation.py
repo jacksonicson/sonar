@@ -86,17 +86,18 @@ def migrateAllocation(allocation):
                 except: pass
             
             # remove xml desc from target if exists
-            try:
-                dom_target = connections[target_index].lookupByName(domain_name)
-                dom_target.undefine()
-                print 'successful undefined target'
-            except:
-                pass
+#            try:
+#                dom_target = connections[target_index].lookupByName(domain_name)
+#                dom_target.undefine()
+#                print 'successful undefined target'
+#            except:
+#                pass
             
             # migrate to target
             try:
                 print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
-                domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
+                # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
+                domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE, domain_name, None, 0)
                 print 'done'
             except:
                 global errno
@@ -175,6 +176,67 @@ def main():
     
     # migrateAllocation(allocation)    
     resetAllocation(allocation)
+    
+def migrationtest():
+    connections = []
+    
+    # shutdown all VMs 
+    for host in nodes.HOSTS: 
+        conn_str = "qemu+ssh://root@%s/system" % (host)
+        print 'connecting with %s' % (conn_str)
+        conn = libvirt.open(conn_str)
+        connections.append(conn)
+ 
+    domain_name = 'target1'
+    target_index = 3
+    domain, src_conn = __find_domain(connections, domain_name)
+    if domain == None:
+        print 'Domain not found: %s' % (domain_name)
+        return
+            
+    xml_desc = domain.XMLDesc(0)
+            
+    # if not running start on source (necessary for migrations?)
+    state = domain.state(0)[0]
+    print 'domain state: %i' % (state)
+    if state != 1: 
+        # stop domain
+        print 'resetting domain %s' % (domain_name)
+        try:
+            domain.destroy()
+        except: pass
+        
+        # start domain
+        try:
+            domain.create()
+            time.sleep(10)
+        except: pass
+            
+#    # remove xml desc from target if exists
+#    try:
+#        dom_target = connections[target_index].lookupByName(domain_name)
+#        dom_target.undefine()
+#        print 'successful undefined target'
+#    except:
+#        pass
+            
+    # migrate to target
+    try:
+        print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
+        # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
+        
+        domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE, domain_name, None, 0)
+        
+        print 'done'
+    except:
+        global errno
+        print 'passed: %s' % (errno[2])
+ 
+ 
+    for conn in connections:
+        print 'closing connection...'
+        conn.close()
  
 if __name__ == '__main__':
-    main()
+    # main()
+    migrationtest()
