@@ -18,6 +18,7 @@ POSTFIX_RAW = '_profile' # raw profile e.g. from SIS or O2
 POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum
 POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. number of users
 POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
+POSTFIX_DAY = '_sampleday' # A sample day TS
 
 '''
 Experiment specific settings
@@ -251,10 +252,8 @@ mix_2 = [
 selected = mix_1
 ##############################
 
-
 def byindex(index):
     return selected[index]
-
 
 def __write_profile(connection, name, profile_ts, frequency):
     print 'storing profile with name %s' % (name)

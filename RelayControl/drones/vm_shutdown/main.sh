@@ -1,3 +1,5 @@
 #!/bin/bash
 
-shutdown -h now
+umount /mnt/share
+umount /mnt/shared
+reboot

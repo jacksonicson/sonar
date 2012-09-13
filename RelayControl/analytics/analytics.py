@@ -27,8 +27,8 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '1/09/2012 21:38:00'
-END = '2/09/2012 06:15:00'
+START = '13/09/2012 12:46:00'
+END = '13/09/2012 19:13:00'
 ##########################
 
 
@@ -88,8 +88,9 @@ def __fetch_allocation_config(sonar, host, frame):
     query.hostname = host
     query.sensor = 'allocate_domains'
     query.startTime = frame[0] - 10 * 60 # Scan 10 minutes before the start_benchmark
-    query.stopTime = frame[1]
-    
+    query.stopTime = frame[0] + 1 * 60 # Cannot occur after the benchmark start. Due to testing there may 
+    # also be invalid entries after benchmark start. So, pick the first one before the benchmark.  
+        
     servers = 0
     assignment = None
     migrations = None
@@ -123,6 +124,7 @@ def __fetch_allocation_config(sonar, host, frame):
         if log.logMessage.startswith(CONFIG):
             msg = log.logMessage[len(CONFIG):]
             matrix = msg
+            
             
     return servers, assignment, migrations, placement, matrix
     
@@ -165,6 +167,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     rain_metrics = []
     track_metrics = []
     spec_metrics = []
+    errors = []
      
     # Build query
     query = ttypes.LogsQuery()
@@ -227,9 +230,12 @@ def __fetch_rain_data(connection, load_host, timeframe):
             msg = log.logMessage[len(STR_MFG_METRICS):]
             data = json.loads(msg)
             spec_metrics.append(data) 
-              
+           
+        # Extract errors
+        if log.logLevel == 40000:
+            errors.append(log.logMessage)   
         
-    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics 
+    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors 
 
 
 '''
@@ -385,19 +391,27 @@ def main(connection):
     _rain_metrics = []
     _track_metrics = []
     _spec_metrics = []
+    _errors = []
     
     # Fetch rain data
     for host in DRIVER_NODES:
         print 'Fetching driver node: %s ...' % host
         rain_data = __fetch_rain_data(connection, host, frame)
-        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics = rain_data
+        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
         if schedule is not None: _schedules.append(schedule)
         if track_config is not None: _track_configs.append((track_config, host))
         if global_metrics is not None: _global_metrics.append(global_metrics)
         if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
         if track_metrics is not None: _track_metrics.extend(track_metrics)
         if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
+        if errors is not None: _errors.extend(errors)
         
+    print '## ERRORS ##'
+    for error in _errors:
+        if error == 'Audit failed: Incorrect value for steadyState, should be 3600':
+            print 'expected> ', error
+        else:
+            print error
         
     print '## SCHEDULE ##'
     schedule_starts = []
@@ -495,6 +509,9 @@ def main(connection):
     
     # Generate and write CPU profiles to Times
     print '## GENERATING CPU LOAD PROFILES ##'
+    if TRACE_EXTRACT:
+        raw_input('Press a key to continue generating profiles:')
+        
     for domain in domain_workload_map.keys():
         workload = domain_workload_map[domain]
         workload = workload.replace(profiles.POSTFIX_USER, '')

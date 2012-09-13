@@ -35,7 +35,7 @@ def main():
     drones.main()
     
     # Add hosts
-    for i in xrange(0, 18):
+    for i in xrange(0, 9):
         hosts.add_host('target%i' % i, 'deploy')
     
     # Connect with all drone relays
