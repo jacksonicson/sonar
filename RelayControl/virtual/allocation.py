@@ -31,11 +31,11 @@ def handler(ctxt, err):
 libvirt.registerErrorHandler(handler, 'context') 
 
 def __find_domain(connections, domain_name):
-    last = None
+    last = None, None
     for connection in connections:
         try:
             domain = connection.lookupByName(domain_name)
-            last = (domain, connection)
+            last = domain, connection
             
             state = domain.state(0)[0]
             if state == 1:
@@ -59,6 +59,7 @@ def migrateAllocation(allocation):
         
         # trigger migrations
         for migration in allocation:
+            print 'iteration'
             domain_name = migration[0]
             target_index = migration[1]
             
