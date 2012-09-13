@@ -12,7 +12,10 @@ logger = sonarlog.getLogger('allocate_domains', 'Andreas-PC')
 
 def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_demand_mem, migrate=False):
     # Dump nodes configuration
-    nodes.dump()
+    nodes.dump(logger)
+    
+    # Dump mapping
+    domains.dump(logger)
     
     # Connect with Times
     print 'Connecting with Times'
@@ -23,11 +26,13 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     service_count = len(domains.domain_profile_mapping)
     service_matrix = np.zeros((service_count, profiles.PROFILE_WIDTH), dtype=float)
     
+    service_log = ''
     for service_index in xrange(service_count):
         mapping = domains.domain_profile_mapping[service_index]
         
         service = services[mapping.profileId].name + profiles.POSTFIX_TRACE
-        print 'loading service: %service_index' % (service)
+        print 'loading service: %s' % (service)
+        service_log += service + '; '
         
         ts = connection.load(service)
         ts_len = len(ts.elements)
@@ -42,6 +47,9 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
         service_matrix[service_index] = data
         # print data
 
+    # Log services
+    logger.info('Loading services: %s' % service_log)
+
     # Dumpservice_matrix
     print 'Logging service matrix...'
     np.set_printoptions(linewidth=200, threshold=99999999)
@@ -51,7 +59,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     times_client.close()
     
     print 'Solving model...'
-    logger.info('Placement strategy: SSAPV')
+    logger.info('Placement strategy: SSAPv')
     # server, assignment = dsap.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     server, assignment = ssapv.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     if assignment != None:

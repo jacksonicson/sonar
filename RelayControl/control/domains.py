@@ -47,6 +47,13 @@ def print_mapping():
         profile = profiles.byindex(entry.profileId).name
         print '%s --- load --> %s' % (profile, entry.domain)
     
+  
+def dump(logger):
+    out = ''
+    for entry in domain_profile_mapping:
+        profile = profiles.byindex(entry.profileId).name
+        out += '%s > %s; ' % (profile, entry.domain)
+    logger.info("Mapping: %s" % out)
         
 if __name__ == '__main__':
     print_mapping()
