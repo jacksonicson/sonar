@@ -11,6 +11,10 @@ from logs import sonarlog
 logger = sonarlog.getLogger('allocate_domains', 'Andreas-PC')
 
 def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_demand_mem, migrate=False):
+    # Dump nodes configuration
+    nodes.dump()
+    
+    # Connect with Times
     print 'Connecting with Times'
     connection = times_client.connect()
     
