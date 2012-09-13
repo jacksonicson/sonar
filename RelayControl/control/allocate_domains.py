@@ -42,10 +42,16 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
         service_matrix[service_index] = data
         # print data
 
+    # Dumpservice_matrix
+    print 'Logging service matrix...'
+    np.set_printoptions(linewidth=200, threshold=99999999)
+    logger.info('Service matrix: %s' % service_matrix)
+
     # Close Times connection
     times_client.close()
     
     print 'Solving model...'
+    logger.info('Placement strategy: SSAPV')
     # server, assignment = dsap.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     server, assignment = ssapv.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
     if assignment != None:
@@ -75,6 +81,6 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
 
 if __name__ == '__main__':
     nodecount = len(nodes.HOSTS)
-    build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, True)
+    build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, False)
 
 
