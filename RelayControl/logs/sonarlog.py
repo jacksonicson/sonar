@@ -65,12 +65,12 @@ class SonarLogHandler(logging.Handler):
         
         loggingClient.logMessage(ids, value)
 
-def getLogger(sensor):
+def getLogger(sensor, hostname=HOSTNAME):
     if loggingClient is None:
         connect()
              
     logger = logging.getLogger("RelayControl")
-    logger.addHandler(SonarLogHandler(COLLECTOR_IP, LOGGING_PORT, HOSTNAME, sensor, "RelayControl"))
+    logger.addHandler(SonarLogHandler(COLLECTOR_IP, LOGGING_PORT, hostname, sensor, "RelayControl"))
     logger.setLevel(logging.DEBUG)
     
     return logger

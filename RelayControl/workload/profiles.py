@@ -460,15 +460,15 @@ def _plot():
     # Connect with times
     connection = times_client.connect()
     
-#    for desc in selected:  
-# des.name
-    name = 'SIS_264_cpu'  
-    timeSeries = connection.load(name + POSTFIX_TRACE)
-    time, demand = util.to_array(timeSeries)
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(range(0, len(demand)), demand)
+    for desc in selected:  
+        name = 'SIS_264_cpu'  
+        name = desc.name
+        timeSeries = connection.load(name + POSTFIX_TRACE)
+        time, demand = util.to_array(timeSeries)
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(range(0, len(demand)), demand)
 
     plt.show()
     
