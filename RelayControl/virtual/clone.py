@@ -106,7 +106,7 @@ def setup(vm):
     
 
 # Distribute images across all pools
-pool_index = 2 # long(time.time()) % len(STORAGE_POOLS)
+pool_index = long(time.time()) % len(STORAGE_POOLS)
 print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
 def clone(source, target):
@@ -222,7 +222,7 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [('playglassdb', 'test%i' % i) for i in range(20, 21)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(5, 6)]
 
 
 # clone_names = [('playglassdb', 'target2')]
