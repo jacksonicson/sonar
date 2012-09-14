@@ -106,7 +106,7 @@ def setup(vm):
     
 
 # Distribute images across all pools
-pool_index = 2 # long(time.time()) % len(STORAGE_POOLS)
+pool_index = long(time.time()) % len(STORAGE_POOLS)
 print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
 def clone(source, target):
@@ -128,16 +128,15 @@ def clone(source, target):
         # raceback.print_exc(file=sys.stdout)
         
         
-    try:
-        print 'Removing old volume...'
-        for delpool in pools:
+    print 'Removing old volume...'
+    for delpool in pools:
+        try:
             volume_target = delpool.storageVolLookupByName(target + ".qcow")
             if volume_target != None:
                 print 'Deleting volume:'
                 print volume_target.delete(0)
-    except:
-        print 'did not remove existing volume'
-        # traceback.print_exc(file=sys.stdout)
+        except:
+            pass
     
     
     # Select pool to clone to
@@ -145,7 +144,7 @@ def clone(source, target):
     print 'Cloning to dst_pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
     dst_pool = STORAGE_POOLS[pool_index]
     dst_pool_pool = pools[pool_index]
-    pool_index += 1
+    pool_index = (pool_index + 1) % len(STORAGE_POOLS)
     
     # Load source domain
     domain = conn.lookupByName(source)
@@ -222,7 +221,7 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [('playglassdb', 'test%i' % i) for i in range(20, 21)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
 
 
 # clone_names = [('playglassdb', 'target2')]

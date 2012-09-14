@@ -86,9 +86,35 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     else:
         print 'model infeasible'
     
+    
+def build_null_allocation(nodecount, migrate=False):
+    print 'Distributing domains over all servers ...'
+    
+    # Dump nodes configuration
+    nodes.dump(logger)
+    
+    # Dump mapping
+    domains.dump(logger)
+    
+    # Logging
+    logger.info('Placement strategy: Round Robin')
+    logger.info('Required servers: %i' % nodecount)
+    
+    assignment, migrations = virt.get_null_allocation(nodecount)
+    
+    print 'Assignment: %s' % assignment
+    logger.info('Assignment: %s' % assignment)
+    print 'Migrations: %s' % migrations
+    logger.info('Migrations: %s' % migrations)
+    
+    if migrate:
+        print 'Migrating...'
+        virt.migrateAllocation(migrations) 
+    
 
 if __name__ == '__main__':
     nodecount = len(nodes.HOSTS)
-    build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, False)
+    # build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, False)
+    build_null_allocation(nodecount, migrate=False)
 
 
