@@ -169,14 +169,14 @@ def get_null_allocation():
         
     return allocation
 
-def main():
+def establish_null_allocation():
     print 'Distributing domains over all servers ...'
         
     allocation = get_null_allocation()
     print allocation
     
-    # migrateAllocation(allocation)    
-    resetAllocation(allocation)
+    migrateAllocation(allocation)    
+    # resetAllocation(allocation)
     
 def migrationtest():
     connections = []
@@ -239,5 +239,5 @@ def migrationtest():
         conn.close()
  
 if __name__ == '__main__':
-    # main()
-    migrationtest()
+    establish_null_allocation()
+    # migrationtest()
