@@ -128,16 +128,15 @@ def clone(source, target):
         # raceback.print_exc(file=sys.stdout)
         
         
-    try:
-        print 'Removing old volume...'
-        for delpool in pools:
+    print 'Removing old volume...'
+    for delpool in pools:
+        try:
             volume_target = delpool.storageVolLookupByName(target + ".qcow")
             if volume_target != None:
                 print 'Deleting volume:'
                 print volume_target.delete(0)
-    except:
-        print 'did not remove existing volume'
-        # traceback.print_exc(file=sys.stdout)
+        except:
+            pass
     
     
     # Select pool to clone to

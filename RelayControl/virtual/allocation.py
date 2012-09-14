@@ -1,6 +1,7 @@
 from control import drones, hosts
+from control.domains import domain_profile_mapping as mapping
 from datetime import datetime
-from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE,\
+from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE, \
     VIR_MIGRATE_PERSIST_DEST
 from lxml import etree
 from rain import RainService, constants, ttypes
@@ -14,10 +15,9 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
 import libvirt
 import nodes
-import traceback
 import sys
 import time
-from control.domains import domain_profile_mapping as mapping
+import traceback
 
 
 ###############################################
@@ -160,23 +160,21 @@ def resetAllocation(allocation):
         print 'closing connection...'
         conn.close()
 
-def get_null_allocation():
-    allocation = []
-    node_index = 0
-    for maps in mapping:
-        allocation.append((maps.domain, node_index))
-        node_index = (node_index + 1) % len(nodes.HOSTS)
-        
-    return allocation
-
-def establish_null_allocation():
-    print 'Distributing domains over all servers ...'
-        
-    allocation = get_null_allocation()
-    print allocation
+def get_null_allocation(nodecount):
+    migrations = []
+    assignment = {}
     
-    migrateAllocation(allocation)    
-    # resetAllocation(allocation)
+    node_index = 0
+    service_index = 0
+    for maps in mapping:
+        migrations.append((maps.domain, node_index))
+        node_index = (node_index + 1) % nodecount
+        
+        assignment[service_index] = node_index
+        service_index += 1
+        
+    return assignment, migrations
+
     
 def migrationtest():
     connections = []
@@ -239,5 +237,5 @@ def migrationtest():
         conn.close()
  
 if __name__ == '__main__':
-    establish_null_allocation()
     # migrationtest()
+    pass
