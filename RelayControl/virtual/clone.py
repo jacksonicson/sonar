@@ -145,7 +145,7 @@ def clone(source, target):
     print 'Cloning to dst_pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
     dst_pool = STORAGE_POOLS[pool_index]
     dst_pool_pool = pools[pool_index]
-    pool_index += 1
+    pool_index = (pool_index + 1) % len(STORAGE_POOLS)
     
     # Load source domain
     domain = conn.lookupByName(source)
@@ -222,7 +222,7 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [('playglassdb', 'target%i' % i) for i in range(5, 6)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
 
 
 # clone_names = [('playglassdb', 'target2')]
