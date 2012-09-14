@@ -20,6 +20,7 @@ import traceback
 ### CONFIG                                   ##
 DEFAULT_SETUP_IP = 'vmt'
 RELAY_PORT = 7900
+STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
 ###############################################
 
 '''
@@ -104,10 +105,17 @@ def setup(vm):
     creator.addErrback(error, vm)
     
 
+# Distribute images across all pools
+pool_index = 2 # long(time.time()) % len(STORAGE_POOLS)
+print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
 def clone(source, target):
-    # Get storage pool
-    pool = conn.storagePoolLookupByName("s0a0")
+    # Get storage dst_pool
+    pools = []
+    for name in STORAGE_POOLS:
+        pool = conn.storagePoolLookupByName(name)
+        pools.append(pool)
+    
     
     # Delete target if it exists
     try:
@@ -119,17 +127,40 @@ def clone(source, target):
         print 'did not remove existing domain'
         # raceback.print_exc(file=sys.stdout)
         
+        
     try:
         print 'Removing old volume...'
-        volume_target = pool.storageVolLookupByName(target + ".qcow")
-        print volume_target.delete(0)
+        for delpool in pools:
+            volume_target = delpool.storageVolLookupByName(target + ".qcow")
+            if volume_target != None:
+                print 'Deleting volume:'
+                print volume_target.delete(0)
     except:
         print 'did not remove existing volume'
         # traceback.print_exc(file=sys.stdout)
     
+    
+    # Select pool to clone to
+    global pool_index
+    print 'Cloning to dst_pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
+    dst_pool = STORAGE_POOLS[pool_index]
+    dst_pool_pool = pools[pool_index]
+    pool_index += 1
+    
     # Load source domain
     domain = conn.lookupByName(source)
-    volume = pool.storageVolLookupByName(source + ".qcow")
+    
+    # Get source pool
+    xml_dom_desc = domain.XMLDesc(0)
+    xml_tree = etree.fromstring(xml_dom_desc)
+    name = xml_tree.xpath('/domain/devices/disk/source')
+    name = name[0].get('file')
+    name = name[5:9]
+    src_pool_index = STORAGE_POOLS.index(name)
+    src_pool = pools[src_pool_index]
+    
+    # Get source volume
+    volume = src_pool.storageVolLookupByName(source + ".qcow")
 
     # Reconfigure the volume     
     xml_vol_desc = volume.XMLDesc(0)
@@ -139,17 +170,16 @@ def clone(source, target):
     name.text = target + '.qcow'
     
     key = xml_tree.xpath('/volume/key')[0]
-    key.text = '/mnt/s0a0/' + target + '.qcow'
+    key.text = '/mnt/' + dst_pool + '/' + target + '.qcow'
     
     path = xml_tree.xpath('/volume/target/path')[0]
-    path.text = '/mnt/s0a0/' + target + '.qcow'
+    path.text = '/mnt/' + dst_pool + '/' + target + '.qcow'
     
     xml_vol_desc = etree.tostring(xml_tree)
-    #print xml_vol_desc
     
     # Create a new volume
     print 'Cloning volume...'
-    new_volume = pool.createXMLFrom(xml_vol_desc, volume, 0)
+    dst_pool_pool.createXMLFrom(xml_vol_desc, volume, 0)
     
     # Reconfigure the domain
     xml_domain_desc = domain.XMLDesc(0)
@@ -162,18 +192,16 @@ def clone(source, target):
     uuid.getparent().remove(uuid)
     
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
-    source.set('file', '/mnt/s0a0/' + target + '.qcow')
+    source.set('file', '/mnt/' + dst_pool + '/' + target + '.qcow')
     
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
     mac.getparent().remove(mac)
     
     xml_domain_desc = etree.tostring(xml_tree)
-    print xml_domain_desc
     
     # Create a new Domain
     print 'Creating Domain...'
     new_domain = conn.defineXML(xml_domain_desc)
-    #new_domain = conn.lookupByName(target)
     
     # Launch it
     print 'Starting Domain...'
@@ -194,7 +222,7 @@ count = 0
 #               ('playdb', 'mysql4'),
 #               ('playdb', 'mysql5'), ]
 
-clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
+clone_names = [('playglassdb', 'test%i' % i) for i in range(20, 21)]
 
 
 # clone_names = [('playglassdb', 'target2')]
