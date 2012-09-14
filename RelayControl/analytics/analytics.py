@@ -27,8 +27,8 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '13/09/2012 12:46:00'
-END = '13/09/2012 19:13:00'
+START = '13/09/2012 22:00:00'
+END = '14/09/2012 05:20:00'
 ##########################
 
 
@@ -87,7 +87,7 @@ def __fetch_allocation_config(sonar, host, frame):
     query = ttypes.LogsQuery()
     query.hostname = host
     query.sensor = 'allocate_domains'
-    query.startTime = frame[0] - 10 * 60 # Scan 10 minutes before the start_benchmark
+    query.startTime = frame[0] - 60 * 60 # Scan 10 minutes before the start_benchmark
     query.stopTime = frame[0] + 1 * 60 # Cannot occur after the benchmark start. Due to testing there may 
     # also be invalid entries after benchmark start. So, pick the first one before the benchmark.  
         
@@ -142,6 +142,7 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     query.stopTime = frame[1]
     
     logs = sonar.queryLogs(query)
+    start_startup = None
     release_load = None
     end_startup = None
     for log in logs:
@@ -150,8 +151,11 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
                 release_load = log.timestamp
             elif log.logMessage == 'end of startup sequence':
                 end_startup = log.timestamp
-            
-    return release_load, end_startup
+            elif log.logMessage == 'start of startup sequence':
+                start_startup = log.timestamp
+                
+                
+    return start_startup, release_load, end_startup
 
 '''
 Extracts all JSON configuration and metric information from the Rain log. This
@@ -372,9 +376,10 @@ def main(connection):
     __dump_elements(sync_markers)
     
     #####################################################################################################################################
-    ### Reading Allocation Config #######################################################################################################
+    ### Reading Allocation ##############################################################################################################
     #####################################################################################################################################
-    servers, assignment, migrations, placement, matrix = __fetch_allocation_config(connection, CONTROLLER_NODE, frame)
+    allocation_frame = (sync_markers[0], frame[1])
+    servers, assignment, migrations, placement, matrix = __fetch_allocation_config(connection, CONTROLLER_NODE, allocation_frame)
     print '## ALLOCATION ##'
     print 'Placement Strategy: %s' % placement
     print 'Number of servers %i' % servers
