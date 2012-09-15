@@ -48,6 +48,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
         # print data
 
     # Log services
+    logger.info('Selected profile: %s' % profiles.selected_name)
     logger.info('Loading services: %s' % service_log)
 
     # Dumpservice_matrix

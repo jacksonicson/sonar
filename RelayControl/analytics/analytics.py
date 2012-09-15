@@ -27,8 +27,8 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-START = '13/09/2012 22:00:00'
-END = '14/09/2012 05:20:00'
+START = '15/09/2012 11:53:41'
+END = '15/09/2012 18:30:41'
 ##########################
 
 
@@ -140,8 +140,8 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     query.sensor = 'start_benchmark'
     query.startTime = frame[0]
     query.stopTime = frame[1]
-    
     logs = sonar.queryLogs(query)
+    
     start_startup = None
     release_load = None
     end_startup = None
