@@ -249,7 +249,7 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected = mix_1
+selected = mix_0
 ##############################
 
 def byindex(index):
