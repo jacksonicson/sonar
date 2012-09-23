@@ -11,6 +11,7 @@ mount -t nfs monitor0:/mnt/arr0/share /mnt/share
 mysql -uroot -prooter < /mnt/share/dumps/specdb\ txrate\ 60.sql
 
 # Umount NFS share
+cd /
 umount /mnt/share
 
 # Print done
