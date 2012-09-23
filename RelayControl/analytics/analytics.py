@@ -26,9 +26,9 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-
-START = '15/09/2012 11:53:41'
-END = '15/09/2012 18:30:41'
+                    
+START = '16/09/2012 20:20:41'
+END = '17/09/2012 03:30:41'
 ##########################
 
 

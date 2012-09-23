@@ -249,8 +249,8 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected_name = 'mix_0'
-selected = mix_0
+selected_name = 'mix_2'
+selected = mix_2
 ##############################
 
 def byindex(index):
@@ -463,7 +463,7 @@ def _plot():
     for desc in selected:  
         name = 'SIS_264_cpu'  
         name = desc.name
-        timeSeries = connection.load(name + POSTFIX_TRACE)
+        timeSeries = connection.load(name + POSTFIX_USER)
         time, demand = util.to_array(timeSeries)
         
         fig = plt.figure()
@@ -474,6 +474,10 @@ def _plot():
     
     # Close times connection
     times_client.close()
+
+def dump(logger):
+    logger.info('selected_name = %s' % selected_name)
+    logger.info('selected = %i' % selected)
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':

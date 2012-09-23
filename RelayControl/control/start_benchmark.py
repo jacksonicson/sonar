@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = True
+start = False
 ######################
 
 # Setup logging
@@ -111,6 +111,9 @@ def trigger_rain_benchmark(ret, client_list):
 def phase_start_rain(done, client_list):
     print 'starting rain DRIVER_NODES...'
     logger.info('starting rain DRIVER_NODES')
+    
+    # Dump profile
+    profiles.dump(sonarlog)
     
     dlist = []
 
