@@ -13,10 +13,13 @@ import string
 import tempfile
 import zipfile
 import time
+from threading import Thread
+import thread
 
 ##########################
 ## Configuration        ##
 PORT = 7900
+MAX_WAIT_TIME = 230
 ##########################
 
 def checkEnvironment():
@@ -26,9 +29,24 @@ def checkEnvironment():
         os.mkdir(os.path.join(tmpDir, 'relay')) 
     
 
-class ProcessLoader(object):
+class ProcessLoader(Thread):
     
     VALID_MAINS = ('main', 'main.exe', 'main.py', 'main.sh')
+    
+    def __init__(self):
+        super(ProcessLoader, self).__init__()
+        
+        # Alive flag
+        self.alive = True
+        
+        # Lock
+        self.lock = thread.allocate_lock()
+        
+        # Watch list
+        self.watching = []
+        
+        self.start()
+        print 'forged: process loader'
     
     def decompress(self, data, name):
         # Ensure tmp directory is here
@@ -139,11 +157,56 @@ class ProcessLoader(object):
             print 'error starting process %s' % (e)
             return None
 
+    def attach(self, process):
+        self.lock.acquire()
+        self.watching.append(process)
+        self.lock.release()
 
-    def waitFor(self, process):
-        process.wait()
+    def run(self):
+        while self.alive:
+            self.lock.acquire()
+            # Update streams list
+            streams = []
+            _watching = []
+            for process in self.watching:
+                # Cleans up dead processes
+                if process.poll() is not None: 
+                    streams.append(process.stdout)
+                    _watching.append(process)
+            self.watching = _watching                
+            self.lock.release()
+            
+            if len(streams) == 0:
+                time.sleep(3)
+                continue
+            
+            # Wait for receive and pick the stdout list
+            try:
+                data = select(streams, [], [], 3)[0]
+            except: 
+                print 'stopping continuouse because of error in select'
+                break 
+            
+            # Data is not stored
+            for i in range(0, len(data)):
+                line = data[i]
+                line = line.readline()
+                line = line.strip().rstrip()
+                print line 
+            
 
-    
+    def shutdown(self):
+        # Exit main loop 
+        self.alive = False
+        
+        # Wait until main loop is closing and taking all the processes with it
+        while self.isAlive():
+            self.join(timeout=3)
+            print 'waiting for: process loader'
+            
+        print 'joined: process loader'
+
+
     def kill(self, process):
         try:
             if process.poll() is None:
@@ -161,6 +224,26 @@ class ProcessManager(object):
         self.processLoader = ProcessLoader()
         self.pidMapping = {}
     
+
+    def __launch(self, data, name):
+        # Decompress
+        status = self.processLoader.decompress(data, name)
+        if status == False: 
+            print 'Error: Decompression failed'
+            return None
+        
+        # Launch process
+        process = self.processLoader.newProcess(name)
+        if process is None:
+            print 'Error: Failed to launch process'
+            return None
+        
+        return process
+
+    '''
+    Starts and restarts a process to find a message in its stdout stream.
+    The process is terminated as soon as the message gets found or a timeout occurs.     
+    '''
     def poll(self, data, name, message):
         # Decompress
         status = self.processLoader.decompress(data, name)
@@ -169,21 +252,26 @@ class ProcessManager(object):
             return False
            
         base_time = time.time()
-        while True: # Restart process if it fails (isAlive polling) 
-
+        for _ in xrange(0, 3): # Restart process if it fails 
             # Launch process            
             process = self.processLoader.newProcess(name)
             if process is None:
                 print 'Error: Could not launch process'
                 return False
             
-            while  process.poll() is not None: # Read until message gets found or process is dead (restart necessary)
-                if (time.time() - base_time) > 240:
-                    print 'ERROR: did not find message within 240 seconds'
+            # Read on the active process until message gets found
+            # This loop exists if the process dies or the message gets found
+            while  process.poll() is not None:
+                # Impose a waiting time limit  
+                if (time.time() - base_time) > MAX_WAIT_TIME:
+                    print 'ERROR: did not find message within %i seconds' % MAX_WAIT_TIME
+                    # Shutdown the process
+                    if process.poll() is None:
+                        process.kill()
                     return False
                 
-                streams = [process.stdout]
                 try:
+                    streams = [process.stdout]
                     data = select(streams, [], [], 1)[0]
                 except: 
                     print 'Error: select failed, restarting process'
@@ -206,31 +294,26 @@ class ProcessManager(object):
                         return True
             
             # Sleep some time between process restarts
-            time.sleep(1) 
+            time.sleep(1)
         
+        # Process was restarted too often
+        print 'Error: process was restarted too often'
+        return False
+
     
     def wait(self, data, name, message, targetFile=None):
-        # Decompress
-        status = self.processLoader.decompress(data, name)
-        if status == False: 
-            print 'Error: Decompression failed'
-            return False
+        # Start process
+        process = self.__launch(data, name)
+        if process == None: return False
         
-        # Launch process
-        process = self.processLoader.newProcess(name)
-        if process is None:
-            print 'Error: Failed to launch process'
-            return False
-        
-        # Get stream
-        streams = []
+        # Get stream from process or target file if set
         if targetFile is None:
             streams = [process.stdout]
         else:
             # Wait launch process to finish 
             process.communicate()
             
-            # Hook onto the logfiles
+            # Hook onto the target file
             try:
                 print 'Reading from file: %s' % (targetFile)
                 stream = open(targetFile, 'r')
@@ -240,24 +323,18 @@ class ProcessManager(object):
                 return False
         
         # Read the stream until the sequence is found
-        import time
         base_time = time.time()        
         while True:
-            
-            # TODO: Solve this without a hard deadline
-            # If the child process finishes .. the polling should stop
-            # This requires to start the target process using exec in bash
-            if (time.time() - base_time) > 60:
-                print 'ERROR: did not find message within 60 seconds'
+            if (time.time() - base_time) > MAX_WAIT_TIME:
+                print 'ERROR: did not find message within %i seconds' % MAX_WAIT_TIME
                 return False
             
-            data = None
             try:
                 data = select(streams, [], [], 1)[0]
             except Exception, e: 
                 print 'Error: select failed, %s' % (e)
                 return False 
-        
+            
             for i in range(0, len(data)):
                 line = data[i]
                 line = line.readline()
@@ -265,19 +342,17 @@ class ProcessManager(object):
 
                 if line.find(message) > -1:
                     print 'message found'
+                    
+                    # handover stdout control
+                    self.processLoader.attach(process)
+                    
                     return True
                 
     
     def launch(self, data, name, wait=True):
-        status = self.processLoader.decompress(data, name)
-        if status == False:
-            print 'Error: Decompression failed'
-            return -1
-            
-        process = self.processLoader.newProcess(name)
-        if process is None:
-            print 'Error: launching process failed'
-            return -1
+        # Start process
+        process = self.__launch(data, name)
+        if process == None: return False
         
         # Update PID map
         self.pidMapping[process.pid] = process
@@ -293,7 +368,8 @@ class ProcessManager(object):
             # Process is dead
             return 0
         else:
-            # TODO: Kill the process after 3 minutes
+            # handover stdout control
+            self.processLoader.attach(process)
             pass
 
 
@@ -372,6 +448,7 @@ class RelayHandler(object):
         self.__done(ret)
         return ret
 
+
 def main():
     handler = RelayHandler()
     processor = RelayService.Processor(handler)
@@ -382,6 +459,7 @@ def main():
     
     print 'starting reactor on port %i ...' % (PORT)
     reactor.run()
+
 
 if __name__ == "__main__":
     checkEnvironment()
