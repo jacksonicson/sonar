@@ -7,9 +7,10 @@ def finished(done, client_list):
     print "execution successful: %s" % (done)
     reactor.stop()
 
-def error(done, client_list):
+def error(data):
     # If relay gets restarted the connection to relay is broken
-    # So, it is expected that an error occurs, no logging here. 
+    # So, it is expected that an error occurs, no logging here.
+    print 'Error %s' % (data) 
     pass
 
 def deploy_phase(client_list):
@@ -43,6 +44,7 @@ def main():
     # Wait for all connections
     wait = defer.DeferredList(dlist)
     wait.addCallback(deploy_phase)
+    wait.addErrback(error)
     
     # Start the Twisted reactor
     reactor.run()
