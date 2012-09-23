@@ -23,7 +23,6 @@ def deploy_phase(client_list):
         print '   %s' % (host)
         d = base.launch(client_list, host, 'vm_shutdown', wait=True)
         dlist.append(d)
-        d.addErrback(error, client_list)
     
     # Wait for all drones to finish and set phase
     dl = defer.DeferredList(dlist)
