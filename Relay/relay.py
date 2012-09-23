@@ -131,7 +131,7 @@ class ProcessLoader(object):
             else:
                 executable = [executable, path, name]
             
-            process = Popen(executable, stdout=PIPE, bufsize=10, universal_newlines=True, cwd=cwd)
+            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True, cwd=cwd)
             
             print 'PID %i' % (process.pid)
             return process
@@ -168,9 +168,8 @@ class ProcessManager(object):
             print 'Error: Decompression failed'
             return False
            
-        # Restart process if it fails (isAlive polling)
         base_time = time.time()
-        while True: 
+        while True: # Restart process if it fails (isAlive polling) 
 
             # Launch process            
             process = self.processLoader.newProcess(name)
@@ -178,47 +177,35 @@ class ProcessManager(object):
                 print 'Error: Could not launch process'
                 return False
             
-            # Read until message gets found or process is dead (restart necessary)
-            while True:
-                
-                # TODO: Solve this without a hard deadline
-                # If the child process finishes .. the polling should stop
-                # This requires to start the target process using exec in bash
-                if (time.time() - base_time) > 120:
-                    print 'ERROR: did not find message within 120 seconds'
+            while  process.poll() is not None: # Read until message gets found or process is dead (restart necessary)
+                if (time.time() - base_time) > 240:
+                    print 'ERROR: did not find message within 240 seconds'
                     return False
                 
                 streams = [process.stdout]
-                data = None
                 try:
                     data = select(streams, [], [], 1)[0]
                 except: 
                     print 'Error: select failed, restarting process'
-                    
-                    # Kill the process (just to be sure)
+                    # Make sure, the process is dead
                     if process.poll() is None:
                         process.kill()
-                    
-                    break 
+                    continue
             
                 for i in range(0, len(data)):
                     line = data[i]
                     line = line.readline()
                     line = line.strip().rstrip()
     
-                    if line.find(message) > -1:
-                        # This process is still alive (no return code)
+                    if line.find(message) > -1: # Message found
+                        # Shutdown the process
                         if process.poll() is None:
                             process.kill()
 
-                        # Return
+                        # Return true
                         return True
             
-                # Process is dead
-                if process.poll() is not None:
-                    break
-                    
-            # Sleep some time between the iterations
+            # Sleep some time between process restarts
             time.sleep(1) 
         
     
@@ -305,6 +292,9 @@ class ProcessManager(object):
             
             # Process is dead
             return 0
+        else:
+            # TODO: Kill the process after 3 minutes
+            pass
 
 
         # Return a valid PID            
