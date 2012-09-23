@@ -1,3 +1,4 @@
+import drones, hosts, base
 from datetime import datetime
 from rain import RainService, constants, ttypes
 from relay import RelayService
@@ -8,25 +9,38 @@ from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
-import drones
-import hosts
-import base
 
 def finished(done, client_list):
     print "execution successful %s" % done
     reactor.stop()
 
 def start_phase(client_list):
-    print 'All Systems alive!'
-    finished(client_list, client_list)
+    dlist = []
+    for host in hosts.get_hosts('action'):
+        print '   %s' % (host)
+        
+        d = base.launch(client_list, host, 'test', wait=False)
+        dlist.append(d)
+        
+#        d = base.launch(client_list, host, 'test', wait=True)
+#        dlist.append(d)
+
+        base.client(client_list, host).isAlive(234433)
+        # base.client(client_list, host).kill(234433)
+
+#        base.poll_for_message(client_list, host, 'test', 'done')
+        
+#        base.wait_for_message(client_list, host, 'test', 'done')
+    
+    dl = defer.DeferredList(dlist)  
+    dl.addCallback(finished, client_list)
     
 def main():
     # Create drones
     drones.main()
     
     # Add hosts
-    for i in xrange(0, 18):
-        hosts.add_host('target%i' % i, 'action')
+    hosts.add_host('192.168.96.6', 'action')
         
     hosts_map = hosts.get_hosts_list()
     

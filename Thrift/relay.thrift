@@ -5,6 +5,7 @@ typedef i32 int
 
 service RelayService {
 
+	// Deprecated
 	void execute(1:string code);
 	
 	int launch(1:binary data, 2:string name)
