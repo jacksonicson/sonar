@@ -149,7 +149,7 @@ class ProcessLoader(Thread):
             else:
                 executable = [executable, path, name]
             
-            process = Popen(executable, stdout=PIPE, bufsize=1, universal_newlines=True, cwd=cwd)
+            process = Popen(executable, stdout=PIPE, bufsize=0, universal_newlines=True, cwd=cwd)
             
             print 'PID %i' % (process.pid)
             return process
@@ -164,18 +164,21 @@ class ProcessLoader(Thread):
 
     def run(self):
         while self.alive:
+            
             self.lock.acquire()
             # Update streams list
             streams = []
             _watching = []
             for process in self.watching:
                 # Cleans up dead processes
-                if process.poll() is not None: 
+                print 'check'
+                if process.poll() is None: 
                     streams.append(process.stdout)
                     _watching.append(process)
             self.watching = _watching                
             self.lock.release()
             
+            # print 'cycle %i' % len(streams)
             if len(streams) == 0:
                 time.sleep(3)
                 continue
@@ -360,7 +363,8 @@ class ProcessManager(object):
         # Waiting until process is closed?
         if wait:
             print 'waiting for process ...'
-            self.processLoader.waitFor(process)
+            process.wait()
+            print 'done'
             
             # Update PID map
             del self.pidMapping[process.pid]
@@ -395,6 +399,10 @@ class ProcessManager(object):
         return self.processLoader.kill(process)
     
 
+    def shutdown(self):
+        self.processLoader.shutdown()
+
+
 class RelayHandler(object):
     implements(RelayService.Iface)
     
@@ -413,13 +421,13 @@ class RelayHandler(object):
         print 'Waiting for messages...'
     
     def launch(self, binary, name):
-        print 'launching drone...'
+        print 'launch drone...'
         ret = self.processManager.launch(binary, name)
         self.__done(ret)
         return ret
 
     def launchNoWait(self, data, name):
-        print 'launching drone... (no wait)'
+        print 'launch wait drone... (no wait)'
         ret = self.processManager.launch(data, name, False)
         self.__done(ret)
         return ret
@@ -447,6 +455,9 @@ class RelayHandler(object):
         ret = self.processManager.wait(data, name, message, targetFile)
         self.__done(ret)
         return ret
+    
+    def shutdown(self):
+        self.processManager.shutdown()
 
 
 def main():
@@ -459,6 +470,9 @@ def main():
     
     print 'starting reactor on port %i ...' % (PORT)
     reactor.run()
+    
+    print 'stopping threads'
+    handler.shutdown()
 
 
 if __name__ == "__main__":
