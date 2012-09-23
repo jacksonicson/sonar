@@ -7,11 +7,12 @@ def finished(done, client_list):
     print "execution successful: %s" % (done)
     reactor.stop()
 
-def error(data):
+def error(data, err):
     # If relay gets restarted the connection to relay is broken
     # So, it is expected that an error occurs, no logging here.
-    print 'Error %s' % (data) 
-    pass
+    print 'Error %s' % (data)
+    print 'Error %s' % (err) 
+
 
 def deploy_phase(client_list):
     print 'deploying rain driver...'
