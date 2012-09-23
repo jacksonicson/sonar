@@ -477,7 +477,6 @@ def _plot():
 
 def dump(logger):
     logger.info('selected_name = %s' % selected_name)
-    logger.info('selected = %i' % selected)
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':

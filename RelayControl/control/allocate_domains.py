@@ -11,6 +11,9 @@ from logs import sonarlog
 logger = sonarlog.getLogger('allocate_domains', 'Andreas-PC')
 
 def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_demand_mem, migrate=False):
+    # Dump profiles
+    profiles.dump(logger)
+    
     # Dump nodes configuration
     nodes.dump(logger)
     
@@ -91,6 +94,9 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
 def build_null_allocation(nodecount, migrate=False):
     print 'Distributing domains over all servers ...'
     
+    # Dump profiles
+    profiles.dump(logger)
+    
     # Dump nodes configuration
     nodes.dump(logger)
     
@@ -116,6 +122,6 @@ def build_null_allocation(nodecount, migrate=False):
 if __name__ == '__main__':
     nodecount = len(nodes.HOSTS)
     # build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, True)
-    build_null_allocation(nodecount, migrate=True)
+    build_null_allocation(nodecount, migrate=False)
 
 
