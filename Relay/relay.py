@@ -360,7 +360,7 @@ class ProcessManager(object):
                     return True
                 
     
-    def launch(self, data, name, wait=True):
+    def _launch(self, data, name, wait=True):
         # Start process
         process = self.__launch(data, name)
         if process == None: return False
@@ -414,71 +414,17 @@ class ProcessManager(object):
                    }
         exec code in context
     
+    def launch(self, data, name):
+        self._launch(data, name, True)
+    
     def launchNoWait(self, data, name):
-        ret = self.launch(data, name, False)
+        ret = self._launch(data, name, False)
         return ret
 
     def shutdown(self):
         self.processLoader.shutdown()
 
 
-
-class RelayHandler(object):
-    implements(RelayService.Iface)
-    
-    def __init__(self):
-        self.processManager = ProcessManager()
-    
-    def execute(self, code):
-        print 'executing python source: %s' % (code)
-        context = {
-                   'processManager' : self.processManager
-                   }
-        exec code in context
-    
-    def __done(self, ret):
-        print 'Status: %s' % (ret)
-        print 'Waiting for messages...'
-    
-    def launch(self, binary, name):
-        print 'launch drone...'
-        ret = self.processManager.launch(binary, name)
-        self.__done(ret)
-        return ret
-
-    def launchNoWait(self, data, name):
-        print 'launch wait drone... (no wait)'
-        ret = self.processManager.launch(data, name, False)
-        self.__done(ret)
-        return ret
-    
-    def isAlive(self, pid):
-        print 'checking if process %i is alive...' % (pid)
-        ret = self.processManager.isAlive(pid)
-        self.__done(ret)
-        return ret
-    
-    def kill(self, pid):
-        print 'killing process %i...' % (pid)
-        ret = self.processManager.kill(pid)
-        self.__done(ret)
-        return ret
-    
-    def pollForMessage(self, data, name, message):
-        print 'polling for message: %s ...' % (message)
-        ret = self.processManager.poll(data, name, message)
-        self.__done(ret)
-        return ret
-    
-    def waitForMessage(self, data, name, message, targetFile):
-        print 'polling for message %s in file %s...' % (message, targetFile)
-        ret = self.processManager.wait(data, name, message, targetFile)
-        self.__done(ret)
-        return ret
-    
-    def shutdown(self):
-        self.processManager.shutdown()
-        
 
 def main():
     handler = ProcessManager()

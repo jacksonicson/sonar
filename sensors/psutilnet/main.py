@@ -20,6 +20,7 @@ while True:
     wait = 3
     delta_bytes_sent = (bytes_sent - last_bytes_sent) / wait
     delta_bytes_recv = (bytes_recv - last_bytes_recv) / wait
+    
     last_bytes_recv = bytes_recv
     last_bytes_sent = bytes_sent
 
