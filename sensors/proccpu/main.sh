@@ -50,13 +50,36 @@ do
 		OUT[$((i*2+1))]=$((OUT_INT%10))
 	done
 
+	# log STEAL value
 	# indices in the OUT array which contains the steal time 
 	index=$((7*2))
 	index2=$(($index+1))
-	
-	# log the value
 	res_timestamp=$(date +%s)
 	res_name='steal'
+	res_hostname='none'
+	res_value="${OUT[$index]}.${OUT[$index2]}"
+	echo "$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
+
+	# Log 
+	index=$((0*2))
+	index2=$(($index+1))
+	res_name='user'
+	res_hostname='none'
+	res_value="${OUT[$index]}.${OUT[$index2]}"
+	echo "$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
+
+	# Log 
+	index=$((4*2))
+	index2=$(($index+1))
+	res_name='iowait'
+	res_hostname='none'
+	res_value="${OUT[$index]}.${OUT[$index2]}"
+	echo "$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
+
+	# Log 
+	index=$((2*2))
+	index2=$(($index+1))
+	res_name='sys'
 	res_hostname='none'
 	res_value="${OUT[$index]}.${OUT[$index2]}"
 	echo "$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
