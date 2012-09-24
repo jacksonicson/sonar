@@ -223,6 +223,8 @@ class ProcessLoader(Thread):
 
 
 class ProcessManager(object):
+    implements(RelayService.Iface)
+    
     def __init__(self):
         self.processLoader = ProcessLoader()
         self.pidMapping = {}
@@ -247,7 +249,9 @@ class ProcessManager(object):
     Starts and restarts a process to find a message in its stdout stream.
     The process is terminated as soon as the message gets found or a timeout occurs.     
     '''
-    def poll(self, data, name, message):
+    def pollForMessage(self, data, name, message):
+        print 'poll for message...'
+        
         # Decompress
         status = self.processLoader.decompress(data, name)
         if status == False:
@@ -255,8 +259,9 @@ class ProcessManager(object):
             return False
            
         base_time = time.time()
-        for _ in xrange(0, 3): # Restart process if it fails 
-            # Launch process            
+        for _ in xrange(0, 3): # Restart process if it fails
+            # Launch process
+            print 'Launching process...'            
             process = self.processLoader.newProcess(name)
             if process is None:
                 print 'Error: Could not launch process'
@@ -264,7 +269,7 @@ class ProcessManager(object):
             
             # Read on the active process until message gets found
             # This loop exists if the process dies or the message gets found
-            while  process.poll() is not None:
+            while  process.poll() is None:
                 # Impose a waiting time limit  
                 if (time.time() - base_time) > MAX_WAIT_TIME:
                     print 'ERROR: did not find message within %i seconds' % MAX_WAIT_TIME
@@ -289,6 +294,8 @@ class ProcessManager(object):
                     line = line.strip().rstrip()
     
                     if line.find(message) > -1: # Message found
+                        print 'Message found...'
+                        
                         # Shutdown the process
                         if process.poll() is None:
                             process.kill()
@@ -303,8 +310,9 @@ class ProcessManager(object):
         print 'Error: process was restarted too often'
         return False
 
-    
-    def wait(self, data, name, message, targetFile=None):
+    def waitForMessage(self, data, name, message, targetFile):
+        print 'wait for message...'
+        
         # Start process
         process = self.__launch(data, name)
         if process == None: return False
@@ -399,8 +407,20 @@ class ProcessManager(object):
         return self.processLoader.kill(process)
     
 
+    def execute(self, code):
+        print 'executing python source: %s' % (code)
+        context = {
+                   'processManager' : self.processManager
+                   }
+        exec code in context
+    
+    def launchNoWait(self, data, name):
+        ret = self.launch(data, name, False)
+        return ret
+
     def shutdown(self):
         self.processLoader.shutdown()
+
 
 
 class RelayHandler(object):
@@ -445,7 +465,7 @@ class RelayHandler(object):
         return ret
     
     def pollForMessage(self, data, name, message):
-        print 'polling for message %s...' % (message)
+        print 'polling for message: %s ...' % (message)
         ret = self.processManager.poll(data, name, message)
         self.__done(ret)
         return ret
@@ -458,10 +478,10 @@ class RelayHandler(object):
     
     def shutdown(self):
         self.processManager.shutdown()
-
+        
 
 def main():
-    handler = RelayHandler()
+    handler = ProcessManager()
     processor = RelayService.Processor(handler)
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     reactor.listenTCP(PORT,
