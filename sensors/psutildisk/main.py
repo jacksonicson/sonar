@@ -8,6 +8,8 @@ last_write_count = 0
 last_write_bytes = 0
 last_read_count = 0
 last_read_bytes = 0
+last_read_time = 0
+last_write_time = 0
 
 while True:
     diskio = psutil.disk_io_counters(perdisk=False)
@@ -28,11 +30,28 @@ while True:
     if last_write_bytes == 0:
         last_write_bytes = write_bytes
     
-    wait = 3
-    delta_read_count = (read_count - last_read_count) / (3 * 1024)
-    delta_read_bytes = (read_bytes - last_read_bytes) / (3 * 1024)
-    delta_write_count = (write_count - last_write_count) / (3 * 1024)
-    delta_write_bytes = (write_bytes - last_write_bytes) / (3 * 1024)
+    read_time = diskio.read_time
+    if last_read_time == 0:
+        last_read_time = read_time
+    
+    write_time = diskio.write_time
+    if last_write_time == 0:
+        last_write_time = write_time
+    
+    wait = 3 # seconds
+    delta_read_count = (read_count - last_read_count) / (wait * 1024)
+    delta_read_bytes = (read_bytes - last_read_bytes) / (wait * 1024)
+    delta_write_count = (write_count - last_write_count) / (wait * 1024)
+    delta_write_bytes = (write_bytes - last_write_bytes) / (wait * 1024)
+    delta_read_time = (read_time - last_read_time) / (wait)
+    delta_write_time = (write_time - last_write_time) / (wait)
+    
+    last_read_count = read_count
+    last_read_bytes = read_bytes
+    last_write_count = write_count
+    last_write_bytes = write_bytes
+    last_read_time = read_time
+    last_write_time = write_time
     
     line = NAME + ','
     line += str(time.time()) + ','
@@ -70,7 +89,7 @@ while True:
     line += str(time.time()) + ','
     line += 'readtime' + ','
     line += 'none' + ','
-    value = str(diskio.read_time)
+    value = str(delta_read_time)
     line += value
     print (line)
     
@@ -78,7 +97,7 @@ while True:
     line += str(time.time()) + ','
     line += 'writetime' + ','
     line += 'none' + ','
-    value = str(diskio.write_time)
+    value = str(delta_write_time)
     line += value
     print (line)
     
