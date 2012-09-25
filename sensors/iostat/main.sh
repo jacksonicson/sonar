@@ -3,6 +3,10 @@
 # Name of the sensor passed as first cmdline argument
 sensor=$1
 
+# Read parameters
+device=$2
+device=`echo $device | sed 's/device=//'`
+
 # End flag which is use to terminate the main loop
 end=0
 exitThis() 
@@ -16,7 +20,7 @@ trap exitThis SIGKILL
 while [ $end -eq 0 ] 
 do
 	n1=5
-	out=`iostat -x -d sda | grep sda `
+	out=`iostat -x -d $device | grep $device `
 	arr=$(echo $out | tr " " ",")
 	IFS="," read -ra STR_ARRAY <<< "$arr"
 
