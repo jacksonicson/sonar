@@ -705,17 +705,20 @@ class Parameter:
   Attributes:
    - key
    - value
+   - extendSensor
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'key', None, None, ), # 1
     (2, TType.STRING, 'value', None, None, ), # 2
+    (3, TType.STRING, 'extendSensor', None, None, ), # 3
   )
 
-  def __init__(self, key=None, value=None,):
+  def __init__(self, key=None, value=None, extendSensor=None,):
     self.key = key
     self.value = value
+    self.extendSensor = extendSensor
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -736,6 +739,11 @@ class Parameter:
           self.value = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.extendSensor = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -753,6 +761,10 @@ class Parameter:
     if self.value is not None:
       oprot.writeFieldBegin('value', TType.STRING, 2)
       oprot.writeString(self.value)
+      oprot.writeFieldEnd()
+    if self.extendSensor is not None:
+      oprot.writeFieldBegin('extendSensor', TType.STRING, 3)
+      oprot.writeString(self.extendSensor)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -778,6 +790,7 @@ class SensorConfiguration:
    - interval
    - parameters
    - sensorType
+   - sensorExtends
   """
 
   thrift_spec = (
@@ -785,12 +798,14 @@ class SensorConfiguration:
     (1, TType.I64, 'interval', None, None, ), # 1
     (2, TType.LIST, 'parameters', (TType.STRUCT,(Parameter, Parameter.thrift_spec)), None, ), # 2
     (3, TType.I32, 'sensorType', None, None, ), # 3
+    (4, TType.STRING, 'sensorExtends', None, None, ), # 4
   )
 
-  def __init__(self, interval=None, parameters=None, sensorType=None,):
+  def __init__(self, interval=None, parameters=None, sensorType=None, sensorExtends=None,):
     self.interval = interval
     self.parameters = parameters
     self.sensorType = sensorType
+    self.sensorExtends = sensorExtends
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -822,6 +837,11 @@ class SensorConfiguration:
           self.sensorType = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.sensorExtends = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -846,6 +866,10 @@ class SensorConfiguration:
     if self.sensorType is not None:
       oprot.writeFieldBegin('sensorType', TType.I32, 3)
       oprot.writeI32(self.sensorType)
+      oprot.writeFieldEnd()
+    if self.sensorExtends is not None:
+      oprot.writeFieldBegin('sensorExtends', TType.STRING, 4)
+      oprot.writeString(self.sensorExtends)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
