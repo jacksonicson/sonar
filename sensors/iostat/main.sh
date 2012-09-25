@@ -18,13 +18,9 @@ exitThis()
   end=1
 }
 
-# Register sigkill handle
-trap exitThis SIGKILL
+exec 3< <(iostat -x -d 3 $device | grep --line-buffered $device)
+while [ $end -lt 1 ] && read out; do
 
-while [ $end -eq 0 ] 
-do
-	n1=5
-	out=`iostat -x -d $device | grep $device `
 	arr=$(echo $out | tr " " ",")
 	IFS="," read -ra STR_ARRAY <<< "$arr"
 
@@ -47,7 +43,7 @@ do
 	res_value=${STR_ARRAY[8]}
 	echo "$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
 
-	# sleep until next run
-	sleep 3
-done
-exit 0
+done <&3
+exec 3<&-
+exit
+
