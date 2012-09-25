@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Name of the sensor passed as first cmdline argument
 sensor=$1
 
@@ -54,6 +52,5 @@ while [ $end -lt 1 ] && read out; do
 
 done <&3
 exec 3<&-
-kill $PID
-exit 0
+kill -9 $PID
 
