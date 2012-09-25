@@ -11,22 +11,6 @@ function setupDatePickers() {
 
 function setupDatePickers() {
 
-    /*var myDate = new Date();
-     var month = myDate.getMonth() + 1;
-     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
-     $("#startdate").val(prettyDate);
-     $("#stopdate").val(prettyDate);
-
-     $('#startdate').datepicker();
-     $('#stopdate').datepicker();
-
-     $('.dropdown-timepicker').timepicker({
-     defaultTime: 'current',
-     minuteStep: 15,
-     disableFocus: false,
-     template: 'dropdown'
-     });*/
-
     var myDate = new Date();
     var month = myDate.getMonth() + 1;
     var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
