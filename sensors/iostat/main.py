@@ -50,6 +50,8 @@ while running:
     line += value
     print (line)
     
+    sys.stdout.flush()
+    
 
 def handleSigTERM():
     running = False
