@@ -3,9 +3,13 @@
 # Name of the sensor passed as first cmdline argument
 sensor=$1
 
-# Read parameters
-device=$2
-device=`echo $device | sed 's/device=//'`
+device='sda'
+if [ $# -eq 2 ]
+then
+	# Read parameters
+	device=$2
+	device=`echo $device | sed 's/device=//'`
+fi
 
 # End flag which is use to terminate the main loop
 end=0
