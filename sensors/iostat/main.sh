@@ -18,6 +18,9 @@ exitThis()
   end=1
 }
 
+trap 'exitThis' TERM KILL
+
+
 exec 3< <(iostat -x -d 3 $device)
 PID=$!
 while [ $end -lt 1 ] && read out; do
@@ -52,6 +55,5 @@ while [ $end -lt 1 ] && read out; do
 done <&3
 exec 3<&-
 kill $PID
-echo $PID
 exit 0
 
