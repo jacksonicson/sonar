@@ -10,6 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
@@ -111,8 +112,7 @@ public class TimeSeriesDatabase extends Thread {
 			Set<InternalTableSchema> tables = new HashSet<InternalTableSchema>();
 			tables.add(new InternalTableSchema(Const.TABLE_TSDB, new String[] { Const.FAMILY_TSDB_DATA }));
 			tables.add(new InternalTableSchema(Const.TABLE_UID, new String[] { "forward", "backward" }));
-			tables.add(new InternalTableSchema(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD,
-					Const.FAMILY_UID_BACKWARD }));
+			tables.add(new InternalTableSchema(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD, Const.FAMILY_UID_BACKWARD }));
 
 			// Remove all existing table from the set
 			HTableDescriptor tableDescriptors[] = hbase.listTables();
@@ -153,7 +153,7 @@ public class TimeSeriesDatabase extends Thread {
 		this.compactionQueue.schedule(row);
 	}
 
-	private BlockingQueue<MetricPoint> queue = new LinkedBlockingQueue<MetricPoint>(1000);
+	private BlockingQueue<MetricPoint> queue = new LinkedBlockingQueue<MetricPoint>();
 
 	private ArrayList<Put> puts = new ArrayList<Put>();
 	private HTableInterface table = null;
@@ -177,15 +177,16 @@ public class TimeSeriesDatabase extends Thread {
 
 						put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), secs, value);
 
-						synchronized (this) {
-							puts.add(put);
-							if (puts.size() > 50) {
-								long time = System.currentTimeMillis();
-								table.put(puts);
-								time = System.currentTimeMillis() - time;
-								logger.debug("time: " + time);
-								puts.clear();
-							}
+						// Add put to put list
+						puts.add(put);
+
+						// Check if there are enough elements for execution
+						if (puts.size() > 100) {
+							long time = System.currentTimeMillis();
+							table.put(puts);
+							time = System.currentTimeMillis() - time;
+							logger.debug("time required for put operations: " + time);
+							puts.clear();
 						}
 
 						scheduleCompaction(key);
@@ -324,49 +325,57 @@ public class TimeSeriesDatabase extends Thread {
 			long startTimestampHour = getHourSinceEpoch(query.getStartTime());
 			long stopTimestampHour = getHourSinceEpoch(query.getStopTime() + 1);
 
-			Result next;
-			while ((next = scanner.next()) != null) {
-				byte[] rowKey = next.getRow();
-				long rowTimestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + Const.HOSTNAME_ID_WIDTH);
+			// Over-Estimate the number of elements to fetch
+			// Calculation is based on a 3 second logging interval including the overflow hours
+			long estimatedElementCount = (stopTimestampHour - startTimestampHour + 2) * 60 * 60 / 3;
+			// Calculate for 5 fetch rounds
+			int fetchCount = Math.max(1, (int) (estimatedElementCount / 5));
 
-				// New fragment for this row
-				TimeSeriesFragment fragment = timeSeries.newFragment();
+			Result[] batch;
+			while ((batch = scanner.next(fetchCount)).length > 0) {
+				for (Result next : batch) {
+					byte[] rowKey = next.getRow();
+					long rowTimestampHours = Bytes.toLong(rowKey, Const.SENSOR_ID_WIDTH + Const.HOSTNAME_ID_WIDTH);
 
-				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
-				for (byte[] key : familyMap.keySet()) {
+					// New fragment for this row
+					TimeSeriesFragment fragment = timeSeries.newFragment();
 
-					// Found a compaction field
-					if (Bytes.toString(key).equals("data")) {
-						logger.debug("compaction field");
+					NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
+					for (byte[] key : familyMap.keySet()) {
 
-						if (startTimestampHour <= rowTimestampHours && rowTimestampHours <= stopTimestampHour) {
-							logger.debug("segment");
-							fragment.addSegment(rowTimestampHours, familyMap.get(key));
-						} else {
-							logger.debug("partially");
-							TDeserializer deserializer = new TDeserializer();
-							CompactTimeseries ts = new CompactTimeseries();
-							deserializer.deserialize(ts, familyMap.get(key));
+						// Found a compaction field
+						if (Bytes.toString(key).equals("data")) {
+							logger.debug("compaction field");
 
-							for (CompactPoint point : ts.getPoints()) {
-								long timestamp = rowTimestampHours + point.getTimestamp();
-								if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
-									double value = Bytes.toDouble(familyMap.get(key));
-									TimeSeriesPoint tsPoint = new TimeSeriesPoint(timestamp, value);
-									fragment.addPoint(tsPoint);
+							if (startTimestampHour <= rowTimestampHours && rowTimestampHours <= stopTimestampHour) {
+								logger.debug("segment");
+								fragment.addSegment(rowTimestampHours, familyMap.get(key));
+							} else {
+								logger.debug("partially");
+								TDeserializer deserializer = new TDeserializer();
+								CompactTimeseries ts = new CompactTimeseries();
+								deserializer.deserialize(ts, familyMap.get(key));
+
+								for (CompactPoint point : ts.getPoints()) {
+									long timestamp = rowTimestampHours + point.getTimestamp();
+									if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
+										double value = Bytes.toDouble(familyMap.get(key));
+										TimeSeriesPoint tsPoint = new TimeSeriesPoint(timestamp, value);
+										fragment.addPoint(tsPoint);
+									}
 								}
 							}
-						}
 
-					} else { // Found a non compacted field
-						logger.debug("point");
+						} else { // Found a non compacted field
+							logger.debug("point");
 
-						long qualifier = Bytes.toLong(key);
-						long timestamp = rowTimestampHours + qualifier;
-						if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
-							double value = Bytes.toDouble(familyMap.get(key));
-							TimeSeriesPoint tsPoint = new TimeSeriesPoint(timestamp, value);
-							fragment.addPoint(tsPoint);
+							long qualifier = Bytes.toLong(key);
+							long timestamp = rowTimestampHours + qualifier;
+							if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
+								double value = Bytes.toDouble(familyMap.get(key));
+								TimeSeriesPoint tsPoint = new TimeSeriesPoint(timestamp, value);
+								fragment.addPoint(tsPoint);
+							}
 						}
 					}
 				}
@@ -402,17 +411,9 @@ public class TimeSeriesDatabase extends Thread {
 
 			Result next;
 			while ((next = scanner.next()) != null) {
-				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(Const.FAMILY_UID_FORWARD));
-
-				for (byte[] key : familyMap.keySet()) {
-					// when the data in the sensor is not null, that row key is
-					// the sensor
-					if (Bytes.toString(key).equals("sensor")) {
-						if (null != familyMap.get(key)) {
-							result.add(Bytes.toString(next.getRow()));
-						}
-					}
-				}
+				KeyValue value = next.getColumnLatest(Bytes.toBytes(Const.FAMILY_UID_FORWARD), Bytes.toBytes("sensor"));
+				if (value != null)
+					result.add(Bytes.toString(value.getValue()));
 			}
 
 			scanner.close();
@@ -425,8 +426,7 @@ public class TimeSeriesDatabase extends Thread {
 				try {
 					table.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.warn("error while closing table", e);
 				}
 		}
 	}
