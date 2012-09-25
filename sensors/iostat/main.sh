@@ -18,8 +18,14 @@ exitThis()
   end=1
 }
 
-exec 3< <(iostat -x -d 3 $device | grep --line-buffered $device)
+exec 3< <(iostat -x -d 3 $device)
+PID=$!
 while [ $end -lt 1 ] && read out; do
+
+	out=`echo $out | grep --line-buffered $device`
+	if [ "$out" = "" ]; then
+		continue
+	fi
 
 	arr=$(echo $out | tr " " ",")
 	IFS="," read -ra STR_ARRAY <<< "$arr"
@@ -45,5 +51,7 @@ while [ $end -lt 1 ] && read out; do
 
 done <&3
 exec 3<&-
-exit
+kill $PID
+echo $PID
+exit 0
 
