@@ -53,4 +53,5 @@ while [ $end -lt 1 ] && read out; do
 done <&3
 exec 3<&-
 kill -9 $PID
+exit 0
 
