@@ -650,7 +650,7 @@ class SensorHub(Thread, object):
                 self.transportManagement.open();
                 self.transportLogging.open();
                 break
-            except Exception as e:
+            except:
                 try:
                     self.transportManagement.close()
                 except: pass
@@ -659,7 +659,7 @@ class SensorHub(Thread, object):
                 except: pass
                 
                 print 'Retrying connection...'
-                time.sleep(1)
+                time.sleep(5)
         
         
     def __registerSensorHub(self):

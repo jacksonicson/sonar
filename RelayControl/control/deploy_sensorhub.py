@@ -30,8 +30,11 @@ def main():
     ## DOMAINS CONFIGURATION                            ##
     ######################################################
     
-    for i in xrange(0, 18):
-        hosts.add_host('target%i' % i, 'deploy')
+#    for i in xrange(0, 18):
+#        hosts.add_host('target%i' % i, 'deploy')
+
+    for i in xrange(0, 6):
+        hosts.add_host('srv%i' % i, 'deploy')
     
     ######################################################
     

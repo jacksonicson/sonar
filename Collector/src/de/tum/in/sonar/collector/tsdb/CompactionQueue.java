@@ -42,10 +42,10 @@ class CompactionQueue extends Thread {
 			delayQueue.remove(rowKeyJob);
 		}
 
-		logger.trace("Adding: " + key );
+		logger.trace("Adding: " + key);
 		delayQueue.add(rowKeyJob);
 		logger.trace("length: " + delayQueue.size());
-	} 
+	}
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
 		logger.debug("running compaction...");
@@ -109,8 +109,7 @@ class CompactionQueue extends Thread {
 		Result result = table.get(get);
 
 		List<Long> timestampList = new ArrayList<Long>();
-		Map<Long, byte[]> timestamps = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA))
-				.get(Bytes.toBytes("data"));
+		Map<Long, byte[]> timestamps = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA)).get(Bytes.toBytes("data"));
 		timestampList.addAll(timestamps.keySet());
 
 		Collections.sort(timestampList);
@@ -127,25 +126,17 @@ class CompactionQueue extends Thread {
 
 			try {
 				RowKeyJob data = delayQueue.take();
-				boolean exists = getCompactionCell(data.getRowKey());
 
-				// Compaction cell does not exist
-				if (exists == false) {
+				// Check age of the last insert (compaction or TSD value)
+				long timestamp = getLastModified(data.getRowKey());
+				long delta = System.currentTimeMillis() - timestamp;
+				if (delta > TIME_DELAY) {
+					// Compaction
 					compact(data.getRowKey());
 				} else {
-
-					// Check age of the last insert (compaction or TSD value)
-					long timestamp = getLastModified(data.getRowKey());
-					long delta = System.currentTimeMillis() - timestamp;
-					if (delta > TIME_DELAY) {
-						// Compaction
-						compact(data.getRowKey());
-					} else {
-						// Reschedule
-						logger.debug("reschedule compaction because compaction field changed: " + data.getRowKey());
-						schedule(data.getRowKey());
-					}
-
+					// Reschedule
+					logger.debug("reschedule compaction because compaction field changed: " + data.getRowKey());
+					schedule(data.getRowKey());
 				}
 			} catch (IOException e) {
 				logger.error("Error while compacting", e);
@@ -153,6 +144,13 @@ class CompactionQueue extends Thread {
 				logger.error("Error while compacting", e);
 			} catch (InterruptedException e) {
 				logger.error("Error while compacting", e);
+			}
+
+			// Rate limit compaction
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// pass
 			}
 		}
 	}
