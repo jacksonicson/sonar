@@ -283,6 +283,28 @@ function addSensorHandler(req, resp) {
     })
 }
 
+function hostsAutocompleteHandler(req, resp)
+{
+    var connection = thrift.createConnection(SERVER_HOST, 7932);
+    var client = thrift.createClient(managementService, connection);
+
+    var dataTable = []
+    var counter = 0;
+
+    console.log("hosts autocompletion handler");
+
+    // Fetch all hosts
+    client.getAllHosts(function (err, hosts) {
+
+        if (hosts.length == 0) {
+            resp.end(JSON.stringify(dataTable));
+            return;
+        }
+
+        resp.end(JSON.stringify(hosts));
+    })
+}
+
 function hostsHandler(req, resp) {
 
     var connection = thrift.createConnection(SERVER_HOST, 7932);
@@ -703,6 +725,7 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
     new router.UrlNode('SENSORCONF', {url:'sensorConfig', handler:sensorConfigHandler}, []),
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
+    new router.UrlNode('HOSTS_ACMPL', {url:'hostsacmpl', handler:hostsAutocompleteHandler}, []),
     new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
     new router.UrlNode('DELHOST', {url:'delhost', handler:delHostHandler}, []),
     new router.UrlNode('HOSTEXTEND', {url:'hostExtend', handler:bulkHostExtendsHandler}, []),

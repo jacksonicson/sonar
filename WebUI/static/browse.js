@@ -15,7 +15,7 @@ $(function () {
         var hosts;
         hosts = new Array;
         $.each(output, function(index, item){
-            hosts.push(item.hostname);
+            hosts.push(item);
         });
 
         $('#hostname').typeahead({

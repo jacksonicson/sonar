@@ -1,7 +1,7 @@
 function getHostData(handleData) {
     $.ajax({
         type:"GET",
-        url:'/hosts',
+        url:'/hostsacmpl',
         dataType:'json',
         success: function (results) {
             handleData(results);
