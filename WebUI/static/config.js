@@ -165,7 +165,6 @@ function saveSensor(){
 function submitSensor(event) {
     var test = $("#sensorName").val();
     deleteSensorActual(test, saveSensor);
-
 }
 
 function deleteHost(event) {
@@ -195,7 +194,6 @@ function deleteSensorActual(sensor, target) {
         success:target
     });
 }
-
 
 function submitHost(event) {
     var editHost = event.target.id;
