@@ -358,7 +358,11 @@ class ProcessLoader(object):
     
     def kill(self, process):
         try:
-            process.kill()
+            process.terminate()
+            while process.poll() is None:
+                print 'KILLING...'
+                time.sleep(1)
+                
         except Exception as e:
             print 'error while killing process %s' % (e)
             
