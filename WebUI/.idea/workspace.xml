@@ -26,16 +26,25 @@
       <file leaf-file-name="logs.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/logs.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="75" column="16" selection-start="3028" selection-end="3028" vertical-scroll-proportion="-44.115383">
+            <state line="41" column="95" selection-start="1598" selection-end="1607" vertical-scroll-proportion="-14.038462">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="logs.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="logs.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/logs.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="26" selection-start="512" selection-end="512" vertical-scroll-proportion="0.21484992">
+            <state line="8" column="4" selection-start="127" selection-end="944" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="browse.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/browse.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="72" column="18" selection-start="1657" selection-end="1657" vertical-scroll-proportion="0.47368422">
               <folding />
             </state>
           </provider>
@@ -65,8 +74,8 @@
         <option value="$PROJECT_DIR$/static/browse.html" />
         <option value="$PROJECT_DIR$/static/autocomplete.js" />
         <option value="$PROJECT_DIR$/sonar.js" />
-        <option value="$PROJECT_DIR$/static/browse.js" />
         <option value="$PROJECT_DIR$/static/logs.js" />
+        <option value="$PROJECT_DIR$/static/browse.js" />
       </list>
     </option>
   </component>
@@ -428,23 +437,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/browse.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="21" selection-start="330" selection-end="330" vertical-scroll-proportion="0.39164087">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="16" selection-start="3028" selection-end="3028" vertical-scroll-proportion="-44.115383">
+        <state line="41" column="95" selection-start="1598" selection-end="1607" vertical-scroll-proportion="-14.038462">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="26" selection-start="512" selection-end="512" vertical-scroll-proportion="0.21484992">
+        <state line="8" column="4" selection-start="127" selection-end="944" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/browse.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="72" column="18" selection-start="1657" selection-end="1657" vertical-scroll-proportion="0.47368422">
           <folding />
         </state>
       </provider>

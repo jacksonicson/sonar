@@ -55,19 +55,29 @@ function getSensors(){
 
 function setupDatePickers() {
 
-   	var myDate = new Date();
-    var month = myDate.getMonth() + 1;
-    var prettyDate = month + '/' + myDate.getDate() + '/' + myDate.getFullYear();
-	$("#startdate").val(prettyDate);
-	$("#stopdate").val(prettyDate);
-
+    var myDate = new Date();
+    myDate.setHours(myDate.getHours() - 5)
+    var prettyDate = (myDate.getMonth() + 1) + '/' + myDate.getDate() + '/' + myDate.getFullYear();
+    $("#startdate").val(prettyDate);
     $('#startdate').datepicker();
+
+    var prettyTime = myDate.getHours() + ':' + myDate.getMinutes();
+    $("#starttime").timepicker({
+        showMeridian:false,
+        defaultTime:prettyTime
+    });
+
+
+    var myDate = new Date();
+    myDate.setHours(myDate.getHours()+24)
+    var prettyDate = (myDate.getMonth() + 1) + '/' + myDate.getDate() + '/' + myDate.getFullYear();
+    $("#stopdate").val(prettyDate);
     $('#stopdate').datepicker();
 
-    $(document).ready(function () {
-        $('.timepicker-default').timepicker({
-            showMeridian: false
-        });
+    var prettyTime = myDate.getHours() + ':' + myDate.getMinutes();
+    $("#stoptime").timepicker({
+        showMeridian:false,
+        defaultTime:prettyTime
     });
 }
 
