@@ -127,16 +127,22 @@ class CompactionQueue extends Thread {
 			try {
 				RowKeyJob data = delayQueue.take();
 
-				// Check age of the last insert (compaction or TSD value)
-				long timestamp = getLastModified(data.getRowKey());
-				long delta = System.currentTimeMillis() - timestamp;
-				if (delta > TIME_DELAY) {
-					// Compaction
+				// Compaction cell does not exist
+				boolean exists = getCompactionCell(data.getRowKey());
+				if (exists == false) {
 					compact(data.getRowKey());
 				} else {
-					// Reschedule
-					logger.debug("reschedule compaction because compaction field changed: " + data.getRowKey());
-					schedule(data.getRowKey());
+					// Check age of the last insert (compaction or TSD value)
+					long timestamp = getLastModified(data.getRowKey());
+					long delta = System.currentTimeMillis() - timestamp;
+					if (delta > TIME_DELAY) {
+						// Compaction
+						compact(data.getRowKey());
+					} else {
+						// Reschedule
+						logger.debug("reschedule compaction because compaction field changed: " + data.getRowKey());
+						schedule(data.getRowKey());
+					}
 				}
 			} catch (IOException e) {
 				logger.error("Error while compacting", e);
