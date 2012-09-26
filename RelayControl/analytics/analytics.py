@@ -460,6 +460,12 @@ def main(connection):
     print 'domain track map: %s' % domain_track_map
     print 'domain workload map: %s' % domain_workload_map
 
+    # Test wise fetch track response time and calculate average
+    for key in domain_track_map.keys():
+        for track in domain_track_map[key]:
+            res_resp, tim_resp = __fetch_timeseries(connection, srv, 'psutilcpu', data_frame)
+            print 'Loading track data %s...' % track[1]
+
                   
     print '## GLOBAL METRICS ###'
     first = True
