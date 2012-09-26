@@ -461,9 +461,15 @@ def main(connection):
     print 'domain workload map: %s' % domain_workload_map
 
     # Test wise fetch track response time and calculate average
-#    for key in domain_track_map.keys():
-#        for track in domain_track_map[key]:
-#            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+    for key in domain_track_map.keys():
+        for track in domain_track_map[key]:
+            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            mean = (np.mean(res_resp) / 1000)
+            from scipy import stats
+            percentile = stats.scoreatpercentile(res_resp, 90)
+            cond = res_resp > percentile
+            ext = np.extract(cond, res_resp)
+            print '%f, %f, %i' % (mean, percentile, len(ext)) 
                   
     print '## GLOBAL METRICS ###'
     first = True
