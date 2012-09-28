@@ -26,11 +26,28 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-
-START = '27/09/2012 23:30:43'
-END = '28/09/2012 06:10:43'
+    
+START = '01/09/2012 21:35:00'
+END = '02/09/2012 04:00:00'
 ##########################
 
+warns = []
+
+'''
+Log warning
+'''
+def __warn(msg):
+    warns.append(msg)
+    
+'''
+Dump warnings
+'''
+def __dump_warns():
+    if len(warns) > 0:
+        print '## WARNINGS ##'
+        print 'Analysis might be invalid due to following warnings:'
+        for warn in warns:
+            print ' * %s' % warn
 
 '''
 Dump the configuration
@@ -375,6 +392,10 @@ def main(connection):
     print '## SYNC MARKERS ##'
     __dump_elements(sync_markers)
     
+    if sync_markers[0] is None:
+        __warn('Sync marker not found')
+        sync_markers = (frame[0], sync_markers[1], sync_markers[2])
+    
     #####################################################################################################################################
     ### Reading Allocation ##############################################################################################################
     #####################################################################################################################################
@@ -568,13 +589,13 @@ def main(connection):
     # x = a tuple of two values: (aggregated value, temporary value like a counter)
     # y = the new value which is added to the aggregation
     agg_desc = {
-                'total_ops_successful' : lambda x, y: (x[0] + y,0),
-                'max_response_time' : lambda x, y: (max(x[0], y),0),
-                'average_response_time': lambda x,y: ((x[0] * x[1] + y) / (x[1] + 1), x[1] + 1),
-                'min_response_time' : lambda x, y: (min(x[0], y),0),
-                'effective_load_ops' : lambda x, y: (x[0] + y,0),
-                'effective_load_req': lambda x, y: (x[0] + y,0),
-                'total_operations_failed' : lambda x, y: (x[0] + y,0),
+                'total_ops_successful' : lambda x, y: (x[0] + y, 0),
+                'max_response_time' : lambda x, y: (max(x[0], y), 0),
+                'average_response_time': lambda x, y: ((x[0] * x[1] + y) / (x[1] + 1), x[1] + 1),
+                'min_response_time' : lambda x, y: (min(x[0], y), 0),
+                'effective_load_ops' : lambda x, y: (x[0] + y, 0),
+                'effective_load_req': lambda x, y: (x[0] + y, 0),
+                'total_operations_failed' : lambda x, y: (x[0] + y, 0),
                 }
     
     # Iterate over all global results
@@ -600,6 +621,9 @@ def main(connection):
         except: 
             print 'Error in %s' % element
     __dump_elements(tuple(data), dump)
+    
+    # Dump all warnings
+    __dump_warns()
 
 if __name__ == '__main__':
     connection = __connect()
