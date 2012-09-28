@@ -26,9 +26,9 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-    
-START = '01/09/2012 21:35:00'
-END = '02/09/2012 04:00:00'
+
+START = '28/09/2012 09:18:00'
+END = '28/09/2012 16:19:00'
 ##########################
 
 warns = []
@@ -481,16 +481,19 @@ def main(connection):
     print 'domain track map: %s' % domain_track_map
     print 'domain workload map: %s' % domain_workload_map
 
+    print '## DOMAIN WORKLOAD ANALYSIS ###'
     # Test wise fetch track response time and calculate average
-#    for key in domain_track_map.keys():
-#        for track in domain_track_map[key]:
-#            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-#            mean = (np.mean(res_resp) / 1000)
-#            from scipy import stats
-#            percentile = stats.scoreatpercentile(res_resp, 90)
-#            cond = res_resp > percentile
-#            ext = np.extract(cond, res_resp)
-#            print '%f, %f, %i' % (mean, percentile, len(ext)) 
+    fail_count = 0
+    for key in domain_track_map.keys():
+        for track in domain_track_map[key]:
+            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            mean = (np.mean(res_resp) / 1000)
+            from scipy import stats
+            percentile = stats.scoreatpercentile(res_resp, 90)
+            cond = res_resp > percentile
+            ext = np.extract(cond, res_resp)
+            fail_count += len(ext)
+    print 'fail count: %i' % fail_count
                   
     print '## GLOBAL METRICS ###'
     first = True
@@ -554,6 +557,12 @@ def main(connection):
         print 'domain: %s workload: %s' % (domain, workload)
         
         if TRACE_EXTRACT:
+            # Ensure that this is really wished - it overwrites data in Times
+            test = raw_input('Extracting traces will overwrite data in Times (yes/no)? ')
+            if test != 'yes':
+                print 'Cancelled'
+                break
+            
             # Create profile from cpu load
             profiles.process(workload, cpu[domain][0], cpu[domain][1], True)
         
