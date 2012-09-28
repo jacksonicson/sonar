@@ -38,18 +38,19 @@ public class LogDatabase {
 	private static Logger logger = LoggerFactory.getLogger(LogDatabase.class);
 
 	private HBaseUtil hbaseUtil;
+	private HTablePool tablePool;
 
 	private IdResolver labelResolver;
 	private IdResolver hostnameResolver;
 	private IdResolver sensorResolver;
-	private HTablePool tablePool;
-	private long internalCounter = 0; 
+
+	private long internalCounter = 0;
 
 	public LogDatabase() {
 		this.labelResolver = new IdResolver("label");
 		this.hostnameResolver = new IdResolver("hostname");
 		this.sensorResolver = new IdResolver("sensor");
-		
+
 		this.tablePool = new HTablePool();
 	}
 
@@ -82,30 +83,30 @@ public class LogDatabase {
 		index += appendToKey(key, index, sensorResolver.resolveName(id.getSensor()));
 		index += appendToKey(key, index, hostnameResolver.resolveName(id.getHostname()));
 		index += appendToKey(key, index, id.getTimestamp());
-		
+
 		return key;
 	}
 
 	public void writeData(Identifier id, LogMessage message) {
-
 		try {
 			byte[] key = buildKey(id);
 			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
-			
+
 			// Create a new row in this case
+			// TODO: Why is this?
 			if (message.getTimestamp() == 0)
 				message.setTimestamp(id.getTimestamp());
-			
+
 			TSerializer serializer = new TSerializer();
-			
+
 			// Hack - if this is not applied log messages with the same timestamp overwrite each other!
-			internalCounter++; 
-			
+			internalCounter++;
+
 			Put put = new Put(key);
-			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(id.getHostname() + internalCounter),
-					serializer.serialize(message));
+			// TODO: Why does the qualifier need a the hostname?
+			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(id.getHostname() + internalCounter), serializer.serialize(message));
 			table.put(put);
-			
+
 		} catch (IOException e) {
 			logger.error("could not write tsdb to hbase", e);
 		} catch (UnresolvableException e) {
@@ -117,8 +118,7 @@ public class LogDatabase {
 		}
 	}
 
-	public List<LogMessage> run(LogsQuery logQuery) throws QueryException, UnresolvableException,
-			InvalidLabelException {
+	public List<LogMessage> run(LogsQuery logQuery) throws QueryException, UnresolvableException, InvalidLabelException {
 		List<LogMessage> logMessages = null;
 		try {
 
@@ -126,7 +126,7 @@ public class LogDatabase {
 			Scan scan = new Scan();
 
 			// set the range
-			
+
 			byte[] startRow = new byte[keyWidth()];
 			int index = 0;
 			index += appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
@@ -140,22 +140,22 @@ public class LogDatabase {
 			index += appendToKey(endRow, index, Bytes.toBytes(hostnameResolver.resolveName(logQuery.getHostname())));
 			index += appendToKey(endRow, index, logQuery.getStopTime());
 			scan.setStopRow(endRow);
-			
+
 			ResultScanner scanner = table.getScanner(scan);
 
 			logMessages = new ArrayList<LogMessage>();
 
 			Result next;
-			int crt = 0;
 			while ((next = scanner.next()) != null) {
 
 				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA));
 
 				for (byte[] qualifier : familyMap.keySet()) {
-					byte[] data = familyMap.get(qualifier); 
+					byte[] data = familyMap.get(qualifier);
 					if (data == null)
 						continue;
 
+					// TODO: The instance is created for each row. Is this necessary?
 					TDeserializer deserializer = new TDeserializer();
 					LogMessage logMsg = new LogMessage();
 					try {
@@ -173,9 +173,10 @@ public class LogDatabase {
 	}
 
 	public void setupTables() throws TableCreationException {
+		HBaseAdmin hbase = null;
 		try {
 			logger.info("Setting up Log table..");
-			HBaseAdmin hbase = new HBaseAdmin(hbaseUtil.getConfig());
+			hbase = new HBaseAdmin(hbaseUtil.getConfig());
 			boolean tableExists = false;
 
 			// check if the log table already exists
@@ -203,6 +204,14 @@ public class LogDatabase {
 			throw new TableCreationException(e);
 		} catch (IOException e) {
 			throw new TableCreationException(e);
+		} finally {
+			if (hbase != null) {
+				try {
+					hbase.close();
+				} catch (IOException e) {
+					logger.trace("Error while closing hbase connection", e);
+				}
+			}
 		}
 	}
 }
