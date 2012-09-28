@@ -26,9 +26,9 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-                    
-START = '16/09/2012 20:20:41'
-END = '17/09/2012 03:30:41'
+
+START = '27/09/2012 23:30:43'
+END = '28/09/2012 06:10:43'
 ##########################
 
 
@@ -461,15 +461,15 @@ def main(connection):
     print 'domain workload map: %s' % domain_workload_map
 
     # Test wise fetch track response time and calculate average
-    for key in domain_track_map.keys():
-        for track in domain_track_map[key]:
-            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-            mean = (np.mean(res_resp) / 1000)
-            from scipy import stats
-            percentile = stats.scoreatpercentile(res_resp, 90)
-            cond = res_resp > percentile
-            ext = np.extract(cond, res_resp)
-            print '%f, %f, %i' % (mean, percentile, len(ext)) 
+#    for key in domain_track_map.keys():
+#        for track in domain_track_map[key]:
+#            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+#            mean = (np.mean(res_resp) / 1000)
+#            from scipy import stats
+#            percentile = stats.scoreatpercentile(res_resp, 90)
+#            cond = res_resp > percentile
+#            ext = np.extract(cond, res_resp)
+#            print '%f, %f, %i' % (mean, percentile, len(ext)) 
                   
     print '## GLOBAL METRICS ###'
     first = True
