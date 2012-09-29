@@ -26,9 +26,9 @@ TRACE_EXTRACT = False
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
-
-START = '28/09/2012 09:18:00'
-END = '28/09/2012 16:19:00'
+        
+START = '29/09/2012 11:48:43'
+END = '29/09/2012 18:32:43'
 ##########################
 
 warns = []
@@ -557,17 +557,17 @@ def main(connection):
         print 'domain: %s workload: %s' % (domain, workload)
         
         if TRACE_EXTRACT:
-            # Ensure that this is really wished - it overwrites data in Times
+            # Ensure that this is really the users intention!
             test = raw_input('Extracting traces will overwrite data in Times (yes/no)? ')
             if test != 'yes':
                 print 'Cancelled'
                 break
             
-            # Create profile from cpu load
+            # Create profile from CPU load
             profiles.process(workload, cpu[domain][0], cpu[domain][1], True)
         
     #####################################################################################################################################
-    ### Analytics #######################################################################################################################
+    ### Analysis ########################################################################################################################
     #####################################################################################################################################
     print '## AVG CPU,MEM LOAD ##'
     
@@ -631,8 +631,10 @@ def main(connection):
             print 'Error in %s' % element
     __dump_elements(tuple(data), dump)
     
+    
     # Dump all warnings
     __dump_warns()
+
 
 if __name__ == '__main__':
     connection = __connect()
