@@ -5,7 +5,7 @@ import base
 
 def finished(done, client_list):
     print "execution successful: %s" % (done)
-    reactor.stop()
+    # reactor.stop()
 
 def deploy_phase(client_list):
     print 'deploying SensorHub: '
@@ -33,8 +33,15 @@ def main():
 #    for i in xrange(0, 18):
 #        hosts.add_host('target%i' % i, 'deploy')
 
-    for i in xrange(0, 6):
-        hosts.add_host('srv%i' % i, 'deploy')
+#    for i in xrange(0,6):
+#        hosts.add_host('srv%i' % i, 'deploy')
+    
+    hosts.add_host('srv0', 'deploy')
+#    hosts.add_host('storage1', 'deploy')
+#    hosts.add_host('monitor0', 'deploy')
+#    hosts.add_host('monitor1', 'deploy')
+#    hosts.add_host('load0', 'deploy')
+#    hosts.add_host('load1', 'deploy')
     
     ######################################################
     

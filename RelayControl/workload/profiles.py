@@ -249,8 +249,8 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
-selected_name = 'mix_0'
-selected = mix_0
+selected_name = 'mix_2'
+selected = mix_2
 ##############################
 
 def byindex(index):

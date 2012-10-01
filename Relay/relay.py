@@ -378,15 +378,12 @@ class ProcessManager(object):
             del self.pidMapping[process.pid]
             
             # Process is dead
+            print 'returned'
             return 0
         else:
             # handover stdout control
             self.processLoader.attach(process)
-            pass
-
-
-        # Return a valid PID            
-        return process.pid
+            return process.pid
     
         
     def isAlive(self, pid):
@@ -415,11 +412,10 @@ class ProcessManager(object):
         exec code in context
     
     def launch(self, data, name):
-        self._launch(data, name, True)
+        return self._launch(data, name, True)
     
     def launchNoWait(self, data, name):
-        ret = self._launch(data, name, False)
-        return ret
+        return self._launch(data, name, False)
 
     def shutdown(self):
         self.processLoader.shutdown()
