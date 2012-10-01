@@ -481,16 +481,14 @@ def main(connection):
     print 'domain track map: %s' % domain_track_map
     print 'domain workload map: %s' % domain_workload_map
 
-    print '## DOMAIN WORKLOAD ANALYSIS ###'
+    print '## RESPONSE TIME THRESHOLD CHECK ###'
     # Test wise fetch track response time and calculate average
     fail_count = 0
     for key in domain_track_map.keys():
         for track in domain_track_map[key]:
-            res_resp, tim_resp = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-            mean = (np.mean(res_resp) / 1000)
-            from scipy import stats
-            percentile = stats.scoreatpercentile(res_resp, 90)
-            cond = res_resp > percentile
+            res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            # 3 Second response time "User Preferences and Search Engine Latency" by Jake D. et al.  
+            cond = res_resp > 3000 
             ext = np.extract(cond, res_resp)
             fail_count += len(ext)
     print 'fail count: %i' % fail_count
@@ -621,7 +619,11 @@ def main(connection):
             # Run aggregation
             global_metric_aggregation[element] = agg_desc[element](value0, value1)
 
-    dump = ('total_ops_successful', 'total_operations_failed', 'average_response_time', 'max_response_time', 'effective_load_ops', 'effective_load_req')
+    # Add other stuff to the global metric
+    global_metric_aggregation['server_count'] = (servers, 0)
+    global_metric_aggregation['total_response_time_threshold'] = (fail_count, 0)
+
+    dump = ('server_count', 'total_ops_successful', 'total_operations_failed', 'average_response_time', 'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold')
     data = []
     for element in dump:
         try:
