@@ -1,4 +1,3 @@
-from scipy.signal import *
 import matplotlib.pyplot as plt
 from service import times_client
 

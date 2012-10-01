@@ -1,3 +1,8 @@
+'''
+This is the base package used by all analysis scripts to connect
+with Sonar monitoring and download data. 
+'''
+
 from collector import ManagementService, ttypes
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport

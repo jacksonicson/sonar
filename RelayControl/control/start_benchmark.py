@@ -133,6 +133,8 @@ def phase_start_rain(done, client_list):
         for target in targets[i * targets_per_driver : (i + 1) * targets_per_driver]:
             config_target = {}
             config_target['target'] = target
+            
+            # Important: Load the USER workload profile
             config_target['profile'] = domains.profile_by_name(target) + profiles.POSTFIX_USER
             config_targets.append(config_target)
 

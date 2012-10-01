@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sampleday
 import util
+import math
 
 '''
 List of TS and workload profiles used by the benchmark (stored in Times)
@@ -245,6 +246,7 @@ mix_2 = [
          Desc('SIS_279_cpu', SET_SIS_D9),
          Desc('SIS_345_cpu', SET_SIS_D8),
          Desc('SIS_387_cpu', SET_SIS_D9),
+         Desc('SIS_199_cpu', SET_SIS_D8),
          ]
 
 ##############################
@@ -460,17 +462,29 @@ def _plot():
     # Connect with times
     connection = times_client.connect()
     
-    for desc in selected:  
-        name = 'SIS_264_cpu'  
+    plot_mix = mix_2
+    cols = 5
+    rows = len(plot_mix) / cols +1 
+    index = 0
+    print rows
+    
+    fig = plt.figure()
+    fig.set_figheight(20)
+    fig.set_figwidth(40)
+    
+    for desc in plot_mix:  
         name = desc.name
         timeSeries = connection.load(name + POSTFIX_USER)
-        time, demand = util.to_array(timeSeries)
+        _, demand = util.to_array(timeSeries)
         
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
+        index += 1
+        ax = fig.add_subplot(rows,cols, index)
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
         ax.plot(range(0, len(demand)), demand)
 
-    plt.show()
+    plt.savefig('D:/work/dev/sonar/docs/mix2.png')
+
     
     # Close times connection
     times_client.close()
