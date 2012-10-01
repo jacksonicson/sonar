@@ -1,11 +1,10 @@
 from ipmodels import ssapv, dsap
+from logs import sonarlog
 from service import times_client
-from virtual import nodes
+from virtual import allocation as virt, nodes
 from workload import profiles
 import domains
 import numpy as np
-from virtual import allocation as virt
-from logs import sonarlog
 
 # Setup logging
 logger = sonarlog.getLogger('allocate_domains', 'Andreas-PC')
@@ -33,6 +32,7 @@ def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_dem
     for service_index in xrange(service_count):
         mapping = domains.domain_profile_mapping[service_index]
         
+        # Important: Load the trace of the workload profile
         service = services[mapping.profileId].name + profiles.POSTFIX_TRACE
         print 'loading service: %s' % (service)
         service_log += service + '; '
