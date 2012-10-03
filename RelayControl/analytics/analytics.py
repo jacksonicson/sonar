@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '01/10/2012 10:27:41    01/10/2012 17:01:41'
+RAW = '02/10/2012 19:00:00    03/10/2012 06:10:00'
 
 START = ''
 END = ''
@@ -111,7 +111,7 @@ def __fetch_allocation_config(sonar, host, frame):
     query = ttypes.LogsQuery()
     query.hostname = host
     query.sensor = 'allocate_domains'
-    query.startTime = frame[0] - 60 * 60 # Scan 10 minutes before the start_benchmark
+    query.startTime = frame[0] - 10 * 60 # Scan 10 minutes before the start_benchmark
     query.stopTime = frame[0] + 1 * 60 # Cannot occur after the benchmark start. Due to testing there may 
     # also be invalid entries after benchmark start. So, pick the first one before the benchmark.  
         
@@ -123,6 +123,7 @@ def __fetch_allocation_config(sonar, host, frame):
     
     logs = sonar.queryLogs(query)
     for log in logs:
+        print log
         # Track configuration
         CONFIG = 'Required servers: '
         if log.logMessage.startswith(CONFIG):
