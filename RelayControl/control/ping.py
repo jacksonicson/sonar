@@ -20,6 +20,10 @@ def start_phase(client_list):
     print 'All Systems alive!'
     finished(client_list, client_list)
     
+def errback(failure):
+    print 'Error while executing'
+    print failure
+    
 def main():
     # Create drones
     drones.main()
@@ -35,6 +39,7 @@ def main():
     wait = defer.DeferredList(deferList)
     
     # Decide what to do after connection setup
+    wait.addErrback(errback)
     wait.addCallback(start_phase)
     
     # Start the Twisted reactor

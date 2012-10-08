@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '02/10/2012 19:00:00    03/10/2012 06:10:00'
+RAW = '04/10/2012 21:45:15    05/10/2012 04:30:15'
 
 START = ''
 END = ''
@@ -111,7 +111,7 @@ def __fetch_allocation_config(sonar, host, frame):
     query = ttypes.LogsQuery()
     query.hostname = host
     query.sensor = 'allocate_domains'
-    query.startTime = frame[0] - 10 * 60 # Scan 10 minutes before the start_benchmark
+    query.startTime = frame[0] - 60 * 60 # Scan 10 minutes before the start_benchmark
     query.stopTime = frame[0] + 1 * 60 # Cannot occur after the benchmark start. Due to testing there may 
     # also be invalid entries after benchmark start. So, pick the first one before the benchmark.  
         

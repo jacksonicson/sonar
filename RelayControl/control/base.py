@@ -48,6 +48,11 @@ def wait_for_message(client_list, host, droneName, message, out=None):
     except Exception, e:
         print 'error %s' % (e)
 
+
+def connect_err(failure):
+    print 'connection failed'
+    print failure
+
 def connect(hosts_map):
     dlist = []
     for i in hosts_map:
