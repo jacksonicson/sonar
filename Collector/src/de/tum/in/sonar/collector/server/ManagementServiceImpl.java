@@ -101,6 +101,9 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:binary - binary for the sensor
 	// :sensor:[name]:md5 - MD5 value of the binary
 	// :sensor:[name]:config:[item] - configuration for the sensor
+	// :sensor:[name]:config:interval ->intervalValue - interval for which the sensor has to be invoked
+	// :sensor:[name]:config:extends -> otherSensorName - inheritence for sensor configuration
+	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries 
 	// :sensor:[name]:labels -> [] - set of labels
 	//
 	// :host:[hostname]:labels -> [] - set of labels
