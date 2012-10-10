@@ -1,13 +1,13 @@
 import sys
 import time
 import datetime
-from collector import CollectService, ttypes
+import CollectService, ttypes
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 
 ##########################
 ## Configuration        ##
-COLLECTOR_IP = 'srv0'
+COLLECTOR_IP = 'monitor0'
 LOGGING_PORT = 7921
 ##########################
 
@@ -17,7 +17,6 @@ LOG_LEVELS = {60: 50010,
               30:30000, 
               20:20000, 
               10:10000} 
-SYNC = 60
 
 def connect():
     # Make socket
@@ -64,7 +63,7 @@ def parseSyslog(logLines):
     
     #create the log message 
     value = ttypes.LogMessage()
-    value.logLevel = LOG_LEVELS[SYNC]
+    value.logLevel = LOG_LEVELS[10]
     value.logMessage = logMessage
     value.programName = programName
     value.timestamp = ids.timestamp

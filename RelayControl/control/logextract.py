@@ -21,7 +21,7 @@ def deploy_phase(client_list):
     
     for host in hosts.get_hosts('action'):
         print '   %s' % (host)
-        d = base.launch(client_list, host, 'vm_shutdown', wait=True)
+        d = base.launch(client_list, host, 'syslogparser', wait=True)
         dlist.append(d)
     
     # Wait for all drones to finish and set phase
@@ -34,8 +34,11 @@ def main():
     drones.main()
     
     # Add hosts
-    for i in xrange(0, 18):
-        hosts.add_host('target%i' % i, 'action')
+    for i in xrange(1, 5):
+        hosts.add_host('srv%i' % i, 'action')
+        
+#    for i in xrange(0, 18):
+#        hosts.add_host('target%i' % i, 'action')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()
