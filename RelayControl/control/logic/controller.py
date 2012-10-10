@@ -30,7 +30,11 @@ class Host(object):
     def __init__(self):
         self.readings = [0 for _ in xrange(0, Host.LENGTH)]
         self.counter = 0
+        self.volume = 0
         self.overloaded = False
+        self.underloaded = False
+        
+        self.blocked = 0
         
     def put(self, reading):
         self.readings[self.counter] = reading.value
@@ -53,7 +57,7 @@ class Host(object):
     
     def handle_overload(self):
         pass
-
+        
     
 class Domain(Host):
     def __init__(self, name):
@@ -66,6 +70,7 @@ class Domain(Host):
         
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')
+    
 
 
 class Node(Host):
@@ -83,7 +88,10 @@ class Node(Host):
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')
     
-
+    def dump(self):
+        domains = ', '.join(self.domains.keys())
+        print 'Host: %s Load: %f Volume: %f Domains: %s' % (self.name, self.mean_load(), self.volume, domains)
+    
 
 class LoadBalancer(Thread):
     
@@ -95,28 +103,32 @@ class LoadBalancer(Thread):
             time.sleep(5)
             print 'running load balancer...'
             
-            # Hotspot detector
+            ## HOTSPOT DETECTOR ########################
             for node in hosts.values():
                 # Check past readings
                 readings = node.get_readings()
                 overload = True
+                underload = True
                 
                 size = len(readings)
                 for i in xrange(size - 5, size):
-                    overload &= readings[i] > 75
+                    overload &= readings[i] > 80
+                    underload &= readings[i] < 20
                 
                 # Check prediction
-                overload &= node.predict() > 75
+                #overload &= node.predict() > 75
+                #underload &= node.predict() < 10
 
                 # Update overload                                
                 node.overloaded = overload
+                node.underloaded = underload
                 
-            # Migration manager (Thresholds are based on CPU load not on volume or volume/size ratio)
+            ## MIGRATION MANAGER #######################
             # Calculate volumes of each node
             nodes = []
             domains = []
             for node in hosts.values():
-                volume = 1.0 / max(0.001, (1.0 - node.mean_load()))
+                volume = 1.0 / max(0.001, (100.0 - node.mean_load()))
                 node.volume = volume
                 node.volume_size = volume / 8.0 # 8 GByte
                 
@@ -128,21 +140,58 @@ class LoadBalancer(Thread):
             # Sort nodes to their volume in reverse order
             nodes.sort(lambda a, b: int(a.volume - b.volume))
             
+            ## MIGRATION TRIGGER #######################
             for node in nodes:
-                print '%s - %f' % (node.name, node.mean_load())
-                if node.overloaded:
+                node.dump()
+                
+                if node.underloaded: 
+                    # print 'Underload: %s' % node.name
                     node_domains = []
                     node_domains.extend(node.domains.values())
                     node_domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
                     
                     try:
                         for domain in node_domains:
-                            print 'trying %s' % domain.name
-                            
+                            left = nodes.index(node)
+                            for right in reversed(xrange(0, left)):
+                                target = nodes[right]
+                                
+                                if len(target.domains) == 0: continue
+                                
+                                source = node
+                                if nodes[right].mean_load() + domain.mean_load() < 100 and (time.time() - target.blocked) > 10 and (time.time() - source.blocked) > 10:
+                                    print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    
+                                    target.blocked = time.time()
+                                    source.blocked = target.blocked 
+                                    
+                                    target.domains[domain.name] = domain
+                                    del source.domains[domain.name]
+                                    
+                                    raise StopIteration()
+                    except StopIteration:
+                        pass 
+                
+                if node.overloaded:
+                    # print 'Overload: %s' % node.name
+                    node_domains = []
+                    node_domains.extend(node.domains.values())
+                    node_domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
+                    
+                    try:
+                        for domain in node_domains:
                             left = nodes.index(node) + 1 
-                            for right in xrange(left):
-                                if nodes[right].mean_load() + domain.mean_load() < 100:
-                                    print 'MIGRATE'
+                            for right in xrange(left, len(nodes)):
+                                target = nodes[right]
+                                source = node
+                                if nodes[right].mean_load() + domain.mean_load() < 100 and (time.time() - target.blocked) > 10 and (time.time() - source.blocked) > 10:
+                                    print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    target.blocked = time.time()
+                                    source.blocked = target.blocked
+                                    
+                                    target.domains[domain.name] = domain
+                                    del source.domains[domain.name]
+                                    
                                     raise StopIteration()
                     except StopIteration:
                         pass 
@@ -229,6 +278,7 @@ class Driver(Thread):
         connection = times_client.connect()
         
         i = 0
+        length = 0
         for host in hosts.values():
             if host.type != types.DOMAIN:
                 continue
@@ -241,46 +291,49 @@ class Driver(Thread):
             ts = connection.load(load)
             ts = util.to_array(ts)[1] # only load time
             host.ts = ts
+            length = max(length, len(ts))
         
-        for tindex in xrange(0, 100):
-            for host in hosts.values():
-                if host.type != types.NODE:
-                    continue
-                
-                aggregated_load = 0
-                for domain in host.domains.values():
-                    load = domain.ts[tindex]
-                    aggregated_load += load 
-                
+        # Simulate time steps
+        while True: 
+            for tindex in xrange(length):
+                for host in hosts.values():
+                    if host.type != types.NODE:
+                        continue
+                    
+                    aggregated_load = 0
+                    for domain in host.domains.values():
+                        load = domain.ts[tindex]
+                        aggregated_load += load 
+                    
+                        data = ttypes.NotificationData()
+                        data.id = ttypes.Identifier()  
+                        data.id.hostname = domain.name
+                        data.id.sensor = 'psutilcpu'
+                        data.id.timestamp = tindex
+                        
+                        data.reading = ttypes.MetricReading()
+                        data.reading.value = load
+                        data.reading.labels = []
+                        
+                        notification.receive(data)
+                        
+                    # print 'aggregated: %s = %f' % (host.name, aggregated_load)
                     data = ttypes.NotificationData()
                     data.id = ttypes.Identifier()  
-                    data.id.hostname = node.name
+                    data.id.hostname = host.name
                     data.id.sensor = 'psutilcpu'
                     data.id.timestamp = tindex
                     
                     data.reading = ttypes.MetricReading()
-                    data.reading.value = load
+                    data.reading.value = aggregated_load
                     data.reading.labels = []
                     
-                    notification.receive(data)
-                    
-                # print 'aggregated: %s = %f' % (host.name, aggregated_load)
-                load = domain.ts[tindex]
-                aggregated_load += load 
-            
-                data = ttypes.NotificationData()
-                data.id = ttypes.Identifier()  
-                data.id.hostname = host.name
-                data.id.sensor = 'psutilcpu'
-                data.id.timestamp = tindex
+                    notification.receive(data) 
                 
-                data.reading = ttypes.MetricReading()
-                data.reading.value = aggregated_load
-                data.reading.labels = []
-                
-                notification.receive(data) 
+                time.sleep(1)
             
-            time.sleep(0.5)
+            print 'NEXT SIMULATION CYCLE #########################################'
+        
 
 if __name__ == '__main__':
     notification = NotificationReceiverImpl()
@@ -293,6 +346,10 @@ if __name__ == '__main__':
     node = Node('srv1')
     node.add_domain(Domain('target2'))
     node.add_domain(Domain('target3'))
+    
+    node = Node('srv2')
+    node = Node('srv3')
+    node = Node('srv4')
     
     # Start the driver thread which simulates Sonar
     driver = Driver()
