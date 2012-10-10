@@ -62,6 +62,7 @@ class Domain(Host):
         
         self.name = name
         self.type = types.DOMAIN
+        self.ts = None
         
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')
@@ -91,6 +92,7 @@ class LoadBalancer(Thread):
     
     def run(self):
         while True:
+            time.sleep(5)
             print 'running load balancer...'
             
             # Hotspot detector
@@ -109,14 +111,13 @@ class LoadBalancer(Thread):
                 # Update overload                                
                 node.overloaded = overload
                 
-            # Migration manager
+            # Migration manager (Thresholds are based on CPU load not on volume or volume/size ratio)
             # Calculate volumes of each node
             nodes = []
             domains = []
             for node in hosts.values():
-                volume = 1.0 / (1.0 - node.mean_load())
+                volume = 1.0 / max(0.001, (1.0 - node.mean_load()))
                 node.volume = volume
-                print volume
                 node.volume_size = volume / 8.0 # 8 GByte
                 
                 if node.type == types.NODE:
@@ -127,16 +128,27 @@ class LoadBalancer(Thread):
             # Sort nodes to their volume in reverse order
             nodes.sort(lambda a, b: int(a.volume - b.volume))
             
-            # Sort domains to their volume_size in reverse order
-            domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
-            
             for node in nodes:
-                print 'node %s :: %s' % (node.name, node.volume) 
+                print '%s - %f' % (node.name, node.mean_load())
+                if node.overloaded:
+                    node_domains = []
+                    node_domains.extend(node.domains.values())
+                    node_domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
+                    
+                    try:
+                        for domain in node_domains:
+                            print 'trying %s' % domain.name
+                            
+                            left = nodes.index(node) + 1 
+                            for right in xrange(left):
+                                if nodes[right].mean_load() + domain.mean_load() < 100:
+                                    print 'MIGRATE'
+                                    raise StopIteration()
+                    except StopIteration:
+                        pass 
                  
             
             
-            
-            time.sleep(2)
 
 class NotificationReceiverImpl:
     
@@ -205,49 +217,73 @@ def main(interface=LISTENING_INTERFACE_IPV4, collector=COLLECTOR_HOST):
     print 'Waiting for exit...'
     receiver.join(); 
     
-def test():
-    pass
-
+    
 class Driver(Thread):
-    # Use the existing profiles to load TSD from Times
-    from workload import profiles, util
-    from service import times_client
-    
-    print 'Connecting with Times'
-    connection = times_client.connect()
-    
-    tsd = []
-    for service in profiles.selected: 
-        service = service.name + profiles.POSTFIX_NORM
-        print 'loading service: %s' % (service)
-        ts = connection.load(service)
-        tsd.append(util.to_array(ts))
-    
-    
-    
+        
     def run(self):
-        for i in xrange(0, 100):
-            for node in hosts.values():
+        # Use the existing profiles to load TSD from Times
+        from workload import profiles, util
+        from service import times_client
+        
+        print 'Connecting with Times'
+        connection = times_client.connect()
+        
+        i = 0
+        for host in hosts.values():
+            if host.type != types.DOMAIN:
+                continue
+           
+            service = profiles.selected[i]
+            i += 1
+            
+            load = service.name + profiles.POSTFIX_NORM
+            print 'loading service: %s ...' % (load)
+            ts = connection.load(load)
+            ts = util.to_array(ts)[1] # only load time
+            host.ts = ts
+        
+        for tindex in xrange(0, 100):
+            for host in hosts.values():
+                if host.type != types.NODE:
+                    continue
+                
+                aggregated_load = 0
+                for domain in host.domains.values():
+                    load = domain.ts[tindex]
+                    aggregated_load += load 
+                
+                    data = ttypes.NotificationData()
+                    data.id = ttypes.Identifier()  
+                    data.id.hostname = node.name
+                    data.id.sensor = 'psutilcpu'
+                    data.id.timestamp = tindex
+                    
+                    data.reading = ttypes.MetricReading()
+                    data.reading.value = load
+                    data.reading.labels = []
+                    
+                    notification.receive(data)
+                    
+                # print 'aggregated: %s = %f' % (host.name, aggregated_load)
+                load = domain.ts[tindex]
+                aggregated_load += load 
+            
                 data = ttypes.NotificationData()
                 data.id = ttypes.Identifier()  
-                data.id.hostname = node.name
+                data.id.hostname = host.name
                 data.id.sensor = 'psutilcpu'
-                data.id.timestamp = i
+                data.id.timestamp = tindex
                 
                 data.reading = ttypes.MetricReading()
-                data.reading.value = float(i) / 100.0
+                data.reading.value = aggregated_load
                 data.reading.labels = []
                 
-                notification.receive(data)
+                notification.receive(data) 
             
-            time.sleep(2)
+            time.sleep(0.5)
 
 if __name__ == '__main__':
-    # main()
     notification = NotificationReceiverImpl()
-    
-    balancer = LoadBalancer()
-    balancer.start()
     
     # Build internal infrastructure representation
     node = Node('srv0')
@@ -260,5 +296,9 @@ if __name__ == '__main__':
     
     # Start the driver thread which simulates Sonar
     driver = Driver()
-    driver.start() 
+    driver.start()
+    
+    # Start load balancer thread which detects hotspots and triggers migrations
+    balancer = LoadBalancer()
+    balancer.start() 
         
