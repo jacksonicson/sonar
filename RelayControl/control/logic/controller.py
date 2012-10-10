@@ -17,6 +17,12 @@ COLLECTOR_PORT = 7911
 COLLECTOR_HOST = 'monitor0.dfg'
 ################################
 
+def enum(*sequential, **named):
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    return type('Enum', (), enums)
+
+types = enum('NODE', 'DOMAIN')
+
 hosts = {}
 class Host(object):
     LENGTH = 10 # last n measurements
@@ -28,7 +34,6 @@ class Host(object):
         
     def put(self, reading):
         self.readings[self.counter] = reading.value
-        print self.counter
         self.counter = (self.counter + 1) % Host.LENGTH
         
     def mean_load(self):
@@ -37,7 +42,6 @@ class Host(object):
     def get_readings(self):
         index = (self.counter) % Host.LENGTH
         result = []
-        print self.readings
         for _ in xrange(Host.LENGTH):
             result.append(self.readings[index])
             index = (index + 1) % Host.LENGTH
@@ -46,6 +50,9 @@ class Host(object):
     
     def predict(self):
         return 100
+    
+    def handle_overload(self):
+        pass
 
     
 class Domain(Host):
@@ -54,18 +61,20 @@ class Domain(Host):
         hosts[name] = self
         
         self.name = name
+        self.type = types.DOMAIN
         
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')
 
 
-class INNode(Host):
+class Node(Host):
     def __init__(self, name):
-        super(INNode, self).__init__()
+        super(Node, self).__init__()
         hosts[name] = self
         
         self.name = name
         self.domains = {}
+        self.type = types.NODE
     
     def add_domain(self, domain):
         self.domains[domain.name] = domain
@@ -88,12 +97,10 @@ class LoadBalancer(Thread):
             for node in hosts.values():
                 # Check past readings
                 readings = node.get_readings()
-                print 'readings %s' % readings
                 overload = True
                 
                 size = len(readings)
                 for i in xrange(size - 5, size):
-                    print readings[i] > 75
                     overload &= readings[i] > 75
                 
                 # Check prediction
@@ -103,10 +110,33 @@ class LoadBalancer(Thread):
                 node.overloaded = overload
                 
             # Migration manager
+            # Calculate volumes of each node
+            nodes = []
+            domains = []
             for node in hosts.values():
-                print node.overloaded
+                volume = 1.0 / (1.0 - node.mean_load())
+                node.volume = volume
+                print volume
+                node.volume_size = volume / 8.0 # 8 GByte
+                
+                if node.type == types.NODE:
+                    nodes.append(node)
+                elif node.type == types.DOMAIN: 
+                    domains.append(node)
+                
+            # Sort nodes to their volume in reverse order
+            nodes.sort(lambda a, b: int(a.volume - b.volume))
             
-            time.sleep(5)
+            # Sort domains to their volume_size in reverse order
+            domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
+            
+            for node in nodes:
+                print 'node %s :: %s' % (node.name, node.volume) 
+                 
+            
+            
+            
+            time.sleep(2)
 
 class NotificationReceiverImpl:
     
@@ -179,8 +209,24 @@ def test():
     pass
 
 class Driver(Thread):
+    # Use the existing profiles to load TSD from Times
+    from workload import profiles, util
+    from service import times_client
+    
+    print 'Connecting with Times'
+    connection = times_client.connect()
+    
+    tsd = []
+    for service in profiles.selected: 
+        service = service.name + profiles.POSTFIX_NORM
+        print 'loading service: %s' % (service)
+        ts = connection.load(service)
+        tsd.append(util.to_array(ts))
+    
+    
+    
     def run(self):
-        for i in xrange(70, 100):
+        for i in xrange(0, 100):
             for node in hosts.values():
                 data = ttypes.NotificationData()
                 data.id = ttypes.Identifier()  
@@ -189,7 +235,7 @@ class Driver(Thread):
                 data.id.timestamp = i
                 
                 data.reading = ttypes.MetricReading()
-                data.reading.value = i
+                data.reading.value = float(i) / 100.0
                 data.reading.labels = []
                 
                 notification.receive(data)
@@ -204,11 +250,11 @@ if __name__ == '__main__':
     balancer.start()
     
     # Build internal infrastructure representation
-    node = INNode('srv0')
+    node = Node('srv0')
     node.add_domain(Domain('target0'))
     node.add_domain(Domain('target1'))
     
-    node = INNode('srv1')
+    node = Node('srv1')
     node.add_domain(Domain('target2'))
     node.add_domain(Domain('target3'))
     
