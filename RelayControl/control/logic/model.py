@@ -15,24 +15,37 @@ def enum(*sequential, **named):
 
 types = enum('NODE', 'DOMAIN')
 
-def get_hosts():
-    return hosts.values()
+def get_hosts(host_type=None):
+    if host_type == None:
+        return hosts.value()
+    
+    filtered = []
+    for host in hosts.values():
+        if host.type == host_type:
+            filtered.append(host) 
+    
+    return filtered
 
 def get_host(hostname):
     if hosts.has_key(hostname):
         return hosts[hostname]
     return None
 
-class Host(object):
+class __Host(object):
+    '''
+    This is a private class which should not be used outside of this
+    module. It is the base method for all entities representing concrete
+    elements of the infrastructure.  
+    '''
     
-    def __init__(self):
-        self.readings = [0 for _ in xrange(0, WINDOW)]
-        self.counter = 0
-        self.volume = 0
-        self.overloaded = False
-        self.underloaded = False
+    def __init__(self, name):
+        self.name = name
         
-        self.blocked = 0
+        # Stores readings over the window
+        self.readings = [0 for _ in xrange(0, WINDOW)]
+        
+        # Current index in the ring buffer
+        self.counter = 0
         
     def put(self, reading):
         self.readings[self.counter] = reading.value
@@ -50,35 +63,34 @@ class Host(object):
             
         return result
     
-    def predict(self):
-        return 100
-    
-    def handle_overload(self):
-        pass
         
     
-class Domain(Host):
+class Domain(__Host):
     def __init__(self, name):
-        super(Domain, self).__init__()
+        super(Domain, self).__init__(name)
+        
+        # Adds itself to the hosts list
         hosts[name] = self
         
-        self.name = name
+        # Type of this object
         self.type = types.DOMAIN
-        self.ts = None
         
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')
     
 
-
-class Node(Host):
+class Node(__Host):
     def __init__(self, name):
         super(Node, self).__init__()
+        
+        # Adds itself to the hosts list
         hosts[name] = self
         
-        self.name = name
-        self.domains = {}
+        # Type of this object
         self.type = types.NODE
+        
+        # Holds a mapping of domains
+        self.domains = {}
     
     def add_domain(self, domain):
         self.domains[domain.name] = domain
