@@ -5,12 +5,12 @@ import driver
 import time
 
 class LoadBalancer(Thread):
+    '''
+    Load balancer which designed originated from Sandpiper
+    '''
     
     def __init__(self, model):
         self.model = model
-    
-    def balance(self, node):
-        pass
     
     def forecast(self, node):
         pass
@@ -29,8 +29,9 @@ class LoadBalancer(Thread):
     
     def run(self):
         while True:
+            # Sleeping till next balancing operation
             time.sleep(5)
-            print 'running load balancer...'
+            print 'Running load balancer...'
             
             ## HOTSPOT DETECTOR ########################
             for node in get_hosts():
@@ -73,8 +74,8 @@ class LoadBalancer(Thread):
             for node in nodes:
                 node.dump()
                 
+                # Underload situation
                 if node.underloaded: 
-                    # print 'Underload: %s' % node.name
                     node_domains = []
                     node_domains.extend(node.domains.values())
                     node_domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
@@ -100,9 +101,9 @@ class LoadBalancer(Thread):
                                     raise StopIteration()
                     except StopIteration:
                         pass 
-                
+
+                # Overload situation                
                 if node.overloaded:
-                    # print 'Overload: %s' % node.name
                     node_domains = []
                     node_domains.extend(node.domains.values())
                     node_domains.sort(lambda a, b: int(a.volume_size - b.volume_size))
@@ -115,6 +116,7 @@ class LoadBalancer(Thread):
                                 source = node
                                 if nodes[right].mean_load() + domain.mean_load() < 100 and (time.time() - target.blocked) > 10 and (time.time() - source.blocked) > 10:
                                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    
                                     target.blocked = time.time()
                                     source.blocked = target.blocked
                                     
@@ -127,6 +129,11 @@ class LoadBalancer(Thread):
                  
 
 class MetricHandler:
+    '''
+    Receives metric data from the simulation or from Sonar
+    and feeds the data into the model. The data is later used
+    by the load balancer to resolve over- and underloads.
+    '''
     def receive(self, data):
         hostname = data.id.hostname
         
