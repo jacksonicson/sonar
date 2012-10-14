@@ -386,7 +386,7 @@ def __dump_spec(spec, title=True):
         __dump_elements(tuple(data))
     
 
-def main(connection):
+def connect_sonar(connection):
     # Dump the configuration
     __dump_configuration()
     
@@ -649,7 +649,7 @@ def main(connection):
 if __name__ == '__main__':
     connection = __connect()
     try:
-        main(connection)
+        connect_sonar(connection)
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()

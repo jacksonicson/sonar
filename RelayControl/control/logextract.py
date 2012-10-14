@@ -29,9 +29,9 @@ def deploy_phase(client_list):
     dl.addCallback(finished, client_list)
     
     
-def main():
+def connect_sonar():
     # Create drones
-    drones.main()
+    drones.connect_sonar()
     
     # Add hosts
     for i in xrange(1, 5):
@@ -53,4 +53,4 @@ def main():
     reactor.run()
 
 if __name__ == '__main__':
-    main()
+    connect_sonar()
