@@ -157,23 +157,33 @@ def build_from_current_allocation():
     from virtual import allocation
     allocation = allocation.determine_current_allocation()
     
-    # TODO
+    for host in allocation.iterkeys():
+        node = model.Node(host)
+        
+        for domain in allocation[host]:
+            node.add_domain(model.Domain(domain))
     
 
 def build_initial_model():
     # TODO: Read this somehow from Sonar or recreate initial allocation
     # if it was created by a deterministic algorithm
-    node = model.Node('srv0')
-    node.add_domain(model.Domain('target0'))
-    node.add_domain(model.Domain('target1'))
+#    node = model.Node('srv0')
+#    node.add_domain(model.Domain('target0'))
+#    node.add_domain(model.Domain('target1'))
+#    
+#    node = model.Node('srv1')
+#    node.add_domain(model.Domain('target2'))
+#    node.add_domain(model.Domain('target3'))
+#    
+#    node = model.Node('srv2')
+#    node = model.Node('srv3')
+#    node = model.Node('srv4')
+
+    # Build model from current allocation
+    build_from_current_allocation()
     
-    node = model.Node('srv1')
-    node.add_domain(model.Domain('target2'))
-    node.add_domain(model.Domain('target3'))
-    
-    node = model.Node('srv2')
-    node = model.Node('srv3')
-    node = model.Node('srv4')
+    # Dump model
+    model.dump()
     
     # Initialize controller specific variables
     for host in model.get_hosts():

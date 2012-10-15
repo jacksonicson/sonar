@@ -2,6 +2,7 @@ from collector import ttypes
 from threading import Thread
 import time
 import sys
+import control.domains as domains
 
 class Driver(Thread):
     
@@ -33,14 +34,14 @@ class Driver(Thread):
         print 'Connecting with Times'
         connection = times_client.connect()
         
-        profile_index = 0
         min_ts_length = sys.maxint
         freq = 0
-        for host in self.model.get_hosts(self.model.types.DOMAIN):
-            # Select and load TS
-            service = profiles.selected[profile_index]
-            profile_index += 1
-            load = service.name + profiles.POSTFIX_NORM
+        
+        # Iterate over all domains and assign them a TS
+        for domain in self.model.get_hosts(self.model.types.DOMAIN):
+            # Select and load TS (based on the configuration)
+            service_name  = domains.profile_by_name(domain.name)
+            load = service_name + profiles.POSTFIX_NORM
             print 'loading service: %s ...' % (load)
             ts = connection.load(load)
             
@@ -50,7 +51,7 @@ class Driver(Thread):
             ts = util.to_array(ts)[1]
             
             # Attach TS to domain 
-            host.ts = ts
+            domain.ts = ts
             
             # Update max length
             min_ts_length = min(min_ts_length, len(ts))

@@ -38,8 +38,25 @@ def profile_by_name(domain):
             if len(profiles.selected) > entry.profileId:
                 return profiles.selected[entry.profileId].name
         
-    print 'Warn: no profileId configured for domain %s, using profileId with index 0' % domain
+    print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
     return profiles.selected[0]
+
+
+def has_domain(name):
+    for mapping in domain_profile_mapping:
+        if mapping.domain == name:
+            return True
+        
+    return False 
+
+def index_of(name):
+    index = 0
+    for mapping in domain_profile_mapping:
+        if mapping.domain == name:
+            return index
+        index += 1
+        
+    return None
 
 
 def print_mapping():

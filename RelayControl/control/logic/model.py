@@ -104,4 +104,10 @@ class Node(__Host):
 
 
 
+def dump():
+    for node in get_hosts(host_type=types.NODE):
+        print 'Node: %s' % (node.name)
+        for domain in node.domains.values():
+            print '   Domain: %s' % domain.name
+
 

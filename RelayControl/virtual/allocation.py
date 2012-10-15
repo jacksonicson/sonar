@@ -1,9 +1,9 @@
 from control import drones, hosts
 from control.domains import domain_profile_mapping as mapping
 from datetime import datetime
-#from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE, \
-#    VIR_MIGRATE_PERSIST_DEST
-#from lxml import etree
+from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE, \
+    VIR_MIGRATE_PERSIST_DEST
+from lxml import etree
 from rain import RainService, constants, ttypes
 from relay import RelayService
 from string import Template
@@ -13,11 +13,12 @@ from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
-#import libvirt
+import libvirt
 import nodes
 import sys
 import time
 import traceback
+import control.domains as domains
 
 
 ###############################################
@@ -29,7 +30,7 @@ RELAY_PORT = 7900
 def handler(ctxt, err):
     global errno
     errno = err
-# libvirt.registerErrorHandler(handler, 'context') 
+libvirt.registerErrorHandler(handler, 'context') 
 
 def __find_domain(connections, domain_name):
     last = None, None
@@ -175,8 +176,41 @@ def get_null_allocation(nodecount):
         
     return assignment, migrations
 
+
 def determine_current_allocation():
-    pass
+    # Connect with all servers
+    connections = [] 
+    for host in nodes.HOSTS: 
+        conn_str = "qemu+ssh://root@%s/system" % (host)
+        print 'connecting with %s' % (conn_str)
+        conn = libvirt.open(conn_str)
+        connections.append(conn)
+        
+    allocation = { host : [] for host in nodes.HOSTS }
+        
+    for i in xrange(len(nodes.HOSTS)):
+        host = nodes.HOSTS[i]
+        connection = connections[i]
+        
+        # print 'Host: %s' % host
+        
+        vir_domains = connection.listDomainsID()
+        for vir_id in vir_domains:
+            vir_domain = connection.lookupByID(vir_id)
+            name = vir_domain.name()
+            if domains.has_domain(name):
+                # print 'adding mapping with %s' % name
+                allocation[host].append(name)
+            else:
+                print 'ERROR: Domain %s is not in the domain list!' % name
+            
+    print 'Closing connections...'
+    for connection in connections:
+        connection.close()       
+    
+    return allocation
+    
+    
     
 def migrationtest():
     connections = []
@@ -240,4 +274,5 @@ def migrationtest():
  
 if __name__ == '__main__':
     # migrationtest()
+    determine_current_allocation()
     pass
