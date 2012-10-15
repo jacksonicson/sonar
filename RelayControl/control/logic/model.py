@@ -51,8 +51,12 @@ class __Host(object):
         self.readings[self.counter] = reading.value
         self.counter = (self.counter + 1) % WINDOW
         
-    def mean_load(self):
-        return np.mean(self.readings)
+    def mean_load(self, k=None):
+        if k == None:
+            return np.mean(self.readings)
+        
+        sorted_readings = self.get_readings()
+        return np.mean(sorted_readings[-k:])
     
     def get_readings(self):
         index = (self.counter) % WINDOW
@@ -100,7 +104,7 @@ class Node(__Host):
     
     def dump(self):
         domains = ', '.join(self.domains.keys())
-        print 'Host: %s Load: %f Volume: %f Domains: %s' % (self.name, self.mean_load(), self.volume, domains)
+        print 'Host: %s Load: %f Volume: %f Domains: %s' % (self.name, self.mean_load(5), self.volume, domains)
 
 
 
