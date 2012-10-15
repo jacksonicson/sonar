@@ -5,6 +5,12 @@ import model
 import numpy as np
 import time
 
+######################
+## CONFIGURATION    ##
+######################
+PRODUCTION = True
+######################
+
 class LoadBalancer(Thread):
     '''
     Load balancer which design originated from Sandpiper
@@ -29,6 +35,9 @@ class LoadBalancer(Thread):
         
         
     def migrate(self, domain, source, target):
+        if PRODUCTION:
+            pass
+        
         assert(target != source)
         now_time = time.time()
         target.blocked = now_time
@@ -120,7 +129,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                  
                                 test = True
-                                test &= target.mean_load(k) + domain.mean_load(k) < 100
+                                test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
                                 test &= (now_time - target.blocked) > block_time
                                 test &= (now_time - source.blocked) > block_time
                                 
@@ -149,7 +158,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                 
                                 test = True
-                                test &= target.mean_load(k) + domain.mean_load(k) < 100
+                                test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
                                 test &= (now_time - target.blocked) > block_time
                                 test &= (now_time - source.blocked) > block_time
                                 
@@ -188,9 +197,29 @@ def build_from_current_allocation():
             node.add_domain(model.Domain(domain))
     
 
+def build_test_allocation():
+    # Build internal infrastructure representation
+    node = model.Node('srv0')
+    node.add_domain(model.Domain('target0'))
+    node.add_domain(model.Domain('target1'))
+    
+    node = model.Node('srv1')
+    node.add_domain(model.Domain('target2'))
+    node.add_domain(model.Domain('target3'))
+    node.add_domain(model.Domain('target4'))
+    node.add_domain(model.Domain('target5'))
+    
+    node = model.Node('srv2')
+    node = model.Node('srv3')
+    
+
 def build_initial_model():
-    # Build model from current allocation
-    build_from_current_allocation()
+    if PRODUCTION: 
+        # Build model from current allocation
+        build_from_current_allocation()
+    else:
+        build_test_allocation()
+    
     
     # Dump model
     model.dump()
