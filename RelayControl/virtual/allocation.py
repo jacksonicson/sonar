@@ -1,9 +1,9 @@
 from control import drones, hosts
 from control.domains import domain_profile_mapping as mapping
 from datetime import datetime
-from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE, \
-    VIR_MIGRATE_PERSIST_DEST
-from lxml import etree
+#from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE, \
+#    VIR_MIGRATE_PERSIST_DEST
+#from lxml import etree
 from rain import RainService, constants, ttypes
 from relay import RelayService
 from string import Template
@@ -13,7 +13,7 @@ from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ClientCreator
-import libvirt
+#import libvirt
 import nodes
 import sys
 import time
@@ -29,7 +29,7 @@ RELAY_PORT = 7900
 def handler(ctxt, err):
     global errno
     errno = err
-libvirt.registerErrorHandler(handler, 'context') 
+# libvirt.registerErrorHandler(handler, 'context') 
 
 def __find_domain(connections, domain_name):
     last = None, None
@@ -175,6 +175,8 @@ def get_null_allocation(nodecount):
         
     return assignment, migrations
 
+def determine_current_allocation():
+    pass
     
 def migrationtest():
     connections = []

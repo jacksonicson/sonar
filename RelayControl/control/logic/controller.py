@@ -6,7 +6,7 @@ import driver
 
 class LoadBalancer(Thread):
     '''
-    Load balancer which designed originated from Sandpiper
+    Load balancer which design originated from Sandpiper
     '''
     
     def __init__(self, model):
@@ -152,6 +152,13 @@ class MetricHandler:
         host.put(data.reading)
         return
 
+
+def build_from_current_allocation():
+    from virtual import allocation
+    allocation = allocation.determine_current_allocation()
+    
+    # TODO
+    
 
 def build_initial_model():
     # TODO: Read this somehow from Sonar or recreate initial allocation
