@@ -19,6 +19,7 @@ import sys
 import time
 import traceback
 import control.domains as domains
+from threading import Thread
 
 
 ###############################################
@@ -46,6 +47,58 @@ def __find_domain(connections, domain_name):
             pass
         
     return last
+
+
+def connect_all():
+    # connect 
+    connections = []
+    for host in nodes.HOSTS: 
+        conn_str = "qemu+ssh://root@%s/system" % (host)
+        print 'connecting with %s' % (conn_str)
+        conn = libvirt.open(conn_str)
+        connections.append(conn)
+        
+    return connections
+
+
+def close_all(connections):
+    for connection in connections:
+        connection.close()
+
+class MigrationThread(Thread):
+    def __init__(self, connections, domain, node_from, node_to, callback):
+        super(MigrationThread, self).__init__()
+        self.connections = connections
+        self.domain = domain
+        self.node_from = node_from
+        self.node_to = node_to
+        self.callback = callback
+    
+    def run(self):
+        connection_from = self.connections[nodes.NODES.index(self.node_from)]
+        domain = connection_from.lookupByName(self.domain)
+        connection_to = self.connections[nodes.NODES.index(self.node_to)]
+        
+        try:
+            domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain, None, 0)
+            self.callback(True, None)
+        except:
+            global errno
+            print 'live migration passed: %s' % (errno[2])
+            self.callback(False, errno)
+
+
+connections = None
+
+def migrateDomain(domain, node_from, node_to, callback):
+    global connections
+    if connections == None:
+        print 'Connecting...'
+        connections = connect_all()
+        
+    thread = MigrationThread(connections, domain, node_from, node_to, callback)
+    thread.start()
+    
 
 def migrateAllocation(allocation):
     connections = []

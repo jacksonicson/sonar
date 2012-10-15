@@ -1,15 +1,19 @@
-from model import types
+import time
+import numpy as np
 from threading import Thread
+
+from model import types
 import driver
 import model
-import numpy as np
-import time
 
 ######################
 ## CONFIGURATION    ##
 ######################
 PRODUCTION = True
 ######################
+
+if PRODUCTION:
+    from virtual import allocation
 
 class LoadBalancer(Thread):
     '''
@@ -34,17 +38,23 @@ class LoadBalancer(Thread):
             return data[-1]
         
         
+    def callback(self, domain, node_from, node_to, status, error):
+        print 'MIGRATION CALLBACK!'
+        # TODO
+        node_to.domains[domain.name] = domain
+        del node_from.domains[domain.name]
+        
+        
     def migrate(self, domain, source, target):
-        if PRODUCTION:
-            pass
-        
-        assert(target != source)
+        assert(source != target)
         now_time = time.time()
-        target.blocked = now_time
         source.blocked = now_time
+        target.blocked = now_time
         
-        target.domains[domain.name] = domain
-        del source.domains[domain.name]
+        if PRODUCTION:
+            allocation.migrateDomain(domain.name, source.name, target.name, self.callback)
+        else:
+            self.callback(domain, source, target, True, None)
         
     
     def run(self):
@@ -105,8 +115,6 @@ class LoadBalancer(Thread):
             ############################################
             ## MIGRATION TRIGGER #######################
             ############################################
-            block_time = 30
-            now_time = time.time()
             for node in nodes:
                 node.dump()
                 
@@ -130,8 +138,8 @@ class LoadBalancer(Thread):
                                  
                                 test = True
                                 test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
-                                test &= (now_time - target.blocked) > block_time
-                                test &= (now_time - source.blocked) > block_time
+                                test &= target.blocked == None
+                                test &= source.blocked == None
                                 
                                 if test: 
                                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
@@ -159,8 +167,8 @@ class LoadBalancer(Thread):
                                 
                                 test = True
                                 test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
-                                test &= (now_time - target.blocked) > block_time
-                                test &= (now_time - source.blocked) > block_time
+                                test &= target.blocked == None
+                                test &= source.blocked == None
                                 
                                 if test: 
                                     print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
@@ -187,7 +195,6 @@ class MetricHandler:
 
 
 def build_from_current_allocation():
-    from virtual import allocation
     allocation = allocation.determine_current_allocation()
     
     for host in allocation.iterkeys():
@@ -224,6 +231,9 @@ def build_initial_model():
     # Dump model
     model.dump()
     
+    #################################################
+    # IMPORTANT #####################################
+    #################################################
     # Initialize controller specific variables
     for host in model.get_hosts():
         host.blocked = 0
