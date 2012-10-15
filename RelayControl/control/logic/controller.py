@@ -12,8 +12,6 @@ import model
 PRODUCTION = True
 ######################
 
-if PRODUCTION:
-    from virtual import allocation
 
 class LoadBalancer(Thread):
     '''
@@ -40,18 +38,32 @@ class LoadBalancer(Thread):
         
     def callback(self, domain, node_from, node_to, status, error):
         print 'MIGRATION CALLBACK!'
-        # TODO
+        
+        node_from = self.model.get_host(node_from)
+        node_to = self.model.get_host(node_to)
+        domain = self.model.get_host(domain)
+        
+        print 'Updating model'
         node_to.domains[domain.name] = domain
         del node_from.domains[domain.name]
         
         
+        print 'Releasing blocks'
+        node_from.blocked = None
+        node_to.blocked = None
+        
+        
     def migrate(self, domain, source, target):
+        print 'Migration triggered'
         assert(source != target)
+        
+        # Block source and target nodes
         now_time = time.time()
         source.blocked = now_time
         target.blocked = now_time
         
         if PRODUCTION:
+            from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.callback)
         else:
             self.callback(domain, source, target, True, None)
@@ -195,6 +207,7 @@ class MetricHandler:
 
 
 def build_from_current_allocation():
+    from virtual import allocation
     allocation = allocation.determine_current_allocation()
     
     for host in allocation.iterkeys():
@@ -236,7 +249,7 @@ def build_initial_model():
     #################################################
     # Initialize controller specific variables
     for host in model.get_hosts():
-        host.blocked = 0
+        host.blocked = None
 
 
 if __name__ == '__main__':
@@ -247,7 +260,7 @@ if __name__ == '__main__':
     handler = MetricHandler()
     
     # Start the driver thread which simulates Sonar
-    driver = driver.Driver(model, handler)
+    driver = driver.Driver(model, handler, 1)
     driver.start()
     
     # Connect with sonar to receive metric readings

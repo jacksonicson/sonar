@@ -29,8 +29,10 @@ RELAY_PORT = 7900
 
 # Error handler for libvirt
 def handler(ctxt, err):
-    global errno
-    errno = err
+    print 'Libvirt error'
+    print err
+    print ctxt
+    
 libvirt.registerErrorHandler(handler, 'context') 
 
 def __find_domain(connections, domain_name):
@@ -80,12 +82,12 @@ class MigrationThread(Thread):
         connection_to = self.connections[nodes.NODES.index(self.node_to)]
         
         try:
-            domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain, None, 0)
-            self.callback(True, None)
-        except:
-            global errno
-            print 'live migration passed: %s' % (errno[2])
-            self.callback(False, errno)
+            domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
+            print 'Calling back...'
+            self.callback(self.domain, self.node_from, self.node_to, True, None)
+        except Exception as e:
+            print 'Error in live migration'
+            self.callback(self.domain, self.node_from, self.node_to, True, e)
 
 
 connections = None
