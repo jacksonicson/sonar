@@ -5,7 +5,9 @@ import sys
 
 class Driver(Thread):
     
-    def __init__(self, model, handler, acceleration=10):
+    def __init__(self, model, handler, acceleration=300):
+        super(Driver, self).__init__()
+        
         self.model = model
         self.handler= handler
         self.acceleration = acceleration
@@ -33,11 +35,8 @@ class Driver(Thread):
         
         profile_index = 0
         min_ts_length = sys.maxint
-        for host in self.model.get_hosts():
-            # TS data is only attached to domains
-            if host.type != self.model.types.DOMAIN:
-                continue
-           
+        freq = 0
+        for host in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS
             service = profiles.selected[profile_index]
             profile_index += 1

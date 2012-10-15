@@ -1,8 +1,8 @@
-from control.logic import model
-from model import Node, Domain, types, get_hosts
+import model
+from model import types
 from threading import Thread
-import driver
 import time
+import driver
 
 class LoadBalancer(Thread):
     '''
@@ -10,22 +10,21 @@ class LoadBalancer(Thread):
     '''
     
     def __init__(self, model):
+        super(LoadBalancer, self).__init__()
+        
         self.model = model
     
-    def forecast(self, node):
-        pass
-        #import statsmodels.api as sm
-        #import statsmodels as sm2
-        #data =range(20)
-        #print sm.tsa
-        #
-        #sm2.tsa.ar_model.AR
-        #
-        #model = sm2.tsa.ar_model.AR(data).fit()
-        #data = model.predict(len(data)-5,len(data)+10)
-        #for i in data:
-        #    print i
-        #
+    def forecast(self, data):
+        import statsmodels.api as sm
+        import statsmodels as sm2
+
+        model = sm2.tsa.ar_model.AR(data).fit()
+        try:
+            value = model.predict(len(data),len(data)+1)
+            return value[0]
+        except:
+            return data[-1]
+        
     
     def run(self):
         while True:
@@ -34,20 +33,29 @@ class LoadBalancer(Thread):
             print 'Running load balancer...'
             
             ## HOTSPOT DETECTOR ########################
-            for node in get_hosts():
+            for node in model.get_hosts():
                 # Check past readings
                 readings = node.get_readings()
-                overload = True
-                underload = True
+                overload = 0
+                underload = 0
                 
                 size = len(readings)
-                for i in xrange(size - 5, size):
-                    overload &= readings[i] > 80
-                    underload &= readings[i] < 20
                 
-                # Check prediction
-                #overload &= node.predict() > 75
-                #underload &= node.predict() < 10
+                # m out of the k last measurements are used to detect overloads 
+                k = 5 
+                m = 3
+                
+                for i in xrange(size - k, size):
+                    if readings[i] > 80: overload += 1
+                    if readings[i] < 20: underload += 1
+
+                overload = overload >= m
+                underload = underload >= m
+                 
+                # Check workload prediction
+                forecast = self.forecast(readings)
+                overload &= forecast > 75
+                underload &= forecast < 20
 
                 # Update overload                                
                 node.overloaded = overload
@@ -57,7 +65,7 @@ class LoadBalancer(Thread):
             # Calculate volumes of each node
             nodes = []
             domains = []
-            for node in get_hosts():
+            for node in model.get_hosts():
                 volume = 1.0 / max(0.001, (100.0 - node.mean_load()))
                 node.volume = volume
                 node.volume_size = volume / 8.0 # 8 GByte
@@ -148,17 +156,21 @@ class MetricHandler:
 def build_initial_model():
     # TODO: Read this somehow from Sonar or recreate initial allocation
     # if it was created by a deterministic algorithm
-    node = Node('srv0')
-    node.add_domain(Domain('target0'))
-    node.add_domain(Domain('target1'))
+    node = model.Node('srv0')
+    node.add_domain(model.Domain('target0'))
+    node.add_domain(model.Domain('target1'))
     
-    node = Node('srv1')
-    node.add_domain(Domain('target2'))
-    node.add_domain(Domain('target3'))
+    node = model.Node('srv1')
+    node.add_domain(model.Domain('target2'))
+    node.add_domain(model.Domain('target3'))
     
-    node = Node('srv2')
-    node = Node('srv3')
-    node = Node('srv4')
+    node = model.Node('srv2')
+    node = model.Node('srv3')
+    node = model.Node('srv4')
+    
+    # Initialize controller specific variables
+    for host in model.get_hosts():
+        host.blocked = 0
 
 
 if __name__ == '__main__':

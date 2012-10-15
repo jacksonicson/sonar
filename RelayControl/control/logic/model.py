@@ -3,7 +3,7 @@ from collector import ttypes
 
 ################################
 ## Configuration              ##
-WINDOW = 10
+WINDOW = 200
 ################################
 
 # Holds an internal list of all hosts
@@ -17,7 +17,7 @@ types = enum('NODE', 'DOMAIN')
 
 def get_hosts(host_type=None):
     if host_type == None:
-        return hosts.value()
+        return hosts.values()
     
     filtered = []
     for host in hosts.values():
@@ -81,7 +81,7 @@ class Domain(__Host):
 
 class Node(__Host):
     def __init__(self, name):
-        super(Node, self).__init__()
+        super(Node, self).__init__(name)
         
         # Adds itself to the hosts list
         hosts[name] = self
