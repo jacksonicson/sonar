@@ -12,6 +12,10 @@ class Driver(Thread):
         self.model = model
         self.handler= handler
         self.acceleration = acceleration
+        self.running = True
+        
+    def stop(self):
+        self.running = False
      
     def notify(self, timestamp, name, sensor, value):
         data = ttypes.NotificationData()
@@ -61,7 +65,7 @@ class Driver(Thread):
         print 'Accelerated frequency: %f' % freq
         
         # Replay time series data
-        while True:
+        while self.running:
             # Iterate over the complete TS 
             for tindex in xrange(min_ts_length):
                 # Simulation simulation_time 

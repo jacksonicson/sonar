@@ -169,12 +169,12 @@ def migrateAllocation(allocation):
                 domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain_name, None, 0)
                 print 'done'
             except:
-                global errno
-                print 'passed: %s' % (errno[2])
+                print 'passed'
             
     except:
-        print 'error while executing migrations: %s' % errno[2]
+        # print 'error while executing migrations: %s' % errno[2]
         traceback.print_exc(file=sys.stdout)
+        pass
 
     for conn in connections:
         print 'closing connection...'

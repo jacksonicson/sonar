@@ -157,6 +157,7 @@ class LoadBalancer(Thread):
                                  
                                 test = True
                                 test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
+                                test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
                                 
@@ -186,6 +187,7 @@ class LoadBalancer(Thread):
                                 
                                 test = True
                                 test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
+                                test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
                                 
@@ -203,15 +205,16 @@ class MetricHandler:
     and feeds the data into the model. The data is later used
     by the load balancer to resolve over- and underloads.
     '''
-    def receive(self, data):
-        hostname = data.id.hostname
-        
-        host = model.get_host(hostname)
-        if host == None:
-            return
-         
-        host.put(data.reading)
-        return
+    def receive(self, datalist):
+        print 'handling...'
+        for data in datalist:
+            hostname = data.id.hostname
+            
+            host = model.get_host(hostname)
+            if host == None:
+                return
+             
+            host.put(data.reading)
 
 
 def build_from_current_allocation():
@@ -268,14 +271,21 @@ if __name__ == '__main__':
     handler = MetricHandler()
     
     # Start the driver thread which simulates Sonar
-    driver = driver.Driver(model, handler, 1)
-    driver.start()
+#    driver = driver.Driver(model, handler, 5)
+#    driver.start()
     
     # Connect with sonar to receive metric readings
-    # connector.connect_sonar(model, handler)
+    import connector
+    connector.connect_sonar(model, handler)
     
     # Start load balancer thread which detects hotspots and triggers migrations
     balancer = LoadBalancer(model)
-    balancer.start() 
+    balancer.start()
+    print 'end'
+    
+    
+    
+
+
         
 

@@ -7,7 +7,7 @@ import threading
 ################################
 ## Configuration              ##
 LISTENING_PORT = 9876
-LISTENING_INTERFACE_IPV4 = '192.168.96.3'
+LISTENING_INTERFACE_IPV4 = '192.168.96.6'
 
 COLLECTOR_PORT = 7911
 COLLECTOR_HOST = 'monitor0.dfg'
@@ -17,15 +17,21 @@ COLLECTOR_HOST = 'monitor0.dfg'
 class ServiceThread(threading.Thread):
     def __init__(self, handler):
         threading.Thread.__init__(self)
+        
+        # Mark this one as a daemon so it can be killed by python
+        self.setDaemon(True)
+        
         self.handler = handler
         
     def run(self):
+        print self.handler
         processor = NotificationClient.Processor(self.handler)
         transport = TSocket.TServerSocket(host=LISTENING_INTERFACE_IPV4, port=LISTENING_PORT)
         
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         
+        # Launch the server
         server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
         
         print 'Starting TSD callback service...'
@@ -56,14 +62,14 @@ def connect_sonar(model, handler, interface=LISTENING_INTERFACE_IPV4, collector=
     transport.open()
 
     # Define hosts and sensors to listen on
-    srv0_cpu = ttypes.SensorToWatch('srv0', 'psutilcpu')
-    glassfish0_cpu = ttypes.SensorToWatch('glassfish0', 'psutilcpu')
+    filters = []
+    for host in model.get_hosts():
+        fi = host.get_watch_filter()
+        print fi
+        filters.append(fi)
 
     # Subscribe
     print 'Subscribing now...'
-    serviceClient.subscribe(interface, LISTENING_PORT, [srv0_cpu, glassfish0_cpu]),
+    serviceClient.subscribe(interface, LISTENING_PORT, filters),
     print 'Done'
-
-    # Wait for join
-    print 'Waiting for exit...'
-    receiver.join(); 
+    

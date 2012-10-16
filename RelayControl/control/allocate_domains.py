@@ -122,6 +122,6 @@ def build_null_allocation(nodecount, migrate=False):
 if __name__ == '__main__':
     nodecount = len(nodes.HOSTS)
     # build_allocation(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM, True)
-    build_null_allocation(nodecount, migrate=False)
+    build_null_allocation(nodecount, migrate=True)
 
 
