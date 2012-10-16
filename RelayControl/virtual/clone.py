@@ -208,19 +208,6 @@ def clone(source, target):
    
    
 count = 0
-#clone_names = [('playground', 'glassfish0'),
-#               ('playground', 'glassfish1'),
-#               ('playground', 'glassfish2'),
-#               ('playground', 'glassfish3'),
-#               ('playground', 'glassfish4'),
-#               ('playground', 'glassfish5'),
-#               ('playdb', 'mysql0'),
-#               ('playdb', 'mysql1'),
-#               ('playdb', 'mysql2'),
-#               ('playdb', 'mysql3'),
-#               ('playdb', 'mysql4'),
-#               ('playdb', 'mysql5'), ]
-
 clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
 
 
