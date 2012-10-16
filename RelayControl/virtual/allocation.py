@@ -51,9 +51,11 @@ def __find_domain(connections, domain_name):
     return last
 
 
+connections = []
+
 def connect_all():
     # connect 
-    connections = []
+    global connections  
     for host in nodes.HOSTS: 
         conn_str = "qemu+ssh://root@%s/system" % (host)
         print 'connecting with %s' % (conn_str)
@@ -63,23 +65,24 @@ def connect_all():
     return connections
 
 
-def close_all(connections):
+def close_all():
+    print 'Closing libvirtd connections...'
+    global connections
     for connection in connections:
         connection.close()
 
 class MigrationThread(Thread):
-    def __init__(self, connections, domain, node_from, node_to, callback):
+    def __init__(self, domain, node_from, node_to, callback):
         super(MigrationThread, self).__init__()
-        self.connections = connections
         self.domain = domain
         self.node_from = node_from
         self.node_to = node_to
         self.callback = callback
     
     def run(self):
-        connection_from = self.connections[nodes.NODES.index(self.node_from)]
+        connection_from = libvirt.open("qemu+ssh://root@%s/system" % self.node_from) 
         domain = connection_from.lookupByName(self.domain)
-        connection_to = self.connections[nodes.NODES.index(self.node_to)]
+        connection_to = libvirt.open("qemu+ssh://root@%s/system" % self.node_to) 
         
         try:
             domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
@@ -88,17 +91,26 @@ class MigrationThread(Thread):
         except Exception as e:
             print 'Error in live migration'
             self.callback(self.domain, self.node_from, self.node_to, True, e)
+        finally:
+            # Close connections
+            try:
+                connection_from.close()
+            except: pass
+            try:
+                connection_to.close()
+            except: pass
+                
 
 
-connections = None
+# connections = None
 
 def migrateDomain(domain, node_from, node_to, callback):
-    global connections
-    if connections == None:
-        print 'Connecting...'
-        connections = connect_all()
-        
-    thread = MigrationThread(connections, domain, node_from, node_to, callback)
+#    global connections
+#    if connections == None:
+#        print 'Connecting...'
+#        connections = connect_all()
+#        
+    thread = MigrationThread(domain, node_from, node_to, callback)
     thread.start()
     
 

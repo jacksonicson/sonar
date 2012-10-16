@@ -1,10 +1,10 @@
-import time
-import numpy as np
-from threading import Thread
-
 from model import types
+from threading import Thread
 import driver
 import model
+import numpy as np
+import time
+
 
 ######################
 ## CONFIGURATION    ##
@@ -22,7 +22,10 @@ class LoadBalancer(Thread):
         super(LoadBalancer, self).__init__()
         
         self.model = model
+        self.running = True
     
+    def stop(self):
+        self.running = False
     
     def forecast(self, data):
         import statsmodels.api as sm
@@ -37,20 +40,18 @@ class LoadBalancer(Thread):
         
         
     def callback(self, domain, node_from, node_to, status, error):
-        print 'MIGRATION CALLBACK!'
-        
         node_from = self.model.get_host(node_from)
         node_to = self.model.get_host(node_to)
         domain = self.model.get_host(domain)
         
-        print 'Updating model'
         node_to.domains[domain.name] = domain
         del node_from.domains[domain.name]
         
+        time_now = time.time()
+        node_from.blocked = time_now + 30
+        node_to.blocked = time_now + 60
         
-        print 'Releasing blocks'
-        node_from.blocked = None
-        node_to.blocked = None
+        print 'Migration finished'
         
         
     def migrate(self, domain, source, target):
@@ -58,9 +59,13 @@ class LoadBalancer(Thread):
         assert(source != target)
         
         # Block source and target nodes
+        # Set block times in the future to guarantee that the block does not run out
         now_time = time.time()
-        source.blocked = now_time
-        target.blocked = now_time
+        source.blocked = now_time + 60 * 60
+        target.blocked = now_time + 60 * 60
+        
+        if len(source.domains) == 0:
+            source.flush()
         
         if PRODUCTION:
             from virtual import allocation
@@ -70,7 +75,7 @@ class LoadBalancer(Thread):
         
     
     def run(self):
-        while True:
+        while self.running:
             # Sleeping till next balancing operation
             time.sleep(5)
             print 'Running load balancer...'
@@ -127,6 +132,8 @@ class LoadBalancer(Thread):
             ############################################
             ## MIGRATION TRIGGER #######################
             ############################################
+            time_now = time.time()
+            sleep_time = 10
             for node in nodes:
                 node.dump()
                 
@@ -150,8 +157,8 @@ class LoadBalancer(Thread):
                                  
                                 test = True
                                 test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
-                                test &= target.blocked == None
-                                test &= source.blocked == None
+                                test &= (time_now - target.blocked) > sleep_time
+                                test &= (time_now - source.blocked) > sleep_time
                                 
                                 if test: 
                                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
@@ -174,19 +181,20 @@ class LoadBalancer(Thread):
                         for domain in node_domains:
                             
                             # Try all targets for the migration (reversed - starting at the underload domain walking TOP)
-                            for target in reversed(range(0, nodes.index(node))):
+                            for target in range(nodes.index(node) - 1):
                                 target = nodes[target]
                                 
                                 test = True
                                 test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
-                                test &= target.blocked == None
-                                test &= source.blocked == None
+                                test &= (time_now - target.blocked) > sleep_time
+                                test &= (time_now - source.blocked) > sleep_time
                                 
                                 if test: 
                                     print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
                                     self.migrate(domain, source, target)                                    
                                     raise StopIteration()
-                except StopIteration: pass 
+                except StopIteration: pass
+                
 
                 
 class MetricHandler:
@@ -249,7 +257,7 @@ def build_initial_model():
     #################################################
     # Initialize controller specific variables
     for host in model.get_hosts():
-        host.blocked = None
+        host.blocked = 0
 
 
 if __name__ == '__main__':
@@ -270,3 +278,4 @@ if __name__ == '__main__':
     balancer = LoadBalancer(model)
     balancer.start() 
         
+

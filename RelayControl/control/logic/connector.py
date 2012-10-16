@@ -27,6 +27,7 @@ class ServiceThread(threading.Thread):
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
         
         server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+        
         print 'Starting TSD callback service...'
         server.serve()
         
