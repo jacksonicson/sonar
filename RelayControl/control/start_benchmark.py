@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = False
+start = True
 ######################
 
 # Setup logging
@@ -33,6 +33,10 @@ def finished(done, client_list):
     print '### CONTROLLER ###############################'
     print 'starting controller'
     logger.info('loading controller')
+    
+    import control.logic as logicc
+    logicc.controller.main()
+    
     # controller.main() 
 
 

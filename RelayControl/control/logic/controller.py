@@ -10,7 +10,7 @@ import json
 ######################
 ## CONFIGURATION    ##
 ######################
-PRODUCTION = False
+PRODUCTION = True
 ######################
 
 # Setup logging
@@ -186,7 +186,7 @@ class LoadBalancer(Thread):
                                     continue
                                  
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -200,7 +200,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                  
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -234,7 +234,7 @@ class LoadBalancer(Thread):
                                     continue
                                 
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -249,7 +249,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                 
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -326,7 +326,7 @@ def build_initial_model():
         host.blocked = 0
 
 
-if __name__ == '__main__':
+def main():
     # Build internal infrastructure representation
     build_initial_model()
 
@@ -345,10 +345,7 @@ if __name__ == '__main__':
     # Start load balancer thread which detects hotspots and triggers migrations
     balancer = LoadBalancer(model)
     balancer.start()
-    
-    
-    
 
-
-        
+if __name__ == '__main__':
+    main()
 
