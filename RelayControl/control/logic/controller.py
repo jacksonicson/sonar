@@ -1,10 +1,11 @@
 from model import types
 from threading import Thread
+from logs import sonarlog
 import driver
 import model
 import numpy as np
 import time
-
+import json
 
 ######################
 ## CONFIGURATION    ##
@@ -12,6 +13,8 @@ import time
 PRODUCTION = True
 ######################
 
+# Setup logging
+logger = sonarlog.getLogger('controller')
 
 class LoadBalancer(Thread):
     '''
@@ -43,15 +46,25 @@ class LoadBalancer(Thread):
         node_from = self.model.get_host(node_from)
         node_to = self.model.get_host(node_to)
         domain = self.model.get_host(domain)
-        
-        node_to.domains[domain.name] = domain
-        del node_from.domains[domain.name]
-        
-        time_now = time.time()
-        node_from.blocked = time_now + 30
-        node_to.blocked = time_now + 60
-        
-        print 'Migration finished'
+        if status: 
+            node_to.domains[domain.name] = domain
+            del node_from.domains[domain.name]
+            
+            time_now = time.time()
+            node_from.blocked = time_now + 30
+            node_to.blocked = time_now + 60
+            
+            print 'Migration finished'
+            data = json.dumps({'domain': domain.name, 'from': node_from.name, 'to': node_to.name})
+            logger.info('Live Migration: %s' % data)
+        else:
+            time_now = time.time()
+            node_from.blocked = time_now
+            node_to.blocked = time_now
+            
+            print 'Migration failed'
+            data = json.dumps({'domain': domain.name, 'from': node_from.name, 'to': node_to.name})
+            logger.error('Live Migration Failed: %s' % data)
         
         
     def migrate(self, domain, source, target):
@@ -77,6 +90,7 @@ class LoadBalancer(Thread):
     def run(self):
         # Gather data phase
         time.sleep(30)
+        logger.log(sonarlog.SYNC, 'Releasing load balancer')
         
         while self.running:
             # Sleeping till next balancing operation
@@ -96,7 +110,7 @@ class LoadBalancer(Thread):
                 overload = 0
                 underload = 0
                 for reading in readings[-k:]:
-                    if reading > 85: overload += 1
+                    if reading > 80: overload += 1
                     if reading < 30: underload += 1
 
                 m = 15

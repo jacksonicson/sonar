@@ -19,6 +19,7 @@ LOG_LEVELS = {60: 50010,
               20:20000, 
               10:10000} 
 SYNC = 60
+INFO = 30
 logging.addLevelName(SYNC, 'SYNC')
 
 loggingClient = None
