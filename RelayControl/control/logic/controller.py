@@ -75,6 +75,9 @@ class LoadBalancer(Thread):
         
     
     def run(self):
+        # Gather data phase
+        time.sleep(30)
+        
         while self.running:
             # Sleeping till next balancing operation
             time.sleep(5)
@@ -89,14 +92,14 @@ class LoadBalancer(Thread):
                 readings = node.get_readings()
                 
                 # m out of the k last measurements are used to detect overloads 
-                k = 5 
+                k = 20 
                 overload = 0
                 underload = 0
                 for reading in readings[-k:]:
-                    if reading > 80: overload += 1
-                    if reading < 40: underload += 1
+                    if reading > 85: overload += 1
+                    if reading < 30: underload += 1
 
-                m = 3
+                m = 15
                 overload = (overload >= m)
                 underload = (underload >= m)
                  
@@ -156,7 +159,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                  
                                 test = True
-                                test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
+                                test &= target.mean_load(k) + domain.mean_load(k) < 70 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -186,7 +189,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                 
                                 test = True
-                                test &= target.mean_load(k) + domain.mean_load(k) < 80 # Overload threshold
+                                test &= target.mean_load(k) + domain.mean_load(k) < 70 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -281,7 +284,6 @@ if __name__ == '__main__':
     # Start load balancer thread which detects hotspots and triggers migrations
     balancer = LoadBalancer(model)
     balancer.start()
-    print 'end'
     
     
     

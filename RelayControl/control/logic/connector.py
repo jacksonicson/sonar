@@ -71,5 +71,4 @@ def connect_sonar(model, handler, interface=LISTENING_INTERFACE_IPV4, collector=
     # Subscribe
     print 'Subscribing now...'
     serviceClient.subscribe(interface, LISTENING_PORT, filters),
-    print 'Done'
     
