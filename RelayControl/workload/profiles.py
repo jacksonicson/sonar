@@ -1,16 +1,14 @@
+'''
+List of TS and workload profiles used by the benchmark (stored in Times)
+'''
+
 from service import times_client
 from times import ttypes
-import compaction
 import convolution
 import matplotlib.pyplot as plt
 import numpy as np
 import sampleday
 import util
-import math
-
-'''
-List of TS and workload profiles used by the benchmark (stored in Times)
-'''
 
 '''
 Prefix and postfixes used to store data in Times
@@ -251,6 +249,7 @@ mix_2 = [
 
 ##############################
 ## CONFIGURATION            ##
+##############################
 selected_name = 'mix_0'
 selected = mix_0
 ##############################

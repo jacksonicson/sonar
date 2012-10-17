@@ -1,5 +1,3 @@
-from service import times_client
-from times import ttypes
 import matplotlib.pyplot as plt
 import numpy as np
 import util
