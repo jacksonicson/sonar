@@ -1,3 +1,7 @@
+'''
+Sample script for fetching TSD and LOG data from Sonar
+'''
+
 from sonarlytics import to_timestamp, fetch_timeseries, fetch_logs
 
 # Parameters

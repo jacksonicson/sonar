@@ -1,6 +1,19 @@
+'''
+Java is used to get the length of all log messages stored in sonar. The length of
+each log message is stored in a txt file. This file gets read by this script which then
+calculates some descriptive statistic metrics about the log message length. 
+'''
+
 import numpy as np
 
-arr = np.genfromtxt('C:/temp/msgs.txt', delimiter=',')
+
+##########################
+## Configuration        ##
+##########################
+FILE = 'C:/tmep/msgs.txt'
+##########################
+
+arr = np.genfromtxt(FILE, delimiter=',')
 time = arr[:,0]
 pre = time[0]
 time[0] = 0
