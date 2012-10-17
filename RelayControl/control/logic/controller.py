@@ -11,6 +11,9 @@ import json
 ## CONFIGURATION    ##
 ######################
 PRODUCTION = True
+THRESHOLD_OVERLOAD = 80
+THRESHOLD_UNDERLOAD = 30
+PERCENTILE = 75.0
 ######################
 
 # Setup logging
@@ -119,8 +122,8 @@ class LoadBalancer(Thread):
                 overload = 0
                 underload = 0
                 for reading in readings[-k:]:
-                    if reading > 80: overload += 1
-                    if reading < 30: underload += 1
+                    if reading > THRESHOLD_OVERLOAD: overload += 1
+                    if reading < THRESHOLD_UNDERLOAD: underload += 1
 
                 m = 15
                 overload = (overload >= m)
@@ -141,7 +144,7 @@ class LoadBalancer(Thread):
             nodes = []
             domains = []
             for node in model.get_hosts():
-                volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(90, k)) / 100.0)
+                volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
                 node.volume = volume
                 node.volume_size = volume / 8.0 # 8 GByte
                 
@@ -186,7 +189,7 @@ class LoadBalancer(Thread):
                                     continue
                                  
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
+                                test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -200,7 +203,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                  
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
+                                test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -226,7 +229,7 @@ class LoadBalancer(Thread):
                         # Try to migrate all domains by decreasing VSR value
                         for domain in node_domains:
                             
-                            # Try all targets for the migration (reversed - starting at the underload domain walking TOP)
+                            # Try all targets for the migration
                             for target in range(nodes.index(node) - 1):
                                 target = nodes[target]
                                 
@@ -234,7 +237,7 @@ class LoadBalancer(Thread):
                                     continue
                                 
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
+                                test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -249,7 +252,7 @@ class LoadBalancer(Thread):
                                 target = nodes[target]
                                 
                                 test = True
-                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 75 # Overload threshold
+                                test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time

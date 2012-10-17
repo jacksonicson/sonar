@@ -73,6 +73,7 @@ class MigrationThread(Thread):
         
         try:
             domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
+            domain.migrateSetMaxDowntime(3000)
             print 'Calling back...'
             self.callback(self.domain, self.node_from, self.node_to, True, None)
         except Exception as e:
@@ -154,8 +155,10 @@ def migrateAllocation(allocation):
                 print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
                 # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
                 domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain_name, None, 0)
+                domain.migrateSetMaxDowntime(3000, 0)
                 print 'done'
             except:
+                traceback.print_exc(file=sys.stdout)
                 print 'passed'
             
     except:
