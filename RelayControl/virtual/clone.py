@@ -1,29 +1,25 @@
-from control import drones, hosts
-from datetime import datetime
-from lxml import etree
-from rain import RainService, constants, ttypes
-from relay import RelayService
-from string import Template
-from thrift import Thrift, Thrift
-from thrift.protocol import TBinaryProtocol, TBinaryProtocol
-from thrift.transport import TSocket, TTransport, TTwisted
-from twisted.internet import defer, reactor
-from twisted.internet.defer import inlineCallbacks
-from twisted.internet.protocol import ClientCreator
-import libvirt
-import nodes
-import sys
-import time
-import traceback
-import virtual
-
 '''
 All Domains (VMs) are setup on the srv0 system! This is the initialization system. If a Domain is moved 
 to another system it's configuration has to be created on the target system. 
 '''
 
+from control import drones
+from lxml import etree
+from relay import RelayService
+from string import Template
+from thrift.protocol import TBinaryProtocol
+from thrift.transport import TTwisted
+from twisted.internet import reactor
+from twisted.internet.protocol import ClientCreator
+import nodes
+import sys
+import time
+import traceback
+import virtual.util as util
+
 ###############################################
 ### CONFIG                                   ##
+###############################################
 DEFAULT_SETUP_IP = 'vmt'
 RELAY_PORT = 7900
 STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
@@ -254,7 +250,7 @@ def main():
     drones.main()
     
     # Connect
-    connections = virtual.connect_all()
+    connections = util.connect_all()
     
     try:
         # Shutdown all running VMs 
@@ -267,7 +263,7 @@ def main():
         print 'Reactor returned'
         
     finally:
-        virtual.close_all(connections)
+        util.close_all(connections)
     
 
 if __name__ == '__main__':
