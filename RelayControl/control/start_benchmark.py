@@ -27,17 +27,17 @@ def finished_end(done, client_list):
 def finished(done, client_list):
     print 'finish phase'
     logger.log(sonarlog.SYNC, 'end of startup sequence')
-    reactor.stop()
+    
+    if reactor.running:
+        reactor.stop()
 
     # Launch the controller
     print '### CONTROLLER ###############################'
     print 'starting controller'
     logger.info('loading controller')
     
-    import control.logic as logicc
-    logicc.controller.main()
-    
-    # controller.main() 
+    from control.logic import controller
+    controller.main()
 
 
 def ram_up_finished(rain_clients, client_list):
@@ -300,5 +300,6 @@ def main():
 
 if __name__ == '__main__':
     sonarlog.connect()
-    main()
+    # main()
+    finished(True, None)
     sonarlog.close()

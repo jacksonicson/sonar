@@ -108,6 +108,17 @@ def setup(vm):
     creator.addErrback(error, vm)
     
 
+def rand_mac():
+    import random
+    base = '52:54:00:'
+    # generate 3 random NN blocks
+    for i in xrange(3):
+        rand = random.randint(0, 255)
+        value = hex(rand)[2:]
+        base += ':' + value
+    
+    return base
+
 # Distribute images across all pools, pool_index gives the pool where the next
 # VM will be created
 pool_index = long(time.time()) % len(STORAGE_POOLS)
@@ -186,16 +197,21 @@ def clone(connections, source, target):
     
     # Reconfigure the domain description
     xml_domain_desc = source_domain.XMLDesc(0)
+    print xml_domain_desc
+    
     xml_tree = etree.fromstring(xml_domain_desc)
     name = xml_tree.xpath('/domain/name')[0]
     name.text = target
     uuid = xml_tree.xpath('/domain/uuid')[0]
-    uuid.getparent().remove(uuid)
+    uuid.text = rand_mac()
+    print 'MAC: %s' % uuid.text
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
     source.set('file', '/mnt/' + dst_pool + '/' + target + '.qcow')
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
     mac.getparent().remove(mac)
     xml_domain_desc = etree.tostring(xml_tree)
+    
+    print xml_domain_desc
     
     # Create a new Domain
     print 'Creating domain...'
