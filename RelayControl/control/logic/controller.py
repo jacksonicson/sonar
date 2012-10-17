@@ -132,7 +132,7 @@ class LoadBalancer(Thread):
             nodes = []
             domains = []
             for node in model.get_hosts():
-                volume = 1.0 / max(0.001, float(100.0 - node.mean_load(k)) / 100.0)
+                volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(90, k)) / 100.0)
                 node.volume = volume
                 node.volume_size = volume / 8.0 # 8 GByte
                 
@@ -171,9 +171,11 @@ class LoadBalancer(Thread):
                             # Try all targets for the migration (reversed - starting at the BOTTOM)
                             for target in reversed(range(nodes.index(node) + 1, len(nodes))):
                                 target = nodes[target]
+                                if len(target.domains) == 0:
+                                    continue
                                  
                                 test = True
-                                test &= target.mean_load(k) + domain.mean_load(k) < 70 # Overload threshold
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
@@ -182,6 +184,22 @@ class LoadBalancer(Thread):
                                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
                                     self.migrate(domain, source, target)
                                     raise StopIteration()
+                                
+                            print 'No server in on-state found, checking off-state servers'
+                            for target in reversed(range(nodes.index(node) + 1, len(nodes))):
+                                target = nodes[target]
+                                 
+                                test = True
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
+                                test &= len(target.domains) < 6
+                                test &= (time_now - target.blocked) > sleep_time
+                                test &= (time_now - source.blocked) > sleep_time
+                                
+                                if test: 
+                                    print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    self.migrate(domain, source, target)
+                                    raise StopIteration()
+                                
                 except StopIteration: pass 
                 
                 try:
@@ -202,8 +220,26 @@ class LoadBalancer(Thread):
                             for target in range(nodes.index(node) - 1):
                                 target = nodes[target]
                                 
+                                if len(target.domains) == 0:
+                                    continue
+                                
                                 test = True
-                                test &= target.mean_load(k) + domain.mean_load(k) < 70 # Overload threshold
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
+                                test &= len(target.domains) < 6
+                                test &= (time_now - target.blocked) > sleep_time
+                                test &= (time_now - source.blocked) > sleep_time
+                                
+                                if test: 
+                                    print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    self.migrate(domain, source, target)                                    
+                                    raise StopIteration()
+                            
+                            print 'No server in on-state found, checking off-state servers'    
+                            for target in range(nodes.index(node) - 1):
+                                target = nodes[target]
+                                
+                                test = True
+                                test &= target.percentile_load(90, k) + domain.percentile_load(90, k) < 70 # Overload threshold
                                 test &= len(target.domains) < 6
                                 test &= (time_now - target.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time

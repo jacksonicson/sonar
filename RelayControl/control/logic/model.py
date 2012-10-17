@@ -61,6 +61,15 @@ class __Host(object):
         sorted_readings = self.get_readings()
         return np.mean(sorted_readings[-k:])
     
+    def percentile_load(self, percentile, k=None):
+        if k == None:
+            sorted_readings = self.readings
+        else:
+            sorted_readings = self.get_readings()[-k:]
+        
+        return np.percentile(sorted_readings, percentile)
+    
+    
     def get_readings(self):
         index = (self.counter) % WINDOW
         result = []
