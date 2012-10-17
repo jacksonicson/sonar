@@ -1,3 +1,8 @@
+'''
+Manages a list of hosts with types. This data structure is required to
+trigger actions by the host type in the control scripts. 
+'''
+
 hosts_map = {}
 hosts = []
 
