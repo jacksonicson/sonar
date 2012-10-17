@@ -1,18 +1,23 @@
 from collector import ttypes
 from threading import Thread
-import time
-import sys
 import control.domains as domains
+import sys
+import time
 
 class Driver(Thread):
     
-    def __init__(self, model, handler, acceleration=300):
+    def __init__(self, model, handler, report_rate=3, acceleration=25):
         super(Driver, self).__init__()
         
         self.model = model
-        self.handler= handler
-        self.acceleration = acceleration
+        self.handler = handler
         self.running = True
+        
+        # acceleration * real_time_delta (simulation time runs faster/slower by factor acceleration)
+        self.acceleration = acceleration  
+        
+        # report rate in real time (e.g. every 3 seconds a value is reported) 
+        self.report_rate = report_rate 
         
     def stop(self):
         self.running = False
@@ -28,7 +33,7 @@ class Driver(Thread):
         data.reading.value = value
         data.reading.labels = []
         
-        self.handler.receive(data)
+        self.handler.receive([data, ])
         
     def run(self):
         # Use the existing profiles to load TSD from Times
@@ -40,11 +45,12 @@ class Driver(Thread):
         
         min_ts_length = sys.maxint
         freq = 0
+        sim_time = 0 # simulation time
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            service_name  = domains.profile_by_name(domain.name)
+            service_name = domains.profile_by_name(domain.name)
             load = service_name + profiles.POSTFIX_NORM
             print 'loading service: %s ...' % (load)
             ts = connection.load(load)
@@ -60,37 +66,31 @@ class Driver(Thread):
             # Update max length
             min_ts_length = min(min_ts_length, len(ts))
         
-        # Speedup frequency by acceleration factor
-        freq = float(freq) / float(self.acceleration)
-        print 'Accelerated frequency: %f' % freq
-        
         # Replay time series data
         while self.running:
-            # Iterate over the complete TS 
-            for tindex in xrange(min_ts_length):
-                # Simulation simulation_time 
-                simulation_time = tindex * self.acceleration
-                
-                # For all nodes update their domains and aggregate the load for the node
-                for host in self.model.get_hosts(self.model.types.NODE):
-                    aggregated_load = 0
-                    
-                    # Go over all domains and update their load by their TS
-                    for domain in host.domains.values():
-                        load = domain.ts[tindex]
-                         
-                        self.notify(simulation_time, domain.name, 'psutilcpu', load)
-                        
-                        # Load aggregation for the node
-                        aggregated_load += load
-
-
-                    # Send aggregated load
-                    self.notify(simulation_time, host.name, 'psutilcpu', aggregated_load)
-                
-                # Simulation sleep
-                time.sleep(freq)
+            # Simulation simulation_time 
+            tindex = (sim_time / freq) % min_ts_length
+            # print 'TS index: %i' % tindex
             
-            print 'NEXT SIMULATION CYCLE #########################################'
+            # For all nodes update their domains and aggregate the load for the node
+            for host in self.model.get_hosts(self.model.types.NODE):
+                aggregated_load = 0
+                
+                # Go over all domains and update their load by their TS
+                for domain in host.domains.values():
+                    load = domain.ts[tindex]
+                     
+                    self.notify(sim_time, domain.name, 'psutilcpu', load)
+                    
+                    # Load aggregation for the node
+                    aggregated_load += load
+
+
+                # Send aggregated load
+                self.notify(sim_time, host.name, 'psutilcpu', aggregated_load)
+            
+            # Simulation sleep
+            sim_time += self.report_rate * self.acceleration
+            time.sleep(self.report_rate)
             
             

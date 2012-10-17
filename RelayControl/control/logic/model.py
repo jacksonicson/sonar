@@ -51,8 +51,8 @@ class __Host(object):
         self.readings[self.counter] = reading.value
         self.counter = (self.counter + 1) % WINDOW
     
-    def flush(self):
-        self.readings = [0 for _ in xrange(0, WINDOW)]
+    def flush(self, value=0):
+        self.readings = [value for _ in xrange(0, WINDOW)]
         
     def mean_load(self, k=None):
         if k == None:

@@ -10,7 +10,7 @@ import json
 ######################
 ## CONFIGURATION    ##
 ######################
-PRODUCTION = True
+PRODUCTION = False
 ######################
 
 # Setup logging
@@ -50,9 +50,16 @@ class LoadBalancer(Thread):
             node_to.domains[domain.name] = domain
             del node_from.domains[domain.name]
             
+            # Release block
             time_now = time.time()
-            node_from.blocked = time_now + 30
-            node_to.blocked = time_now + 60
+            node_from.blocked = time_now
+            node_to.blocked = time_now
+            
+            # Reset CPU consumption: Necessary because the old CPU readings
+            # may trigger another migrations as they do not represent the load
+            # without the VM
+            node_from.flush(50)
+            node_to.flush(50)
             
             print 'Migration finished'
             data = json.dumps({'domain': domain.name, 'from': node_from.name, 'to': node_to.name})
@@ -72,7 +79,8 @@ class LoadBalancer(Thread):
         assert(source != target)
         
         # Block source and target nodes
-        # Set block times in the future to guarantee that the block does not run out
+        # Set block times in the future to guarantee that the block does not run out 
+        # until the migration is finished
         now_time = time.time()
         source.blocked = now_time + 60 * 60
         target.blocked = now_time + 60 * 60
@@ -84,12 +92,13 @@ class LoadBalancer(Thread):
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.callback)
         else:
-            self.callback(domain, source, target, True, None)
+            # TODO: Add some migration time simulation
+            self.callback(domain.name, source.name, target.name, True, None)
         
     
     def run(self):
         # Gather data phase
-        time.sleep(30)
+        time.sleep(10)
         logger.log(sonarlog.SYNC, 'Releasing load balancer')
         
         while self.running:
@@ -171,7 +180,9 @@ class LoadBalancer(Thread):
                             # Try all targets for the migration (reversed - starting at the BOTTOM)
                             for target in reversed(range(nodes.index(node) + 1, len(nodes))):
                                 target = nodes[target]
+                                
                                 if len(target.domains) == 0:
+                                    # print 'skip %s - %s' % (target.name, target.domains)
                                     continue
                                  
                                 test = True
@@ -185,7 +196,6 @@ class LoadBalancer(Thread):
                                     self.migrate(domain, source, target)
                                     raise StopIteration()
                                 
-                            print 'No server in on-state found, checking off-state servers'
                             for target in reversed(range(nodes.index(node) + 1, len(nodes))):
                                 target = nodes[target]
                                  
@@ -196,7 +206,7 @@ class LoadBalancer(Thread):
                                 test &= (time_now - source.blocked) > sleep_time
                                 
                                 if test: 
-                                    print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
                                     self.migrate(domain, source, target)
                                     raise StopIteration()
                                 
@@ -234,7 +244,6 @@ class LoadBalancer(Thread):
                                     self.migrate(domain, source, target)                                    
                                     raise StopIteration()
                             
-                            print 'No server in on-state found, checking off-state servers'    
                             for target in range(nodes.index(node) - 1):
                                 target = nodes[target]
                                 
@@ -245,7 +254,7 @@ class LoadBalancer(Thread):
                                 test &= (time_now - source.blocked) > sleep_time
                                 
                                 if test: 
-                                    print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                                    print 'Underload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
                                     self.migrate(domain, source, target)                                    
                                     raise StopIteration()
                 except StopIteration: pass
@@ -323,13 +332,14 @@ if __name__ == '__main__':
     # Create notification handler
     handler = MetricHandler()
     
-    # Start the driver thread which simulates Sonar
-#    driver = driver.Driver(model, handler, 5)
-#    driver.start()
-    
-    # Connect with sonar to receive metric readings
-    import connector
-    connector.connect_sonar(model, handler)
+    if PRODUCTION:
+        # Connect with sonar to receive metric readings
+        import connector
+        connector.connect_sonar(model, handler)
+    else:
+        # Start the driver thread which simulates Sonar
+        driver = driver.Driver(model, handler)
+        driver.start()
     
     # Start load balancer thread which detects hotspots and triggers migrations
     balancer = LoadBalancer(model)
