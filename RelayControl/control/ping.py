@@ -29,7 +29,7 @@ def main():
     drones.main()
     
     # Add hosts
-    for i in xrange(0, 18):
+    for i in xrange(0, 17):
         hosts.add_host('target%i' % i, 'action')
         
     hosts_map = hosts.get_hosts_list()

@@ -15,18 +15,22 @@ import nodes
 import sys
 import time
 import traceback
+import virtual
+
+'''
+All Domains (VMs) are setup on the srv0 system! This is the initialization system. If a Domain is moved 
+to another system it's configuration has to be created on the target system. 
+'''
 
 ###############################################
 ### CONFIG                                   ##
 DEFAULT_SETUP_IP = 'vmt'
 RELAY_PORT = 7900
 STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
+clone_names = [('playglassdb', 'target%i' % i) for i in range(7, 8)]
+SETUP_SERVER = 'srv0'
 ###############################################
 
-'''
-All Domains (VMs) are setup on the srv0 system! This is the initialization system. If a Domain is moved 
-to another system it's configuration has to be created on the target system. 
-'''
 
 killed_vms = []
 conn = None
@@ -50,50 +54,52 @@ def update_done(ret, vm, relay_conn):
         new_domain.destroy()
         killed_vms.append(vm)
     
+    
     # Schedule next VM clone
     reactor.callLater(0, next_vm)
 
 
-def done(ret, vm):
+def connection_established(ret, vm):
     print 'Connection established'
     
     try:
+        # Read configuration template
         config = open('drones/setup_vm/main_template.sh', 'r')
         data = config.readlines()
         data = ''.join(data)
         config.close()
         
+        # Templating engine
         templ = Template(data)
         d = dict(hostname=vm)
         templ = templ.substitute(d)
             
+        # Write result configuration
         config = open('drones/setup_vm/main.sh', 'w')
         config.writelines(templ)
         config.close()
     except Exception, e:
-        print e
+        traceback.print_exc(file=sys.stdout)
         reactor.stop()
         return
    
     # Rebuild drones
     drones.main()
     
-    drone = drones.load_drone('setup_vm')
-    
-    # Do the setup process
+    # Load and execute drone
     print 'Waiting for drone...'
+    drone = drones.load_drone('setup_vm')
     ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, ret)
         
 
 def error(err, vm):
-    print 'Connection failed, trying again...'
-    time.sleep(20)
-    setup(vm)
+    print 'Connection failed, waiting and trying again...'
+    reactor.callLater(20, setup, vm)
     
 
 def setup(vm):
-    print 'Connecting...'
-    # Spin (blocking) until relay is up and running
+    print 'Connecting with new domain...'
+    
     creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
@@ -101,31 +107,36 @@ def setup(vm):
                           ).connectTCP(DEFAULT_SETUP_IP, RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
     
-    creator.addCallback(done, vm)
+    creator.addCallback(connection_established, vm)
     creator.addErrback(error, vm)
     
 
-# Distribute images across all pools
+# Distribute images across all pools, pool_index gives the pool where the next
+# VM will be created
 pool_index = long(time.time()) % len(STORAGE_POOLS)
 print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
-def clone(source, target):
-    # Get storage dst_pool
+def clone(connections, source, target):
+    # Connection for srv0
+    connections[SETUP_SERVER]
+    
+    # Connect with all known storage pools
+    print 'Connecting with storage pools...'
     pools = []
     for name in STORAGE_POOLS:
         pool = conn.storagePoolLookupByName(name)
         pools.append(pool)
     
-    
     # Delete target if it exists
-    try:
-        print 'Undefining old domain description...'
-        dom_target = conn.lookupByName(target)
-        print dom_target.undefine()
-        
-    except:
-        print 'did not remove existing domain'
-        # raceback.print_exc(file=sys.stdout)
+    print 'Remove old domain description...'
+    for host in nodes.HOSTS:
+        try:
+            dom_target = connections[host].lookupByName(target)
+            if dom_target != None:
+                ret = dom_target.undefine()
+                print 'Domain removed: %i' % ret 
+        except:
+            pass
         
         
     print 'Removing old volume...'
@@ -133,8 +144,8 @@ def clone(source, target):
         try:
             volume_target = delpool.storageVolLookupByName(target + ".qcow")
             if volume_target != None:
-                print 'Deleting volume:'
-                print volume_target.delete(0)
+                ret = volume_target.delete(0)
+                print 'Volume removed: %i' % ret
         except:
             pass
     
@@ -147,10 +158,10 @@ def clone(source, target):
     pool_index = (pool_index + 1) % len(STORAGE_POOLS)
     
     # Load source domain
-    domain = conn.lookupByName(source)
+    source_domain = conn.lookupByName(source)
     
     # Get source pool
-    xml_dom_desc = domain.XMLDesc(0)
+    xml_dom_desc = source_domain.XMLDesc(0)
     xml_tree = etree.fromstring(xml_dom_desc)
     name = xml_tree.xpath('/domain/devices/disk/source')
     name = name[0].get('file')
@@ -161,58 +172,45 @@ def clone(source, target):
     # Get source volume
     volume = src_pool.storageVolLookupByName(source + ".qcow")
 
-    # Reconfigure the volume     
+    # Reconfigure the volume description    
     xml_vol_desc = volume.XMLDesc(0)
-    
     xml_tree = etree.fromstring(xml_vol_desc)
     name = xml_tree.xpath('/volume/name')[0]
     name.text = target + '.qcow'
-    
     key = xml_tree.xpath('/volume/key')[0]
     key.text = '/mnt/' + dst_pool + '/' + target + '.qcow'
-    
     path = xml_tree.xpath('/volume/target/path')[0]
     path.text = '/mnt/' + dst_pool + '/' + target + '.qcow'
-    
     xml_vol_desc = etree.tostring(xml_tree)
     
     # Create a new volume
     print 'Cloning volume...'
     dst_pool_pool.createXMLFrom(xml_vol_desc, volume, 0)
     
-    # Reconfigure the domain
-    xml_domain_desc = domain.XMLDesc(0)
-    
+    # Reconfigure the domain description
+    xml_domain_desc = source_domain.XMLDesc(0)
     xml_tree = etree.fromstring(xml_domain_desc)
     name = xml_tree.xpath('/domain/name')[0]
     name.text = target
-    
     uuid = xml_tree.xpath('/domain/uuid')[0]
     uuid.getparent().remove(uuid)
-    
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
     source.set('file', '/mnt/' + dst_pool + '/' + target + '.qcow')
-    
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
     mac.getparent().remove(mac)
-    
     xml_domain_desc = etree.tostring(xml_tree)
     
     # Create a new Domain
-    print 'Creating Domain...'
+    print 'Creating domain...'
     new_domain = conn.defineXML(xml_domain_desc)
     
-    # Launch it
-    print 'Starting Domain...'
+    # Launch domain
+    print 'Launching Domain...'
     new_domain.create()
    
    
+# VM clone counter
 count = 0
-clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 1)]
-
-
-# clone_names = [('playglassdb', 'target2')]
-
 
 def next_vm():   
     global count
@@ -227,53 +225,50 @@ def next_vm():
         print '   * UPDATE: sensorhub service'
         print ''
         
-        conn.close()
         reactor.stop()  
         return
     
     job = clone_names[count]
-    print 'Launching job %s -> %s' % job
+    print 'Launching clone %s -> %s' % job
     count += 1
     
     clone(job[0], job[1])
     setup(job[1])
 
 
-def shutdownall():
-    # shutdown all VMs 
+def shutdownall(connections):
     for host in nodes.HOSTS: 
-        conn_str = "qemu+ssh://root@%s/system" % (host)
-        print 'connecting with %s' % (conn_str)
-        conn = libvirt.open(conn_str)
-        
+        conn = connections[host]
         ids = conn.listDomainsID()
         for domain_id in ids:
             print '   Shutting down: %s' % (domain_id) 
             domain = conn.lookupByID(domain_id)
             domain.destroy()
-            
-        conn.close()
 
 
 def main():
+    # Dump configuration
+    print 'Cloning: %s ' % clone_names
+    
     # Create drones
     drones.main()
     
-    # Shutdown all running VMs 
-    shutdownall()
+    # Connect
+    connections = virtual.connect_all()
     
-    print 'Cloning:'
-    print clone_names
-    
-    print 'connecting...'
-    global conn
-    conn = libvirt.open("qemu+ssh://root@srv0/system")
-
-    reactor.callLater(0, next_vm)
-    reactor.run()
+    try:
+        # Shutdown all running VMs 
+        shutdownall(connections)
+        
+        reactor.callLater(0, next_vm)
+        
+        print 'Starting reactor'
+        reactor.run()
+        print 'Reactor returned'
+        
+    finally:
+        virtual.close_all(connections)
     
 
 if __name__ == '__main__':
     main()
-#    reactor.callLater(0, setup, 'service0')
-#    reactor.run()
