@@ -208,7 +208,7 @@ def clone(source, target):
    
    
 count = 0
-clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 1)]
 
 
 # clone_names = [('playglassdb', 'target2')]

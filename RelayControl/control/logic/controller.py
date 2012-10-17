@@ -206,7 +206,7 @@ class MetricHandler:
     by the load balancer to resolve over- and underloads.
     '''
     def receive(self, datalist):
-        print 'handling...'
+        # print 'handling...'
         for data in datalist:
             hostname = data.id.hostname
             
