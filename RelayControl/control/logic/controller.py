@@ -244,6 +244,7 @@ class LoadBalancer(Thread):
                                     self.migrate(domain, source, target)                                    
                                     raise StopIteration()
                             
+                            
                             for target in range(nodes.index(node) - 1):
                                 target = nodes[target]
                                 

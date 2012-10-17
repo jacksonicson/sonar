@@ -6,7 +6,7 @@ import time
 
 class Driver(Thread):
     
-    def __init__(self, model, handler, report_rate=3, acceleration=25):
+    def __init__(self, model, handler, report_rate=3, acceleration=25, sizedown=1.5):
         super(Driver, self).__init__()
         
         self.model = model
@@ -18,6 +18,9 @@ class Driver(Thread):
         
         # report rate in real time (e.g. every 3 seconds a value is reported) 
         self.report_rate = report_rate 
+        
+        # CPU consumption of all domains is divided by this factor
+        self.sizedown = sizedown
         
     def stop(self):
         self.running = False
@@ -78,7 +81,7 @@ class Driver(Thread):
                 
                 # Go over all domains and update their load by their TS
                 for domain in host.domains.values():
-                    load = domain.ts[tindex]
+                    load = domain.ts[tindex] / self.sizedown
                      
                     self.notify(sim_time, domain.name, 'psutilcpu', load)
                     

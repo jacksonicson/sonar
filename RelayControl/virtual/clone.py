@@ -23,19 +23,20 @@ import virtual.util as util
 DEFAULT_SETUP_IP = 'vmt'
 RELAY_PORT = 7900
 STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
-clone_names = [('playglassdb', 'target%i' % i) for i in range(7, 8)]
+clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
 SETUP_SERVER = 'srv0'
 ###############################################
 
 
 killed_vms = []
-conn = None
+connections = None 
 
 def update_done(ret, vm, relay_conn):
     print 'Update executed'
     
     # Sometimes VMs stall while shutting down
     # Wait until VM is dead for max. 60 seconds then kill it
+    conn = connections[SETUP_SERVER]
     new_domain = conn.lookupByName(vm)
     state = 0
     wait_time = 0
@@ -114,7 +115,7 @@ print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
 def clone(connections, source, target):
     # Connection for srv0
-    connections[SETUP_SERVER]
+    conn = connections[SETUP_SERVER]
     
     # Connect with all known storage pools
     print 'Connecting with storage pools...'
@@ -228,11 +229,11 @@ def next_vm():
     print 'Launching clone %s -> %s' % job
     count += 1
     
-    clone(job[0], job[1])
+    clone(connections, job[0], job[1])
     setup(job[1])
 
 
-def shutdownall(connections):
+def shutdownall():
     for host in nodes.HOSTS: 
         conn = connections[host]
         ids = conn.listDomainsID()
@@ -250,11 +251,12 @@ def main():
     drones.main()
     
     # Connect
+    global connections
     connections = util.connect_all()
     
     try:
         # Shutdown all running VMs 
-        shutdownall(connections)
+        shutdownall()
         
         reactor.callLater(0, next_vm)
         
