@@ -365,6 +365,10 @@ def main():
     # Start load balancer thread which detects hotspots and triggers migrations
     balancer = LoadBalancer(model)
     balancer.start()
+    
+    # Wait for balancer to exit
+    balancer.join()
+    
 
 if __name__ == '__main__':
     main()
