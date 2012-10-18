@@ -7,6 +7,9 @@ NODE_MEM = 15*1024 # MByte (available memory of the node estimated)
 DOMAIN_MEM = 2048 + 100 # MByte (domain memory  + KVM overhead estimated)
 NODE_CPU = 180
 
+def get_node_name(index):
+    return NODES[index]
+
 def dump(logger):
     logger.info('NODES = HOSTS = %s' % NODES)
     logger.info('NODE_MEM = %i' % NODE_MEM)

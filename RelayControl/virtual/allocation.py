@@ -15,7 +15,7 @@ RELAY_PORT = 7900
 ###############################################
 
 # Global connections variable
-connections = []
+connections = None
 
 # Error handler for libvirt
 def handler(ctxt, err):
@@ -29,7 +29,7 @@ libvirt.registerErrorHandler(handler, 'context')
 
 def __find_domain(connections, domain_name):
     last = None, None
-    for connection in connections:
+    for connection in connections.values():
         try:
             domain = connection.lookupByName(domain_name)
             last = domain, connection
@@ -43,25 +43,6 @@ def __find_domain(connections, domain_name):
     return last
 
 
-def connect_all():
-    # connect 
-    global connections  
-    for host in nodes.HOSTS: 
-        conn_str = "qemu+ssh://root@%s/system" % (host)
-        print 'connecting with %s' % (conn_str)
-        conn = libvirt.open(conn_str)
-        connections.append(conn)
-        
-    return connections
-
-
-def close_all():
-    print 'Closing libvirtd connections...'
-    global connections
-    for connection in connections:
-        connection.close()
-
-
 class MigrationThread(Thread):
     def __init__(self, domain, node_from, node_to, callback, info):
         super(MigrationThread, self).__init__()
@@ -73,39 +54,42 @@ class MigrationThread(Thread):
     
     def run(self):
         self.start = time.time()
-        connection_from = libvirt.open("qemu+ssh://root@%s/system" % self.node_from) 
+        
+        # Create connections
+        from virtual import util
+        connection_from = util.connect(self.node_from)
+        connection_to = util.connect(self.node_to)
+        
+        # Domain to migrate
         domain = connection_from.lookupByName(self.domain)
-        connection_to = libvirt.open("qemu+ssh://root@%s/system" % self.node_to) 
         
         try:
             self.tomigrate = domain
             domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
             self.end = time.time()
-            
-            print 'Calling back...'
-            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)
+            failed = False
+            error = None
         except Exception as e:
             self.end = time.time()
-            
-            print 'Error in live migration'
-            traceback.print_exc(file=sys.stdout)
-            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, False, e)
+            failed = True
+            error = e
         finally:
-            # Close connections
-            try:
-                connection_from.close()
-            except: pass
-            try:
-                connection_to.close()
-            except: pass
+            print 'Calling back...'
+            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, failed, error)
+            
+            util.close(connection_from)
+            util.close(connection_to)
                 
 
-
 def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=20000):
+    # Start a new migration thread
     thread = MigrationThread(domain, node_from, node_to, callback, info)
     thread.start()
+    
+    # Set the max downtime after migration has started
     while True:
         time.sleep(1)
+        
         try:
             thread.tomigrate.migrateSetMaxDowntime(maxDowntime, 0)
             print 'Max migration time set to %i' % maxDowntime
@@ -114,118 +98,67 @@ def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=2
             pass
     
 
-def migrateAllocation(allocation):
-    connections = []
-    conn_strs = []
-    
+'''
+Gets a list of migrations. Each list element is a tupel of the structure: 
+(domain name, target host index from the nodes model)
+'''
+def migrateAllocation(migrations):
     try:
-        # connect 
-        for host in nodes.HOSTS: 
-            conn_str = "qemu+ssh://root@%s/system" % (host)
-            print 'connecting with %s' % (conn_str)
-            conn = libvirt.open(conn_str)
-            connections.append(conn)
-            conn_strs.append(conn_str)
+        # Connect with all servers
+        from virtual import util
+        connections = util.connect_all()
         
         # trigger migrations
-        for migration in allocation:
-            print 'iteration'
+        for migration in migrations:
             domain_name = migration[0]
-            target_index = migration[1]
+            target_node = nodes.get_node_name(migration[1])
             
+            # Search the node which currently holds the domain
             domain, _ = __find_domain(connections, domain_name)
             if domain == None:
-                print 'Domain not found: %s' % (domain_name)
+                print 'WARN: skipping - domain not found: %s' % (domain_name)
                 continue
             
-            # if not running start on source (necessary for migrations?)
+            # If not running start on source (necessary for migrations?)
             state = domain.state(0)[0]
-            print 'domain state: %i' % (state)
-            if state != 1: 
-                # stop domain
-                print 'resetting domain %s' % (domain_name)
+            if state != 1:
+                # Destroy 
+                print 'Resetting the domain %s' % (domain_name)
                 try:
                     domain.destroy()
                 except: pass
-                # start domain
+                
+                # Start
                 try:
                     domain.create()
                     time.sleep(10)
                 except: pass
             
-            # remove xml desc from target if exists
+            # Undefine target domain if it already exists
             try:
-                dom_target = connections[target_index].lookupByName(domain_name)
-                dom_target.undefine()
-                print 'successful undefined target'
+                dom_target = connections[target_node].lookupByName(domain_name)
+                if dom_target != None:
+                    dom_target.undefine()
+                    print 'Undefined already exiting target domain'
             except:
                 pass
             
-            # migrate to target
+            # Migrate to target
             try:
-                print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
-                # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
-                domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain_name, None, 0)
-                print 'migration successful'
+                print 'Migrating domain: %s to node: %s ...' % (domain_name, connections[target_node].getHostname())
+                domain = domain.migrate(connections[target_node], 
+                                        VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, 
+                                        domain_name, None, 0)
+                print 'Migration successful'
             except:
-                print 'migration failed (continue)'
                 traceback.print_exc(file=sys.stdout)
+                print 'Skipping - migration failed'
             
     except:
-        # print 'error while executing migrations: %s' % errno[2]
         traceback.print_exc(file=sys.stdout)
-        pass
-
-    for conn in connections:
-        print 'closing connection...'
-        conn.close()
-        
-
-def resetAllocation(allocation):
-    connections = []
-    
-    # shutdown all VMs 
-    for host in nodes.HOSTS: 
-        conn_str = "qemu+ssh://root@%s/system" % (host)
-        print 'connecting with %s' % (conn_str)
-        conn = libvirt.open(conn_str)
-        connections.append(conn)
-        
-        ids = conn.listDomainsID()
-        for domain_id in ids:
-            print '   Shutting down: %s' % (domain_id) 
-            domain = conn.lookupByID(domain_id)
-            domain.destroy()
-    
-    try:
-        # Setup allocation
-        for migration in allocation:
-            domain_name = migration[0]
-            target_index = migration[1]
-            
-            # Check if target host has the VM description
-            print domain_name
-            print target_index
-            domain = None
-            try:
-                domain = connections[target_index].lookupByName(domain_name)
-            except:
-                print 'Defining domain...'
-                domain = connections[0].lookupByName(domain_name)
-                xml_desc = domain.XMLDesc(0)
-                domain = connections[target_index].defineXML(xml_desc)
-                
-            # Launch domain
-            print 'Launching domain...'
-            domain.create()
-            
-            
-    except Exception, e:
-        print e
-    
-    for conn in connections:
-        print 'closing connection...'
-        conn.close()
+    finally:
+        print 'Closing connections...'
+        util.close_all(connections)
 
 
 def get_null_allocation(nodecount):
@@ -245,35 +178,28 @@ def get_null_allocation(nodecount):
 
 
 def determine_current_allocation():
-    # Connect with all servers
-    connections = [] 
-    for host in nodes.HOSTS: 
-        conn_str = "qemu+ssh://root@%s/system" % (host)
-        print 'connecting with %s' % (conn_str)
-        conn = libvirt.open(conn_str)
-        connections.append(conn)
+    try:
+        # Connect with all servers
+        from virtual import util
+        connections = util.connect_all()
         
-    allocation = { host : [] for host in nodes.HOSTS }
-        
-    for i in xrange(len(nodes.HOSTS)):
-        host = nodes.HOSTS[i]
-        connection = connections[i]
-        
-        # print 'Host: %s' % host
-        
-        vir_domains = connection.listDomainsID()
-        for vir_id in vir_domains:
-            vir_domain = connection.lookupByID(vir_id)
-            name = vir_domain.name()
-            if domains.has_domain(name):
-                # print 'adding mapping with %s' % name
-                allocation[host].append(name)
-            else:
-                print 'ERROR: Domain %s is not in the domain list!' % name
+        allocation = { host : [] for host in nodes.HOSTS }
             
-    print 'Closing connections...'
-    for connection in connections:
-        connection.close()       
+        for host in nodes.HOSTS:
+            connection = connections[host]
+            
+            vir_domains = connection.listDomainsID()
+            for vir_id in vir_domains:
+                vir_domain = connection.lookupByID(vir_id)
+                name = vir_domain.name()
+                if domains.has_domain(name):
+                    # print 'adding mapping with %s' % name
+                    allocation[host].append(name)
+                else:
+                    print 'ERROR: Domain %s is not in the domain list!' % name
+    finally:
+        print 'Closing connections...'
+        util.close_all(connections)
     
     return allocation
     

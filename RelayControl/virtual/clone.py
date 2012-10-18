@@ -115,8 +115,11 @@ def rand_mac():
     for i in xrange(3):
         rand = random.randint(0, 255)
         value = hex(rand)[2:]
+        if len(value) == 1:
+            value = '0' + value
         base += ':' + value
-    
+
+    print 'Generated MAC: %s' % base    
     return base
 
 # Distribute images across all pools, pool_index gives the pool where the next
@@ -197,7 +200,7 @@ def clone(connections, source, target):
     
     # Reconfigure the domain description
     xml_domain_desc = source_domain.XMLDesc(0)
-    print xml_domain_desc
+    # print xml_domain_desc # print original domain description
     
     xml_tree = etree.fromstring(xml_domain_desc)
     name = xml_tree.xpath('/domain/name')[0]
@@ -209,8 +212,7 @@ def clone(connections, source, target):
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
     mac.attrib['address'] = rand_mac()
     xml_domain_desc = etree.tostring(xml_tree)
-    
-    print xml_domain_desc
+    # print xml_domain_desc # print final domain description
     
     # Create a new Domain
     print 'Creating domain...'
