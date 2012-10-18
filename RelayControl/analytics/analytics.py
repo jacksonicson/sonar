@@ -663,7 +663,6 @@ def connect_sonar(connection):
     migration_durations = []
     for migration in migrations_successful:
         migration_durations.append(migration['duration'])
-        print migration['duration']
     print 'Average migration time: %f' % np.mean(migration_durations) 
     
     print '## GLOBAL METRIC AGGREGATION ###'
