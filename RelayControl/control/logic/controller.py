@@ -21,6 +21,9 @@ K_VALUE = 20 # sliding windows size
 M_VALUE = 15 # m values out of the window k must be above or below the threshold
 ######################
 
+# Global migration ID counter
+migration_id_counter = 0
+
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
@@ -60,6 +63,7 @@ class LoadBalancer(Thread):
         data = json.dumps({'domain': domain.name, 'from': node_from.name,
                            'to': node_to.name, 'start' : start, 'end' : end,
                            'duration' : duration, 
+                           'id': info.migration_id,
                            'source_cpu' : info.source_load_cpu,
                            'target_cpu' : info.target_load_cpu})
         
@@ -92,13 +96,19 @@ class LoadBalancer(Thread):
         # Log empty servers
         empty_count =  self.model.empty_count()
         print 'Updated empty count: %i' % empty_count
-        logger.info('Server Empty: %s' % json.dumps({'count' : empty_count}))
+        logger.info('Server Empty: %s' % json.dumps({'count' : empty_count,
+                                                     'timestamp' : time.time()}))
         
         
         
     def migrate(self, domain, source, target):
         print 'Migration triggered'
         assert(source != target)
+        
+        # Update counter
+        global migration_id_counter
+        migration_id = migration_id_counter
+        migration_id_counter += 1
         
         # Block source and target nodes
         # Set block times in the future to guarantee that the block does not run out 
@@ -107,13 +117,14 @@ class LoadBalancer(Thread):
         source.blocked = now_time + 60 * 60
         target.blocked = now_time + 60 * 60
         
-        data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name})
+        data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name, 'id': id})
         logger.info('Live Migration Triggered: %s' % data)
         
         # Backup current model status - for later analytics
         class info(object):
             pass
         info = info()
+        info.migration_id = migration_id
         info.source_load_cpu = source.mean_load(K_VALUE)
         info.target_load_cpu = target.mean_load(K_VALUE)
         
