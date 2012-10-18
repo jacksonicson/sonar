@@ -31,6 +31,16 @@ def get_host(hostname):
         return hosts[hostname]
     return None
 
+
+def empty_count():
+    empty_count = 0
+    for node in get_hosts(types.NODE):
+        if len(node.domains) == 0:
+            empty_count += 1
+    
+    return empty_count
+    
+
 class __Host(object):
     '''
     This is a private class which should not be used outside of this

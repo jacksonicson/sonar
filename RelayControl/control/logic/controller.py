@@ -13,9 +13,10 @@ import json
 PRODUCTION = True
 START_WAIT = 60
 INTERVAL = 30
-THRESHOLD_OVERLOAD = 80
+THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 30
 PERCENTILE = 75.0
+
 K_VALUE = 20 # sliding windows size
 M_VALUE = 15 # m values out of the window k must be above or below the threshold
 ######################
@@ -87,6 +88,12 @@ class LoadBalancer(Thread):
             
             print 'Migration failed'
             logger.error('Live Migration Failed: %s' % data)
+            
+        # Log empty servers
+        empty_count =  self.model.empty_count()
+        print 'Updated empty count: %i' % empty_count
+        logger.info('Server Empty: %s' % json.dumps({'count' : empty_count}))
+        
         
         
     def migrate(self, domain, source, target):
