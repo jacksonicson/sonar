@@ -157,7 +157,7 @@ def migrateAllocation(migrations):
     except:
         traceback.print_exc(file=sys.stdout)
     finally:
-        print 'Closing connections...'
+        # Close connections
         util.close_all(connections)
 
 
