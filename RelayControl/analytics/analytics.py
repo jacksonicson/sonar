@@ -24,10 +24,10 @@ LOGGING_PORT = 7921
 DEBUG = False
 TRACE_EXTRACT = False
 
-CONTROLLER_NODE = 'Andreas-PC'
+CONTROLLER_NODE = 'localhost.localdomain' # 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '08/10/2012 09:35:46    08/10/2012 16:20:46'
+RAW = '18/10/2012 11:00:46    19/10/2012 16:20:46'
 
 START = ''
 END = ''
@@ -182,6 +182,59 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
                 
     return start_startup, release_load, end_startup
 
+
+'''
+Extracts all migrations and their parameters
+'''
+def __fetch_migrations(connection, load_host, timeframe):
+    # Build query
+    query = ttypes.LogsQuery()
+    query.hostname = load_host
+    query.sensor = 'controller'
+    query.startTime = timeframe[0]
+    query.stopTime = timeframe[1]
+    logs = connection.queryLogs(query)
+    
+    # Sync marker load balancer release
+    sync_release = None
+    
+    # List of migrations
+    successful = []
+    failed = [] 
+    
+    # scan logs for results
+    for log in logs:
+        if log.timestamp > (timeframe[1] + 5 * 60) * 1000:
+            print 'skipping remaining migrations - out of timeframe'
+            break
+        
+        if sync_release:        
+            if log.logLevel == 50010:
+                if log.logMessage == 'Releasing load balancer':
+                    sync_release = log.timestamp
+        else:
+            # Migration triggered
+            STR_MIGRATION_TRIGGERED = 'Live Migration Triggered: '
+            if log.logMessage.startswith(STR_MIGRATION_TRIGGERED):
+                log.logMessage[len(STR_MIGRATION_TRIGGERED):]
+                continue
+            
+            # Migration finished
+            STR_MIGRATION_FINISHED = 'Live Migration Finished: '
+            if log.logMessage.startswith(STR_MIGRATION_FINISHED):
+                msg = log.logMessage[len(STR_MIGRATION_FINISHED):]
+                migration = json.loads(msg)
+                successful.append(migration)
+            
+            # Migration failed
+            STR_MIGRATION_FAILED = 'Live Migration Failed: '
+            if log.logMessage.startswith(STR_MIGRATION_FAILED):
+                msg = log.logMessage[len(STR_MIGRATION_FAILED):]
+                migration = json.loads(msg)
+                failed.append(migration)
+                
+    return successful, failed
+
 '''
 Extracts all JSON configuration and metric information from the Rain log. This
 method only works this the most recent version of Rain dumps!
@@ -209,7 +262,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     # scan logs for results
     for log in logs:
         if log.timestamp > (timeframe[1] + 5 * 60) * 1000:
-            print 'skipping remaining log messages - out of time timeframe'
+            print 'skipping remaining log messages - out of timeframe'
             break
 
         # Track schedule
@@ -417,6 +470,15 @@ def connect_sonar(connection):
     print 'Service matrix: %s' % matrix
     
     #####################################################################################################################################
+    ### Reading Migrations ##############################################################################################################
+    #####################################################################################################################################
+    migrations_successful, migrations_failed = __fetch_migrations(connection, CONTROLLER_NODE, frame)
+    
+    print '## MIGRATIONS ##'
+    print 'Successful: %i' % len(migrations_successful)
+    print 'Failed: %i' % len(migrations_failed)
+    
+    #####################################################################################################################################
     ### Reading Results from Rain #######################################################################################################
     #####################################################################################################################################
     _schedules = []
@@ -596,6 +658,12 @@ def connect_sonar(connection):
     _mem = np.average(_total_mem)
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
+    
+    print '## MIGRATIONS ##'
+    migration_durations = []
+    for migration in migrations_successful:
+        migration_durations.append(migration['duration'])
+    print 'Average migration time: %f' % np.mean(migration_durations) 
     
     print '## GLOBAL METRIC AGGREGATION ###'
     global_metric_aggregation = {}
