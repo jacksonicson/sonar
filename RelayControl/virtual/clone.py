@@ -110,7 +110,7 @@ def setup(vm):
 
 def rand_mac():
     import random
-    base = '52:54:00:'
+    base = '52:54:00'
     # generate 3 random NN blocks
     for i in xrange(3):
         rand = random.randint(0, 255)
@@ -203,12 +203,11 @@ def clone(connections, source, target):
     name = xml_tree.xpath('/domain/name')[0]
     name.text = target
     uuid = xml_tree.xpath('/domain/uuid')[0]
-    uuid.text = rand_mac()
-    print 'MAC: %s' % uuid.text
+    uuid.getparent().remove(uuid)
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
     source.set('file', '/mnt/' + dst_pool + '/' + target + '.qcow')
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
-    mac.getparent().remove(mac)
+    mac.attrib['address'] = rand_mac()
     xml_domain_desc = etree.tostring(xml_tree)
     
     print xml_domain_desc

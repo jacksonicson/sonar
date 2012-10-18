@@ -14,13 +14,18 @@ from threading import Thread
 RELAY_PORT = 7900
 ###############################################
 
+# Global connections variable
+connections = []
+
 # Error handler for libvirt
 def handler(ctxt, err):
     print 'Libvirt error'
     print err
     print ctxt
     
+# Register error handler in libvirt
 libvirt.registerErrorHandler(handler, 'context') 
+
 
 def __find_domain(connections, domain_name):
     last = None, None
@@ -37,8 +42,6 @@ def __find_domain(connections, domain_name):
         
     return last
 
-
-connections = []
 
 def connect_all():
     # connect 
@@ -57,6 +60,7 @@ def close_all():
     global connections
     for connection in connections:
         connection.close()
+
 
 class MigrationThread(Thread):
     def __init__(self, domain, node_from, node_to, callback, info):
@@ -97,8 +101,6 @@ class MigrationThread(Thread):
                 
 
 
-# connections = None
-
 def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=20000):
     thread = MigrationThread(domain, node_from, node_to, callback, info)
     thread.start()
@@ -131,12 +133,10 @@ def migrateAllocation(allocation):
             domain_name = migration[0]
             target_index = migration[1]
             
-            domain, src_conn = __find_domain(connections, domain_name)
+            domain, _ = __find_domain(connections, domain_name)
             if domain == None:
                 print 'Domain not found: %s' % (domain_name)
                 continue
-            
-            xml_desc = domain.XMLDesc(0)
             
             # if not running start on source (necessary for migrations?)
             state = domain.state(0)[0]
@@ -222,11 +222,11 @@ def resetAllocation(allocation):
             
     except Exception, e:
         print e
-            
     
     for conn in connections:
         print 'closing connection...'
         conn.close()
+
 
 def get_null_allocation(nodecount):
     migrations = []
