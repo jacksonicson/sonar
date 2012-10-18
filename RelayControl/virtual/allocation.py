@@ -59,26 +59,33 @@ def close_all():
         connection.close()
 
 class MigrationThread(Thread):
-    def __init__(self, domain, node_from, node_to, callback):
+    def __init__(self, domain, node_from, node_to, callback, info):
         super(MigrationThread, self).__init__()
         self.domain = domain
         self.node_from = node_from
         self.node_to = node_to
         self.callback = callback
+        self.info = info
     
     def run(self):
+        self.start = time.time()
         connection_from = libvirt.open("qemu+ssh://root@%s/system" % self.node_from) 
         domain = connection_from.lookupByName(self.domain)
         connection_to = libvirt.open("qemu+ssh://root@%s/system" % self.node_to) 
         
         try:
+            self.tomigrate = domain
             domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
-            domain.migrateSetMaxDowntime(3000)
+            self.end = time.time()
+            
             print 'Calling back...'
-            self.callback(self.domain, self.node_from, self.node_to, True, None)
+            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)
         except Exception as e:
+            self.end = time.time()
+            
             print 'Error in live migration'
-            self.callback(self.domain, self.node_from, self.node_to, True, e)
+            traceback.print_exc(file=sys.stdout)
+            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, False, e)
         finally:
             # Close connections
             try:
@@ -92,14 +99,17 @@ class MigrationThread(Thread):
 
 # connections = None
 
-def migrateDomain(domain, node_from, node_to, callback):
-#    global connections
-#    if connections == None:
-#        print 'Connecting...'
-#        connections = connect_all()
-#        
-    thread = MigrationThread(domain, node_from, node_to, callback)
+def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=20000):
+    thread = MigrationThread(domain, node_from, node_to, callback, info)
     thread.start()
+    while True:
+        time.sleep(1)
+        try:
+            thread.tomigrate.migrateSetMaxDowntime(maxDowntime, 0)
+            print 'Max migration time set to %i' % maxDowntime
+            break
+        except:
+            pass
     
 
 def migrateAllocation(allocation):

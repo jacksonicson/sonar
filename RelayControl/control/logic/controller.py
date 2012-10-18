@@ -14,6 +14,8 @@ PRODUCTION = True
 THRESHOLD_OVERLOAD = 80
 THRESHOLD_UNDERLOAD = 30
 PERCENTILE = 75.0
+K_VALUE = 20 # sliding windows size
+M_VALUE = 15 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
@@ -45,10 +47,20 @@ class LoadBalancer(Thread):
             return data[-1]
         
         
-    def callback(self, domain, node_from, node_to, status, error):
+    def callback(self, domain, node_from, node_to, start, end, info, status, error):
         node_from = self.model.get_host(node_from)
         node_to = self.model.get_host(node_to)
         domain = self.model.get_host(domain)
+        duration = end - start
+        
+        
+        data = json.dumps({'domain': domain.name, 'from': node_from.name,
+                           'to': node_to.name, 'start' : start, 'end' : end,
+                           'duration' : duration, 
+                           'source_cpu' : info.source_load_cpu,
+                           'target_cpu' : info.target_load_cpu})
+        
+        # Check if migration was successful
         if status: 
             node_to.domains[domain.name] = domain
             del node_from.domains[domain.name]
@@ -65,15 +77,13 @@ class LoadBalancer(Thread):
             node_to.flush(50)
             
             print 'Migration finished'
-            data = json.dumps({'domain': domain.name, 'from': node_from.name, 'to': node_to.name})
-            logger.info('Live Migration: %s' % data)
+            logger.info('Live Migration Finished: %s' % data)
         else:
             time_now = time.time()
             node_from.blocked = time_now
             node_to.blocked = time_now
             
             print 'Migration failed'
-            data = json.dumps({'domain': domain.name, 'from': node_from.name, 'to': node_to.name})
             logger.error('Live Migration Failed: %s' % data)
         
         
@@ -88,12 +98,19 @@ class LoadBalancer(Thread):
         source.blocked = now_time + 60 * 60
         target.blocked = now_time + 60 * 60
         
-        if len(source.domains) == 0:
-            source.flush()
+        data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name})
+        logger.info('Live Migration Triggered: %s' % data)
+        
+        # Backup current model status - for later analytics
+        class info(object):
+            pass
+        info = info()
+        info.source_load_cpu = source.mean_load(K_VALUE)
+        info.target_load_cpu = target.mean_load(K_VALUE)
         
         if PRODUCTION:
             from virtual import allocation
-            allocation.migrateDomain(domain.name, source.name, target.name, self.callback)
+            allocation.migrateDomain(domain.name, source.name, target.name, self.callback, maxDowntime=10000, info=info)
         else:
             # TODO: Add some migration time simulation
             self.callback(domain.name, source.name, target.name, True, None)
@@ -118,14 +135,14 @@ class LoadBalancer(Thread):
                 readings = node.get_readings()
                 
                 # m out of the k last measurements are used to detect overloads 
-                k = 20 
+                k = K_VALUE
                 overload = 0
                 underload = 0
                 for reading in readings[-k:]:
                     if reading > THRESHOLD_OVERLOAD: overload += 1
                     if reading < THRESHOLD_UNDERLOAD: underload += 1
 
-                m = 15
+                m = M_VALUE
                 overload = (overload >= m)
                 underload = (underload >= m)
                  
