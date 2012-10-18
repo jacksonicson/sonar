@@ -63,19 +63,19 @@ class MigrationThread(Thread):
         # Domain to migrate
         domain = connection_from.lookupByName(self.domain)
         
+        success = True
+        error = None
         try:
             self.tomigrate = domain
             domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
             self.end = time.time()
-            failed = False
-            error = None
         except Exception as e:
             self.end = time.time()
-            failed = True
+            success = False
             error = e
         finally:
             print 'Calling back...'
-            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, failed, error)
+            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, success, error)
             
             util.close(connection_from)
             util.close(connection_to)

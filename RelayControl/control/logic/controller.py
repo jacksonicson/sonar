@@ -11,6 +11,8 @@ import json
 ## CONFIGURATION    ##
 ######################
 PRODUCTION = True
+START_WAIT = 60
+INTERVAL = 30
 THRESHOLD_OVERLOAD = 80
 THRESHOLD_UNDERLOAD = 30
 PERCENTILE = 75.0
@@ -61,7 +63,7 @@ class LoadBalancer(Thread):
                            'target_cpu' : info.target_load_cpu})
         
         # Check if migration was successful
-        if status: 
+        if status == True: 
             node_to.domains[domain.name] = domain
             del node_from.domains[domain.name]
             
@@ -118,12 +120,12 @@ class LoadBalancer(Thread):
     
     def run(self):
         # Gather data phase
-        time.sleep(10)
+        time.sleep(START_WAIT)
         logger.log(sonarlog.SYNC, 'Releasing load balancer')
         
         while self.running:
             # Sleeping till next balancing operation
-            time.sleep(5)
+            time.sleep(INTERVAL)
             print 'Running load balancer...'
             
             ############################################
