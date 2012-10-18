@@ -115,6 +115,7 @@ def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=2
 def migrateAllocation(allocation):
     connections = []
     conn_strs = []
+    
     try:
         # connect 
         for host in nodes.HOSTS: 
@@ -165,11 +166,10 @@ def migrateAllocation(allocation):
                 print 'migrating %s -> %s ...' % (domain_name, connections[target_index].getHostname())
                 # domain = domain.migrate2(connections[target_index], xml_desc, VIR_MIGRATE_LIVE, domain_name, None, 0)
                 domain = domain.migrate(connections[target_index], VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, domain_name, None, 0)
-                domain.migrateSetMaxDowntime(3000, 0)
-                print 'done'
+                print 'migration successful'
             except:
+                print 'migration failed (continue)'
                 traceback.print_exc(file=sys.stdout)
-                print 'passed'
             
     except:
         # print 'error while executing migrations: %s' % errno[2]
