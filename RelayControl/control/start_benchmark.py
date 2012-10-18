@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = True
+start = False
 ######################
 
 # Setup logging
@@ -300,6 +300,5 @@ def main():
 
 if __name__ == '__main__':
     sonarlog.connect()
-    # main()
-    finished(True, None)
+    main()
     sonarlog.close()
