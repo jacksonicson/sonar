@@ -1,6 +1,7 @@
 import model
 import threading
-import logic
+import sandpiper
+
 
 ######################
 ## CONFIGURATION    ##
@@ -108,8 +109,8 @@ def main():
         driver = driver.Driver(model, handler)
         driver.start()
     
-    # Start load balancer thread which detects hotspots and triggers migrations
-    balancer = logic.LoadBalancer(model, PRODUCTION)
+    # Start load balancer thread which detects hot-spots and triggers migrations
+    balancer = sandpiper.Sandpiper(model, PRODUCTION)
     balancer.start()
 
     # Register the signal handlers
