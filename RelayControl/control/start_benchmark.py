@@ -12,8 +12,8 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-INIT_DB = False
-start = False
+INIT_DB = True
+start = True
 ######################
 
 # Setup logging
