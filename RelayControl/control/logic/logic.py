@@ -117,6 +117,8 @@ class LoadBalancer(Thread):
         print 'No load balancer implemented'
         pass
     
+    def dump(self):
+        pass
     
     def run(self):
         # Gather data phase

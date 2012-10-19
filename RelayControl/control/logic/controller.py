@@ -90,9 +90,16 @@ def sigtermHandler(signum, frame):
     condition.release()
 
 
+def dump():
+    balancer.dump()
+
+
 def main():
     global driver
     global balancer
+    
+    # Dump configuration
+    dump()
     
     # Build internal infrastructure representation
     build_initial_model()

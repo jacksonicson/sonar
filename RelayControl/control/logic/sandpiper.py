@@ -1,6 +1,7 @@
-from model import types
-import logic
 from logs import sonarlog
+from model import types
+import json
+import logic
 import time
 
 ######################
@@ -55,6 +56,19 @@ class Sandpiper(logic.LoadBalancer):
             time_now = time.time()
             node_from.blocked = time_now
             node_to.blocked = time_now
+        
+        
+    def dump(self):
+        print 'Dump Sandpiper controller configuration...'
+        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
+                                                                 'start_wait' : START_WAIT,
+                                                                 'interval' : INTERVAL,
+                                                                 'threshold_overload' : THRESHOLD_OVERLOAD,
+                                                                 'threshold_underload' : THRESHOLD_UNDERLOAD,
+                                                                 'percentile' : PERCENTILE,
+                                                                 'k_value' :K_VALUE,
+                                                                 'm_value' : M_VALUE
+                                                                 }))
         
         
     def lb(self):
