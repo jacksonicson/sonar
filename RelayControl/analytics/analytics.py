@@ -479,15 +479,6 @@ def connect_sonar(connection):
     print 'Service matrix: %s' % matrix
     
     #####################################################################################################################################
-    ### Reading Migrations ##############################################################################################################
-    #####################################################################################################################################
-    migrations_successful, migrations_failed, server_active = __fetch_migrations(connection, CONTROLLER_NODE, frame)
-    
-    print '## MIGRATIONS ##'
-    print 'Successful: %i' % len(migrations_successful)
-    print 'Failed: %i' % len(migrations_failed)
-    
-    #####################################################################################################################################
     ### Reading Results from Rain #######################################################################################################
     #####################################################################################################################################
     _schedules = []
@@ -597,6 +588,15 @@ def connect_sonar(connection):
             first = False
     
     #####################################################################################################################################
+    ### Reading Migrations ##############################################################################################################
+    #####################################################################################################################################
+    migrations_successful, migrations_failed, server_active = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
+    
+    print '## MIGRATIONS ##'
+    print 'Successful: %i' % len(migrations_successful)
+    print 'Failed: %i' % len(migrations_failed)
+    
+    #####################################################################################################################################
     ### Resource Readings ###############################################################################################################
     #####################################################################################################################################
     
@@ -675,17 +675,21 @@ def connect_sonar(connection):
     print 'Average migration time: %f' % np.mean(migration_durations)
     
     last_time = frame[0]
-    server_hours = 0
-    saved_hours = 0
+    occupied_minutes = 0.0
+    empty_minutes = 0.0
     for state in server_active:
-        delta_time = state[0] - last_time
+        delta_time = float(state[0] - last_time)
         last_time = state[0]
-        print '%i, %i' % (delta_time, state[1])
-        saved_hours += delta_time * state[1]
-        server_hours += delta_time * (len(nodes.HOSTS) - state[1])
         
-    print 'Server hours: %i' % server_hours
-    print 'Saved hours: %i' % saved_hours  
+        # minutes - timestamps are in seconds
+        empty_servers = float(state[1])
+        empty_minutes += (empty_servers * delta_time) / 60.0 
+        occupied_minutes += (delta_time * (len(nodes.HOSTS) - empty_servers)) / 60
+        
+    print 'Duration: %i' % (duration * 60)
+    print 'Occupied minutes: %i' % occupied_minutes
+    print 'Empty minutes: %i' % empty_minutes
+      
     
     print '## GLOBAL METRIC AGGREGATION ###'
     global_metric_aggregation = {}
