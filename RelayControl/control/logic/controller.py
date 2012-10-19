@@ -6,6 +6,7 @@ import model
 import numpy as np
 import time
 import json
+import threading
 
 ######################
 ## CONFIGURATION    ##
@@ -366,7 +367,27 @@ def build_initial_model():
         host.blocked = 0
 
 
+# Globals
+driver = None
+balancer = None
+exited = False
+condition = threading.Condition()
+
+# React to kill signals
+def sigtermHandler(signum, frame):
+    condition.acquire()
+    
+    global exited
+    exited = True
+    condition.notify()
+    
+    condition.release()
+
+
 def main():
+    global driver
+    global balancer
+    
     # Build internal infrastructure representation
     build_initial_model()
 
@@ -385,9 +406,42 @@ def main():
     # Start load balancer thread which detects hotspots and triggers migrations
     balancer = LoadBalancer(model)
     balancer.start()
+
+    # Register the signal handlers
+    import signal
+    signal.signal(signal.SIGTERM, sigtermHandler)
     
     # Wait for balancer to exit
-    balancer.join()
+    print 'Controller is functional...'
+    
+    
+    print 'Waiting for shutdown event...'
+    
+    # acquire condition
+    condition.acquire()
+
+    # Spinning until shutdown signal is received
+    global exited        
+    while exited == False:
+        try:
+            condition.wait(10)
+        except KeyboardInterrupt:
+            exited = True
+            continue
+
+    # releasing condition
+    condition.release()
+    
+    # Shutdown
+    print 'Shutting down now... ',
+    if driver is not None:
+        driver.stop()
+        
+    if balancer is not None:
+        balancer.stop()
+            
+    print 'Waiting for threads to finish...'
+    
     
 
 if __name__ == '__main__':
