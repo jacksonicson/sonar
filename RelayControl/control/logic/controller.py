@@ -12,7 +12,7 @@ import threading
 ## CONFIGURATION    ##
 ######################
 PRODUCTION = True
-START_WAIT = 60
+START_WAIT = 0
 INTERVAL = 30
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 30
@@ -38,9 +38,12 @@ class LoadBalancer(Thread):
         
         self.model = model
         self.running = True
+        
+        self.event = threading.Event()
     
     def stop(self):
         self.running = False
+        self.event.set()
     
     def forecast(self, data):
         import statsmodels.api as sm
@@ -144,7 +147,10 @@ class LoadBalancer(Thread):
         
         while self.running:
             # Sleeping till next balancing operation
-            time.sleep(INTERVAL)
+            # time.sleep(INTERVAL)
+            self.event.wait(INTERVAL)
+            if self.running == False:
+                break
             print 'Running load balancer...'
             
             ############################################
@@ -439,7 +445,7 @@ def main():
         
     if balancer is not None:
         balancer.stop()
-            
+    
     print 'Waiting for threads to finish...'
     
     
