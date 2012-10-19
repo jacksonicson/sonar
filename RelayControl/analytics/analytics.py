@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'localhost.localdomain' # 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '18/10/2012 11:00:46    19/10/2012 16:20:46'
+RAW = '18/10/2012 21:40:46    19/10/2012 5:00:46'
 
 START = ''
 END = ''
@@ -200,7 +200,8 @@ def __fetch_migrations(connection, load_host, timeframe):
     
     # List of migrations
     successful = []
-    failed = [] 
+    failed = []
+    server_active = [] 
     
     # scan logs for results
     for log in logs:
@@ -233,7 +234,15 @@ def __fetch_migrations(connection, load_host, timeframe):
                 migration = json.loads(msg)
                 failed.append(migration)
                 
-    return successful, failed
+            # Server empty
+            STR_MIGRATION_FAILED = 'Server Empty: '
+            if log.logMessage.startswith(STR_MIGRATION_FAILED):
+                msg = log.logMessage[len(STR_MIGRATION_FAILED):]
+                empty = json.loads(msg)
+                active_state = (log.timestamp, empty['count'])
+                server_active.append(active_state)
+                
+    return successful, failed, server_active
 
 '''
 Extracts all JSON configuration and metric information from the Rain log. This
@@ -472,7 +481,7 @@ def connect_sonar(connection):
     #####################################################################################################################################
     ### Reading Migrations ##############################################################################################################
     #####################################################################################################################################
-    migrations_successful, migrations_failed = __fetch_migrations(connection, CONTROLLER_NODE, frame)
+    migrations_successful, migrations_failed, server_active = __fetch_migrations(connection, CONTROLLER_NODE, frame)
     
     print '## MIGRATIONS ##'
     print 'Successful: %i' % len(migrations_successful)
@@ -663,7 +672,20 @@ def connect_sonar(connection):
     migration_durations = []
     for migration in migrations_successful:
         migration_durations.append(migration['duration'])
-    print 'Average migration time: %f' % np.mean(migration_durations) 
+    print 'Average migration time: %f' % np.mean(migration_durations)
+    
+    last_time = frame[0]
+    server_hours = 0
+    saved_hours = 0
+    for state in server_active:
+        delta_time = state[0] - last_time
+        last_time = state[0]
+        print '%i, %i' % (delta_time, state[1])
+        saved_hours += delta_time * state[1]
+        server_hours += delta_time * (len(nodes.HOSTS) - state[1])
+        
+    print 'Server hours: %i' % server_hours
+    print 'Saved hours: %i' % saved_hours  
     
     print '## GLOBAL METRIC AGGREGATION ###'
     global_metric_aggregation = {}
