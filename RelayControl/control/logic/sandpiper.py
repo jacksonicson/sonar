@@ -7,8 +7,8 @@ import time
 ######################
 ## CONFIGURATION    ##
 ######################
-START_WAIT = 0
-INTERVAL = 5
+START_WAIT = 60
+INTERVAL = 60 * 5
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 30
 PERCENTILE = 75.0

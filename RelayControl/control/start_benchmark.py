@@ -12,8 +12,8 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-INIT_DB = True
-start = True
+INIT_DB = False
+start = False
 ######################
 
 # Setup logging
@@ -301,4 +301,3 @@ def main():
 if __name__ == '__main__':
     sonarlog.connect()
     main()
-    sonarlog.close()

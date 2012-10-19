@@ -98,9 +98,6 @@ def main():
     global driver
     global balancer
     
-    # Dump configuration
-    dump()
-    
     # Build internal infrastructure representation
     build_initial_model()
 
@@ -119,6 +116,9 @@ def main():
     # Start load balancer thread which detects hot-spots and triggers migrations
     balancer = sandpiper.Sandpiper(model, PRODUCTION)
     balancer.start()
+    
+    # Dump configuration
+    dump()
 
     # Register the signal handlers
     import signal

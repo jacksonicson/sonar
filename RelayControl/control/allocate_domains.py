@@ -7,7 +7,7 @@ import domains
 import numpy as np
 
 # Setup logging
-logger = sonarlog.getLogger('allocate_domains', 'Andreas-PC')
+logger = sonarlog.getLogger('allocate_domains')
 
 def build_allocation(nodecount, node_capacity_cpu, node_capacity_mem, domain_demand_mem, migrate=False):
     # Dump profiles
