@@ -1,8 +1,8 @@
 from control import domains
-from ipmodels import ssapv, dsap
+from ipmodels import ssapv
 from logs import sonarlog
 from service import times_client
-from virtual import allocation as virt, nodes
+from virtual import nodes
 from workload import profiles
 import numpy as np
 from control.domains import domain_profile_mapping as mapping
@@ -30,17 +30,11 @@ class Placement(object):
    
 class RRPlacement(Placement):
     def execute(self):
+        # Execute super code
+        super(SSAPvPlacement, self).execute()
+        
         print 'Distributing domains over all servers ...'
-    
-        # Dump profiles
-        profiles.dump(logger)
-        
-        # Dump nodes configuration
-        nodes.dump(logger)
-        
-        # Dump mapping
-        domains.dump(logger)
-        
+            
         # Logging
         logger.info('Placement strategy: Round Robin')
         logger.info('Required servers: %i' % self.nodecount)
@@ -117,7 +111,6 @@ class SSAPvPlacement(Placement):
         
         print 'Solving model...'
         logger.info('Placement strategy: SSAPv')
-        # server, assignment = dsap.solve(nodecount, node_capacity_cpu, node_capacity_mem, service_matrix, domain_demand_mem)
         server, assignment = ssapv.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
         if assignment != None:
             print 'Required servers: %i' % (server)

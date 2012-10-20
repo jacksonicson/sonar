@@ -267,9 +267,16 @@ def errback(failure):
     print failure
     reactor.stop()
     
+def initial_allocation():
+    import allocate_domains
+    allocate_domains.main(True)
+    
 def main():
     # Create drones
     drones.main()
+    
+    # Setup initial allocation
+    initial_allocation()
     
     # Add host
     for i in xrange(0,18):
