@@ -1,11 +1,6 @@
-from ipmodels import ssapv, dsap
-from logs import sonarlog
-from service import times_client
-from virtual import allocation as virt, nodes
-from workload import profiles
-import domains
-import numpy as np
 from logic import placement
+from logs import sonarlog
+from virtual import allocation as virt, nodes
 
 # Setup logging
 logger = sonarlog.getLogger('allocate_domains')
