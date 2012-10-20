@@ -93,7 +93,7 @@ class LoadBalancer(Thread):
         source.blocked = now_time + 60 * 60
         target.blocked = now_time + 60 * 60
         
-        data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name, 'id': id})
+        data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name, 'id': migration_id})
         logger.info('Live Migration Triggered: %s' % data)
         
         # Backup current model status - for later analytics

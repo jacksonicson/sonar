@@ -146,8 +146,8 @@ def migrateAllocation(migrations):
             # Migrate to target
             try:
                 print 'Migrating domain: %s to node: %s ...' % (domain_name, connections[target_node].getHostname())
-                domain = domain.migrate(connections[target_node], 
-                                        VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, 
+                domain = domain.migrate(connections[target_node],
+                                        VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST,
                                         domain_name, None, 0)
                 print 'Migration successful'
             except:
@@ -159,22 +159,6 @@ def migrateAllocation(migrations):
     finally:
         # Close connections
         util.close_all(connections)
-
-
-def get_null_allocation(nodecount):
-    migrations = []
-    assignment = {}
-    
-    node_index = 0
-    service_index = 0
-    for maps in mapping:
-        migrations.append((maps.domain, node_index))
-        node_index = (node_index + 1) % nodecount
-        
-        assignment[service_index] = node_index
-        service_index += 1
-        
-    return assignment, migrations
 
 
 def determine_current_allocation():
