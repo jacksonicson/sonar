@@ -24,10 +24,10 @@ LOGGING_PORT = 7921
 DEBUG = False
 TRACE_EXTRACT = False
 
-CONTROLLER_NODE = 'localhost.localdomain' # 'Andreas-PC'
+CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '18/10/2012 21:40:46    19/10/2012 5:00:46'
+RAW = '19/10/2012 16:10:00    20/10/2012 00:20:00'
 
 START = ''
 END = ''
