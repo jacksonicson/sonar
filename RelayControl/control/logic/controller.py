@@ -110,6 +110,7 @@ def main():
         connector.connect_sonar(model, handler)
     else:
         # Start the driver thread which simulates Sonar
+        import driver
         driver = driver.Driver(model, handler)
         driver.start()
     
