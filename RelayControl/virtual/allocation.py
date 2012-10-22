@@ -1,4 +1,3 @@
-from control.domains import domain_profile_mapping as mapping
 from libvirt import VIR_MIGRATE_LIVE, VIR_MIGRATE_UNDEFINE_SOURCE, \
     VIR_MIGRATE_PERSIST_DEST
 import libvirt
@@ -8,11 +7,6 @@ import time
 import traceback
 import control.domains as domains
 from threading import Thread
-
-###############################################
-### CONFIG                                   ##
-RELAY_PORT = 7900
-###############################################
 
 # Global connections variable
 connections = None

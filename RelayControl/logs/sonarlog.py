@@ -3,14 +3,7 @@ from collector import CollectService, ttypes
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import time
-from socket import gethostname
-
-##########################
-## Configuration        ##
-COLLECTOR_IP = 'monitor0'
-LOGGING_PORT = 7921
-HOSTNAME = gethostname()
-##########################
+import configuration as config
 
 LOG_LEVELS = {60: 50010, 
               50:50000, 
@@ -27,7 +20,7 @@ loggingClient = None
 def connect():
     # Make socket
     global transportLogging
-    transportLogging = TSocket.TSocket(COLLECTOR_IP, LOGGING_PORT)
+    transportLogging = TSocket.TSocket(config.COLLECTOR_IP, config.LOGGING_PORT)
     
     # Buffering is critical. Raw sockets are very slow
     transportLogging = TTransport.TBufferedTransport(transportLogging) 
@@ -66,12 +59,19 @@ class SonarLogHandler(logging.Handler):
         
         loggingClient.logMessage(ids, value)
 
-def getLogger(sensor, hostname=HOSTNAME):
+def getLogger(sensor, hostname=config.HOSTNAME):
     if loggingClient is None:
         connect()
              
     logger = logging.getLogger("RelayControl")
-    logger.addHandler(SonarLogHandler(COLLECTOR_IP, LOGGING_PORT, hostname, sensor, "RelayControl"))
+    
+    if config.SONAR_LOGGING:
+        logger.addHandler(SonarLogHandler(config.COLLECTOR_IP, config.LOGGING_PORT, hostname, sensor, "RelayControl"))
+    else:
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        logger.addHandler(ch)
+    
     logger.setLevel(logging.DEBUG)
     
     return logger

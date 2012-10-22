@@ -1,6 +1,5 @@
 from collector import CollectService, ManagementService, ttypes
 from datetime import datetime
-from select import select
 from service import times_client
 from subprocess import Popen, PIPE
 from threading import Thread

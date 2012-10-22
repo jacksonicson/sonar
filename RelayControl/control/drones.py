@@ -3,7 +3,10 @@ import os
 import shutil
 import string
 
+######################
+## CONFIGURATION    ##
 DRONE_DIR = 'drones'
+######################
 
 class Drone(object):
     def __init__(self, name, data):

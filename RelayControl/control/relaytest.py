@@ -1,14 +1,5 @@
 import drones, hosts, base
-from datetime import datetime
-from rain import RainService, constants, ttypes
-from relay import RelayService
-from string import Template
-from thrift import Thrift, Thrift
-from thrift.protocol import TBinaryProtocol, TBinaryProtocol
-from thrift.transport import TSocket, TTransport, TTwisted
 from twisted.internet import defer, reactor
-from twisted.internet.defer import inlineCallbacks
-from twisted.internet.protocol import ClientCreator
 
 def finished():
     reactor.stop()

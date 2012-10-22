@@ -3,8 +3,6 @@ from collector import ttypes
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 
-LISTENING_PORT = 9876
-
 def main():
     print 'Starting Test Client...'
 

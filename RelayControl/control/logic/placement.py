@@ -28,20 +28,6 @@ class Placement(object):
         domains.dump(logger)
    
    
-class FirstFitPlacement(Placement):
-    def execute(self):
-        # Execute super code
-        super(SSAPvPlacement, self).execute()
-        
-        print 'Distributing domains over all servers ...'
-            
-        # Logging
-        logger.info('Placement strategy: First Fit')
-        
-        # TODO
-        
-   
-   
 class RRPlacement(Placement):
     def execute(self):
         # Execute super code
@@ -72,7 +58,79 @@ class RRPlacement(Placement):
         logger.info('Migrations: %s' % migrations)
         
         return migrations
-    
+ 
+ 
+class FirstFitPlacement(Placement):
+    def execute(self):
+        # Execute super code
+        super(FirstFitPlacement, self).execute()
+        
+        print 'Using First Fit for domain placmement ...'
+            
+        # Logging
+        logger.info('Placement strategy: First Fit')
+        
+        
+        # Connect with Times
+        print 'Connecting with Times'
+        connection = times_client.connect()
+        
+        # Loading services to combine the dmain_service_mapping with    
+        services = profiles.selected
+        service_count = len(domains.domain_profile_mapping)
+        
+        # For each node there is one bucket
+        buckets = []
+        migrations = []
+        assignment = {}
+        for _ in xrange(len(nodes.HOSTS)):
+            buckets.append([0, nodes.NODE_CPU, []])
+        
+        # Service which gets mapped
+        for service_index in xrange(service_count):
+            # Maps the service to a service profile
+            mapping = domains.domain_profile_mapping[service_index]
+            
+            # Important: Load the trace of the workload profile
+            service = services[mapping.profileId].name + profiles.POSTFIX_TRACE
+            print 'loading service: %s' % (service)
+            ts = connection.load(service)
+            from workload import util
+            _, demand = util.to_array(ts)
+        
+            # Determine max demand value of this service
+            max_value = np.percentile(demand, 95) # np.max(demand)
+            
+            bin_found = False
+            try:
+                for node_index in xrange(len(buckets)):
+                    bucket = buckets[node_index]
+                    if (bucket[0] + max_value) < bucket[1]:
+                        bin_found = True
+                        
+                        bucket[0] = bucket[0] + max_value
+                        bucket[2].append(service)
+                        
+                        migrations.append((mapping.domain, node_index))
+                        assignment[service_index] = node_index
+                        
+                        raise StopIteration()
+            except StopIteration:
+                if bin_found == False:
+                    print 'WARN: Could not assign domain to a node!'
+                  
+              
+        for bucket in buckets:
+            print 'bucket length: %i' % len(bucket[2])
+                  
+        print 'Assignment: %s' % assignment
+        logger.info('Assignment: %s' % assignment)
+        print 'Migrations: %s' % migrations
+        logger.info('Migrations: %s' % migrations)
+           
+        return migrations
+         
+            
     
 class SSAPvPlacement(Placement):
     

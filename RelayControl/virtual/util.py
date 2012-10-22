@@ -1,7 +1,6 @@
 import nodes
 import libvirt
 
-
 def connect(node):
     try:
         print 'connecting with %s' % node
