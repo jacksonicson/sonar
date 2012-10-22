@@ -21,6 +21,7 @@ def main(migrate=True):
             print 'Migrating...'
             virt.migrateAllocation(migrations)
 
+
 if __name__ == '__main__':
     main(True)
 

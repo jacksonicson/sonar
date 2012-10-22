@@ -26,7 +26,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'localhost.localdomain' # 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '18/10/2012 11:00:46    19/10/2012 16:20:46'
+RAW = '19/10/2012 16:10:00    20/10/2012 00:20:00'
 
 START = ''
 END = ''

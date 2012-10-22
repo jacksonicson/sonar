@@ -2,6 +2,12 @@ import model
 import threading
 import sandpiper
 import configuration as config
+import json
+from logs import sonarlog
+import time
+
+# Setup logging
+logger = sonarlog.getLogger('controller')
 
 class MetricHandler:
     '''
@@ -55,9 +61,14 @@ def build_initial_model():
     else:
         build_test_allocation()
     
-    
     # Dump model
     model.dump()
+    
+    # Update empty counts
+    empty_count =  model.empty_count()
+    print 'Updated empty count: %i' % empty_count
+    logger.info('Server Empty: %s' % json.dumps({'count' : empty_count,
+                                                     'timestamp' : time.time()}))
     
     #################################################
     # IMPORTANT #####################################
