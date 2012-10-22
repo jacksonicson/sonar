@@ -17,6 +17,18 @@ class Placement(object):
         self.node_capacity_mem = node_capacity_mem
         self.domain_demand_mem = domain_demand_mem
     
+    def _count_active_servers(self, assignment):
+        buckets = [True for _ in xrange(len(nodes.HOSTS))]
+        active_servers = 0
+        for service in assignment.keys():
+            inode = assignment[service]
+            if buckets[inode]:
+                buckets[inode] = False
+                active_servers += 1
+            
+        return active_servers
+            
+    
     def execute(self):
         # Dump profiles
         profiles.dump(logger)
@@ -57,7 +69,7 @@ class RRPlacement(Placement):
         print 'Migrations: %s' % migrations
         logger.info('Migrations: %s' % migrations)
         
-        return migrations
+        return migrations, self._count_active_servers(assignment)
  
  
 class FirstFitPlacement(Placement):
@@ -132,7 +144,7 @@ class FirstFitPlacement(Placement):
         print 'Migrations: %s' % migrations
         logger.info('Migrations: %s' % migrations)
            
-        return migrations
+        return migrations, self._count_active_servers(assignment)
          
             
     
@@ -204,9 +216,9 @@ class SSAPvPlacement(Placement):
             
             print 'Migrations: %s' % migrations
             logger.info('Migrations: %s' % migrations)
-            return migrations
+            return migrations, self._count_active_servers(assignment)
     
         else:
             print 'model infeasible'
-            return None
+            return None, None
         

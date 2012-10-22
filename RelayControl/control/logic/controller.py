@@ -1,9 +1,9 @@
-import model
-import threading
-import sandpiper
+from logs import sonarlog
 import configuration as config
 import json
-from logs import sonarlog
+import model
+import sandpiper
+import threading
 import time
 
 # Setup logging
@@ -65,10 +65,10 @@ def build_initial_model():
     model.dump()
     
     # Update empty counts
-    empty_count =  model.empty_count()
-    print 'Updated empty count: %i' % empty_count
-    logger.info('Server Empty: %s' % json.dumps({'count' : empty_count,
-                                                     'timestamp' : time.time()}))
+    active_count = model.active_count()
+    print 'Updated active server count: %i' % active_count
+    logger.info('Active Servers: %s' % json.dumps({'count' : active_count,
+                                                 'timestamp' : time.time()}))
     
     #################################################
     # IMPORTANT #####################################

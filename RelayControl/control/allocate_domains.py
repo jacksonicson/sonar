@@ -1,6 +1,8 @@
 from logic import placement
 from logs import sonarlog
 from virtual import allocation as virt, nodes
+import time
+import json
 
 # Setup logging
 logger = sonarlog.getLogger('allocate_domains')
@@ -14,7 +16,11 @@ def main(migrate=True):
     model = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
     
     # Get migrations
-    migrations = model.execute()
+    migrations, active_server_count = model.execute()
+    
+    print 'Updated active server count: %i' % active_server_count
+    logger.info('Active Servers: %s' % json.dumps({'count' : active_server_count,
+                                                 'timestamp' : time.time()}))
     
     # Migrate
     if migrate:
