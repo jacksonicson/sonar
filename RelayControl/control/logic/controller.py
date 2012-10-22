@@ -6,7 +6,7 @@ import sandpiper
 ######################
 ## CONFIGURATION    ##
 ######################
-PRODUCTION = True
+PRODUCTION = False
 ######################
 
 class MetricHandler:

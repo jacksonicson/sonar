@@ -26,7 +26,21 @@ class Placement(object):
         
         # Dump mapping
         domains.dump(logger)
+   
+   
+class FirstFitPlacement(Placement):
+    def execute(self):
+        # Execute super code
+        super(SSAPvPlacement, self).execute()
         
+        print 'Distributing domains over all servers ...'
+            
+        # Logging
+        logger.info('Placement strategy: First Fit')
+        
+        # TODO
+        
+   
    
 class RRPlacement(Placement):
     def execute(self):

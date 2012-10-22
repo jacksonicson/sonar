@@ -276,7 +276,8 @@ def main():
     drones.main()
     
     # Setup initial allocation
-    initial_allocation()
+    if start:
+        initial_allocation()
     
     # Add host
     for i in xrange(0,18):
