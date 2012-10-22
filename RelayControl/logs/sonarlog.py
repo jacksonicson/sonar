@@ -71,7 +71,10 @@ def getLogger(sensor, hostname=HOSTNAME):
         connect()
              
     logger = logging.getLogger("RelayControl")
-    logger.addHandler(SonarLogHandler(COLLECTOR_IP, LOGGING_PORT, hostname, sensor, "RelayControl"))
+    
+    # Disable sonar logging for complete project
+    # logger.addHandler(SonarLogHandler(COLLECTOR_IP, LOGGING_PORT, hostname, sensor, "RelayControl"))
+    
     logger.setLevel(logging.DEBUG)
     
     return logger
