@@ -119,6 +119,10 @@ class FirstFitPlacement(Placement):
                 if bin_found == False:
                     print 'WARN: Could not assign domain to a node!'
                   
+                  
+        # Close Times connection
+        times_client.close()
+        
               
         for bucket in buckets:
             print 'bucket length: %i' % len(bucket[2])
