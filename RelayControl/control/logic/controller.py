@@ -1,13 +1,7 @@
 import model
 import threading
 import sandpiper
-
-
-######################
-## CONFIGURATION    ##
-######################
-PRODUCTION = False
-######################
+import configuration as config
 
 class MetricHandler:
     '''
@@ -55,7 +49,7 @@ def build_test_allocation():
     
 
 def build_initial_model():
-    if PRODUCTION: 
+    if config.PRODUCTION: 
         # Build model from current allocation
         build_from_current_allocation()
     else:
@@ -104,7 +98,7 @@ def main():
     # Create notification handler
     handler = MetricHandler()
     
-    if PRODUCTION:
+    if config.PRODUCTION:
         # Connect with sonar to receive metric readings
         import connector
         connector.connect_sonar(model, handler)
@@ -115,7 +109,7 @@ def main():
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper.Sandpiper(model, PRODUCTION)
+    balancer = sandpiper.Sandpiper(model, config.PRODUCTION)
     balancer.start()
     
     # Dump configuration

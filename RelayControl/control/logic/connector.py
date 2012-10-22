@@ -1,18 +1,9 @@
-from collector import NotificationClient, NotificationService, ttypes
+from collector import NotificationClient, NotificationService
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 import threading
-
-################################
-## Configuration              ##
-LISTENING_PORT = 9876
-LISTENING_INTERFACE_IPV4 = '192.168.96.6'
-
-COLLECTOR_PORT = 7911
-COLLECTOR_HOST = 'monitor0.dfg'
-################################
-
+import configuration as config
 
 class ServiceThread(threading.Thread):
     def __init__(self, handler):
@@ -26,7 +17,7 @@ class ServiceThread(threading.Thread):
     def run(self):
         print self.handler
         processor = NotificationClient.Processor(self.handler)
-        transport = TSocket.TServerSocket(host=LISTENING_INTERFACE_IPV4, port=LISTENING_PORT)
+        transport = TSocket.TServerSocket(host=config.LISTENING_INTERFACE_IPV4, port=config.LISTENING_PORT)
         
         tfactory = TTransport.TBufferedTransportFactory()
         pfactory = TBinaryProtocol.TBinaryProtocolFactory()
@@ -38,7 +29,7 @@ class ServiceThread(threading.Thread):
         server.serve()
         
 
-def connect_sonar(model, handler, interface=LISTENING_INTERFACE_IPV4, collector=COLLECTOR_HOST):
+def connect_sonar(model, handler, interface=config.LISTENING_INTERFACE_IPV4, collector=config.COLLECTOR_HOST):
     print 'Connecting with Sonar ...'
 
     # Start the Receiver    
@@ -47,7 +38,7 @@ def connect_sonar(model, handler, interface=LISTENING_INTERFACE_IPV4, collector=
     
     # Register the Receiver in the Controller
     # Make socket
-    transport = TSocket.TSocket(collector, COLLECTOR_PORT)
+    transport = TSocket.TSocket(collector, config.COLLECTOR_PORT)
     
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TBufferedTransport(transport)
@@ -70,5 +61,5 @@ def connect_sonar(model, handler, interface=LISTENING_INTERFACE_IPV4, collector=
 
     # Subscribe
     print 'Subscribing now...'
-    serviceClient.subscribe(interface, LISTENING_PORT, filters),
+    serviceClient.subscribe(interface, config.LISTENING_PORT, filters),
     

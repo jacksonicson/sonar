@@ -5,11 +5,11 @@ from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 import drones
 import hosts
+import configuration as config
 
-#####################
-## Configuration   ##
-PORT = 7900
-#####################
+'''
+Provides helpber functions for all control modules
+'''
 
 def client(client_list, host):
     return client_list[hosts.get_index(host)][1]
@@ -56,13 +56,13 @@ def connect_err(failure):
 def connect(hosts_map):
     dlist = []
     for i in hosts_map:
-        print 'Connecting with relay %s:%i ' % (i, PORT)
+        print 'Connecting with relay %s:%i ' % (i, config.RELAY_PORT)
         
         creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
                           TBinaryProtocol.TBinaryProtocolFactory(),
-                          ).connectTCP(i, PORT)
+                          ).connectTCP(i, config.RELAY_PORT)
         creator.addCallback(lambda conn: conn.client)
         
         d = defer.Deferred()
