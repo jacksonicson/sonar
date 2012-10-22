@@ -63,19 +63,19 @@ class MigrationThread(Thread):
         # Domain to migrate
         domain = connection_from.lookupByName(self.domain)
         
+        success = True
+        error = None
         try:
             self.tomigrate = domain
             domain = domain.migrate(connection_to, VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, self.domain, None, 0)
             self.end = time.time()
-            failed = False
-            error = None
         except Exception as e:
             self.end = time.time()
-            failed = True
+            success = False
             error = e
         finally:
             print 'Calling back...'
-            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, failed, error)
+            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, success, error)
             
             util.close(connection_from)
             util.close(connection_to)
@@ -146,8 +146,8 @@ def migrateAllocation(migrations):
             # Migrate to target
             try:
                 print 'Migrating domain: %s to node: %s ...' % (domain_name, connections[target_node].getHostname())
-                domain = domain.migrate(connections[target_node], 
-                                        VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST, 
+                domain = domain.migrate(connections[target_node],
+                                        VIR_MIGRATE_LIVE | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_PERSIST_DEST,
                                         domain_name, None, 0)
                 print 'Migration successful'
             except:
@@ -157,24 +157,8 @@ def migrateAllocation(migrations):
     except:
         traceback.print_exc(file=sys.stdout)
     finally:
-        print 'Closing connections...'
+        # Close connections
         util.close_all(connections)
-
-
-def get_null_allocation(nodecount):
-    migrations = []
-    assignment = {}
-    
-    node_index = 0
-    service_index = 0
-    for maps in mapping:
-        migrations.append((maps.domain, node_index))
-        node_index = (node_index + 1) % nodecount
-        
-        assignment[service_index] = node_index
-        service_index += 1
-        
-    return assignment, migrations
 
 
 def determine_current_allocation():
