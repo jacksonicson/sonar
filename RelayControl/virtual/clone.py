@@ -16,12 +16,12 @@ import sys
 import time
 import traceback
 import virtual.util as util
+import configuration as config
 
 ###############################################
 ### CONFIG                                   ##
 ###############################################
 DEFAULT_SETUP_IP = 'vmt'
-RELAY_PORT = 7900
 STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
 clone_names = [('playglassdb', 'target%i' % i) for i in range(0, 18)]
 SETUP_SERVER = 'srv0'
@@ -101,7 +101,7 @@ def setup(vm):
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
                           TBinaryProtocol.TBinaryProtocolFactory(),
-                          ).connectTCP(DEFAULT_SETUP_IP, RELAY_PORT)
+                          ).connectTCP(DEFAULT_SETUP_IP, config.RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
     
     creator.addCallback(connection_established, vm)
