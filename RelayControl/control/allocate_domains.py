@@ -9,8 +9,9 @@ def main(migrate=True):
     nodecount = len(nodes.HOSTS)
     
     # Setup models
-    model = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+    # model = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
     # model = placement.RRPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+    model = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
     
     # Get migrations
     migrations = model.execute()
@@ -21,5 +22,5 @@ def main(migrate=True):
             virt.migrateAllocation(migrations)
 
 if __name__ == '__main__':
-    main()
+    main(True)
 
