@@ -204,7 +204,7 @@ def __fetch_migrations(connection, load_host, timeframe):
     
     # scan logs for results
     for log in logs:
-        if log.timestamp > (timeframe[1] + 5 * 60) * 1000:
+        if log.timestamp > timeframe[1]:
             print 'skipping remaining migrations - out of timeframe'
             break
         
@@ -234,9 +234,9 @@ def __fetch_migrations(connection, load_host, timeframe):
                 failed.append(migration)
                 
             # Server empty
-            STR_MIGRATION_FAILED = 'Server Empty: '
-            if log.logMessage.startswith(STR_MIGRATION_FAILED):
-                msg = log.logMessage[len(STR_MIGRATION_FAILED):]
+            STR_ACTIVE_SERVERS = 'Active Servers: '
+            if log.logMessage.startswith(STR_ACTIVE_SERVERS):
+                msg = log.logMessage[len(STR_ACTIVE_SERVERS):]
                 empty = json.loads(msg)
                 active_state = (log.timestamp, empty['count'])
                 server_active.append(active_state)
@@ -673,19 +673,30 @@ def connect_sonar(connection):
         migration_durations.append(migration['duration'])
     print 'Average migration time: %f' % np.mean(migration_durations)
     
-    last_time = frame[0]
+    last_state = None
     occupied_minutes = 0.0
     empty_minutes = 0.0
-    for state in server_active:
-        delta_time = float(state[0] - last_time)
-        last_time = state[0]
+    _server_active = []
+    _server_active.extend(server_active)
+    _server_active.append((data_frame[1], server_active[-1][1]))
+    for state in _server_active:
+        if last_state == None:
+            last_state = state
+            continue
+        
+        delta_time = float(state[0] - last_state[0])
         
         # minutes - timestamps are in seconds
-        empty_servers = float(state[1])
-        empty_minutes += (empty_servers * delta_time) / 60.0 
-        occupied_minutes += (delta_time * (len(nodes.HOSTS) - empty_servers)) / 60
+        empty_servers = float(last_state[1])
         
-    print 'Duration: %i' % (duration * 60)
+        occupied_minutes += (empty_servers * delta_time) / 60.0 
+        empty_minutes += (delta_time * (len(nodes.HOSTS) - empty_servers)) / 60
+        
+        last_state = state
+    
+        
+    print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
+    print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
     print 'Empty minutes: %i' % empty_minutes
       
