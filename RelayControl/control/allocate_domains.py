@@ -16,11 +16,12 @@ def main(migrate=True):
     model = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
     
     # Get migrations
-    migrations, active_server_count = model.execute()
+    migrations, active_server_info  = model.execute()
     
-    print 'Updated active server count: %i' % active_server_count
-    logger.info('Active Servers: %s' % json.dumps({'count' : active_server_count,
-                                                 'timestamp' : time.time()}))
+    print 'Updated active server count: %i' % active_server_info[0]
+    logger.info('Initial Active Servers: %s' % json.dumps({'count' : active_server_info[0],
+                                                           'servers: ' : active_server_info[1],
+                                                           'timestamp' : time.time()}))
     
     # Migrate
     if migrate:

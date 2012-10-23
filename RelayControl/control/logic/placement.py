@@ -20,13 +20,15 @@ class Placement(object):
     def _count_active_servers(self, assignment):
         buckets = [True for _ in xrange(len(nodes.HOSTS))]
         active_servers = 0
+        active_server_list = []
         for service in assignment.keys():
             inode = assignment[service]
             if buckets[inode]:
                 buckets[inode] = False
                 active_servers += 1
+                active_server_list.append(nodes.get_node_name(inode))
             
-        return active_servers
+        return active_servers, active_server_list
             
     
     def execute(self):
