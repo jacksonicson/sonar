@@ -1,39 +1,57 @@
 from twisted.internet import defer, reactor
 import drones
-import hosts
 import base
-import sys
+
+# Add hosts
+hosts = []
+index = 0
+for i in xrange(0, 18):
+    hosts.append('target%i.dfg' % i)
+
 
 def finished(done, client_list):
     print "execution successful %s" % done
     reactor.stop()
 
+
 def start_phase(client_list):
     print 'All Systems alive!'
     finished(client_list, client_list)
+
     
-def errback(failure):
-    print 'Error while executing'
-    print failure
-    sys.exit(0)
+def errback(failure, host):
+    print 'FAILED with %s' % host
+    reactor.callLater(1, connect_next)
+    
+
+def connected(client, host):
+    print 'OK with %s' % host
+    reactor.callLater(0, connect_next)
+    global index
+    index += 1
+    
+
+def connect_next():
+    global index
+    
+    if index >= len(hosts):
+        print 'Successful'
+        reactor.stop()
+        return
+    
+    host = hosts[index]
+    dlist = base.connect((host,))
+    wait = defer.DeferredList(dlist)
+    wait.addCallback(connected, host)
+    wait.addErrback(errback, host)
+
     
 def main():
     # Create drones
     drones.main()
-    
-    # Add hosts
-    for i in xrange(0, 18):
-        hosts.add_host('target%i' % i, 'action')
-        
-    hosts_map = hosts.get_hosts_list()
-    
-    # Connect with all drone relays
-    deferList = base.connect(hosts_map)
-    wait = defer.DeferredList(deferList)
-    
-    # Decide what to do after connection setup
-    wait.addErrback(errback)
-    wait.addCallback(start_phase)
+
+    # Connect with all hosts step by step    
+    connect_next()
     
     # Start the Twisted reactor
     reactor.run()

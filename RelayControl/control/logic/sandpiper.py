@@ -10,11 +10,11 @@ import time
 START_WAIT = 60
 INTERVAL = 60 * 5
 THRESHOLD_OVERLOAD = 90
-THRESHOLD_UNDERLOAD = 30
-PERCENTILE = 75.0
+THRESHOLD_UNDERLOAD = 40
+PERCENTILE = 80.0
 
 K_VALUE = 20 # sliding windows size
-M_VALUE = 15 # m values out of the window k must be above or below the threshold
+M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
@@ -26,6 +26,16 @@ class Sandpiper(logic.LoadBalancer):
         super(Sandpiper, self).__init__(model, production, INTERVAL)
         
         
+    def dump(self):
+        logger.info('Controller: Sandpiper')
+        logger.info('START_WAIT = %i' % START_WAIT)
+        logger.info('INTERVAL = %i' % INTERVAL)
+        logger.info('THRESHOLD_OVERLOAD = %i' % THRESHOLD_OVERLOAD)
+        logger.info('THRESHOLD_UNDERLOAD = %i' % THRESHOLD_UNDERLOAD)
+        logger.info('_PERCENTILE = %i' % PERCENTILE)
+        logger.info('K_VALUE = %i' % K_VALUE)
+        logger.info('M_VALUE = %i' % M_VALUE)
+    
     def forecast(self, data):
         import statsmodels.api as sm
         import statsmodels as sm2

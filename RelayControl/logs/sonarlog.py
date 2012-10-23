@@ -17,6 +17,8 @@ logging.addLevelName(SYNC, 'SYNC')
 
 loggingClient = None
 
+logger = None
+
 def connect():
     # Make socket
     global transportLogging
@@ -62,16 +64,18 @@ class SonarLogHandler(logging.Handler):
 def getLogger(sensor, hostname=config.HOSTNAME):
     if loggingClient is None:
         connect()
-             
-    logger = logging.getLogger("RelayControl")
-    
-    if config.SONAR_LOGGING:
-        logger.addHandler(SonarLogHandler(config.COLLECTOR_IP, config.LOGGING_PORT, hostname, sensor, "RelayControl"))
-    else:
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        logger.addHandler(ch)
-    
-    logger.setLevel(logging.DEBUG)
+          
+    global logger
+    if logger is None:
+        logger = logging.getLogger("RelayControl")
+        
+        if config.SONAR_LOGGING:
+            logger.addHandler(SonarLogHandler(config.COLLECTOR_IP, config.LOGGING_PORT, hostname, sensor, "RelayControl"))
+        else:
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.INFO)
+            logger.addHandler(ch)
+        
+        logger.setLevel(logging.DEBUG)
     
     return logger

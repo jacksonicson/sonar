@@ -70,10 +70,12 @@ class LoadBalancer(Thread):
             logger.error('Live Migration Failed: %s' % data)
             
         # Log empty servers
-        empty_count =  self.model.empty_count()
-        print 'Updated empty count: %i' % empty_count
-        logger.info('Server Empty: %s' % json.dumps({'count' : empty_count,
-                                                     'timestamp' : time.time()}))
+        active_server_info =  self.model.active_count()
+        print 'Updated active server count: %i' % active_server_info[0]
+        
+        logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
+                                                       'servers: ' : active_server_info[1],
+                                                       'timestamp' : time.time()}))
         
         
         

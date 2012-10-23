@@ -17,6 +17,20 @@ class Placement(object):
         self.node_capacity_mem = node_capacity_mem
         self.domain_demand_mem = domain_demand_mem
     
+    def _count_active_servers(self, assignment):
+        buckets = [True for _ in xrange(len(nodes.HOSTS))]
+        active_servers = 0
+        active_server_list = []
+        for service in assignment.keys():
+            inode = assignment[service]
+            if buckets[inode]:
+                buckets[inode] = False
+                active_servers += 1
+                active_server_list.append(nodes.get_node_name(inode))
+            
+        return active_servers, active_server_list
+            
+    
     def execute(self):
         # Dump profiles
         profiles.dump(logger)
@@ -57,7 +71,7 @@ class RRPlacement(Placement):
         print 'Migrations: %s' % migrations
         logger.info('Migrations: %s' % migrations)
         
-        return migrations
+        return migrations, self._count_active_servers(assignment)
  
  
 class FirstFitPlacement(Placement):
@@ -119,6 +133,10 @@ class FirstFitPlacement(Placement):
                 if bin_found == False:
                     print 'WARN: Could not assign domain to a node!'
                   
+                  
+        # Close Times connection
+        times_client.close()
+        
               
         for bucket in buckets:
             print 'bucket length: %i' % len(bucket[2])
@@ -128,7 +146,7 @@ class FirstFitPlacement(Placement):
         print 'Migrations: %s' % migrations
         logger.info('Migrations: %s' % migrations)
            
-        return migrations
+        return migrations, self._count_active_servers(assignment)
          
             
     
@@ -200,9 +218,9 @@ class SSAPvPlacement(Placement):
             
             print 'Migrations: %s' % migrations
             logger.info('Migrations: %s' % migrations)
-            return migrations
+            return migrations, self._count_active_servers(assignment)
     
         else:
             print 'model infeasible'
-            return None
+            return None, None
         
