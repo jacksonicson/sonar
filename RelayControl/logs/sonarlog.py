@@ -17,7 +17,7 @@ logging.addLevelName(SYNC, 'SYNC')
 
 loggingClient = None
 
-logger = None
+loggers = {}
 
 def connect():
     # Make socket
@@ -65,9 +65,10 @@ def getLogger(sensor, hostname=config.HOSTNAME):
     if loggingClient is None:
         connect()
           
-    global logger
-    if logger is None:
-        logger = logging.getLogger("RelayControl")
+    global loggers
+    if loggers.has_key(sensor) == False:
+        logger = logging.getLogger(sensor)
+        loggers[sensor] = logger
         
         if config.SONAR_LOGGING:
             logger.addHandler(SonarLogHandler(config.COLLECTOR_IP, config.LOGGING_PORT, hostname, sensor, "RelayControl"))
@@ -77,5 +78,7 @@ def getLogger(sensor, hostname=config.HOSTNAME):
             logger.addHandler(ch)
         
         logger.setLevel(logging.DEBUG)
+    else:
+        logger = loggers[sensor]
     
     return logger
