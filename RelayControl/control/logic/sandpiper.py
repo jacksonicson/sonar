@@ -10,11 +10,11 @@ import time
 START_WAIT = 60
 INTERVAL = 60 * 5
 THRESHOLD_OVERLOAD = 90
-THRESHOLD_UNDERLOAD = 30
-PERCENTILE = 75.0
+THRESHOLD_UNDERLOAD = 40
+PERCENTILE = 80.0
 
 K_VALUE = 20 # sliding windows size
-M_VALUE = 15 # m values out of the window k must be above or below the threshold
+M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
