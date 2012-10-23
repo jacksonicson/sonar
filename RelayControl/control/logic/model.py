@@ -32,13 +32,15 @@ def get_host(hostname):
     return None
 
 
-def active_count():
-    active_count = len(get_hosts(types.NODE))
+def server_active_info():
+    active_count = 0
+    active_names = []
     for node in get_hosts(types.NODE):
-        if len(node.domains) == 0:
-            active_count -= 1
+        if node.domains:
+            active_names.append(node.name)
+            active_count += 1
     
-    return active_count
+    return active_count, active_names
     
 
 class __Host(object):
