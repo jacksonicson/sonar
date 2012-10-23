@@ -26,7 +26,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '19/10/2012 16:10:00    20/10/2012 00:20:00'
+RAW = '22/10/2012 23:40:51    23/10/2012 06:15:51'
 
 START = ''
 END = ''
@@ -217,7 +217,6 @@ def __fetch_migrations(connection, load_host, timeframe):
             STR_MIGRATION_TRIGGERED = 'Live Migration Triggered: '
             if log.logMessage.startswith(STR_MIGRATION_TRIGGERED):
                 log.logMessage[len(STR_MIGRATION_TRIGGERED):]
-                continue
             
             # Migration finished
             STR_MIGRATION_FINISHED = 'Live Migration Finished: '
@@ -600,18 +599,15 @@ def connect_sonar(connection):
     #####################################################################################################################################
     
     # Results
-    srvs = nodes.NODES
     cpu = {}
     mem = {}
     
     print '## FETCHING CPU LOAD SERVERS ... ##'
-    for srv in srvs:
+    for srv in nodes.NODES:
         res_cpu, tim_cpu = __fetch_timeseries(connection, srv, 'psutilcpu', data_frame)
         res_mem, tim_mem = __fetch_timeseries(connection, srv, 'psutilmem.phymem', data_frame)
-        cpu[srv] = res_cpu
-        mem[srv] = res_mem
-#        print '%s cpu= %s' % (srv, res_cpu)
-#        print '%s mem= %s' % (srv, res_mem)
+        cpu[srv] = (res_cpu, tim_cpu)
+        mem[srv] = (res_mem, tim_mem)
     
     print '## FETCHIN CPU LOAD DOMAINS ... ##'
     for domain in domains:
@@ -619,8 +615,6 @@ def connect_sonar(connection):
         res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', data_frame)
         cpu[domain] = (res_cpu, tim_cpu)
         mem[domain] = (res_mem, tim_mem)
-#        print '%s cpu= %s' % (domain, res_cpu)
-#        print '%s mem= %s' % (domain, res_mem)
     
     # Generate and write CPU profiles to Times
     print '## GENERATING CPU LOAD PROFILES ##'
@@ -651,13 +645,13 @@ def connect_sonar(connection):
     __dump_elements(dump)
     _total_cpu = []
     _total_mem = []
-    for srv in srvs: 
-        _cpu = np.average(cpu[srv])
-        _mem = np.average(mem[srv])
+    for srv in nodes.NODES: 
+        _cpu = np.average(cpu[srv][0])
+        _mem = np.average(mem[srv][0])
         
         if _cpu > 3:        
-            _total_cpu.extend(cpu[srv])
-            _total_mem.extend(mem[srv])
+            _total_cpu.extend(cpu[srv][0])
+            _total_mem.extend(mem[srv][0])
         
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
@@ -674,9 +668,14 @@ def connect_sonar(connection):
     print 'Average migration time: %f' % np.mean(migration_durations)
     
     last_state = None
+    
     occupied_minutes = 0.0
     empty_minutes = 0.0
+    
+    _clean_cpu = []
+    
     _server_active = []
+    _server_active.append((data_frame[0], server_active[0][1]))
     _server_active.extend(server_active)
     _server_active.append((data_frame[1], server_active[-1][1]))
     for state in _server_active:
@@ -687,19 +686,33 @@ def connect_sonar(connection):
         delta_time = float(state[0] - last_state[0])
         
         # minutes - timestamps are in seconds
-        empty_servers = float(last_state[1])
+        active_servers = float(last_state[1])
         
-        occupied_minutes += (empty_servers * delta_time) / 60.0 
-        empty_minutes += (delta_time * (len(nodes.HOSTS) - empty_servers)) / 60
+        occupied_minutes += (active_servers * delta_time) / 60.0 
+        empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
+        
+        for srv in nodes.NODES: 
+            _sub_cpu = []
+            tupel = cpu[srv]
+            for i in xrange(len(tupel[1])):
+                value = tupel[0][i]
+                time = tupel[1][i]
+                
+                if time >= last_state[0] and time <= state[0]:
+                    _sub_cpu.append(value)
+                    
+            if np.mean(_sub_cpu) > 3:
+                _clean_cpu.extend(_sub_cpu)
+            
         
         last_state = state
     
-        
     print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
     print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
     print 'Empty minutes: %i' % empty_minutes
-      
+    print 'Average servers: %f' % (occupied_minutes / 60 / duration)
+    print 'Average server load: %f' % np.mean(_clean_cpu)
     
     print '## GLOBAL METRIC AGGREGATION ###'
     global_metric_aggregation = {}

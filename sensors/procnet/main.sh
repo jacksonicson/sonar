@@ -23,7 +23,7 @@ function bytesPerSecond()
         
         res_timestamp=$(date +%s)
         res_name='recv'
-        res_hostname = 'none'
+        res_hostname='none'
         res_value=$bps
         line="$sensor,$res_timestamp,$res_name,$res_hostname,$res_value"
         echo $line
@@ -44,7 +44,7 @@ then
         line="$timestamp_now,$received_bytes"
         
         # Write the stuff
-        $(echo $line > /var/sonar/procnet)
+        $(echo $line > /var/sonar/procnet/status)
 fi
 
 
@@ -52,7 +52,7 @@ fi
 readBytes
 
 # Ready old bytes
-value=$(cat /var/sonar/procnet)
+value=$(cat /var/sonar/procnet/status)
 IIS=$IFS
 IFS=","
 tmp=($value)
@@ -64,6 +64,6 @@ value_old=${tmp[1]}
 bytesPerSecond
 
 line="$timestamp_new,$value_new"
-$(echo $line > /var/sonar/procnet)
+$(echo $line > /var/sonar/procnet/status)
 
 
