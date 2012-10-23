@@ -236,8 +236,8 @@ def __fetch_migrations(connection, load_host, timeframe):
             STR_ACTIVE_SERVERS = 'Active Servers: '
             if log.logMessage.startswith(STR_ACTIVE_SERVERS):
                 msg = log.logMessage[len(STR_ACTIVE_SERVERS):]
-                empty = json.loads(msg)
-                active_state = (log.timestamp, empty['count'])
+                active = json.loads(msg)
+                active_state = (log.timestamp, active['count'])
                 server_active.append(active_state)
                 
     return successful, failed, server_active
@@ -354,13 +354,12 @@ def __to_timestamp(date):
 '''
 Dump all elements from a tupel as a CSV row
 '''
-def __dump_elements(elements, title=None):
+def __dump_elements(elements, title=None, separator=', '):
     if title is not None:
         __dump_elements(title)
     
-    result = ['%s,' for _ in xrange(len(elements))]
-    result = ' '.join(result)
-    result = result[0:-1] # remove trailing comma
+    result = ['%s' for _ in xrange(len(elements))]
+    result = separator.join(result)
     print result % elements
 
 
@@ -444,7 +443,198 @@ def __dump_spec(spec, title=True):
         __dump_elements(tuple(data), dump)
     else:
         __dump_elements(tuple(data))
+ 
+def __dump_metrics(global_metrics, rain_metrics, track_metrics, spec_metrics):
+    print '## GLOBAL METRICS ###'
+    first = True
+    for global_metric in global_metrics:
+        # __dump_scorecard(global_metric, first)
+        first = False
+        
+    for metric in rain_metrics:
+        pass
+        # __dump_scorecard(metric, first) 
+        
+    print '## TRACK METRICS ##'
+    first = True
+    for track in track_metrics:
+        # __dump_scoreboard(track, first)
+        first = False
+            
+    print '## SPEC METRICS ##'
+    for spectype in ('DealerMetrics', 'MfgMetrics'):
+        first = True 
+        for spec in spec_metrics:
+            if spec[0]['result'] != spectype: continue
+            # __dump_spec(spec, first)
+            first = False
+            
+ 
+def __processing_generate_profiles(domain_workload_map, cpu):
+    for domain in domain_workload_map.keys():
+        workload = domain_workload_map[domain]
+        workload = workload.replace(profiles.POSTFIX_USER, '')
+        print 'domain: %s workload: %s' % (domain, workload)
+        
+        if TRACE_EXTRACT:
+            # Ensure that this is really the users intention!
+            test = raw_input('Extracting traces will overwrite data in Times (yes/no)? ')
+            if test != 'yes':
+                print 'Cancelled'
+                break
+            
+            # Create profile from CPU load
+            profiles.process(workload, cpu[domain][0], cpu[domain][1], True)
+ 
+def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
+    migration_durations = []
+    for migration in migrations:
+        migration_durations.append(migration['duration'])
+    print 'Average migration time: %f' % np.mean(migration_durations)
     
+    last_state = None
+    
+    occupied_minutes = 0.0
+    empty_minutes = 0.0
+    
+    _clean_cpu = []
+    _clean_mem = []
+    
+    _server_active = []
+    _server_active.append((data_frame[0], server_active_flags[0][1]))
+    _server_active.extend(server_active_flags)
+    _server_active.append((data_frame[1], server_active_flags[-1][1]))
+    
+    for state in _server_active:
+        if last_state == None:
+            last_state = state
+            continue
+        
+        delta_time = float(state[0] - last_state[0])
+        
+        # minutes - timestamps are in seconds
+        # last state server count is used:
+        # |FLAG (last) | ........ |FLAG (iteration current) |
+        # The info from the last flag was active due to the time stamp
+        # of the iteration current flag!
+        active_servers = float(last_state[1])
+        
+        occupied_minutes += (active_servers * delta_time) / 60.0 
+        empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
+        
+        for srv in nodes.NODES: 
+            def extract(tupel):
+                _sub_arr = []
+                for i in xrange(len(tupel[1])):
+                    value = tupel[0][i]
+                    time = tupel[1][i]
+                    
+                    if time >= last_state[0] and time <= state[0]:
+                        _sub_arr.append(value)
+                        
+                return _sub_arr
+            
+            _sub_cpu = extract(cpu[srv])
+            _sub_mem = extract(mem[srv])
+            
+            # if np.mean(_sub_cpu) > 3: 
+            if srv in last_state[2]:
+                _clean_cpu.extend(_sub_cpu)
+                _clean_mem.extend(_sub_mem)
+            
+        
+        last_state = state
+    
+    duration = data_frame[1] - data_frame[0]
+    print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
+    print 'Duration check: %i' % (occupied_minutes + empty_minutes)
+    print 'Occupied minutes: %i' % occupied_minutes
+    print 'Empty minutes: %i' % empty_minutes
+    print 'Average servers: %f' % (occupied_minutes / 60 / duration)
+    
+    print 'Average server load: %f' % np.mean(_clean_cpu)
+    avg_cpu = np.mean(_clean_cpu)
+    avg_mem = np.mean(_clean_mem)
+    
+    return avg_cpu, avg_mem
+    
+    
+ 
+def __analytics_server_utilization(cpu, mem):
+    # This approach does only work for static allocations. For dynamic allocations 
+    # the _cpu and _mem values are updated by the migration analytics!
+    dump = ('node', 'cpu, mem')
+    __dump_elements(dump)
+    
+    _total_cpu = []
+    _total_mem = []
+    for srv in nodes.NODES: 
+        _cpu = np.average(cpu[srv][0])
+        _mem = np.average(mem[srv][0])
+        
+        if _cpu > 3: # do not include offline servers        
+            _total_cpu.extend(cpu[srv][0])
+            _total_mem.extend(mem[srv][0])
+        
+        data = [srv, _cpu, _mem]
+        __dump_elements(tuple(data))
+        
+    _cpu = np.average(_total_cpu) # are updated by migration analytics
+    _mem = np.average(_total_mem) # are updated by migration analytics
+    
+    data = ['total', _cpu, _mem]
+    __dump_elements(tuple(data))
+    
+    return _cpu, _mem
+ 
+def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count, migration_count):
+    global_metric_aggregation = {}
+    
+    # Define the elements to aggregate and the aggregation function
+    # x = a tuple of two values: (aggregated value, temporary value like a counter)
+    # y = the new value which is added to the aggregation
+    agg_desc = {
+                'total_ops_successful' : lambda x, y: (x[0] + y, 0),
+                'max_response_time' : lambda x, y: (max(x[0], y), 0),
+                'average_response_time': lambda x, y: ((x[0] * x[1] + y) / (x[1] + 1), x[1] + 1),
+                'min_response_time' : lambda x, y: (min(x[0], y), 0),
+                'effective_load_ops' : lambda x, y: (x[0] + y, 0),
+                'effective_load_req': lambda x, y: (x[0] + y, 0),
+                'total_operations_failed' : lambda x, y: (x[0] + y, 0),
+                }
+    
+    # Iterate over all global results
+    for global_metric in global_metrics:
+        # For each element in the global result
+        for element in agg_desc.keys():
+            # Get the element value
+            value1 = global_metric[element]
+            
+            # Get the aggregated element value 
+            if global_metric_aggregation.has_key(element) == False: global_metric_aggregation[element] = (0, 0)
+            value0 = global_metric_aggregation[element]
+            
+            # Run aggregation
+            global_metric_aggregation[element] = agg_desc[element](value0, value1)
+
+    # Add other stuff to the global metric
+    global_metric_aggregation['server_count'] = (servers, 0)
+    global_metric_aggregation['cpu_load'] = (avg_cpu, 0)
+    global_metric_aggregation['mem_load'] = (avg_mem, 0)
+    global_metric_aggregation['total_response_time_threshold'] = (sla_fail_count, 0)
+    global_metric_aggregation['migrations_successful'] = (migration_count, 0)
+
+    dump = ('server_count', 'cpu_load', 'mem_load', 'total_ops_successful', 'total_operations_failed', 'average_response_time',
+             'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold',
+             'migrations_successful')
+    data = []
+    for element in dump:
+        try:
+            value = global_metric_aggregation[element][0]
+            data.append(str(value))
+        except: 
+            print 'Error in %s' % element
+    __dump_elements(tuple(data), dump, separator='\t')   
 
 def connect_sonar(connection):
     # Dump the configuration
@@ -453,21 +643,22 @@ def connect_sonar(connection):
     # Configure experiment
     start = __to_timestamp(START)
     stop = __to_timestamp(END)
-    frame = (start, stop)
+    raw_frame = (start, stop)
     
-    # Get sync markers from control 
-    sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, frame)
+    # Get sync markers from control (start of driving load)
+    sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
     print '## SYNC MARKERS ##'
     __dump_elements(sync_markers)
     
+    # Estimate sync markers if no sync markers where found
     if sync_markers[0] is None:
         __warn('Sync marker not found')
-        sync_markers = (frame[0], sync_markers[1], sync_markers[2])
+        sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
     
     #####################################################################################################################################
     ### Reading Allocation ##############################################################################################################
     #####################################################################################################################################
-    allocation_frame = (sync_markers[0], frame[1])
+    allocation_frame = (sync_markers[0], raw_frame[1])
     servers, assignment, migrations, placement, matrix = __fetch_allocation_config(connection, CONTROLLER_NODE, allocation_frame)
     print '## ALLOCATION ##'
     print 'Placement Strategy: %s' % placement
@@ -490,8 +681,9 @@ def connect_sonar(connection):
     # Fetch rain data
     for host in DRIVER_NODES:
         print 'Fetching driver node: %s ...' % host
-        rain_data = __fetch_rain_data(connection, host, frame)
+        rain_data = __fetch_rain_data(connection, host, raw_frame)
         schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
+        
         if schedule is not None: _schedules.append(schedule)
         if track_config is not None: _track_configs.append((track_config, host))
         if global_metrics is not None: _global_metrics.append(global_metrics)
@@ -500,14 +692,21 @@ def connect_sonar(connection):
         if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
         if errors is not None: _errors.extend(errors)
         
+    # Print metrics
+    __dump_metrics(_global_metrics, _rain_metrics, _track_metrics, _spec_metrics)
+        
     print '## ERRORS ##'
     for error in _errors:
         if error == 'Audit failed: Incorrect value for steadyState, should be 3600':
-            print 'expected> ', error
+            # print 'expected> ', error
+            pass
         else:
-            print error
+            if len(error) < 100: print error
+            else: print error[0:100]
         
     print '## SCHEDULE ##'
+    # Each rain driver logs an execution schedule which defines the timestamp to start the
+    # steady state phase and to end it
     schedule_starts = []
     schedule_ends = []
     for schedule in _schedules:
@@ -515,7 +714,7 @@ def connect_sonar(connection):
         schedule_ends.append(schedule[1])
         __dump_elements(schedule)
        
-    # refine data frame
+    # refine data raw_frame with schedules
     print '## REFINED TIME FRAME ##'
     data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
     __dump_elements(data_frame)
@@ -546,49 +745,25 @@ def connect_sonar(connection):
                 if domain_workload_map[host] != workload:
                     print 'WARN: Multiple load profiles on the same target'
                     
-    print 'domain track map: %s' % domain_track_map
-    print 'domain workload map: %s' % domain_workload_map
+    # print 'domain track map: %s' % domain_track_map
+    # print 'domain workload map: %s' % domain_workload_map
 
     print '## RESPONSE TIME THRESHOLD CHECK ###'
-    # Test wise fetch track response time and calculate average
-    fail_count = 0
+    # Fetch track response time and calculate average
+    sla_fail_count = 0
     for key in domain_track_map.keys():
         for track in domain_track_map[key]:
             res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
             # 3 Second response time "User Preferences and Search Engine Latency" by Jake D. et al.  
             cond = res_resp > 3000 
             ext = np.extract(cond, res_resp)
-            fail_count += len(ext)
-    print 'fail count: %i' % fail_count
-                  
-    print '## GLOBAL METRICS ###'
-    first = True
-    for global_metric in _global_metrics:
-        __dump_scorecard(global_metric, first)
-        first = False
-        
-    for metric in _rain_metrics:
-        __dump_scorecard(metric, first) 
-
-        
-    print '## TRACK METRICS ##'
-    first = True
-    for track in _track_metrics:
-        __dump_scoreboard(track, first)
-        first = False
-            
-    print '## SPEC METRICS ##'
-    for spectype in ('DealerMetrics', 'MfgMetrics'):
-        first = True 
-        for spec in _spec_metrics:
-            if spec[0]['result'] != spectype: continue
-            __dump_spec(spec, first)
-            first = False
+            sla_fail_count += len(ext)
+    print 'SLA fail count: %i' % sla_fail_count
     
     #####################################################################################################################################
     ### Reading Migrations ##############################################################################################################
     #####################################################################################################################################
-    migrations_successful, migrations_failed, server_active = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
+    migrations_successful, migrations_failed, server_active_flags = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
     
     print '## MIGRATIONS ##'
     print 'Successful: %i' % len(migrations_successful)
@@ -620,143 +795,28 @@ def connect_sonar(connection):
     print '## GENERATING CPU LOAD PROFILES ##'
     if TRACE_EXTRACT:
         raw_input('Press a key to continue generating profiles:')
-        
-    for domain in domain_workload_map.keys():
-        workload = domain_workload_map[domain]
-        workload = workload.replace(profiles.POSTFIX_USER, '')
-        print 'domain: %s workload: %s' % (domain, workload)
-        
-        if TRACE_EXTRACT:
-            # Ensure that this is really the users intention!
-            test = raw_input('Extracting traces will overwrite data in Times (yes/no)? ')
-            if test != 'yes':
-                print 'Cancelled'
-                break
-            
-            # Create profile from CPU load
-            profiles.process(workload, cpu[domain][0], cpu[domain][1], True)
+        __processing_generate_profiles(domain_workload_map, cpu)
         
     #####################################################################################################################################
     ### Analysis ########################################################################################################################
     #####################################################################################################################################
-    print '## AVG CPU,MEM LOAD ##'
+    # Updates values from the extraction phase
+    #####################################################################################################################################
     
-    dump = ('node', 'cpu, mem')
-    __dump_elements(dump)
-    _total_cpu = []
-    _total_mem = []
-    for srv in nodes.NODES: 
-        _cpu = np.average(cpu[srv][0])
-        _mem = np.average(mem[srv][0])
-        
-        if _cpu > 3:        
-            _total_cpu.extend(cpu[srv][0])
-            _total_mem.extend(mem[srv][0])
-        
-        data = [srv, _cpu, _mem]
-        __dump_elements(tuple(data))
-        
-    _cpu = np.average(_total_cpu)
-    _mem = np.average(_total_mem)
-    data = ['total', _cpu, _mem]
-    __dump_elements(tuple(data))
+    print '## AVG CPU,MEM LOAD ##'
+    # This approach does only work for static allocations. For dynamic allocations 
+    # the _cpu and _mem values are updated by the migration analytics!
+    avg_cpu, avg_mem = __analytics_server_utilization(cpu, mem)
     
     print '## MIGRATIONS ##'
-    migration_durations = []
-    for migration in migrations_successful:
-        migration_durations.append(migration['duration'])
-    print 'Average migration time: %f' % np.mean(migration_durations)
-    
-    last_state = None
-    
-    occupied_minutes = 0.0
-    empty_minutes = 0.0
-    
-    _clean_cpu = []
-    
-    _server_active = []
-    _server_active.append((data_frame[0], server_active[0][1]))
-    _server_active.extend(server_active)
-    _server_active.append((data_frame[1], server_active[-1][1]))
-    for state in _server_active:
-        if last_state == None:
-            last_state = state
-            continue
-        
-        delta_time = float(state[0] - last_state[0])
-        
-        # minutes - timestamps are in seconds
-        active_servers = float(last_state[1])
-        
-        occupied_minutes += (active_servers * delta_time) / 60.0 
-        empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
-        
-        for srv in nodes.NODES: 
-            _sub_cpu = []
-            tupel = cpu[srv]
-            for i in xrange(len(tupel[1])):
-                value = tupel[0][i]
-                time = tupel[1][i]
-                
-                if time >= last_state[0] and time <= state[0]:
-                    _sub_cpu.append(value)
-                    
-            if np.mean(_sub_cpu) > 3:
-                _clean_cpu.extend(_sub_cpu)
-            
-        
-        last_state = state
-    
-    print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
-    print 'Duration check: %i' % (occupied_minutes + empty_minutes)
-    print 'Occupied minutes: %i' % occupied_minutes
-    print 'Empty minutes: %i' % empty_minutes
-    print 'Average servers: %f' % (occupied_minutes / 60 / duration)
-    print 'Average server load: %f' % np.mean(_clean_cpu)
+    if migrations_successful: 
+        avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
+    else:
+        print 'No migrations'
     
     print '## GLOBAL METRIC AGGREGATION ###'
-    global_metric_aggregation = {}
-    
-    # Define the elements to aggregate and the aggregation function
-    # x = a tuple of two values: (aggregated value, temporary value like a counter)
-    # y = the new value which is added to the aggregation
-    agg_desc = {
-                'total_ops_successful' : lambda x, y: (x[0] + y, 0),
-                'max_response_time' : lambda x, y: (max(x[0], y), 0),
-                'average_response_time': lambda x, y: ((x[0] * x[1] + y) / (x[1] + 1), x[1] + 1),
-                'min_response_time' : lambda x, y: (min(x[0], y), 0),
-                'effective_load_ops' : lambda x, y: (x[0] + y, 0),
-                'effective_load_req': lambda x, y: (x[0] + y, 0),
-                'total_operations_failed' : lambda x, y: (x[0] + y, 0),
-                }
-    
-    # Iterate over all global results
-    for global_metric in _global_metrics:
-        # For each element in the global result
-        for element in agg_desc.keys():
-            # Get the element value
-            value1 = global_metric[element]
-            
-            # Get the aggregated element value 
-            if global_metric_aggregation.has_key(element) == False: global_metric_aggregation[element] = (0, 0)
-            value0 = global_metric_aggregation[element]
-            
-            # Run aggregation
-            global_metric_aggregation[element] = agg_desc[element](value0, value1)
-
-    # Add other stuff to the global metric
-    global_metric_aggregation['server_count'] = (servers, 0)
-    global_metric_aggregation['total_response_time_threshold'] = (fail_count, 0)
-
-    dump = ('server_count', 'total_ops_successful', 'total_operations_failed', 'average_response_time', 'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold')
-    data = []
-    for element in dump:
-        try:
-            value = global_metric_aggregation[element][0]
-            data.append(str(value))
-        except: 
-            print 'Error in %s' % element
-    __dump_elements(tuple(data), dump)
+    __analytics_global_aggregation(_global_metrics, servers, avg_cpu, avg_mem,
+                                   sla_fail_count, len(migrations_successful))
     
     
     # Dump all warnings
