@@ -513,6 +513,10 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
         delta_time = float(state[0] - last_state[0])
         
         # minutes - timestamps are in seconds
+        # last state server count is used:
+        # |FLAG (last) | ........ |FLAG (iteration current) |
+        # The info from the last flag was active due to the time stamp
+        # of the iteration current flag!
         active_servers = float(last_state[1])
         
         occupied_minutes += (active_servers * delta_time) / 60.0 
@@ -532,8 +536,9 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
             
             _sub_cpu = extract(cpu[srv])
             _sub_mem = extract(mem[srv])
-                    
-            if np.mean(_sub_cpu) > 3:
+            
+            # if np.mean(_sub_cpu) > 3: 
+            if srv in last_state[2]:
                 _clean_cpu.extend(_sub_cpu)
                 _clean_mem.extend(_sub_mem)
             
