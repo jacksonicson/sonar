@@ -1,7 +1,7 @@
 #!/bin/bash
 
 startup=$1
-interface='eth0'
+interface='bond0'
 
 sensor=$1
 
@@ -32,7 +32,7 @@ function bytesPerSecond()
 # Handle startup
 if ((startup == 1))
 then
-        $(rm /var/sonar/procnet)
+        $(rm /var/sonar/procnet/status)
         
         # read current bytes
         readBytes
