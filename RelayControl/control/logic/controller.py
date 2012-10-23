@@ -65,10 +65,11 @@ def build_initial_model():
     model.dump()
     
     # Update empty counts
-    active_count = model.active_count()
-    print 'Updated active server count: %i' % active_count
-    logger.info('Active Servers: %s' % json.dumps({'count' : active_count,
-                                                 'timestamp' : time.time()}))
+    active_server_info = model.server_active_info()
+    print 'Updated active server count: %i' % active_server_info[0]
+    logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
+                                                   'servers: ' : active_server_info[1],
+                                                   'timestamp' : time.time()}))
     
     #################################################
     # IMPORTANT #####################################

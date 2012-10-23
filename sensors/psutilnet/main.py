@@ -9,6 +9,7 @@ last_bytes_recv = 0
 
 while True:
     iostat = psutil.network_io_counters()
+    
     bytes_sent = iostat.bytes_sent
     if last_bytes_sent == 0:
         last_bytes_sent = bytes_sent
@@ -24,7 +25,7 @@ while True:
     last_bytes_recv = bytes_recv
     last_bytes_sent = bytes_sent
 
-    # To KBit per second
+    # To KByte per second
     delta_bytes_sent = delta_bytes_sent / 1024
     delta_bytes_recv = delta_bytes_recv / 1024
 

@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = False
+start = True
 ######################
 
 # Setup logging
@@ -105,7 +105,7 @@ def trigger_rain_benchmark(ret, client_list):
                               TTwisted.ThriftClientProtocol,
                               RainService.Client,
                               TBinaryProtocol.TBinaryProtocolFactory(),
-                              ).connectTCP(driver, 7852)
+                              ).connectTCP(driver, 7852, timeout=120)
         dlist.append(creator)
         
     d = defer.DeferredList(dlist)                  

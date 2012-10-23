@@ -6,7 +6,7 @@ import base
 hosts = []
 index = 0
 for i in xrange(0, 18):
-    hosts.append('target%i.dfg' % i)
+    hosts.append('target%i' % i)
 
 
 def finished(done, client_list):
