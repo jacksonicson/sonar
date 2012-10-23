@@ -26,6 +26,16 @@ class Sandpiper(logic.LoadBalancer):
         super(Sandpiper, self).__init__(model, production, INTERVAL)
         
         
+    def dump(self):
+        logger.info('Controller: Sandpiper')
+        logger.info('START_WAIT = %i' % START_WAIT)
+        logger.info('INTERVAL = %i' % INTERVAL)
+        logger.info('THRESHOLD_OVERLOAD = %i' % THRESHOLD_OVERLOAD)
+        logger.info('THRESHOLD_UNDERLOAD = %i' % THRESHOLD_UNDERLOAD)
+        logger.info('_PERCENTILE = %i' % PERCENTILE)
+        logger.info('K_VALUE = %i' % K_VALUE)
+        logger.info('M_VALUE = %i' % M_VALUE)
+    
     def forecast(self, data):
         import statsmodels.api as sm
         import statsmodels as sm2

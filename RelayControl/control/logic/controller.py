@@ -121,6 +121,7 @@ def main():
     
     # Start load balancer thread which detects hot-spots and triggers migrations
     balancer = sandpiper.Sandpiper(model, config.PRODUCTION)
+    balancer.dump()
     balancer.start()
     
     # Dump configuration
