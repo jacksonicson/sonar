@@ -73,7 +73,7 @@ class LoadBalancer(Thread):
         active_server_info =  self.model.server_active_info()
         print 'Updated active server count: %i' % active_server_info[0]
         logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
-                                                       'servers: ' : active_server_info[1],
+                                                       'servers' : active_server_info[1],
                                                        'timestamp' : time.time()}))
         
         
