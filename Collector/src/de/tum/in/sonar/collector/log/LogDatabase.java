@@ -131,6 +131,7 @@ public class LogDatabase {
 
 			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
 			Scan scan = new Scan();
+			scan.setCaching(100);
 
 			// set the range
 			
