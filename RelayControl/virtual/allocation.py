@@ -45,6 +45,7 @@ class MigrationThread(Thread):
         self.node_to = node_to
         self.callback = callback
         self.info = info
+        self.exited = False
     
     def run(self):
         self.start = time.time()
@@ -73,6 +74,8 @@ class MigrationThread(Thread):
             
             util.close(connection_from)
             util.close(connection_to)
+            
+            self.exited = True
                 
 
 def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=20000):
@@ -81,7 +84,7 @@ def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=2
     thread.start()
     
     # Set the max downtime after migration has started
-    while True:
+    while thread.exited == False:
         time.sleep(1)
         
         try:
