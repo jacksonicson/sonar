@@ -26,7 +26,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '22/10/2012 23:40:51    23/10/2012 06:15:51'
+RAW = '24/10/2012 15:40:00    24/10/2012 22:20:00'
 
 START = ''
 END = ''
@@ -237,7 +237,7 @@ def __fetch_migrations(connection, load_host, timeframe):
             if log.logMessage.startswith(STR_ACTIVE_SERVERS):
                 msg = log.logMessage[len(STR_ACTIVE_SERVERS):]
                 active = json.loads(msg)
-                active_state = (log.timestamp, active['count'])
+                active_state = (log.timestamp, active['count'], active['servers'])
                 server_active.append(active_state)
                 
     return successful, failed, server_active
@@ -501,9 +501,9 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     _clean_mem = []
     
     _server_active = []
-    _server_active.append((data_frame[0], server_active_flags[0][1]))
+    _server_active.append((data_frame[0], server_active_flags[0][1], server_active_flags[0][2]))
     _server_active.extend(server_active_flags)
-    _server_active.append((data_frame[1], server_active_flags[-1][1]))
+    _server_active.append((data_frame[1], server_active_flags[-1][1], server_active_flags[-1][2]))
     
     for state in _server_active:
         if last_state == None:
@@ -545,7 +545,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
         
         last_state = state
     
-    duration = data_frame[1] - data_frame[0]
+    duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
     print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
     print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
@@ -555,8 +555,9 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     print 'Average server load: %f' % np.mean(_clean_cpu)
     avg_cpu = np.mean(_clean_cpu)
     avg_mem = np.mean(_clean_mem)
+    avg_servers = occupied_minutes / 60 / duration
     
-    return avg_cpu, avg_mem
+    return avg_servers, avg_cpu, avg_mem
     
     
  
@@ -700,6 +701,9 @@ def connect_sonar(connection):
         if error == 'Audit failed: Incorrect value for steadyState, should be 3600':
             # print 'expected> ', error
             pass
+        elif error.find('Oops: Uncaught exception caused thread:') != -1:
+            print 'critical> ', error
+            __warn(error)
         else:
             if len(error) < 100: print error
             else: print error[0:100]
@@ -810,7 +814,7 @@ def connect_sonar(connection):
     
     print '## MIGRATIONS ##'
     if migrations_successful: 
-        avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
+        servers, avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
     else:
         print 'No migrations'
     
