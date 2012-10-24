@@ -20,7 +20,7 @@ def main(migrate=True):
     
     print 'Updated active server count: %i' % active_server_info[0]
     logger.info('Initial Active Servers: %s' % json.dumps({'count' : active_server_info[0],
-                                                           'servers: ' : active_server_info[1],
+                                                           'servers' : active_server_info[1],
                                                            'timestamp' : time.time()}))
     
     # Migrate
