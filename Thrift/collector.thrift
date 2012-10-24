@@ -134,6 +134,8 @@ service ManagementService {
 	SensorConfiguration getSensorConfiguration(1: string sensor),
 	
 	set<string> getSensorNames(),
+    
+    void updateSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration, 3:set<string> labels),
 	
 	
 	// Host Section
