@@ -102,7 +102,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:md5 - MD5 value of the binary
 	// :sensor:[name]:config:[item] - configuration for the sensor
 	// :sensor:[name]:config:interval ->intervalValue - interval for which the sensor has to be invoked
-	// :sensor:[name]:config:extends -> otherSensorName - inheritence for sensor configuration
+	// :sensor:[name]:config:extends -> otherSensorName - inheritance for sensor configuration
 	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries 
 	// :sensor:[name]:labels -> [] - set of labels
 	//
@@ -110,7 +110,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :host:[hostname]:extends -> other hostname - reference another host
 	// :host:[hostname]:sensor:[sensorname] - enables or disables a sensor
 	// :host:[hostname]:sensor:[sensorname]/config:[item] - overrides a sensor
-	// configuration
 
 	private String key(String... args) {
 		StringBuilder builder = new StringBuilder();
