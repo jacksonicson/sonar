@@ -299,6 +299,8 @@ class LogsQuery:
    - stopTime
    - sensor
    - hostname
+   - logStartRange
+   - logEndRange
   """
 
   thrift_spec = (
@@ -307,13 +309,21 @@ class LogsQuery:
     (2, TType.I64, 'stopTime', None, None, ), # 2
     (3, TType.STRING, 'sensor', None, None, ), # 3
     (4, TType.STRING, 'hostname', None, None, ), # 4
+    (5, TType.I32, 'logStartRange', None, -1, ), # 5
+    (6, TType.I32, 'logEndRange', None, -1, ), # 6
   )
 
-  def __init__(self, startTime=None, stopTime=None, sensor=None, hostname=None,):
+  def __init__(self, startTime=None, stopTime=None, sensor=None, hostname=None, logStartRange=thrift_spec[5][4], logEndRange=thrift_spec[6][4],):
     self.startTime = startTime
     self.stopTime = stopTime
     self.sensor = sensor
     self.hostname = hostname
+    if logStartRange is self.thrift_spec[5][4]:
+      logStartRange = -1
+    self.logStartRange = logStartRange
+    if logEndRange is self.thrift_spec[6][4]:
+      logEndRange = -1
+    self.logEndRange = logEndRange
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -344,6 +354,16 @@ class LogsQuery:
           self.hostname = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I32:
+          self.logStartRange = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I32:
+          self.logEndRange = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -369,6 +389,14 @@ class LogsQuery:
     if self.hostname is not None:
       oprot.writeFieldBegin('hostname', TType.STRING, 4)
       oprot.writeString(self.hostname)
+      oprot.writeFieldEnd()
+    if self.logStartRange is not None:
+      oprot.writeFieldBegin('logStartRange', TType.I32, 5)
+      oprot.writeI32(self.logStartRange)
+      oprot.writeFieldEnd()
+    if self.logEndRange is not None:
+      oprot.writeFieldBegin('logEndRange', TType.I32, 6)
+      oprot.writeI32(self.logEndRange)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
