@@ -283,6 +283,93 @@ function addSensorHandler(req, resp) {
     })
 }
 
+function sensorUpdateHandler(req, resp){
+    console.log("updating the sensor " + req.method);
+
+    var body = "";
+
+    req.on('data', function (data) {
+        console.log("data: " + data);
+        body += data;
+    });
+
+    req.on('end', function () {
+        console.log("end: " + body);
+        body = qs.parse(body);
+        var labels = body.sensorLabels.split(",");
+        var connection = thrift.createConnection(SERVER_HOST, 7932);
+        var client = thrift.createClient(managementService, connection);
+
+        console.log("sensor name: " + body.sensorName);
+        // decompose the sensor configuration parameters and set it
+        var sensorInterval = body.sensorInterval;
+        var sensorType = body.sensorType;
+        var paramKeys = body.sensorParamKey;
+        var paramValues = body.sensorParamValue;
+        var sensorExtends = body.sensorExtends;
+        var parameters = new Array();
+        var config = false;
+
+        // check if sensor configuration is specified
+        // if not change it to default 0
+        if(null != sensorInterval){
+            config = true;
+        } else {
+            sensorInterval = 0;
+        }
+        
+        var enumSensorType = null;
+        if(null == sensorType){
+            enumSensorType =  0;
+        } else if(sensorType == '0'){
+            enumSensorType = 0;
+        } else if(sensorType == '1'){
+            enumSensorType = 1;
+        }
+
+        console.log("Sensor type value: " + enumSensorType);
+        
+        console.log("Sensor Extends: " + sensorExtends);
+        if(null == sensorExtends || sensorExtends == "-1"){
+            sensorExtends = null;
+        }
+
+        // prepare the parameter array
+        if(null != paramKeys){
+            config = true;
+            if(paramKeys instanceof Array){
+                for(var index = 0; index < paramKeys.length ; index++){
+                    var parameter = new types.Parameter({
+                        key: paramKeys[index],
+                        value: paramValues[index]
+                    });
+                    parameters.push(parameter);
+                }
+            } else {
+                var parameter = new types.Parameter({
+                    key: paramKeys,
+                    value: paramValues
+                });
+                parameters.push(parameter);
+            }
+        }
+
+        if(config == true){
+            // prepare the sensor configuration object
+            var sensorConfiguration = new types.SensorConfiguration({
+                interval : sensorInterval,
+                parameters : parameters,
+                sensorType: enumSensorType,
+                sensorExtends: sensorExtends
+            });
+
+            client.updateSensorConfiguration(body.sensorName, sensorConfiguration, labels, function (err, ret) {
+                resp.end("ok");
+            });
+        }
+    })
+}
+
 function hostsAutocompleteHandler(req, resp)
 {
     var connection = thrift.createConnection(SERVER_HOST, 7932);
@@ -724,6 +811,7 @@ var urls = new router.UrlNode('ROOT', {handler:experimental.mongoTestHandler}, [
     new router.UrlNode('SENSORADD', {url:'addsensor', handler:addSensorHandler}, []),
     new router.UrlNode('SENSORDEL', {url:'delsensor', handler:delSensorHandler}, []),
     new router.UrlNode('SENSORCONF', {url:'sensorConfig', handler:sensorConfigHandler}, []),
+    new router.UrlNode('SENSOR_UPDATE', {url:'sensorUpdate', handler:sensorUpdateHandler}, []),
     new router.UrlNode('HOSTS', {url:'hosts', handler:hostsHandler}, []),
     new router.UrlNode('HOSTS_ACMPL', {url:'hostsacmpl', handler:hostsAutocompleteHandler}, []),
     new router.UrlNode('ADDHOST', {url:'addhost', handler:addHostHandler}, []),
