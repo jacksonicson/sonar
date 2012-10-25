@@ -26,16 +26,14 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '24/10/2012 22:50:00    25/10/2012 05:30:00'
-
-START = ''
-END = ''
+RAW = '25/10/2012 10:55:00    25/10/2012 17:30:00'
 ##########################
 
 warns = []
 
-
 # If RAW exists use this one
+START = ''
+END = ''
 if RAW is not None:
     START, END = RAW.split('    ')
 
