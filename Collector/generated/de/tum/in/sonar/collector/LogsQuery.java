@@ -34,6 +34,8 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
   private static final org.apache.thrift.protocol.TField STOP_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("stopTime", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField SENSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("sensor", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField LOG_START_RANGE_FIELD_DESC = new org.apache.thrift.protocol.TField("logStartRange", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField LOG_END_RANGE_FIELD_DESC = new org.apache.thrift.protocol.TField("logEndRange", org.apache.thrift.protocol.TType.I32, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,13 +47,17 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
   public long stopTime; // required
   public String sensor; // required
   public String hostname; // required
+  public int logStartRange; // required
+  public int logEndRange; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     START_TIME((short)1, "startTime"),
     STOP_TIME((short)2, "stopTime"),
     SENSOR((short)3, "sensor"),
-    HOSTNAME((short)4, "hostname");
+    HOSTNAME((short)4, "hostname"),
+    LOG_START_RANGE((short)5, "logStartRange"),
+    LOG_END_RANGE((short)6, "logEndRange");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,6 +80,10 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
           return SENSOR;
         case 4: // HOSTNAME
           return HOSTNAME;
+        case 5: // LOG_START_RANGE
+          return LOG_START_RANGE;
+        case 6: // LOG_END_RANGE
+          return LOG_END_RANGE;
         default:
           return null;
       }
@@ -116,7 +126,9 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
   // isset id assignments
   private static final int __STARTTIME_ISSET_ID = 0;
   private static final int __STOPTIME_ISSET_ID = 1;
-  private BitSet __isset_bit_vector = new BitSet(2);
+  private static final int __LOGSTARTRANGE_ISSET_ID = 2;
+  private static final int __LOGENDRANGE_ISSET_ID = 3;
+  private BitSet __isset_bit_vector = new BitSet(4);
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,18 +140,28 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.HOSTNAME, new org.apache.thrift.meta_data.FieldMetaData("hostname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.LOG_START_RANGE, new org.apache.thrift.meta_data.FieldMetaData("logStartRange", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32        , "int")));
+    tmpMap.put(_Fields.LOG_END_RANGE, new org.apache.thrift.meta_data.FieldMetaData("logEndRange", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32        , "int")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LogsQuery.class, metaDataMap);
   }
 
   public LogsQuery() {
+    this.logStartRange = -1;
+
+    this.logEndRange = -1;
+
   }
 
   public LogsQuery(
     long startTime,
     long stopTime,
     String sensor,
-    String hostname)
+    String hostname,
+    int logStartRange,
+    int logEndRange)
   {
     this();
     this.startTime = startTime;
@@ -148,6 +170,10 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
     setStopTimeIsSet(true);
     this.sensor = sensor;
     this.hostname = hostname;
+    this.logStartRange = logStartRange;
+    setLogStartRangeIsSet(true);
+    this.logEndRange = logEndRange;
+    setLogEndRangeIsSet(true);
   }
 
   /**
@@ -164,6 +190,8 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
     if (other.isSetHostname()) {
       this.hostname = other.hostname;
     }
+    this.logStartRange = other.logStartRange;
+    this.logEndRange = other.logEndRange;
   }
 
   public LogsQuery deepCopy() {
@@ -178,6 +206,10 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
     this.stopTime = 0;
     this.sensor = null;
     this.hostname = null;
+    this.logStartRange = -1;
+
+    this.logEndRange = -1;
+
   }
 
   public long getStartTime() {
@@ -274,6 +306,52 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
     }
   }
 
+  public int getLogStartRange() {
+    return this.logStartRange;
+  }
+
+  public LogsQuery setLogStartRange(int logStartRange) {
+    this.logStartRange = logStartRange;
+    setLogStartRangeIsSet(true);
+    return this;
+  }
+
+  public void unsetLogStartRange() {
+    __isset_bit_vector.clear(__LOGSTARTRANGE_ISSET_ID);
+  }
+
+  /** Returns true if field logStartRange is set (has been assigned a value) and false otherwise */
+  public boolean isSetLogStartRange() {
+    return __isset_bit_vector.get(__LOGSTARTRANGE_ISSET_ID);
+  }
+
+  public void setLogStartRangeIsSet(boolean value) {
+    __isset_bit_vector.set(__LOGSTARTRANGE_ISSET_ID, value);
+  }
+
+  public int getLogEndRange() {
+    return this.logEndRange;
+  }
+
+  public LogsQuery setLogEndRange(int logEndRange) {
+    this.logEndRange = logEndRange;
+    setLogEndRangeIsSet(true);
+    return this;
+  }
+
+  public void unsetLogEndRange() {
+    __isset_bit_vector.clear(__LOGENDRANGE_ISSET_ID);
+  }
+
+  /** Returns true if field logEndRange is set (has been assigned a value) and false otherwise */
+  public boolean isSetLogEndRange() {
+    return __isset_bit_vector.get(__LOGENDRANGE_ISSET_ID);
+  }
+
+  public void setLogEndRangeIsSet(boolean value) {
+    __isset_bit_vector.set(__LOGENDRANGE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case START_TIME:
@@ -308,6 +386,22 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
       }
       break;
 
+    case LOG_START_RANGE:
+      if (value == null) {
+        unsetLogStartRange();
+      } else {
+        setLogStartRange((Integer)value);
+      }
+      break;
+
+    case LOG_END_RANGE:
+      if (value == null) {
+        unsetLogEndRange();
+      } else {
+        setLogEndRange((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -324,6 +418,12 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
 
     case HOSTNAME:
       return getHostname();
+
+    case LOG_START_RANGE:
+      return Integer.valueOf(getLogStartRange());
+
+    case LOG_END_RANGE:
+      return Integer.valueOf(getLogEndRange());
 
     }
     throw new IllegalStateException();
@@ -344,6 +444,10 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
       return isSetSensor();
     case HOSTNAME:
       return isSetHostname();
+    case LOG_START_RANGE:
+      return isSetLogStartRange();
+    case LOG_END_RANGE:
+      return isSetLogEndRange();
     }
     throw new IllegalStateException();
   }
@@ -394,6 +498,24 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
       if (!(this_present_hostname && that_present_hostname))
         return false;
       if (!this.hostname.equals(that.hostname))
+        return false;
+    }
+
+    boolean this_present_logStartRange = true;
+    boolean that_present_logStartRange = true;
+    if (this_present_logStartRange || that_present_logStartRange) {
+      if (!(this_present_logStartRange && that_present_logStartRange))
+        return false;
+      if (this.logStartRange != that.logStartRange)
+        return false;
+    }
+
+    boolean this_present_logEndRange = true;
+    boolean that_present_logEndRange = true;
+    if (this_present_logEndRange || that_present_logEndRange) {
+      if (!(this_present_logEndRange && that_present_logEndRange))
+        return false;
+      if (this.logEndRange != that.logEndRange)
         return false;
     }
 
@@ -453,6 +575,26 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetLogStartRange()).compareTo(typedOther.isSetLogStartRange());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLogStartRange()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.logStartRange, typedOther.logStartRange);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetLogEndRange()).compareTo(typedOther.isSetLogEndRange());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLogEndRange()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.logEndRange, typedOther.logEndRange);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -495,6 +637,14 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
     } else {
       sb.append(this.hostname);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("logStartRange:");
+    sb.append(this.logStartRange);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("logEndRange:");
+    sb.append(this.logEndRange);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -572,6 +722,22 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // LOG_START_RANGE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.logStartRange = iprot.readI32();
+              struct.setLogStartRangeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // LOG_END_RANGE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.logEndRange = iprot.readI32();
+              struct.setLogEndRangeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -603,6 +769,12 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
         oprot.writeString(struct.hostname);
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(LOG_START_RANGE_FIELD_DESC);
+      oprot.writeI32(struct.logStartRange);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(LOG_END_RANGE_FIELD_DESC);
+      oprot.writeI32(struct.logEndRange);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -633,7 +805,13 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
       if (struct.isSetHostname()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetLogStartRange()) {
+        optionals.set(4);
+      }
+      if (struct.isSetLogEndRange()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetStartTime()) {
         oprot.writeI64(struct.startTime);
       }
@@ -646,12 +824,18 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
       if (struct.isSetHostname()) {
         oprot.writeString(struct.hostname);
       }
+      if (struct.isSetLogStartRange()) {
+        oprot.writeI32(struct.logStartRange);
+      }
+      if (struct.isSetLogEndRange()) {
+        oprot.writeI32(struct.logEndRange);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LogsQuery struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.startTime = iprot.readI64();
         struct.setStartTimeIsSet(true);
@@ -667,6 +851,14 @@ public class LogsQuery implements org.apache.thrift.TBase<LogsQuery, LogsQuery._
       if (incoming.get(3)) {
         struct.hostname = iprot.readString();
         struct.setHostnameIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.logStartRange = iprot.readI32();
+        struct.setLogStartRangeIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.logEndRange = iprot.readI32();
+        struct.setLogEndRangeIsSet(true);
       }
     }
   }
