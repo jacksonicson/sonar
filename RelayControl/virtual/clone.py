@@ -108,6 +108,26 @@ def setup(vm):
     creator.addErrback(error, vm)
     
 
+def id_mac(domain_id):
+    '''
+    Is used to give target0 always the same MAC for each clone process. 
+    If random MACs are used the DNS server registers multiply mappings and cannot
+    resolve the names properly. 
+    '''
+    
+    base = '52:54:00'
+    # generate 3 0xNN blocks
+    for i in xrange(3):
+        rand = domain_id
+        value = hex(rand)[2:]
+        if len(value) == 1:
+            value = '0' + value
+        base += ':' + value
+
+    print 'By ID generated MAC: %s' % base    
+    return base
+
+
 def rand_mac():
     import random
     base = '52:54:00'
@@ -119,7 +139,7 @@ def rand_mac():
             value = '0' + value
         base += ':' + value
 
-    print 'Generated MAC: %s' % base    
+    print 'Randomly generated MAC: %s' % base    
     return base
 
 # Distribute images across all pools, pool_index gives the pool where the next
@@ -127,7 +147,7 @@ def rand_mac():
 pool_index = long(time.time()) % len(STORAGE_POOLS)
 print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
-def clone(connections, source, target):
+def clone(connections, source, target, domain_id):
     # Connection for srv0
     conn = connections[SETUP_SERVER]
     
@@ -210,7 +230,7 @@ def clone(connections, source, target):
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
     source.set('file', '/mnt/' + dst_pool + '/' + target + '.qcow')
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
-    mac.attrib['address'] = rand_mac()
+    mac.attrib['address'] = id_mac(domain_id)
     xml_domain_desc = etree.tostring(xml_tree)
     # print xml_domain_desc # print final domain description
     
@@ -244,9 +264,9 @@ def next_vm():
     
     job = clone_names[count]
     print 'Launching clone %s -> %s' % job
-    count += 1
+    clone(connections, job[0], job[1], count)
     
-    clone(connections, job[0], job[1])
+    count += 1
     setup(job[1])
 
 
