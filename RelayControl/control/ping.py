@@ -41,9 +41,8 @@ def connect_next():
     
     host = hosts[index]
     dlist = base.connect((host,))
-    wait = defer.DeferredList(dlist)
-    wait.addCallback(connected, host)
-    wait.addErrback(errback, host)
+    dlist[0].addCallback(connected, host)
+    dlist[0].addErrback(errback, host)
 
     
 def main():
