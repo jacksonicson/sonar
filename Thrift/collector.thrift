@@ -25,7 +25,9 @@ struct LogsQuery {
 	1:long startTime,
 	2:long stopTime,
 	3:string sensor,
-	4:string hostname, 
+	4:string hostname,
+    5:int logStartRange = -1,
+    6:int logEndRange = -1     
 }
 
 struct File {
@@ -134,6 +136,8 @@ service ManagementService {
 	SensorConfiguration getSensorConfiguration(1: string sensor),
 	
 	set<string> getSensorNames(),
+    
+    void updateSensorConfiguration(1:string sensor, 2:SensorConfiguration configuration, 3:set<string> labels),
 	
 	
 	// Host Section

@@ -102,7 +102,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:md5 - MD5 value of the binary
 	// :sensor:[name]:config:[item] - configuration for the sensor
 	// :sensor:[name]:config:interval ->intervalValue - interval for which the sensor has to be invoked
-	// :sensor:[name]:config:extends -> otherSensorName - inheritence for sensor configuration
+	// :sensor:[name]:config:extends -> otherSensorName - inheritance for sensor configuration
 	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries 
 	// :sensor:[name]:labels -> [] - set of labels
 	//
@@ -110,8 +110,6 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :host:[hostname]:extends -> other hostname - reference another host
 	// :host:[hostname]:sensor:[sensorname] - enables or disables a sensor
 	// :host:[hostname]:sensor:[sensorname]/config:[item] - overrides a sensor
-	// configuration
-	// TODO: add inheritence to the documentation
 
 	private String key(String... args) {
 		StringBuilder builder = new StringBuilder();
@@ -303,7 +301,8 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			String key = key("host", hostname, "extends");
 
 			// TODO: This has to be null instead of '-1'
-			// If extends host is not selected -1 is passed and the reference is removed
+			// If extends host is not selected -1 is passed and the reference is
+			// removed
 			if (virtualHostName.equalsIgnoreCase("-1"))
 				jedis.del(key);
 			else
@@ -695,5 +694,43 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			logger.error("Error while getting the list of configured sensors", e);
 		}
 		return result;
+	}
+
+	@Override
+	public void updateSensorConfiguration(String sensor, SensorConfiguration configuration, Set<String> labels)
+			throws TException {
+		Set<String> allSensors = getAllSensors();
+		if (allSensors.contains(sensor)) {
+			logger.debug("Updating sensor configuration for : " + sensor);
+			// clear the labels and add again
+			clearSensorLabels(sensor);
+			setSensorLabels(sensor, labels);
+
+			// clear the sensor parameters and add the configuration again
+			clearSensorParameters(sensor);
+			setSensorConfiguration(sensor, configuration);
+		
+		} else {
+			logger.error("The sensor " + sensor + " does not exist");
+		}
+
+	}
+
+	private void clearSensorParameters(String sensorName) {
+		Jedis jedis = jedisPool.getResource();
+		String query = key("sensor", sensorName, "config", "properties");
+		Set<String> keys = jedis.keys(query + ":*");
+		for (String key : keys) {
+			logger.debug("removing property: " + key);
+			jedis.del(key);
+		}
+		jedis.save();
+	}
+
+	private void clearSensorLabels(String sensorName) {
+		Jedis jedis = jedisPool.getResource();
+		String query = key("sensor", sensorName, "labels");
+		jedis.del(query);
+		jedis.save();
 	}
 }

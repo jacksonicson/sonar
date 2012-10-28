@@ -118,6 +118,7 @@ function newSensor(event){
 
     clearFormElements($('#newSensorForm'));
     populateExtendSensorList(null, null);
+    $('#newSensorFlag').val('true');
 }
 
 function clearFormElements(ele) {
@@ -136,16 +137,20 @@ function clearFormElements(ele) {
                 this.checked = false;
         }
     });
-
 }
 
-function saveSensor(){
+function saveSensor(flag){
     var test = $("#newSensorForm").serialize();
     console.log("FORM: " + test);
+    
+    var ajaxURL = '{{ROOT_SENSORADD}}';
+    if(flag == false){
+        ajaxURL = '{{ROOT_SENSOR_UPDATE}}';
+    }
 
     $.ajax({
         type:"POST",
-        url:'{{ROOT_SENSORADD}}',
+        url:ajaxURL,
         dataType:'text',
         data:test,
 
@@ -164,7 +169,13 @@ function saveSensor(){
 
 function submitSensor(event) {
     var test = $("#sensorName").val();
-    deleteSensorActual(test, saveSensor);
+    // check if edit sensor was called or new sensor was called
+    var flag = $('#newSensorFlag').val();
+    var newSensorFlag = true;
+    if(flag == 'false') {
+        newSensorFlag = false;
+    }
+    saveSensor(newSensorFlag);
 }
 
 function deleteHost(event) {
@@ -613,12 +624,14 @@ function editSensorExtend(event){
     var sensorName = editSensor.substring(4, editSensor.length);
     
     clearFormElements($('#newSensorForm'));
+    $('#newSensorFlag').val('false');
     editSenrorIntern(event, sensorName, true);
 }
 
 function editSensor(event, extendFlag){
 	var editSensor = event.target.id;
     clearFormElements($('#newSensorForm'));
+    $('#newSensorFlag').val('false');
     editSenrorIntern(event, editSensor, false);
 }
 
