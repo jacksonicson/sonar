@@ -83,7 +83,7 @@ class FirstFitPlacement(Placement):
             
         # Logging
         logger.info('Placement strategy: First Fit')
-        
+        logger.info('Required servers: %i' % len(nodes.HOSTS))
         
         # Connect with Times
         print 'Connecting with Times'

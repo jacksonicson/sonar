@@ -26,7 +26,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '25/10/2012 10:55:00    25/10/2012 17:30:00'
+RAW = '26/10/2012 09:40:00    26/10/2012 16:30:00'
 ##########################
 
 warns = []
@@ -146,7 +146,12 @@ def __fetch_allocation_config(sonar, host, frame):
         if log.logMessage.startswith(CONFIG):
             msg = log.logMessage[len(CONFIG):]
             matrix = msg
-            
+        
+        CONFIG = 'Initial Active Servers: '
+        if log.logMessage.startswith(CONFIG):
+            msg = log.logMessage[len(CONFIG):]
+            msg = json.loads(msg)
+            servers = msg['count']
             
     return servers, assignment, migrations, placement, matrix
     
@@ -248,6 +253,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     # Configuration
     schedule = None
     track_config = None
+    stopped = False
     
     # Metrics
     global_metrics = None
@@ -317,10 +323,19 @@ def __fetch_rain_data(connection, load_host, timeframe):
             msg = log.logMessage[len(STR_MFG_METRICS):]
             data = json.loads(msg)
             spec_metrics.append(data) 
+        
+        # Read MFG metrics
+        STOP = 'Rain stopped'
+        if log.logMessage.startswith(STOP):
+            msg = log.logMessage[len(STOP):]
+            stopped = True
            
         # Extract errors
         if log.logLevel == 40000:
             errors.append(log.logMessage)   
+        
+    if stopped == False:
+        __warn('Missing "Rain Stopped" message')
         
     return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors 
 
