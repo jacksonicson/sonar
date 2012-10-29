@@ -4,7 +4,10 @@ from service import times_client
 def main(name):
     print 'Downloading...'
     connection = times_client.connect()
+    
     timeSeries = connection.load(name)
+    print 'done'
+    
     times_client.close()
     print 'complete'
     

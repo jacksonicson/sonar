@@ -25,7 +25,7 @@ class Iface:
     """
     pass
 
-  def DRIVER_NODES(self, name):
+  def load(self, name):
     """
     Parameters:
      - name
@@ -93,7 +93,7 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "find failed: unknown result");
 
-  def DRIVER_NODES(self, name):
+  def load(self, name):
     """
     Parameters:
      - name
@@ -102,7 +102,7 @@ class Client(Iface):
     return self.recv_load()
 
   def send_load(self, name):
-    self._oprot.writeMessageBegin('DRIVER_NODES', TMessageType.CALL, self._seqid)
+    self._oprot.writeMessageBegin('load', TMessageType.CALL, self._seqid)
     args = load_args()
     args.name = name
     args.write(self._oprot)
@@ -121,7 +121,7 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "DRIVER_NODES failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "load failed: unknown result");
 
   def remove(self, name):
     """
@@ -217,7 +217,7 @@ class Processor(Iface, TProcessor):
     self._handler = handler
     self._processMap = {}
     self._processMap["find"] = Processor.process_find
-    self._processMap["DRIVER_NODES"] = Processor.process_load
+    self._processMap["load"] = Processor.process_load
     self._processMap["remove"] = Processor.process_remove
     self._processMap["create"] = Processor.process_create
     self._processMap["append"] = Processor.process_append
@@ -254,7 +254,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = load_result()
     result.success = self._handler.load(args.name)
-    oprot.writeMessageBegin("DRIVER_NODES", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("load", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()

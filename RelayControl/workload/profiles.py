@@ -11,23 +11,24 @@ import sampleday
 import util
 
 '''
-Prefix and postfixes used to store data in Times
+Prefix and post-fixes used to store data in Times
 '''
-POSTFIX_RAW = '_profile' # raw profile e.g. from SIS or O2
-POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum
+POSTIFX_ORIG = '' # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
+POSTFIX_RAW = '_profile' # profile generated from the raw data of the SIS or O2 data set 
+POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
 POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. number of users
 POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
-POSTFIX_DAY = '_sampleday' # A sample day TS
+POSTFIX_DAY = '_sampleday' # A sample day of the time series
 
 '''
 Experiment specific settings
 '''
-EXPERIMENT_DURATION = 6 * 60 * 60 # 6 hours
 MIX_SELECTED_CYCLE_TIME = 24 * 60 * 60 # 24 hours cycle
-PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60) # For each 5 minutes there is one data point in the profile
+PROFILE_WIDTH = MIX_SELECTED_CYCLE_TIME / (5 * 60) # For each 5 minutes there is one data point in a workload profile
+EXPERIMENT_DURATION = 6 * 60 * 60 # 6 hours steady-state duration of the experiment
 MAX_USERS = 200 # Maximum number of users
-RAMP_UP = 10 * 60
-RAMP_DOWN = 10 * 60
+RAMP_UP = 10 * 60 # Ramp up duration of the experiment
+RAMP_DOWN = 10 * 60 # Ramp down duration of the experiment
 
 '''
 Describes a single TS which is used to generate a profile
@@ -394,6 +395,17 @@ def _build_sample_day(mix, save):
         
     times_client.close()
  
+def _build_modified():
+    connection = times_client.connect()
+    
+    import modifier
+    results = connection.find('.*%s' % POSTFIX_NORM)
+    for result in results:
+        print result
+        modifier.process_trace(connection, result)
+        break
+    
+    times_client.close()
   
 def _build_all_profiles():
     connection = times_client.connect()
@@ -495,7 +507,8 @@ def dump(logger):
 if __name__ == '__main__':
     # _build(selected, save=True)
     # _build_all_profiles()
-    _plot()
+    _build_modified()
+    # _plot()
 
 
 
