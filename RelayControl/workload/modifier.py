@@ -53,16 +53,21 @@ def generate_TS(modification, length, interval_length):
             
     
     print result
+    return result
     
 
 def add_modifier(time, demand):
     modification0 = [
                  Element(0, 50, 100, 20),
                  Element(100, 50, 100, 25),
-                 Element(160, 50, 80),
+                 Element(160, 100, 80,50),
                  ]
     
-    generate_TS(modification0, 100, 5)
+    modification = generate_TS(modification0, len(demand), 5)
+    demand += modification
+    print demand
+    return demand
+    
     # print demand
 
 def process_trace(connection, name):

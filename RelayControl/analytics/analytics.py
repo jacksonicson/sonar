@@ -26,6 +26,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
+# RAW = '08/10/2012 09:35:46    08/10/2012 16:20:46'
 RAW = '26/10/2012 09:40:00    26/10/2012 16:30:00'
 ##########################
 
@@ -552,6 +553,10 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
             
             # if np.mean(_sub_cpu) > 3: 
             if srv in last_state[2]:
+                # Checked calculation by sighting TS data - seems to work 
+                #from datetime import datetime
+                #f = lambda i: datetime.fromtimestamp(i).strftime('%H:%M:%S') 
+                #print 'SRV %s FRAME: %s - %s' % (srv, f(last_state[0]), f(state[0]))  
                 _clean_cpu.extend(_sub_cpu)
                 _clean_mem.extend(_sub_mem)
             
@@ -583,18 +588,18 @@ def __analytics_server_utilization(cpu, mem):
     _total_cpu = []
     _total_mem = []
     for srv in nodes.NODES: 
-        _cpu = np.average(cpu[srv][0])
-        _mem = np.average(mem[srv][0])
+        _cpu = np.mean(cpu[srv][0])
+        _mem = np.mean(mem[srv][0])
         
-        if _cpu > 3: # do not include offline servers        
+        if _cpu > 3: # do not include offline servers
             _total_cpu.extend(cpu[srv][0])
             _total_mem.extend(mem[srv][0])
         
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
         
-    _cpu = np.average(_total_cpu) # are updated by migration analytics
-    _mem = np.average(_total_mem) # are updated by migration analytics
+    _cpu = np.mean(_total_cpu) # are updated by migration analytics
+    _mem = np.mean(_total_mem) # are updated by migration analytics
     
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
