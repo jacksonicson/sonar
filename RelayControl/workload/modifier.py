@@ -1,5 +1,6 @@
-import util
+import math
 import numpy as np
+import util
 
 class Element(object):
     def __init__(self, start, width, height, top_width=None):
@@ -26,49 +27,31 @@ class Element(object):
 def generate_TS(demand, modification, length, interval_length):
     result = np.zeros((length,))
     
-    import math
     for element in modification:
         i = lambda t: int(t / interval_length)
-        if element.top_width < element.width:  
-            i_start = i(element.start)
-            
-            m = (2 * element.height) / (element.width - element.top_width)
-            f = lambda t: m * t
-            
-            if m > 0:
-                i_end_slope = int(math.ceil(element.height / (m * interval_length)))
-            else:
-                i_end_slope = i_start
-                
-            i_end_top = i_end_slope + i(element.top_width)  
-            
-            result[i_start + i_end_slope : i_start + i_end_top] = element.height
-            for i in xrange(i_end_slope):
-                height_i = f(i * interval_length)
-                result[i_start + i] = height_i
-                print 'as %i' % i
-                
-                height_i = -1 *  f(i * interval_length) + element.height
-                result[i_start + i_end_top + i] = height_i
-                print 'b %i' % i
-        else:
-            i_start = i(element.start)
-            i_end = i(element.start + element.width)
-            result[i_start : i_end] = element.height
-            
+        i_start = i(element.start)
+        i_end = i(element.start + element.width)
+        result[i_start : i_end] = element.height
+
+    # Smoothing
+    window = 5
+    weights = np.repeat(1.0, window) / window
+    result = np.convolve(result, weights)[0:-1 * window + 1 ]
+    
+    # Divide for multiplication
     result /= 100.0
+    
+    # Apply result to the demand curve by multiplication
     demand += demand * result    
     
-#    print 'Modified'
-#    print demand
     
 
 def add_modifier(time, demand, interval):
     modification0 = [
                  Element(150, 200, 20),
                  Element(400, 100, -50),
-                 Element(500, 50, -30),
-                 Element(550, 50, +30),
+                 Element(500, 50, +30),
+                 #Element(550, 50, +30),
                  ]
     
     generate_TS(demand, modification0, len(demand), interval)
