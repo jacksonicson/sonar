@@ -21,6 +21,37 @@ class BlackBoard:
         except:
             pass
 
+# Parallel Node
+class ParallelNode(__Node):
+    def __init__(self, blackboard):
+        self.children = []
+        self.deferreds = []
+
+    def execute(self):
+        if len(self.children) == 0:
+            print "Nodes should have at least one action"
+            return None
+
+        self.d = defer.Deferred()
+        print "Execute in Parallel"
+        for child in self.children:
+            d = child.execute()
+            self.deferreds.append(d)
+
+        defList = defer.DeferredList(self.deferreds, consumeErrors=0)
+        defList.addCallback(self.parallelCallback)
+        return d
+
+    def parallelCallback(self, result):
+        print "Callback in result"
+        for ignore, data in result:
+            print data
+        self.d.callback(result)
+        
+    def addChild(self, child):
+        self.children.append(child)
+        return self
+        
 # Sequence
 class Sequence(__Node):
     def __init__(self, blackboard):
@@ -108,7 +139,7 @@ class Action(__Node):
     def action(self):
         d = defer.Deferred()
         print "Executing Action"
-        reactor.callLater(4, d.callback, False)
+        reactor.callLater(4, d.callback, True)
         return d
 
 class Action2(Action):
@@ -133,10 +164,11 @@ def stop(data):
     reactor.stop()
 
 b = BlackBoard()
-s = Sequence(b).addChild(Action3(b)).addChild(Action3(b))
-s2 = Selector(b).addChild(Action(b)).addChild(Action2(b)).addChild(s)
+#s = Sequence(b).addChild(Action3(b)).addChild(Action3(b))
+#s2 = Selector(b).addChild(Action(b)).addChild(Action2(b)).addChild(s)
 #s2 = Selector(b).addChild(Action(b)).addChild(Action(b)).addChild(s)
-d = s2.execute()     
+s = ParallelNode(b).addChild(Action(b)).addChild(Action2(b))
+d = s.execute()     
 d.addCallback(stop)
 
 reactor.run()
