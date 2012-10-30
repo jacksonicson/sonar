@@ -10,8 +10,25 @@ import util
 from timeutil import * #@UnusedWildImport
 
 '''
-Times file organization: 
-TODO
+Times file organization:
+There are still files with names that do not match the syntax below. These files are
+not used by any system and are marked as deprecated!
+ 
+[SIS_$NUMBER_mem] - SIS TS for memory
+[SIS_$NUMBER_CPU] - SIS TS for CPU
+
+[O2_business_$TYPE] - O2 Business TS with given type
+[O2_retail_$TYPE] - O2 Retail TS with given type
+
+[TS] = SIS or O2 TS name
+[TS]_profile
+[TS]_profile_norm
+[TS]_profile_user
+[TS]_sampleday
+
+[TS]_profile_trace
+[TS][_profile_norm]_modified
+[TS][_profile_user]_modified
 '''
 
 '''
@@ -617,15 +634,29 @@ def dump_user_profile_maxes():
     
     times_client.close()
     
+def dump_times():
+    '''
+    Dump all data stored in Times
+    '''
+    
+    connection = times_client.connect()
+    
+    for name in connection.find('.*'):
+        print name
+    
+    times_client.close()
+    
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
     # __build_modified_profiles(selected, True)
     # dump_user_profile_maxes()
     
-    __build_all_profiles_for_mix(mix_0, False)
-    __build_all_profiles_for_mix(mix_1, False)
-    __build_all_profiles_for_mix(mix_2, False)
+#    __build_all_profiles_for_mix(mix_0, False)
+#    __build_all_profiles_for_mix(mix_1, False)
+#    __build_all_profiles_for_mix(mix_2, False)
+
+    dump_times()
 
 
 

@@ -498,7 +498,7 @@ def __processing_generate_profiles(domain_workload_map, cpu):
                 break
             
             # Create profile from CPU load
-            profiles.process(workload, cpu[domain][0], cpu[domain][1], True)
+            profiles.process_sonar_trace(workload, cpu[domain][0], cpu[domain][1], True)
  
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
     migration_durations = []
