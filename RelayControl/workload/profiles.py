@@ -375,52 +375,42 @@ def __build_sample_day(mix, save):
     times_client.close()
  
  
-def __build_modified(save=True):
-    
+def __build_modified_profiles(mix, save):
     connection = times_client.connect()
-    results = connection.find('.*%s$' % POSTFIX_NORM)
-    for result in results:
-        ts = connection.load(result)
-        print '%s - %i' % (result, ts.frequency)
-    times_client.close()
-    return
     
-    import modifier
-    connection = times_client.connect()
-    results = connection.find('.*%s$' % POSTFIX_NORM)
-    times_client.close()
-    for result in results:
-        # Validate that a normalized profile is used
-        if result.find(POSTFIX_NORM) == -1:
-            print 'Skipping %s, no normalized profile' % result
-            continue
+    for mi_element in mix:
+        ts_name = mi_element.name + POSTFIX_NORM
+
+        util.plot(util.to_array(connection.load(ts_name))[1], 'a', 100)
         
-        connection = times_client.connect()
-        print 'Processing %s' % result
-        modified_profile, frequency = modifier.process_trace(connection, result)
-        times_client.close()
         
-        connection = times_client.connect()
+        # Modify normal profile        
+        import modifier
+        modified_profile, interval = modifier.process_trace(connection, ts_name)
+        
+        util.plot(modified_profile, 'b', 100)
+        
         if save:
-            name = result + POSTFIX_MODIFIED
+            name = ts_name + POSTFIX_MODIFIED
             print 'Writing profile: %s' % name
-            __write_profile(connection, name, modified_profile, frequency)
-#            print modified_profile
+            # __write_profile(connection, name, modified_profile, frequency)
             
         # Store USER profiles (-> feed into Rain)
         # Adapt frequency for the benchmark duration
         # Add padding for ramp up and ramp down
         modified_profile /= 100.0
         modified_profile *= MAX_USERS
-        frequency = frequency / (CYCLE_TIME / EXPERIMENT_DURATION)
+        interval = interval/ (CYCLE_TIME / EXPERIMENT_DURATION)
         user_profile = np.array(modified_profile)
-        # user_profile, frequency = __padprofile((user_profile, frequency))
+        user_profile = __padprofile(user_profile, interval)
         if save:
-            name = result.replace(POSTFIX_NORM, POSTFIX_USER) + POSTFIX_MODIFIED
+            name = ts_name.replace(POSTFIX_NORM, POSTFIX_USER) + POSTFIX_MODIFIED
             print 'Writing profile: %s' % name 
-            __write_profile(connection, name, user_profile, frequency)
-#            print user_profile
-        times_client.close()
+            # __write_profile(connection, name, user_profile, interval)
+            
+        break
+
+    times_client.close()
 
 
 def __build_profiles(mix, save):
@@ -589,7 +579,7 @@ def dump(logger):
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    __build_modified()
+    __build_modified_profiles(selected, True)
 
 
 

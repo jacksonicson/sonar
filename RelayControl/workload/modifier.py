@@ -63,16 +63,21 @@ def generate_TS(demand, modification, length, interval_length):
 #    print demand
     
 
-def add_modifier(time, demand):
+def add_modifier(time, demand, interval):
     modification0 = [
-                 Element(0, 50, 12),
+                 Element(150, 200, 20),
+                 Element(400, 100, -50),
+                 Element(500, 50, -30),
+                 Element(550, 50, +30),
                  ]
     
-    generate_TS(demand, modification0, len(demand), 5)
+    generate_TS(demand, modification0, len(demand), interval)
     
     return demand
 
-def process_trace(connection, name):
+def process_trace(connection, name, interval=None, cycle_time=None):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
-    return add_modifier(time, demand), timeSeries.frequency
+    interval = timeSeries.frequency / 60
+    print interval
+    return add_modifier(time, demand, interval), timeSeries.frequency

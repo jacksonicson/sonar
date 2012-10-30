@@ -49,4 +49,4 @@ def plot(ts, filename=None, threshold=1):
         try:
             plt.savefig('C:/temp/convolution/' + filename)
         except:
-            pass 
+            pass
