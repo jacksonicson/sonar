@@ -346,89 +346,12 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     profile *= MAX_USERS
     interval = interval / (CYCLE_TIME / EXPERIMENT_DURATION)
     user_profile = np.array(profile)
-    user_profile, interval = __padprofile((user_profile, interval))
+    user_profile = __padprofile(user_profile, interval)
     if save:
         __write_profile(connection, desc.name + POSTFIX_USER, user_profile, interval)
     
     # Plotting    
     util.plot(user_profile, desc.name + '.png', MAX_USERS)
-
-
-def __build_profiles(mix, save):
-    '''
-    Build the profiles for all TS in mix. 
-    
-    Keyword arguments:
-    mix -- set of TS to generate a profile
-    save -- save profiles to Times 
-    '''
-    
-    # Times connection
-    connection = times_client.connect()
-
-    # Calculate profiles
-    profiles = []
-    for desc in mix:
-        print 'processing: %s' % (desc.name)
-        profile = convolution.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME)
-        profiles.append(profile)
-        
-    # Get maximum for each set in mix
-    set_max = __get_set_max(mix, profiles)
-
-    # Store profiles
-    for i in xrange(len(mix)):
-        desc = mix[i]
-        profile, frequency = profiles[i]
-        __store_profile(connection, desc, set_max, profile, frequency, save)
-        
-    # Close Times connection
-    times_client.close()
-
-
-def __get_set_max(mix, profiles):
-    '''
-    Goes over all sets. For each set the maximum value over all TS is determined. This
-    value is stored in a map with the set-id as key. 
-    '''
-    
-    # Holds set maximums
-    set_max = {}
-    
-    # Get maximum for each set (key is set_id)
-    for i in xrange(len(mix)):
-        desc = mix[i]
-        profile_ts = profiles[i][0]
-        pset = desc.profile_set
-        
-        if set_max.has_key(pset.id) == False:
-            set_max[pset.id] = 0
-            
-        max_value = np.max(profile_ts)
-        set_max[pset.id] = max(max_value, set_max[pset.id])
-        if pset.cap is not None:
-            set_max[pset.id] = min(pset.cap, set_max[pset.id])
-            
-    return set_max
-
-
-def __padprofile(profile):
-    elements = RAMP_UP / profile[1]
-    print 'padding ramp up: %i' % (elements)
-    
-    ramup_pad = np.zeros(elements, np.float)
-    mean = np.mean(profile[0])
-    ramup_pad[range(elements)] = mean
-    
-    elements = RAMP_DOWN / profile[1]
-    print 'padding ramp down: %i' % (elements)
-    rampdown_pad = np.zeros(elements, np.float)
-    
-    curve = np.concatenate((ramup_pad, profile[0], rampdown_pad))
-    profile = (curve, profile[1])
-    
-    # print profile
-    return profile 
 
 
 def __build_sample_day(mix, save):
@@ -501,6 +424,87 @@ def __build_modified(save=True):
         times_client.close()
 
 
+def __build_profiles(mix, save):
+    '''
+    Build the profiles for all TS in mix. 
+    
+    Keyword arguments:
+    mix -- set of TS to generate a profile
+    save -- save profiles to Times 
+    '''
+    
+    # Times connection
+    connection = times_client.connect()
+
+    # Calculate profiles
+    profiles = []
+    for desc in mix:
+        print 'processing: %s' % (desc.name)
+        profile = convolution.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME)
+        profiles.append(profile)
+        
+    # Get maximum for each set in mix
+    set_max = __get_set_max(mix, profiles)
+
+    # Store profiles
+    for i in xrange(len(mix)):
+        desc = mix[i]
+        profile, frequency = profiles[i]
+        __store_profile(connection, desc, set_max, profile, frequency, save)
+        
+    # Close Times connection
+    times_client.close()
+
+
+def __get_set_max(mix, profiles):
+    '''
+    Goes over all sets. For each set the maximum value over all TS is determined. This
+    value is stored in a map with the set-id as key. 
+    '''
+    
+    # Holds set maximums
+    set_max = {}
+    
+    # Get maximum for each set (key is set_id)
+    for i in xrange(len(mix)):
+        desc = mix[i]
+        profile_ts = profiles[i][0]
+        pset = desc.profile_set
+        
+        if set_max.has_key(pset.id) == False:
+            set_max[pset.id] = 0
+            
+        max_value = np.max(profile_ts)
+        set_max[pset.id] = max(max_value, set_max[pset.id])
+        if pset.cap is not None:
+            set_max[pset.id] = min(pset.cap, set_max[pset.id])
+            
+    return set_max
+
+
+def __padprofile(profile_ts, interval):
+    '''
+    Each benchmark runs a ramp-up and a ramp-down phase. The profile used by Rain needs
+    to be extended so that it contains data to cover the ramp-up and ramp-down phases. 
+    '''
+    
+    # Number of elements for ramp-up 
+    elements = RAMP_UP / interval
+    print 'padding ramp up: %i' % (elements)
+    
+    ramup_pad = np.zeros(elements, np.float)
+    mean = np.mean(profile_ts)
+    ramup_pad[range(elements)] = mean
+    
+    # Number of elements for ramp-down
+    elements = RAMP_DOWN / interval
+    print 'padding ramp down: %i' % (elements)
+    rampdown_pad = np.zeros(elements, np.float)
+    
+    # Add padding to the original user profile for Rain
+    curve = np.concatenate((ramup_pad, profile_ts, rampdown_pad))
+    return curve 
+
 def __build_all_profiles_for_mix(mix, save):
     # TS for sample day and profile processing
     sample_day = []
@@ -554,7 +558,7 @@ def __plot_complete_mix():
     
     plot_mix = mix_2
     cols = 5
-    rows = len(plot_mix) / cols +1 
+    rows = len(plot_mix) / cols + 1 
     index = 0
     print rows
     
@@ -568,7 +572,7 @@ def __plot_complete_mix():
         _, demand = util.to_array(timeSeries)
         
         index += 1
-        ax = fig.add_subplot(rows,cols, index)
+        ax = fig.add_subplot(rows, cols, index)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
         ax.plot(range(0, len(demand)), demand)
@@ -585,8 +589,6 @@ def dump(logger):
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    # __build_all_profiles_for_mix(selected, save=True)
-    # __plot_complete_mix()
     __build_modified()
 
 
