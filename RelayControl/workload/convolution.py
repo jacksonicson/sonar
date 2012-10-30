@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import util
-
+from timeutil import * #@UnusedWildImport
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -13,7 +13,7 @@ def average_bucket(floor_array):
 
 
 def to_weekday(value):
-    day = long(long(value) / (24 * 60 * 60)) % 7
+    day = long(long(value) / hour(24)) % 7
     return day
 
  
@@ -23,7 +23,7 @@ def to_positive(value):
     return value
 
  
-def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, plot=False):
+def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24), plot=False):
     tv = np.vectorize(to_weekday)
     time = tv(time)
     indices = np.where(time < 5)
@@ -45,7 +45,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     signal = np.reshape(signal, (-1, elements_per_cycle))
     
     # Get Buckets
-    bucket_time = 1 * 60 * 60
+    bucket_time = hour(1)
     bucket_count = cycle_time / bucket_time
     elements_per_bucket = elements_per_cycle / bucket_count
     
@@ -89,7 +89,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=24 * 60 *
     variance_array_2 = np.ravel(variance_array)
     
     # Increase signal resolution
-    target_bucket_count = cycle_time / (5 * 60)
+    target_bucket_count = cycle_time / minu(5)
     resolution_factor = target_bucket_count / bucket_count
     noise_profile = np.ravel(np.array(zip(*[raw_profile for _ in xrange(resolution_factor)])))
     

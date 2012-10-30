@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import util
+from timeutil import * #@UnusedWildImport
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -10,7 +11,7 @@ def average_bucket(floor_array):
     return np.mean(floor_array)
 
 def to_weekday(value):
-    day = long(long(value) / (24 * 60 * 60)) % 7
+    day = long(long(value) / hour(24)) % 7
     return day
  
 def to_positive(value):
@@ -18,7 +19,7 @@ def to_positive(value):
         value = 0
     return value
  
-def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, day=8, plot=False):
+def sample_day(name, time, signal, sampling_frequency, cycle_time=hour(24), day=8, plot=False):
     # Remove Weekends/Sundays
     tv = np.vectorize(to_weekday)
     time = tv(time)
@@ -45,7 +46,7 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
     day_signal = signal[day]
     
     # Get Buckets
-    bucket_count = cycle_time / (5 * 60)
+    bucket_count = cycle_time / minu(5)
     assert bucket_count == np.shape(day_signal)[0]
 
     smooth_profile = simple_moving_average(day_signal, 7)

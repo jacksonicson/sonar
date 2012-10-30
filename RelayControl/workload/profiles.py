@@ -7,6 +7,7 @@ from times import ttypes
 import matplotlib.pyplot as plt
 import numpy as np
 import util
+from timeutil import * #@UnusedWildImport
 
 '''
 Times file organization: 
@@ -29,13 +30,14 @@ POSTFIX_MODIFIED = '_modified' # A modified trace
 Experiment specific settings
 Everything is in SECONDS
 '''
-CYCLE_TIME = 24 * 60 * 60 # 24 hours cycle
-PROFILE_WIDTH = CYCLE_TIME / (5 * 60) # For each 5 minutes there is one data point in a workload profile
-EXPERIMENT_DURATION = 6 * 60 * 60 # 6 hours steady-state duration of the experiment
-MAX_USERS = 200 # Maximum number of users
-RAMP_UP = 10 * 60 # Ramp up duration of the experiment
-RAMP_DOWN = 10 * 60 # Ramp down duration of the experiment
+CYCLE_TIME = hour(24) # 24 hours cycle
+PROFILE_INTERVAL_COUNT = CYCLE_TIME / minu(5) # For each 5 minutes there is one data point in a workload profile
 
+EXPERIMENT_DURATION = hour(6) # 6 hours steady-state duration of the experiment
+RAMP_UP = minu(10) # Ramp up duration of the experiment
+RAMP_DOWN = minu(10) # Ramp down duration of the experiment
+
+MAX_USERS = user(200) # Maximum number of users
 '''
 Describes a single TS which is used to generate a profile
 '''
@@ -57,14 +59,14 @@ class ProfileSet:
 
 
 # List of profile sets
-SET_O2_BUSINESS = ProfileSet(0, 60 * 60, None)
-SET_O2_RETAIL = ProfileSet(1, 60 * 60, None)
-SET_SIS = ProfileSet(2, 5 * 60, 3000)
+SET_O2_BUSINESS = ProfileSet(0, hour(1), None)
+SET_O2_RETAIL = ProfileSet(1, hour(1), None)
+SET_SIS = ProfileSet(2, minu(5), 3000)
 
 # List of profile days
-SET_SIS_D3 = ProfileSet(3, 5 * 60, 3000, day=3)
-SET_SIS_D8 = ProfileSet(3, 5 * 60, 3000, day=8)
-SET_SIS_D9 = ProfileSet(3, 5 * 60, 3000, day=9)
+SET_SIS_D3 = ProfileSet(3, minu(5), 3000, day=3)
+SET_SIS_D8 = ProfileSet(3, minu(5), 3000, day=8)
+SET_SIS_D9 = ProfileSet(3, minu(5), 3000, day=9)
 
 # List of appropriate TS data
 mix_selected = [
@@ -267,10 +269,11 @@ selected_name = 'mix_2'
 selected = mix_2
 ##############################
 
-
-def byindex(index):
+def by_index(index):
+    '''
+    Get TS description by index
+    '''
     return selected[index]
-
 
 def __write_profile(connection, name, profile_ts, interval):
     '''
@@ -514,14 +517,14 @@ def __build_all_profiles_for_mix(mix, save):
 
 def process_sonar_trace(name, trace_ts, timestamps, save=False):
     # Number of readings to aggregate to downsample the
-    # trace to width PROFILE_WIDTH
-    readings_to_aggregate = len(trace_ts) / PROFILE_WIDTH
+    # trace to width PROFILE_INTERVAL_COUNT
+    readings_to_aggregate = len(trace_ts) / PROFILE_INTERVAL_COUNT
     
     # Create a new array to hold the profile
-    profile = np.zeros(PROFILE_WIDTH, dtype=float)
+    profile = np.zeros(PROFILE_INTERVAL_COUNT, dtype=float)
     
     # Downsample the trace to the profile array
-    for i in xrange(PROFILE_WIDTH):
+    for i in xrange(PROFILE_INTERVAL_COUNT):
         start = readings_to_aggregate * i
         end = min(readings_to_aggregate * (i + 1), len(trace_ts))
         
@@ -529,7 +532,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
         profile[i] = np.mean(trace_ts[start:end])
         
     # Calculate interval
-    interval = EXPERIMENT_DURATION / PROFILE_WIDTH
+    interval = EXPERIMENT_DURATION / PROFILE_INTERVAL_COUNT
         
     # Save the profile
     if save:

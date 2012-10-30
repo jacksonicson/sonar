@@ -1,6 +1,6 @@
-import math
 import numpy as np
 import util
+from timeutil import * #@UnusedWildImport
 
 class Element(object):
     def __init__(self, start, width, height, top_width=None):
@@ -34,7 +34,7 @@ def generate_TS(demand, modification, length, interval_length):
         result[i_start : i_end] = element.height
 
     # Smoothing
-    window = 5
+    window = 20
     weights = np.repeat(1.0, window) / window
     result = np.convolve(result, weights)[0:-1 * window + 1 ]
     
@@ -48,10 +48,7 @@ def generate_TS(demand, modification, length, interval_length):
 
 def add_modifier(time, demand, interval):
     modification0 = [
-                 Element(150, 200, 20),
-                 Element(400, 100, -50),
-                 Element(500, 50, +30),
-                 #Element(550, 50, +30),
+                 Element(minu(250), minu(200), 100)
                  ]
     
     generate_TS(demand, modification0, len(demand), interval)
@@ -61,6 +58,5 @@ def add_modifier(time, demand, interval):
 def process_trace(connection, name, interval=None, cycle_time=None):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
-    interval = timeSeries.frequency / 60
-    print interval
+    interval = timeSeries.frequency
     return add_modifier(time, demand, interval), timeSeries.frequency
