@@ -23,8 +23,10 @@ class Element(object):
         self.top_width = top_width
 
 
-def generate_TS(modification, length, interval_length):
+def generate_TS(demand, modification, length, interval_length):
     result = np.zeros((length,))
+    result += 100
+    
     import math
     for element in modification:
         i = lambda t: int(t / interval_length)
@@ -34,7 +36,11 @@ def generate_TS(modification, length, interval_length):
             m = (2 * element.height) / (element.width - element.top_width)
             f = lambda t: m * t
             
-            i_end_slope = int(math.ceil(element.height / (m * interval_length)))
+            if m > 0:
+                i_end_slope = int(math.ceil(element.height / (m * interval_length)))
+            else:
+                i_end_slope = i_start
+                
             i_end_top = i_end_slope + i(element.top_width)  
             
             result[i_start + i_end_slope : i_start + i_end_top] = element.height
@@ -51,26 +57,24 @@ def generate_TS(modification, length, interval_length):
             i_end = i(element.start + element.width)
             result[i_start : i_end] = element.height
             
+    result /= 100.0
+    demand += demand * result    
     
-    print result
-    return result
+    print demand
     
 
 def add_modifier(time, demand):
     modification0 = [
-                 Element(0, 50, 100, 20),
-                 Element(100, 50, 100, 25),
-                 Element(160, 100, 80,50),
+                 Element(0, 50, 12),
                  ]
     
-    modification = generate_TS(modification0, len(demand), 5)
-    demand += modification
     print demand
-    return demand
+    print (len(demand) * 5) / 60 # this one has 24 hours
+    generate_TS(demand, modification0, len(demand), 5)
     
-    # print demand
+    return demand
 
 def process_trace(connection, name):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
-    add_modifier(time, demand)
+    return add_modifier(time, demand)
