@@ -11,6 +11,11 @@ import sampleday
 import util
 
 '''
+Times file organization: 
+TODO
+'''
+
+'''
 Prefix and post-fixes used to store data in Times
 '''
 POSTIFX_ORIG = '' # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
@@ -19,6 +24,7 @@ POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum, see
 POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. number of users
 POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
 POSTFIX_DAY = '_sampleday' # A sample day of the time series
+POSTFIX_MODIFIED = '_modified' # A modified trace
 
 '''
 Experiment specific settings
@@ -54,9 +60,10 @@ class ProfileSet:
 SET_O2_BUSINESS = ProfileSet(0, 60 * 60, None)
 SET_O2_RETAIL = ProfileSet(1, 60 * 60, None)
 SET_SIS = ProfileSet(2, 5 * 60, 3000)
-SET_SIS_D3 = ProfileSet(3, 5 * 60, 3000, 3)
-SET_SIS_D8 = ProfileSet(3, 5 * 60, 3000, 8)
-SET_SIS_D9 = ProfileSet(3, 5 * 60, 3000, 9)
+
+SET_SIS_D3 = ProfileSet(3, 5 * 60, 3000, day=3)
+SET_SIS_D8 = ProfileSet(3, 5 * 60, 3000, day=8)
+SET_SIS_D9 = ProfileSet(3, 5 * 60, 3000, day=9)
 
 mix_selected = [
             Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
@@ -259,6 +266,11 @@ def byindex(index):
     return selected[index]
 
 def __write_profile(connection, name, profile_ts, frequency):
+    # Check if the profile exists
+    if len(connection.find(name)) > 0:
+        print 'Removing existing data file'
+        connection.remove(name)
+        
     print 'storing profile with name %s' % (name)
     connection.create(name, frequency)
     
@@ -291,7 +303,7 @@ def __store_profile(connection, desc, set_max, profile, frequency, save=False):
     # Store RAW profiles (-> plots)
     raw_profile = np.array(profile)
     if save:
-        __write_profile(connection, desc.name + POSTFIX_RAW, profile, frequency)
+        __write_profile(connection, desc.name + POSTFIX_RAW, raw_profile, frequency)
     
     # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
     maxval = float(set_max[pset.id])
@@ -395,14 +407,39 @@ def _build_sample_day(mix, save):
         
     times_client.close()
  
-def _build_modified():
+def _build_modified(save=True):
     connection = times_client.connect()
     
     import modifier
     results = connection.find('.*%s' % POSTFIX_NORM)
     for result in results:
-        print result
-        modifier.process_trace(connection, result)
+        # Validate that a normalized profile is used
+        if result.find(POSTFIX_NORM) == -1:
+            print 'Skipping %s, no normalized profile' % result
+            continue
+        
+        modified_profile, frequency = modifier.process_trace(connection, result)
+        
+        if save:
+            name = result + POSTFIX_MODIFIED
+            print 'Writing profile: %s' % name
+            __write_profile(connection, name, modified_profile, frequency)
+#            print modified_profile
+            
+        # Store USER profiles (-> feed into Rain)
+        # Adapt frequency for the benchmark duration
+        # Add padding for ramp up and ramp down
+        modified_profile /= 100.0
+        modified_profile *= MAX_USERS
+        frequency = frequency / (MIX_SELECTED_CYCLE_TIME / EXPERIMENT_DURATION)
+        user_profile = np.array(modified_profile)
+        # user_profile, frequency = _padprofile((user_profile, frequency))
+        if save:
+            name = result.replace(POSTFIX_NORM, POSTFIX_USER) + POSTFIX_MODIFIED
+            print 'Writing profile: %s' % name 
+            __write_profile(connection, name, user_profile, frequency)
+#            print user_profile
+
         break
     
     times_client.close()

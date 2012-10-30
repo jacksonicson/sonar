@@ -8,7 +8,6 @@ import StringIO
 
 ################################
 ## Configuration              ##
-# DATA_DIR = 'C:/temp/times'
 DATA_DIR = '/mnt/arr0/times'
 PORT = 7855
 ################################
@@ -72,7 +71,7 @@ class TimeSeries(object):
     def __filename(self, name):
         return name + '.times'
     
-    def __delete(self, name):
+    def _delete(self, name):
         del_file = os.path.join(DATA_DIR, self.__filename(name))
         if os.path.exists(del_file) and os.path.isfile(del_file):
             os.remove(del_file)
@@ -113,7 +112,7 @@ class TimeSeries(object):
 
 class TimesHandler(TimeSeries):
     
-    def demand(self, name):
+    def load(self, name):
         ts = super(TimesHandler, self)._loadFile(name)
         return ts
         
@@ -125,7 +124,7 @@ class TimesHandler(TimeSeries):
         
     def find(self, pattern):
         return super(TimesHandler, self)._find(pattern)
-    
+        
     def remove(self, name):
         return super(TimesHandler, self)._delete(name)
     
@@ -137,7 +136,7 @@ def main():
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
     
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
     
     print 'Times listening...'
     server.serve()

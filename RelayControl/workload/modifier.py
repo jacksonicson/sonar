@@ -25,7 +25,6 @@ class Element(object):
 
 def generate_TS(demand, modification, length, interval_length):
     result = np.zeros((length,))
-    result += 100
     
     import math
     for element in modification:
@@ -60,7 +59,8 @@ def generate_TS(demand, modification, length, interval_length):
     result /= 100.0
     demand += demand * result    
     
-    print demand
+#    print 'Modified'
+#    print demand
     
 
 def add_modifier(time, demand):
@@ -68,8 +68,6 @@ def add_modifier(time, demand):
                  Element(0, 50, 12),
                  ]
     
-    print demand
-    print (len(demand) * 5) / 60 # this one has 24 hours
     generate_TS(demand, modification0, len(demand), 5)
     
     return demand
@@ -77,4 +75,4 @@ def add_modifier(time, demand):
 def process_trace(connection, name):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
-    return add_modifier(time, demand)
+    return add_modifier(time, demand), timeSeries.frequency
