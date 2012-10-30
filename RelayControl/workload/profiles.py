@@ -38,6 +38,20 @@ RAMP_UP = minu(10) # Ramp up duration of the experiment
 RAMP_DOWN = minu(10) # Ramp down duration of the experiment
 
 MAX_USERS = user(200) # Maximum number of users
+
+'''
+Generate TS compatible to paper version. COMPATIBLE_AFTER function can be used
+to mark code segments to be compatible starting with a version. 
+Example.
+
+if COMPATIBLE_AFTER(C): - code is compatible with versions after C (exclusive)
+if INCOMPATIBLE_AFTER(C): - code is not compatible with versions after C (still compatible with C)
+'''
+PAPER_DSS = 0 
+COMPATIBILITY_MODE = PAPER_DSS
+COMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE > C
+INCOMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE <= C
+
 '''
 Describes a single TS which is used to generate a profile
 '''
@@ -348,6 +362,10 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     interval = interval / (CYCLE_TIME / EXPERIMENT_DURATION)
     user_profile = np.array(profile)
     user_profile = __padprofile(user_profile, interval)
+    
+    if np.max(user_profile) > MAX_USERS:
+        print '%s > max users - %i' % (desc.name + POSTFIX_USER, np.max(user_profile))
+        
     if save:
         __write_profile(connection, desc.name + POSTFIX_USER, user_profile, interval)
     
@@ -359,20 +377,18 @@ def __build_sample_day(mix, save):
     connection = times_client.connect()
 
     # Calculate profiles
-    profiles = []
     for desc in mix:
         print 'processing sample day %s' % (desc.name)
         import sampleday
         profile = sampleday.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME, desc.profile_set.day)
-        profiles.append(profile)
+        desc.profile = profile
         
     # Max value in each set of TS
-    set_max = __get_set_max(mix, profiles)
+    set_max = __get_and_apply_set_max(mix)
 
     # Store profiles
-    for i in xrange(len(mix)):
-        desc = mix[i]
-        profile, frequency = profiles[i]
+    for desc in mix:
+        profile, frequency = desc.profile
         __store_profile(connection, desc, set_max, profile, frequency, save)
         
     times_client.close()
@@ -429,27 +445,27 @@ def __build_profiles(mix, save):
     connection = times_client.connect()
 
     # Calculate profiles
-    profiles = []
     for desc in mix:
         print 'processing convolution: %s' % (desc.name)
         import convolution
         profile = convolution.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME)
-        profiles.append(profile)
+        
+        # Add profile to mix
+        desc.profile = profile
         
     # Get maximum for each set in mix
-    set_max = __get_set_max(mix, profiles)
+    set_max = __get_and_apply_set_max(mix)
 
     # Store profiles
-    for i in xrange(len(mix)):
-        desc = mix[i]
-        profile, frequency = profiles[i]
+    for desc in mix:
+        profile, frequency = desc.profile
         __store_profile(connection, desc, set_max, profile, frequency, save)
         
     # Close Times connection
     times_client.close()
 
 
-def __get_set_max(mix, profiles):
+def __get_and_apply_set_max(mix):
     '''
     Goes over all sets. For each set the maximum value over all TS is determined. This
     value is stored in a map with the set-id as key. 
@@ -461,16 +477,23 @@ def __get_set_max(mix, profiles):
     # Get maximum for each set (key is set_id)
     for i in xrange(len(mix)):
         desc = mix[i]
-        profile_ts = profiles[i][0]
+        profile_ts = desc.profile[0]
+        
         pset = desc.profile_set
+        
+        if COMPATIBLE_AFTER(PAPER_DSS): 
+            indices = profile_ts > pset.cap
+            profile_ts[indices] = pset.cap
         
         if set_max.has_key(pset.id) == False:
             set_max[pset.id] = 0
             
         max_value = np.max(profile_ts)
         set_max[pset.id] = max(max_value, set_max[pset.id])
-        if pset.cap is not None:
+        
+        if INCOMPATIBLE_AFTER(PAPER_DSS) and pset.cap is not None:
             set_max[pset.id] = min(pset.cap, set_max[pset.id])
+        
             
     return set_max
 
@@ -580,10 +603,29 @@ def dump(logger):
     logger.info('selected_name = %s' % selected_name)
     
     
+def dump_user_profile_maxes():
+    '''
+    Used to verify that all user profiles have user values below MAX_USERS
+    '''
+    # Connect with times
+    connection = times_client.connect()
+    
+    for name in connection.find('.*%s$' % (POSTFIX_USER)):
+        result = util.to_array(connection.load(name))[1]
+        if np.max(result) > MAX_USERS: 
+            print '%s - %i' % (name, np.max(result))
+    
+    times_client.close()
+    
+    
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    __build_modified_profiles(selected, True)
-
+    # __build_modified_profiles(selected, True)
+    # dump_user_profile_maxes()
+    
+    __build_all_profiles_for_mix(mix_0, False)
+    __build_all_profiles_for_mix(mix_1, False)
+    __build_all_profiles_for_mix(mix_2, False)
 
 
 

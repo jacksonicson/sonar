@@ -110,8 +110,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     
     # Apply noise
     smooth_profile = smooth_profile + noise_array
-    
-    # Limit to positive
+        
     tv = np.vectorize(to_positive)
     smooth_profile = tv(smooth_profile)
 
