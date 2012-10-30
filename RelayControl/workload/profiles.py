@@ -4,10 +4,8 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 
 from service import times_client
 from times import ttypes
-import convolution
 import matplotlib.pyplot as plt
 import numpy as np
-import sampleday
 import util
 
 '''
@@ -360,7 +358,8 @@ def __build_sample_day(mix, save):
     # Calculate profiles
     profiles = []
     for desc in mix:
-        print 'processing %s' % (desc.name)
+        print 'processing sample day %s' % (desc.name)
+        import sampleday
         profile = sampleday.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME, desc.profile_set.day)
         profiles.append(profile)
         
@@ -439,7 +438,8 @@ def __build_profiles(mix, save):
     # Calculate profiles
     profiles = []
     for desc in mix:
-        print 'processing: %s' % (desc.name)
+        print 'processing convolution: %s' % (desc.name)
+        import convolution
         profile = convolution.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME)
         profiles.append(profile)
         

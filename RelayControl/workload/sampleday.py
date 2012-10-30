@@ -66,7 +66,6 @@ def sample_day(name, time, signal, sampling_frequency, cycle_time=24 * 60 * 60, 
         
     return smooth_profile, frequency
     
-    
 def process_trace(connection, name, ifreq, cycle_time, day):
     timeSeries = connection.load(name)
     time,demand = util.to_array(timeSeries)        
