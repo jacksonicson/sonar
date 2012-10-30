@@ -61,10 +61,12 @@ SET_O2_BUSINESS = ProfileSet(0, 60 * 60, None)
 SET_O2_RETAIL = ProfileSet(1, 60 * 60, None)
 SET_SIS = ProfileSet(2, 5 * 60, 3000)
 
+# List of profile days
 SET_SIS_D3 = ProfileSet(3, 5 * 60, 3000, day=3)
 SET_SIS_D8 = ProfileSet(3, 5 * 60, 3000, day=8)
 SET_SIS_D9 = ProfileSet(3, 5 * 60, 3000, day=9)
 
+# List of appropriate TS data
 mix_selected = [
             Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
             Desc('O2_business_ADDLINEORDER', SET_O2_BUSINESS),
@@ -182,6 +184,7 @@ mix_selected = [
             Desc('SIS_387_cpu', SET_SIS_D9),
             ]
 
+# MIX0
 mix_0 = [
             Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
             Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
@@ -207,6 +210,7 @@ mix_0 = [
             Desc('SIS_29_cpu', SET_SIS_D3),
             ]
 
+# MIX1
 mix_1 = [
          Desc('SIS_397_cpu', SET_SIS),
          Desc('SIS_199_cpu', SET_SIS_D8),
@@ -230,6 +234,7 @@ mix_1 = [
          Desc('SIS_387_cpu', SET_SIS_D9),
          ]
 
+# MIX2
 mix_2 = [
          Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
          Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
@@ -262,28 +267,42 @@ selected_name = 'mix_2'
 selected = mix_2
 ##############################
 
+
 def byindex(index):
     return selected[index]
 
-def __write_profile(connection, name, profile_ts, frequency):
+
+def __write_profile(connection, name, profile_ts, interval):
+    '''
+    Saves a TS in the Times service.
+    
+    Keyword arguments:
+    connection -- The connection as returned by the Times client
+    name -- Name of the TS
+    profile_ts -- A numpy array which contains the elements of the TS
+    interval -- The time delta between two data points in the profile_ts TS (in seconds) 
+    '''
+    
     # Check if the profile exists
     if len(connection.find(name)) > 0:
-        print 'Removing existing data file'
+        print 'removing existing data file'
         connection.remove(name)
         
+    # Store profile
     print 'storing profile with name %s' % (name)
-    connection.create(name, frequency)
+    connection.create(name, interval)
     
     elements = []
     for i in xrange(len(profile_ts)):
         item = profile_ts[i]
         
         element = ttypes.Element()
-        element.timestamp = i * frequency
+        element.timestamp = i * interval
         element.value = item 
         elements.append(element)
 
     connection.append(name, elements)
+
 
 def __plot(profile, filename, max=1):
     fig = plt.figure()
@@ -408,18 +427,31 @@ def _build_sample_day(mix, save):
     times_client.close()
  
 def _build_modified(save=True):
+    
     connection = times_client.connect()
+    results = connection.find('.*%s$' % POSTFIX_NORM)
+    for result in results:
+        ts = connection.load(result)
+        print '%s - %i' % (result, ts.frequency)
+    times_client.close()
+    return
     
     import modifier
-    results = connection.find('.*%s' % POSTFIX_NORM)
+    connection = times_client.connect()
+    results = connection.find('.*%s$' % POSTFIX_NORM)
+    times_client.close()
     for result in results:
         # Validate that a normalized profile is used
         if result.find(POSTFIX_NORM) == -1:
             print 'Skipping %s, no normalized profile' % result
             continue
         
+        connection = times_client.connect()
+        print 'Processing %s' % result
         modified_profile, frequency = modifier.process_trace(connection, result)
+        times_client.close()
         
+        connection = times_client.connect()
         if save:
             name = result + POSTFIX_MODIFIED
             print 'Writing profile: %s' % name
@@ -439,10 +471,10 @@ def _build_modified(save=True):
             print 'Writing profile: %s' % name 
             __write_profile(connection, name, user_profile, frequency)
 #            print user_profile
-
-        break
+        times_client.close()
+        
     
-    times_client.close()
+    
   
 def _build_all_profiles():
     connection = times_client.connect()
