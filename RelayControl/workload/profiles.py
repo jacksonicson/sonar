@@ -29,6 +29,9 @@ not used by any system and are marked as deprecated!
 [TS]_profile_trace
 [TS][_profile_norm]_modified
 [TS][_profile_user]_modified
+
+The interval of _profile_user is updated so that the length of the TS multiplied 
+with the interval matches the EXPERIMENT_DURATION.
 '''
 
 '''
@@ -417,14 +420,14 @@ def __build_modified_profiles(mix, save):
     for mi_element in mix:
         ts_name = mi_element.name + POSTFIX_NORM
 
-        util.plot(util.to_array(connection.load(ts_name))[1], 'a', 100)
+        util.plot(util.to_array(connection.load(ts_name))[1], '%s_ORIGINAL' % ts_name, 100)
         
         
         # Modify normal profile        
         import modifier
         modified_profile, interval = modifier.process_trace(connection, ts_name)
         
-        util.plot(modified_profile, 'b', 100)
+        util.plot(modified_profile, '%s_MODIFIED' % ts_name, 100)
         
         if save:
             name = ts_name + POSTFIX_MODIFIED
@@ -649,14 +652,14 @@ def dump_times():
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    # __build_modified_profiles(selected, True)
+    __build_modified_profiles(selected, True)
     # dump_user_profile_maxes()
     
 #    __build_all_profiles_for_mix(mix_0, False)
 #    __build_all_profiles_for_mix(mix_1, False)
 #    __build_all_profiles_for_mix(mix_2, False)
 
-    dump_times()
+    # dump_times()
 
 
 

@@ -24,8 +24,40 @@ class Element(object):
         self.top_width = top_width
 
 
-def generate_TS(demand, modification, length, interval_length):
-    result = np.zeros((length,))
+MOD0 = []
+MOD1 = [
+        Element(hour(10), hour(4), 20)
+        ]
+MOD2 = [
+        Element(hour(0), hour(3), 20),
+        Element(hour(9), hour(2), 30),
+        Element(hour(13), hour(2), 30),
+        Element(hour(21), hour(3), 20),
+        ]
+MOD3 = [
+        Element(hour(9), hour(1), 10),
+        Element(hour(10), hour(2), 20),
+        Element(hour(12), hour(2), -20),
+        Element(hour(14), hour(1), -10),
+        ]
+MOD4 = [
+        Element(hour(0), hour(8), 5),
+        Element(hour(8), hour(10), 30),
+        Element(hour(18), hour(6), 10),
+        ]
+MOD5 = [
+        Element(hour(10), hour(1), +40),
+        ]
+MOD6 = [
+        Element(hour(8), hour(10), -15),
+        ]
+MOD7 = [
+        Element(hour(7), hour(3), -70),
+        Element(hour(10), hour(12), -20),
+        ]
+
+def generate_TS(demand, modification, interval_length):
+    result = np.zeros((len(demand),))
     
     for element in modification:
         i = lambda t: int(t / interval_length)
@@ -38,25 +70,47 @@ def generate_TS(demand, modification, length, interval_length):
     weights = np.repeat(1.0, window) / window
     result = np.convolve(result, weights)[0:-1 * window + 1 ]
     
+    mu, sigma = 0, 2
+    a = np.random.normal(mu,sigma, len(demand))
+    print a
+    result += a
+    
+    
     # Divide for multiplication
     result /= 100.0
     
     # Apply result to the demand curve by multiplication
-    demand += demand * result    
-    
-    
-
-def add_modifier(time, demand, interval):
-    modification0 = [
-                 Element(minu(250), minu(200), 100)
-                 ]
-    
-    generate_TS(demand, modification0, len(demand), interval)
-    
+    demand += demand * result
     return demand
+    
+def stretch(demand, f=1.0):
+    f_start = int((len(demand) - (len(demand) / f)) / 2)
+    print f_start
+    stretch = np.zeros(len(demand)) 
+    for i in xrange(len(demand)):
+        stretch[i] = demand[f_start + int(i / f)]
+        
+    return stretch
+    
+def scale(demand, f=1.0):
+    demand *= f
+    return demand
+    
+def limit(demand, limit=100):
+    exp = demand > limit
+    demand[exp] = 100
+    return demand
+    
+def add_modifier(time, demand, interval):
+    demand = generate_TS(demand, MOD1, interval)
+    # demand = stretch(demand, 1.05)
+    #demand = scale(demand, 1.5)
+    
+    return limit(demand)
 
 def process_trace(connection, name, interval=None, cycle_time=None):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
     interval = timeSeries.frequency
+    print interval
     return add_modifier(time, demand, interval), timeSeries.frequency
