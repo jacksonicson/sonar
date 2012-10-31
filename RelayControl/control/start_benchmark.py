@@ -139,7 +139,7 @@ def phase_start_rain(done, client_list):
             config_target['target'] = target
             
             # Important: Load the USER workload profile
-            config_target['profile'] = domains.profile_by_name(target) + profiles.POSTFIX_USER
+            config_target['profile'] = domains.user_profile_by_name(target)
             config_targets.append(config_target)
 
         print config_targets

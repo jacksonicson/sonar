@@ -72,7 +72,6 @@ def generate_TS(demand, modification, interval_length):
     
     mu, sigma = 0, 2
     a = np.random.normal(mu,sigma, len(demand))
-    print a
     result += a
     
     
@@ -85,7 +84,6 @@ def generate_TS(demand, modification, interval_length):
     
 def stretch(demand, f=1.0):
     f_start = int((len(demand) - (len(demand) / f)) / 2)
-    print f_start
     stretch = np.zeros(len(demand)) 
     for i in xrange(len(demand)):
         stretch[i] = demand[f_start + int(i / f)]
@@ -101,16 +99,16 @@ def limit(demand, limit=100):
     demand[exp] = 100
     return demand
     
-def add_modifier(time, demand, interval):
-    demand = generate_TS(demand, MOD1, interval)
-    # demand = stretch(demand, 1.05)
-    #demand = scale(demand, 1.5)
+def add_modifier(time, demand, interval, modifier, _scale):
+    demand = generate_TS(demand, modifier, interval)
+    
+    demand = stretch(demand, _scale[0])
+    demand = scale(demand, _scale[1])
     
     return limit(demand)
 
-def process_trace(connection, name, interval=None, cycle_time=None):
+def process_trace(connection, name, modifier, scale, interval=None, cycle_time=None):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
     interval = timeSeries.frequency
-    print interval
-    return add_modifier(time, demand, interval), timeSeries.frequency
+    return add_modifier(time, demand, interval, modifier, scale), timeSeries.frequency
