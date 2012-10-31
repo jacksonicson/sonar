@@ -60,14 +60,14 @@ def index_of(name):
 
 def print_mapping():
     for entry in domain_profile_mapping:
-        profile = profiles.byindex(entry.profileId).name
+        profile = profiles.by_index(entry.profileId).name
         print '%s --- load --> %s' % (profile, entry.domain)
     
   
 def dump(logger):
     out = ''
     for entry in domain_profile_mapping:
-        profile = profiles.byindex(entry.profileId).name
+        profile = profiles.by_index(entry.profileId).name
         out += '%s > %s; ' % (profile, entry.domain)
     logger.info("Mapping: %s" % out)
         
