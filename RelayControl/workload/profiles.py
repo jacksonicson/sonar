@@ -4,10 +4,11 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 
 from service import times_client
 from times import ttypes
+from timeutil import * #@UnusedWildImport
 import matplotlib.pyplot as plt
 import numpy as np
 import util
-from timeutil import * #@UnusedWildImport
+import modifier
 
 '''
 Times file organization:
@@ -72,19 +73,22 @@ COMPATIBILITY_MODE = PAPER_DSS
 COMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE > C
 INCOMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE <= C
 
-'''
-Describes a single TS which is used to generate a profile
-'''
+
 class Desc:
-    def __init__(self, name, profile_set):
+    '''
+    Describes a single TS which is used to generate a profile
+    '''
+    def __init__(self, name, profile_set, modifier=None, scale=(0,0)):
         self.name = name
         self.sample_frequency = profile_set.ifreq
         self.profile_set = profile_set
+        self.modifier = modifier
+        self.scale = scale 
 
-'''
-A profile set describes shared properties between sets of TS
-'''
 class ProfileSet:
+    '''
+    A profile set describes shared properties between sets of TS
+    '''
     def __init__(self, sid, ifreq, cap, day=None):
         self.id = sid 
         self.cap = cap
@@ -222,78 +226,78 @@ mix_selected = [
 
 # MIX0
 mix_0 = [
-            Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
-            Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
-            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS),
-            Desc('O2_retail_ADDORDER', SET_O2_RETAIL),
+            Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD0, (0,0)),
+            Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD0, (0,0)),
+            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD0, (0,0)),
+            Desc('O2_retail_ADDORDER', SET_O2_RETAIL, modifier.MOD0, (0,0)),
             
-            Desc('SIS_161_cpu', SET_SIS),
-            Desc('SIS_162_cpu', SET_SIS),
-            Desc('SIS_163_cpu', SET_SIS),
-            Desc('SIS_175_cpu', SET_SIS),
-            Desc('SIS_177_cpu', SET_SIS),
-            Desc('SIS_179_cpu', SET_SIS),
-            Desc('SIS_188_cpu', SET_SIS),
-            Desc('SIS_269_cpu', SET_SIS),
-            Desc('SIS_298_cpu', SET_SIS),
-            Desc('SIS_305_cpu', SET_SIS),
-            Desc('SIS_308_cpu', SET_SIS),
-            Desc('SIS_310_cpu', SET_SIS),
-            Desc('SIS_340_cpu', SET_SIS),
-            Desc('SIS_393_cpu', SET_SIS),
-            Desc('SIS_397_cpu', SET_SIS),
+            Desc('SIS_161_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_162_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_163_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_175_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_177_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_179_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_188_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_269_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_298_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_305_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_308_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_310_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_340_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_393_cpu', SET_SIS, modifier.MOD0, (0,0)),
+            Desc('SIS_397_cpu', SET_SIS, modifier.MOD0, (0,0)),
             
-            Desc('SIS_29_cpu', SET_SIS_D3),
+            Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD0, (0,0)),
             ]
 
 # MIX1
 mix_1 = [
-         Desc('SIS_397_cpu', SET_SIS),
-         Desc('SIS_199_cpu', SET_SIS_D8),
-         Desc('SIS_207_cpu', SET_SIS_D9),
-         Desc('SIS_211_cpu', SET_SIS_D9),
-         Desc('SIS_213_cpu', SET_SIS_D9),
-         Desc('SIS_216_cpu', SET_SIS_D9),
-         Desc('SIS_221_cpu', SET_SIS_D9),
-         Desc('SIS_222_cpu', SET_SIS_D9),
-         Desc('SIS_225_cpu', SET_SIS_D9),
-         Desc('SIS_234_cpu', SET_SIS_D9),
-         Desc('SIS_245_cpu', SET_SIS_D9),
-         Desc('SIS_264_cpu', SET_SIS_D9),
-         Desc('SIS_271_cpu', SET_SIS_D9),
-         Desc('SIS_275_cpu', SET_SIS_D9),
-         Desc('SIS_279_cpu', SET_SIS_D9),
-         Desc('SIS_344_cpu', SET_SIS_D8),
-         Desc('SIS_345_cpu', SET_SIS_D8),
-         Desc('SIS_350_cpu', SET_SIS_D8),
-         Desc('SIS_385_cpu', SET_SIS_D9),
-         Desc('SIS_387_cpu', SET_SIS_D9),
+         Desc('SIS_397_cpu', SET_SIS, modifier.MOD0, (0,0)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
+         Desc('SIS_207_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_213_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_221_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_222_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_245_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_271_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_275_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
+         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
+         Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
          ]
 
 # MIX2
 mix_2 = [
-         Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
-         Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
-         Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS),
+         Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD0, (0,0)),
+         Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD0, (0,0)),
+         Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD0, (0,0)),
          
-         Desc('SIS_163_cpu', SET_SIS),
-         Desc('SIS_175_cpu', SET_SIS),
-         Desc('SIS_179_cpu', SET_SIS),
-         Desc('SIS_298_cpu', SET_SIS),
-         Desc('SIS_310_cpu', SET_SIS),
-         Desc('SIS_340_cpu', SET_SIS),
+         Desc('SIS_163_cpu', SET_SIS, modifier.MOD0, (0,0)),
+         Desc('SIS_175_cpu', SET_SIS, modifier.MOD0, (0,0)),
+         Desc('SIS_179_cpu', SET_SIS, modifier.MOD0, (0,0)),
+         Desc('SIS_298_cpu', SET_SIS, modifier.MOD0, (0,0)),
+         Desc('SIS_310_cpu', SET_SIS, modifier.MOD0, (0,0)),
+         Desc('SIS_340_cpu', SET_SIS, modifier.MOD0, (0,0)),
          
-         Desc('SIS_29_cpu', SET_SIS_D3),
-         Desc('SIS_199_cpu', SET_SIS_D8),
-         Desc('SIS_211_cpu', SET_SIS_D9),
-         Desc('SIS_216_cpu', SET_SIS_D9),
-         Desc('SIS_225_cpu', SET_SIS_D9),
-         Desc('SIS_234_cpu', SET_SIS_D9),
-         Desc('SIS_264_cpu', SET_SIS_D9),
-         Desc('SIS_279_cpu', SET_SIS_D9),
-         Desc('SIS_345_cpu', SET_SIS_D8),
-         Desc('SIS_387_cpu', SET_SIS_D9),
-         Desc('SIS_199_cpu', SET_SIS_D8),
+         Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD0, (0,0)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
+         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD0, (0,0)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD0, (0,0)),
          ]
 
 ##############################
@@ -439,7 +443,7 @@ def __build_modified_profiles(mix, save):
         # Add padding for ramp up and ramp down
         modified_profile /= 100.0
         modified_profile *= MAX_USERS
-        interval = interval/ (CYCLE_TIME / EXPERIMENT_DURATION)
+        interval = interval / (CYCLE_TIME / EXPERIMENT_DURATION)
         user_profile = np.array(modified_profile)
         user_profile = __padprofile(user_profile, interval)
         if save:
