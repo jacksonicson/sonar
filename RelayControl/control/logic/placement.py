@@ -163,7 +163,7 @@ class SSAPvPlacement(Placement):
         # Loading services to combine the dmain_service_mapping with    
         services = profiles.selected
         service_count = len(domains.domain_profile_mapping)
-        service_matrix = np.zeros((service_count, profiles.PROFILE_WIDTH), dtype=float)
+        service_matrix = np.zeros((service_count, profiles.PROFILE_INTERVAL_COUNT), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
@@ -182,7 +182,7 @@ class SSAPvPlacement(Placement):
             for i in xrange(ts_len):
                 data[i] = ts.elements[i].value
                 
-            data = data[0:profiles.PROFILE_WIDTH]
+            data = data[0:profiles.PROFILE_INTERVAL_COUNT]
     
             service_matrix[service_index] = data
             # print data

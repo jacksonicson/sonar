@@ -1,23 +1,22 @@
 #!/bin/bash
 
+# Target installation directory of rain
 RAIN=/opt/rain
 
-# Remove old files and create the directory
-mkdir $RAIN
+# Create directory if necessary
+if [ ! -d $RAIN ]
+then
+	mkdir $RAIN
+fi
+
+# Clean all files from directory
 rm -rf $RAIN/*
 
-# Files are in the NFS share
-if [ -d /mnt/share ]; then
-echo "ATTENTION: mounting /mnt/share"
-mount -t nfs monitor0:/mnt/arr0/share /mnt/share
+# Copy binary using public/privat key login 
+scp -i id_rsa root@monitor0.dfg:/mnt/arr0/share/packages/rain/driver.zip $RAIN
 
-# Update the files
-cp /mnt/share/packages/rain/driver.zip $RAIN
+# Switch directory and unzip driver
 cd $RAIN
 unzip driver.zip
 rm driver.zip
 
-echo "umount /mnt/share"
-umount /mnt/share
-
-fi

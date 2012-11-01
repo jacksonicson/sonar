@@ -35,10 +35,10 @@ domain_profile_mapping = [
 def user_profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry.domain == domain:
-            profiles.get_current_user_profile(entry.profileId)
+            return profiles.get_current_user_profile(entry.profileId)
         
     print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
-    return profiles.selected[0]
+    return profiles.get_current_user_profile(0)
 
 
 def has_domain(name):
