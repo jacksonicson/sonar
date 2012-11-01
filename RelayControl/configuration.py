@@ -11,7 +11,7 @@ from workload import profiles as _profiles #@UnusedImport
 
 ##########################
 ## GLOBAL               ##
-PRODUCTION = False & (gethostname() == 'Andreas-PC')
+PRODUCTION = True # & (gethostname() == 'Andreas-PC')
 
 ##########################
 ## COLLECTOR            ##
