@@ -68,8 +68,9 @@ Example.
 if COMPATIBLE_AFTER(C): - code is compatible with versions after C (exclusive)
 if INCOMPATIBLE_AFTER(C): - code is not compatible with versions after C (still compatible with C)
 '''
-PAPER_DSS = 0 
-COMPATIBILITY_MODE = PAPER_DSS
+PAPER_DSS = 0
+PAPER_DSS2 = 1 
+COMPATIBILITY_MODE = PAPER_DSS2
 COMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE > C
 INCOMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE <= C
 
@@ -281,21 +282,21 @@ mix_2 = [
          Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1, 1)),
          
          Desc('SIS_163_cpu', SET_SIS, modifier.MOD4, (1, 1)),
-         Desc('SIS_175_cpu', SET_SIS, modifier.MOD5, (1, 1)),
+         Desc('SIS_175_cpu', SET_SIS, modifier.MOD5, (1, 1.2)),
          Desc('SIS_179_cpu', SET_SIS, modifier.MOD6, (1, 1)),
          Desc('SIS_298_cpu', SET_SIS, modifier.MOD7, (1, 1)),
-         Desc('SIS_310_cpu', SET_SIS, modifier.MOD1, (1.2, 1)),
+         Desc('SIS_310_cpu', SET_SIS, modifier.MOD8, (1.2, 1)),
          Desc('SIS_340_cpu', SET_SIS, modifier.MOD2, (1, 1)),
          
-         Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD3, (1, 1)),
+         Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD3, (1, 1.2)),
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD4, (1, 1)),
-         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD5, (1, 1)),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD5, (1, 1.5)),
          Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
          Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
-         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1, 1)),
+         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1, 1.2)),
          Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD2, (1, 1)),
          Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD3, (1, 1)),
-         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD4, (1, 1)),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1)),
          Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD6, (1, 1)),
          ]

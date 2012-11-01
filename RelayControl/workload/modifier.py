@@ -55,6 +55,11 @@ MOD7 = [
         Element(hour(7), hour(3), -70),
         Element(hour(10), hour(12), -20),
         ]
+MOD8 = [
+        Element(hour(0), hour(8), 5),
+        Element(hour(8), hour(10), 60),
+        Element(hour(18), hour(6), 10),
+        ]
 
 def generate_TS(demand, modification, interval_length):
     result = np.zeros((len(demand),))
