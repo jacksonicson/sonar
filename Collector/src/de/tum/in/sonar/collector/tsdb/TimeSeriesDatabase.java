@@ -414,7 +414,7 @@ public class TimeSeriesDatabase extends Thread {
 			while ((next = scanner.next()) != null) {
 				KeyValue value = next.getColumnLatest(Bytes.toBytes(Const.FAMILY_UID_FORWARD), Bytes.toBytes("sensor"));
 				if (value != null)
-					result.add(Bytes.toString(value.getValue()));
+					result.add(Bytes.toString(value.getKey()));
 			}
 
 			scanner.close();
