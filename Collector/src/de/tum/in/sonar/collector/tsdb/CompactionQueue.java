@@ -48,7 +48,7 @@ class CompactionQueue extends Thread {
 	}
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
-		logger.debug("running compaction...");
+		logger.info("running compaction on " + Bytes.toString(key) + "...");
 
 		Get get = new Get(key);
 		Result result = table.get(get);
@@ -75,6 +75,7 @@ class CompactionQueue extends Thread {
 			point.setTimestamp(Bytes.toLong(quali));
 			point.setValue(Bytes.toDouble(familyMap.get(quali)));
 
+			// Delete the point from the row
 			Delete del = new Delete(key);
 			del.deleteColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), quali);
 			deletes.add(del);
@@ -89,11 +90,17 @@ class CompactionQueue extends Thread {
 		byte[] buffer = serializer.serialize(ts);
 
 		// Updating HBase
+		// The delete and push operations do not run in a transaction. Therefore, it is possible
+		// that some points are stored twice, once in the compaction and once in a cell. The 
+		// data will then be compacted again and the compaction will contain two points with the
+		// same qualifier. This will be detected in the decompaction phase! 
 		Put put = new Put(key);
 		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
 		table.delete(deletes);
 		table.flushCommits();
+		
+		logger.info("Compaction finished"); 
 	}
 
 	private boolean getCompactionCell(final byte[] row) throws IOException {
@@ -154,7 +161,7 @@ class CompactionQueue extends Thread {
 
 			// Rate limit compaction
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				// pass
 			}

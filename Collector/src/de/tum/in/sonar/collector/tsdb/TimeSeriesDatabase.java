@@ -356,6 +356,7 @@ public class TimeSeriesDatabase extends Thread {
 								CompactTimeseries ts = new CompactTimeseries();
 								deserializer.deserialize(ts, familyMap.get(key));
 
+								// TODO: Detect duplicated points! 
 								for (CompactPoint point : ts.getPoints()) {
 									long timestamp = rowTimestampHours + point.getTimestamp();
 									if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
