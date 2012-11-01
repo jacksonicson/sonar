@@ -48,14 +48,14 @@ class CompactionQueue extends Thread {
 	}
 
 	private void compact(byte[] key) throws IOException, TException, InterruptedException {
-		logger.info("running compaction on " + Bytes.toString(key) + "...");
+		logger.info("running compaction...");
 
 		Get get = new Get(key);
 		Result result = table.get(get);
 		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
 
 		List<CompactPoint> points = new ArrayList<CompactPoint>();
-		List<Delete> deletes = new ArrayList<Delete>();
+		Delete del = new Delete(key);
 
 		CompactTimeseries ts = null;
 		TSerializer serializer = new TSerializer();
@@ -76,9 +76,7 @@ class CompactionQueue extends Thread {
 			point.setValue(Bytes.toDouble(familyMap.get(quali)));
 
 			// Delete the point from the row
-			Delete del = new Delete(key);
-			del.deleteColumn(Bytes.toBytes(Const.FAMILY_TSDB_DATA), quali);
-			deletes.add(del);
+			del.deleteColumns(Bytes.toBytes(Const.FAMILY_TSDB_DATA), quali);
 		}
 
 		if (ts == null)
@@ -97,7 +95,7 @@ class CompactionQueue extends Thread {
 		Put put = new Put(key);
 		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
-		table.delete(deletes);
+		table.delete(del);
 		table.flushCommits();
 		
 		logger.info("Compaction finished"); 
@@ -171,6 +169,7 @@ class CompactionQueue extends Thread {
 	void setHbaseUtil(HBaseUtil hbaseUtil) {
 		try {
 			table = new HTable(hbaseUtil.getConfig(), Const.TABLE_TSDB);
+			table.setAutoFlush(false);
 		} catch (IOException e) {
 			logger.error("could not open HBase table", e);
 		}

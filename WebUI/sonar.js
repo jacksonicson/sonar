@@ -733,6 +733,9 @@ function sensorNamesHandler(req, resp){
             var ss = JSON.stringify(sensorData);
             console.log(ss);
             resp.end(ss);
+
+            // Close connection
+            connection.close()
         });
     });
 }
