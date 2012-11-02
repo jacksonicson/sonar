@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import modifier
 import numpy as np
 import util
+import plot 
 
 '''
 Times file organization:
@@ -230,13 +231,13 @@ mix_0 = [
             Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD1, (1, 1)),
             Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1, 1)),
             Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1, 1)),
-            Desc('O2_retail_ADDORDER', SET_O2_RETAIL, modifier.MOD4, (1, 1)),
+            Desc('O2_retail_ADDORDER', SET_O2_RETAIL, modifier.MOD8, (1, 1)),
             
             Desc('SIS_161_cpu', SET_SIS, modifier.MOD5, (1, 1)),
             Desc('SIS_162_cpu', SET_SIS, modifier.MOD6, (1, 1)),
             Desc('SIS_163_cpu', SET_SIS, modifier.MOD1, (1, 1)),
             Desc('SIS_175_cpu', SET_SIS, modifier.MOD2, (1, 1)),
-            Desc('SIS_177_cpu', SET_SIS, modifier.MOD3, (1, 1)),
+            Desc('SIS_177_cpu', SET_SIS, modifier.MOD8, (1, 1)),
             Desc('SIS_179_cpu', SET_SIS, modifier.MOD4, (1, 1)),
             Desc('SIS_188_cpu', SET_SIS, modifier.MOD5, (1, 1)),
             Desc('SIS_269_cpu', SET_SIS, modifier.MOD6, (1, 1)),
@@ -261,7 +262,7 @@ mix_1 = [
          Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
          Desc('SIS_221_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
          Desc('SIS_222_cpu', SET_SIS_D9, modifier.MOD1, (1, 1)),
-         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD2, (1, 1)),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD8, (1, 1)),
          Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD3, (1, 1)),
          Desc('SIS_245_cpu', SET_SIS_D9, modifier.MOD4, (1, 1)),
          Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD5, (1, 1)),
@@ -270,7 +271,7 @@ mix_1 = [
          Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1, 1)),
          Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1, 1)),
          Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD3, (1, 1)),
-         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD4, (1, 1)),
+         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD8, (1, 1)),
          Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD5, (1, 1)),
          Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
          ]
@@ -600,10 +601,38 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
         __write_profile(connection, name + POSTFIX_TRACE, profile, interval)
         times_client.close()
     
+def __plot_overlay_mix():
+    '''
+    Plots all TS of a mix in a single axis graph
+    '''
+    # Connect with times
+    connection = times_client.connect()
+    
+    plot_mix = mix_0
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    import random
+    for i in xrange(0, 5):
+        i = random.randint(0,len(plot_mix)-1)
+        desc = plot_mix[i]
+        
+        name = desc.name
+        timeSeries = connection.load(name + POSTFIX_USER)
+        _, demand = util.to_array(timeSeries)
+        
+        ax.plot(range(0, len(demand)), demand, linewidth=0.7)
+
+    plot.rstyle(ax)
+    plt.savefig('C:/temp/convolution/overlay_mix0.png')
+    
+    # Close times connection
+    times_client.close()
+    
     
 def __plot_complete_mix():
     '''
-    Plots all TS of a mix in a single images
+    Plots all TS of a mix in a single image using multiple axis
     '''
     
     # Connect with times
@@ -671,13 +700,12 @@ def dump_times():
 if __name__ == '__main__':
     __build_modified_profiles(selected, True)
     # dump_user_profile_maxes()
+    #__plot_overlay_mix()
     
 #    __build_all_profiles_for_mix(mix_0, False)
 #    __build_all_profiles_for_mix(mix_1, False)
-#    __build_all_profiles_for_mix(mix_2, False)
+    # __build_all_profiles_for_mix(mix_2, False)
 
     # dump_times()
-
-
 
 

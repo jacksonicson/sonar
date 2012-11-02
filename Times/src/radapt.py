@@ -16,7 +16,8 @@ try:
     
     result = connection.find(name)
     if len(result) != 1:
-        print 'No Ts found with name: %s' %name
+        print 'No TS found with name: %s' %name
+        sys.exit(1)
         
     ts = connection.load(name)
     for element in ts.elements:

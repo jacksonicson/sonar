@@ -28,11 +28,11 @@ class Element(object):
 
 MOD0 = []
 MOD1 = [
-        Element(hour(10), hour(4), 30)
+        Element(hour(10), hour(4), 50)
         ]
 MOD2 = [
         Element(hour(0), hour(3), 20),
-        Element(hour(9), hour(2), 60),
+        Element(hour(9), hour(2), 90),
         Element(hour(13), hour(2), 30),
         Element(hour(21), hour(3), 20),
         ]
@@ -44,11 +44,11 @@ MOD3 = [
         ]
 MOD4 = [
         Element(hour(0), hour(8), 5),
-        Element(hour(8), hour(10), 30),
+        Element(hour(8), hour(10), 50),
         Element(hour(18), hour(6), 10),
         ]
 MOD5 = [
-        Element(hour(10), hour(1), 40),
+        Element(hour(10), hour(1), 120),
         ]
 MOD6 = [
         Element(hour(8), hour(10), -10),
@@ -59,7 +59,7 @@ MOD7 = [
         ]
 MOD8 = [
         Element(hour(0), hour(8), 5),
-        Element(hour(8), hour(10), 60),
+        Element(hour(8), hour(10), 90),
         Element(hour(18), hour(6), 10),
         ]
 
