@@ -28,7 +28,7 @@ class Element(object):
 
 MOD0 = []
 MOD1 = [
-        Element(hour(10), hour(4), 50)
+        Element(hour(10), hour(4), 70)
         ]
 MOD2 = [
         Element(hour(0), hour(3), 20),
@@ -59,7 +59,7 @@ MOD7 = [
         ]
 MOD8 = [
         Element(hour(0), hour(8), 5),
-        Element(hour(8), hour(10), 90),
+        Element(hour(8), hour(10), 70),
         Element(hour(18), hour(6), 10),
         ]
 

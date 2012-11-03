@@ -30,6 +30,22 @@ def to_array_collector(timeSeries, timeframe):
         
     return time, demand
 
+def new_plot(ts, threshold=1):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.axis([0.0, len(ts), 0, threshold])
+    ax.plot(range(0, len(ts)), ts)
+    return fig, ax
+
+def add_plot(fig, ax, ts):
+    ax.plot(range(0, len(ts)), ts)
+    
+def write_plot(filename=None):
+    if filename is not None: 
+        try:
+            plt.savefig('C:/temp/convolution/' + filename)
+        except:
+            pass
 
 def plot(ts, filename=None, threshold=1):
     '''
@@ -40,7 +56,6 @@ def plot(ts, filename=None, threshold=1):
     '''
     
     fig = plt.figure()
-    
     ax = fig.add_subplot(111)
     ax.axis([0.0, len(ts), 0, threshold])
     ax.plot(range(0, len(ts)), ts)

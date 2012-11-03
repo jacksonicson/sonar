@@ -280,7 +280,7 @@ mix_1 = [
 mix_2 = [
          Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD1, (1, 1)),
          Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1, 1)),
-         Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1, 1)),
+         Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD8, (1.1, 1)),
          
          Desc('SIS_163_cpu', SET_SIS, modifier.MOD4, (1, 1)),
          Desc('SIS_175_cpu', SET_SIS, modifier.MOD5, (1, 1.2)),
@@ -291,15 +291,15 @@ mix_2 = [
          
          Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD3, (1, 1.2)),
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD4, (1, 1)),
-         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD5, (1, 1.5)),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD4, (1.03, 1.1)),
          Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
-         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
-         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1, 1.2)),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1.7, 1)),
+         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1.4, 1.2)),
          Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD2, (1, 1)),
-         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD3, (1, 1)),
-         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1)),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD3, (1.2, 1)),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1.5)),
          Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
-         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD6, (1, 1)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 1)),
          ]
 
 ##############################
@@ -441,12 +441,13 @@ def __build_modified_profiles(mix, save):
     for mi_element in mix:
         ts_name = mi_element.name + POSTFIX_NORM
 
-        util.plot(util.to_array(connection.load(ts_name))[1], '%s_ORIGINAL' % ts_name, 100)
+        fig, ax = util.new_plot(util.to_array(connection.load(ts_name))[1], 100)
         
         # Modify normal profile        
         modified_profile, interval = modifier.process_trace(connection, ts_name, mi_element.modifier, mi_element.scale)
         
-        util.plot(modified_profile, '%s_MODIFIED' % ts_name, 100)
+        util.add_plot(fig, ax, modified_profile)
+        util.write_plot('%s_ORIGINAL' % ts_name)
         
         if save:
             name = ts_name + POSTFIX_MODIFIED

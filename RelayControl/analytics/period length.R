@@ -1,32 +1,9 @@
-
-load_profiles = function(range)
-{
-  data_csv = list()
-  
-  print('Loading TSD from Times...')
-  for(i in range) {
-    name = paste('SIS_', i, '_cpu', sep='')
-    
-    print(paste('loading: ', name))
-    
-    b = read.csv(pipe(paste('python D:/work/dev/sonar/sonar/Times/src/radapt.py', name)))
-    if(length(b) == 2)  
-    {
-      data_csv = c(data_csv, list(b[[2]]) )  
-    } else {
-      print(paste('skipping: ', name))
-      print(b)
-    }
-    
-  }
-  
-  return(data_csv)
-}
+source('times.import.R')
 
 # Load TSD
 if(exists('data_csv') == FALSE)
 {
-  data_csv = load_profiles(11:50)
+  data_csv = load_profiles(1:70)
   list.ts = list()
   for(element in data_csv) {
     l = ts(element, frequency=1)  
@@ -36,7 +13,11 @@ if(exists('data_csv') == FALSE)
 
 main = function()
 {
-  period_detect(5)
+  lags = c()
+  for(i in 1:2)
+    lags = c(lags, period_detect(i))
+  
+  hist(lags)
 }
 
 mean_hist = function()
@@ -106,10 +87,10 @@ period_detect = function(index)
   }
   
   i.best.value = which(lambda.values == max(lambda.values))
-  print(i.best.value)
   final.lambda = lambdas[i.best.value]
   print(paste('best lag: ', final.lambda))
-  plot(list.ts[[index]])
+  
+  return(final.lambda)
 }
 
 # Main function
