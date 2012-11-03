@@ -170,7 +170,7 @@ class CompactionQueue extends Thread {
 					}
 				}
 
-				// Finally trigger compactions
+				// Finally trigger compaction
 				if (compacts.size() > 20)
 				{
 					compact(compacts);
