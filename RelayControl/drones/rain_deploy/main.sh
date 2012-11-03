@@ -3,6 +3,7 @@
 # Target installation directory of rain
 RAIN=/opt/rain
 
+chmod 600 id_rsa 
 # Create directory if necessary
 if [ ! -d $RAIN ]
 then
