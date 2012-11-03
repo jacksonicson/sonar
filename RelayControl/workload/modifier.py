@@ -59,7 +59,7 @@ MOD7 = [
         ]
 MOD8 = [
         Element(hour(0), hour(8), 5),
-        Element(hour(8), hour(10), 70),
+        Element(hour(8), hour(10), 60),
         Element(hour(18), hour(6), 10),
         ]
 
@@ -78,7 +78,7 @@ def __generate_mod_ts(demand, modification, interval_length):
     result = np.convolve(result, weights)[0:-1 * window + 1 ]
     
     mu, sigma = 0, 2
-    a = np.random.normal(mu,sigma, len(demand))
+    a = np.random.normal(mu, sigma, len(demand))
     result += a
     
     # Divide for multiplication
@@ -101,6 +101,23 @@ def stretch(demand, f=1.0):
         
     return stretch
     
+def shift(demand, interval_length, s=0.0):
+    i = lambda t: int(t / interval_length)
+    s = i(s)
+    print s
+    if s > 0: # shift right
+        print 'shift'
+        l = len(demand)
+        tmp = np.concatenate((demand[-s:], demand[:l - s]))
+        return tmp
+    elif s < 0: # shift left
+        l = len(demand)
+        tmp = np.concatenate((demand[s:], demand[:s]))
+        return tmp
+    else:
+        return demand
+        
+    
 def scale(demand, f=1.0):
     demand *= f
     return demand
@@ -110,19 +127,19 @@ def limit(demand, limit=100):
     demand[exp] = 100
     return demand
     
-def add_modifier(time, demand, interval, modifier, _scale):
+def add_modifier(time, demand, interval, modifier, _scale, _shift):
     demand = generate_TS(demand, modifier, interval)
-    
+    demand = shift(demand, interval, _shift)
     demand = stretch(demand, _scale[0])
     demand = scale(demand, _scale[1])
     
     return limit(demand)
 
-def process_trace(connection, name, modifier, scale, interval=None, cycle_time=None):
+def process_trace(connection, name, modifier, scale, shift):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
     interval = timeSeries.frequency
-    return add_modifier(time, demand, interval, modifier, scale), timeSeries.frequency
+    return add_modifier(time, demand, interval, modifier, scale, shift), timeSeries.frequency
 
 
 def __plot():
@@ -138,7 +155,7 @@ def __plot():
     for mod in modifications:
         demand = np.zeros(288)
         result = __generate_mod_ts(demand, mod, minu(5))
-        ax.plot(range(0, len(result)*5, 5), result, linewidth=0.7)
+        ax.plot(range(0, len(result) * 5, 5), result, linewidth=0.7)
         
     # plt.show()
     plot.rstyle(ax)

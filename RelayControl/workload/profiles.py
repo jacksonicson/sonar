@@ -8,8 +8,8 @@ from timeutil import * #@UnusedWildImport
 import matplotlib.pyplot as plt
 import modifier
 import numpy as np
+import plot
 import util
-import plot 
 
 '''
 Times file organization:
@@ -80,12 +80,13 @@ class Desc:
     '''
     Describes a single TS which is used to generate a profile
     '''
-    def __init__(self, name, profile_set, modifier=None, scale=(0, 0)):
+    def __init__(self, name, profile_set, modifier=None, scale=(0, 0), shift=0):
         self.name = name
         self.sample_frequency = profile_set.ifreq
         self.profile_set = profile_set
         self.modifier = modifier
         self.scale = scale 
+        self.shift = shift
 
 class ProfileSet:
     '''
@@ -228,85 +229,85 @@ mix_selected = [
 
 # MIX0
 mix_0 = [
-            Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD1, (1, 1)),
-            Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1, 1)),
-            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1, 1)),
-            Desc('O2_retail_ADDORDER', SET_O2_RETAIL, modifier.MOD8, (1, 1)),
+            Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD8, (1, 1), minu(10)),
+            Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1.1, 1), minu(-15)),
+            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1, 1), minu(10)),
+            Desc('O2_retail_ADDORDER', SET_O2_RETAIL, modifier.MOD8, (1, 1), minu(20)),
             
-            Desc('SIS_161_cpu', SET_SIS, modifier.MOD5, (1, 1)),
-            Desc('SIS_162_cpu', SET_SIS, modifier.MOD6, (1, 1)),
-            Desc('SIS_163_cpu', SET_SIS, modifier.MOD1, (1, 1)),
-            Desc('SIS_175_cpu', SET_SIS, modifier.MOD2, (1, 1)),
-            Desc('SIS_177_cpu', SET_SIS, modifier.MOD8, (1, 1)),
-            Desc('SIS_179_cpu', SET_SIS, modifier.MOD4, (1, 1)),
-            Desc('SIS_188_cpu', SET_SIS, modifier.MOD5, (1, 1)),
-            Desc('SIS_269_cpu', SET_SIS, modifier.MOD6, (1, 1)),
-            Desc('SIS_298_cpu', SET_SIS, modifier.MOD7, (1, 1)),
-            Desc('SIS_305_cpu', SET_SIS, modifier.MOD1, (1, 1)),
-            Desc('SIS_308_cpu', SET_SIS, modifier.MOD2, (1, 1)),
-            Desc('SIS_310_cpu', SET_SIS, modifier.MOD3, (1, 1)),
-            Desc('SIS_340_cpu', SET_SIS, modifier.MOD4, (1, 1)),
-            Desc('SIS_393_cpu', SET_SIS, modifier.MOD5, (1, 1)),
-            Desc('SIS_397_cpu', SET_SIS, modifier.MOD6, (1, 1)),
+            Desc('SIS_161_cpu', SET_SIS, modifier.MOD5, (1.1, 0.9), minu(10)),
+            Desc('SIS_162_cpu', SET_SIS, modifier.MOD7, (1, 1), minu(15)),
+            Desc('SIS_163_cpu', SET_SIS, modifier.MOD1, (1, 1.3), minu(0)),
+            Desc('SIS_175_cpu', SET_SIS, modifier.MOD2, (1.1, 1), minu(-5)),
+            Desc('SIS_177_cpu', SET_SIS, modifier.MOD8, (1, 1), minu(20)),
+            Desc('SIS_179_cpu', SET_SIS, modifier.MOD4, (1, 1), minu(-7)),
+            Desc('SIS_188_cpu', SET_SIS, modifier.MOD5, (1, 1), minu(0)),
+            Desc('SIS_269_cpu', SET_SIS, modifier.MOD6, (1, 1.1), minu(1)),
+            Desc('SIS_298_cpu', SET_SIS, modifier.MOD7, (1.1, 1), minu(0)),
+            Desc('SIS_305_cpu', SET_SIS, modifier.MOD1, (1, 1), minu(-6)),
+            Desc('SIS_308_cpu', SET_SIS, modifier.MOD2, (1, 1), minu(0)),
+            Desc('SIS_310_cpu', SET_SIS, modifier.MOD3, (1, 0.9), minu(10)),
+            Desc('SIS_340_cpu', SET_SIS, modifier.MOD4, (1, 1), minu(15)),
+            Desc('SIS_393_cpu', SET_SIS, modifier.MOD5, (1.4, 1), minu(0)),
+            Desc('SIS_397_cpu', SET_SIS, modifier.MOD7, (1.05, 1.1), minu(-10)),
             
-            Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD7, (1, 1)),
+            Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD7, (1, 1), minu(20)),
             ]
 
 # MIX1
 mix_1 = [
-         Desc('SIS_397_cpu', SET_SIS, modifier.MOD1, (1, 1)),
-         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD2, (1, 1)),
-         Desc('SIS_207_cpu', SET_SIS_D9, modifier.MOD3, (1, 1)),
-         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD4, (1, 1)),
-         Desc('SIS_213_cpu', SET_SIS_D9, modifier.MOD5, (1, 1)),
-         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
-         Desc('SIS_221_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
-         Desc('SIS_222_cpu', SET_SIS_D9, modifier.MOD1, (1, 1)),
-         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD8, (1, 1)),
-         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD3, (1, 1)),
-         Desc('SIS_245_cpu', SET_SIS_D9, modifier.MOD4, (1, 1)),
-         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD5, (1, 1)),
-         Desc('SIS_271_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
-         Desc('SIS_275_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
-         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1, 1)),
-         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1, 1)),
-         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD3, (1, 1)),
-         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD8, (1, 1)),
-         Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD5, (1, 1)),
-         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
+         Desc('SIS_397_cpu', SET_SIS, modifier.MOD7, (1.1, 0.6), minu(10)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 0.9), minu(-5)),
+         Desc('SIS_207_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(0)),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD6, (1.2, 0.8), minu(10)),
+         Desc('SIS_213_cpu', SET_SIS_D9, modifier.MOD7, (1, 1), minu(20)),
+         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1.2, 1), minu(0)),
+         Desc('SIS_221_cpu', SET_SIS_D9, modifier.MOD7, (1, 1), minu(-10)),
+         Desc('SIS_222_cpu', SET_SIS_D9, modifier.MOD1, (1.03, 1), minu(0)),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD8, (1.1, 1.2), minu(10)),
+         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD8, (1, 1), minu(6)),
+         Desc('SIS_245_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(0)),
+         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD5, (1, 1), minu(-15)),
+         Desc('SIS_271_cpu', SET_SIS_D9, modifier.MOD6, (1.1, 1.03), minu(20)),
+         Desc('SIS_275_cpu', SET_SIS_D9, modifier.MOD5, (1.02, 1.3), minu(15)),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1, 1), minu(0)),
+         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1.05, 1), minu(6)),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1.3, 1.1), minu(0)),
+         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD8, (1, 1), minu(0)),
+         Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD3, (1.03, 1.4), minu(10)),
+         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD6, (1.03, 1.1), minu(0)),
          ]
 
 # MIX2
 mix_2 = [
-         Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD1, (1, 1)),
-         Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1, 1)),
-         Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD8, (1.1, 1)),
+         Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD1, (1, 1), minu(10)),
+         Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1, 1), minu(-5)),
+         Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD8, (1.1, 1), minu(20)),
          
-         Desc('SIS_163_cpu', SET_SIS, modifier.MOD4, (1, 1)),
-         Desc('SIS_175_cpu', SET_SIS, modifier.MOD5, (1, 1.2)),
-         Desc('SIS_179_cpu', SET_SIS, modifier.MOD6, (1, 1)),
-         Desc('SIS_298_cpu', SET_SIS, modifier.MOD7, (1, 1)),
-         Desc('SIS_310_cpu', SET_SIS, modifier.MOD8, (1.2, 1)),
-         Desc('SIS_340_cpu', SET_SIS, modifier.MOD2, (1, 1)),
+         Desc('SIS_163_cpu', SET_SIS, modifier.MOD4, (1, 1), minu(10)),
+         Desc('SIS_175_cpu', SET_SIS, modifier.MOD5, (1, 1.1), minu(-20)),
+         Desc('SIS_179_cpu', SET_SIS, modifier.MOD6, (1, 1), minu(-10)),
+         Desc('SIS_298_cpu', SET_SIS, modifier.MOD7, (1, 1), minu(0)),
+         Desc('SIS_310_cpu', SET_SIS, modifier.MOD8, (1.2, 1), minu(0)),
+         Desc('SIS_340_cpu', SET_SIS, modifier.MOD2, (1, 1), minu(5)),
          
-         Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD3, (1, 1.2)),
-         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD4, (1, 1)),
-         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD4, (1.03, 1.1)),
-         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1, 1)),
-         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1.7, 1)),
-         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1.4, 1.2)),
-         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD2, (1, 1)),
-         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD3, (1.2, 1)),
-         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1.5)),
-         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD7, (1, 1)),
-         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 1)),
+         Desc('SIS_29_cpu', SET_SIS_D3, modifier.MOD3, (1, 1.2), hour(1)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD4, (1, 1), minu(10)),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD4, (1.03, 1.1), minu(0)),
+         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1, 1), minu(0)),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1.7, 1), minu(-15)),
+         Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1.4, 1.2), minu(0)),
+         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD2, (1, 1), minu(10)),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD3, (1.2, 1), minu(20)),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1.5), minu(0)),
+         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD7, (1, 1), minu(15)),
+         Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 1), minu(0)),
          ]
 
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_name = 'mix_2'
-selected = mix_2
+selected_name = 'mix_0'
+selected = mix_0
 modified = True
 ##############################
 
@@ -444,7 +445,8 @@ def __build_modified_profiles(mix, save):
         fig, ax = util.new_plot(util.to_array(connection.load(ts_name))[1], 100)
         
         # Modify normal profile        
-        modified_profile, interval = modifier.process_trace(connection, ts_name, mi_element.modifier, mi_element.scale)
+        modified_profile, interval = modifier.process_trace(connection, ts_name,
+                                                            mi_element.modifier, mi_element.scale, mi_element.shift)
         
         util.add_plot(fig, ax, modified_profile)
         util.write_plot('%s_ORIGINAL' % ts_name)
@@ -615,7 +617,7 @@ def __plot_overlay_mix():
     ax = fig.add_subplot(111)
     import random
     for i in xrange(0, 5):
-        i = random.randint(0,len(plot_mix)-1)
+        i = random.randint(0, len(plot_mix) - 1)
         desc = plot_mix[i]
         
         name = desc.name
