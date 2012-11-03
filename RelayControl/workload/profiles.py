@@ -326,7 +326,7 @@ def __build_modified_profiles(mix, save):
         
         # Modify normal profile        
         modified_profile, interval = modifier.process_trace(connection, ts_name,
-                                                            mi_element.modifier, mi_element.additive, 
+                                                            mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
         
         util.add_plot(fig, ax, modified_profile)
