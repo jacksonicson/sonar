@@ -47,13 +47,7 @@ class CompactionQueue extends Thread {
 		logger.trace("length: " + delayQueue.size());
 	}
 
-	private void compact(byte[] key) throws IOException, TException, InterruptedException {
-		logger.info("running compaction...");
-
-		Get get = new Get(key);
-		Result result = table.get(get);
-		NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
-
+	private void compact(byte[] key, NavigableMap<byte[], byte[]> familyMap) throws IOException, TException, InterruptedException {
 		List<CompactPoint> points = new ArrayList<CompactPoint>();
 		Delete del = new Delete(key);
 
@@ -89,16 +83,41 @@ class CompactionQueue extends Thread {
 
 		// Updating HBase
 		// The delete and push operations do not run in a transaction. Therefore, it is possible
-		// that some points are stored twice, once in the compaction and once in a cell. The 
+		// that some points are stored twice, once in the compaction and once in a cell. The
 		// data will then be compacted again and the compaction will contain two points with the
-		// same qualifier. This will be detected in the decompaction phase! 
+		// same qualifier. This will be detected in the decompaction phase!
 		Put put = new Put(key);
 		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
 		table.delete(del);
-		table.flushCommits();
-		
-		logger.info("Compaction finished"); 
+		table.flushCommits(); 
+	}
+
+	private void compact(List<byte[]> keys) throws IOException, TException, InterruptedException {
+		logger.info("running compaction of " + keys.size() + " rows ...");
+
+		List<Get> gets = new ArrayList<Get>();
+		for (byte[] key : keys) {
+			Get get = new Get(key);
+			gets.add(get);
+		}
+
+		Result[] results = table.get(gets);
+		for (int i = 0; i < results.length; i++) {
+			Result result = results[i];
+			NavigableMap<byte[], byte[]> familyMap = result.getFamilyMap(Bytes.toBytes(Const.FAMILY_TSDB_DATA));
+			try {
+				compact(keys.get(i), familyMap);
+			} catch (IOException e) {
+				continue;
+			} catch (TException e) {
+				continue;
+			} catch (InterruptedException e) {
+				continue;
+			}
+		}
+
+		logger.info("Compaction finished");
 	}
 
 	private boolean getCompactionCell(final byte[] row) throws IOException {
@@ -129,26 +148,32 @@ class CompactionQueue extends Thread {
 
 		while (true) {
 
+			List<byte[]> compacts = new ArrayList<byte[]>();
 			try {
 				RowKeyJob data = delayQueue.take();
 
 				// Compaction cell does not exist
 				boolean exists = getCompactionCell(data.getRowKey());
 				if (exists == false) {
-					compact(data.getRowKey());
+					compacts.add(data.getRowKey());
 				} else {
 					// Check age of the last insert (compaction or TSD value)
 					long timestamp = getLastModified(data.getRowKey());
 					long delta = System.currentTimeMillis() - timestamp;
 					if (delta > TIME_DELAY) {
 						// Compaction
-						compact(data.getRowKey());
+						compacts.add(data.getRowKey());
 					} else {
 						// Reschedule
 						logger.debug("reschedule compaction because compaction field changed: " + data.getRowKey());
 						schedule(data.getRowKey());
 					}
 				}
+
+				// Finally trigger compactions
+				if (compacts.size() > 20)
+					compact(compacts);
+
 			} catch (IOException e) {
 				logger.error("Error while compacting", e);
 			} catch (TException e) {
