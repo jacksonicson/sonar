@@ -25,22 +25,25 @@ class Element(object):
         self.height = height
         self.top_width = top_width
 
-
-MOD0 = []
 MOD1 = [
+        Element(hour(3), hour(3), 80),
+        Element(hour(7), hour(3), 40),
         Element(hour(10), hour(4), 70)
         ]
 MOD2 = [
         Element(hour(0), hour(3), 20),
-        Element(hour(9), hour(2), 90),
-        Element(hour(13), hour(2), 30),
+        Element(hour(9), hour(3), 90),
+        Element(hour(13), hour(2), 70),
+        Element(hour(15), hour(6), 30),
         Element(hour(21), hour(3), 20),
         ]
 MOD3 = [
-        Element(hour(9), hour(1), 10),
-        Element(hour(10), hour(2), 40),
+        Element(hour(8), hour(1), 30),
+        Element(hour(9), hour(1), 30),
+        Element(hour(10), hour(2), 50),
         Element(hour(12), hour(2), -20),
-        Element(hour(14), hour(1), -10),
+        Element(hour(14), hour(1), -30),
+        Element(hour(15), hour(1), -10),
         ]
 MOD4 = [
         Element(hour(0), hour(8), 5),
@@ -48,19 +51,27 @@ MOD4 = [
         Element(hour(18), hour(6), 10),
         ]
 MOD5 = [
-        Element(hour(10), hour(1), 120),
+        Element(hour(3), hour(3), 15),
+        Element(hour(10), hour(3), 150),
+        Element(hour(15), hour(3), -20),
         ]
 MOD6 = [
+        Element(hour(3), hour(3), 20),
         Element(hour(8), hour(10), -10),
+        Element(hour(18), hour(4), 30),
         ]
 MOD7 = [
+        Element(hour(1), hour(3), -10),
         Element(hour(7), hour(3), -50),
-        Element(hour(10), hour(12), -20),
+        Element(hour(10), hour(8), -20),
+        Element(hour(18), hour(3), 60),
+        Element(hour(21), hour(3), 30),
         ]
 MOD8 = [
         Element(hour(0), hour(8), 5),
-        Element(hour(8), hour(10), 60),
-        Element(hour(18), hour(6), 10),
+        Element(hour(8), hour(6), 60),
+        Element(hour(16), hour(3), 10),
+        Element(hour(19), hour(3), -20),
         ]
 
 def __generate_mod_ts(demand, modification, interval_length):
@@ -86,11 +97,11 @@ def __generate_mod_ts(demand, modification, interval_length):
     
     return result
 
-def generate_TS(demand, modification, interval_length):
+def generate_TS(demand, modification, interval_length, additive=0):
     result = __generate_mod_ts(demand, modification, interval_length)
     
     # Apply result to the demand curve by multiplication
-    demand += demand * result
+    demand += demand * result + additive * result
     return demand
     
 def stretch(demand, f=1.0):
@@ -104,14 +115,15 @@ def stretch(demand, f=1.0):
 def shift(demand, interval_length, s=0.0):
     i = lambda t: int(t / interval_length)
     s = i(s)
-    print s
-    if s > 0: # shift right
-        print 'shift'
+    if s > 0:
+        print 'shift right'
         l = len(demand)
         tmp = np.concatenate((demand[-s:], demand[:l - s]))
         return tmp
-    elif s < 0: # shift left
+    elif s < 0:
+        print 'shift left'
         l = len(demand)
+        s = abs(s)
         tmp = np.concatenate((demand[s:], demand[:s]))
         return tmp
     else:
@@ -127,35 +139,39 @@ def limit(demand, limit=100):
     demand[exp] = 100
     return demand
     
-def add_modifier(time, demand, interval, modifier, _scale, _shift):
-    demand = generate_TS(demand, modifier, interval)
+def add_modifier(time, demand, interval, modifier, _additive, _scale, _shift):
+    demand = generate_TS(demand, modifier, interval, _additive)
     demand = shift(demand, interval, _shift)
     demand = stretch(demand, _scale[0])
     demand = scale(demand, _scale[1])
     
     return limit(demand)
 
-def process_trace(connection, name, modifier, scale, shift):
+def process_trace(connection, name, modifier, additive, scale, shift):
     timeSeries = connection.load(name)
     time, demand = util.to_array(timeSeries)
     interval = timeSeries.frequency
-    return add_modifier(time, demand, interval, modifier, scale, shift), timeSeries.frequency
+    return add_modifier(time, demand, interval, modifier, additive, scale, shift), timeSeries.frequency
 
 
 def __plot():
-    modifications = [MOD0, MOD1, MOD2, MOD3, MOD4, MOD5,
+    modifications = [MOD1, MOD2, MOD3, MOD4, MOD5,
                      MOD6, MOD7, MOD8]
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_xlabel('Time in minutes')
     ax.set_ylabel('Change factor')
-    
-    
+        
+    i_mix = 0
     for mod in modifications:
+        i_mix += 1
         demand = np.zeros(288)
         result = __generate_mod_ts(demand, mod, minu(5))
-        ax.plot(range(0, len(result) * 5, 5), result, linewidth=0.7)
+        ax.plot(range(0, len(result) * 5, 5), result, linewidth=0.7, label='MIX%i' % i_mix)
+    
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles, labels)
         
     # plt.show()
     plot.rstyle(ax)
