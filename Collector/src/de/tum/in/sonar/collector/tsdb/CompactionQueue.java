@@ -172,7 +172,10 @@ class CompactionQueue extends Thread {
 
 				// Finally trigger compactions
 				if (compacts.size() > 20)
+				{
 					compact(compacts);
+					compacts.clear(); 
+				}
 
 			} catch (IOException e) {
 				logger.error("Error while compacting", e);
