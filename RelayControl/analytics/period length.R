@@ -36,13 +36,13 @@ period_detect = function(index)
   lambdas = c()
   
   # ACF filtering
-  acf.data = acf(list.ts[[index]], lag.max=1000)
+  acf.data = acf(list.ts[[index]], lag.max=1000, plot=FALSE)
   threshold = max(acf.data$acf) / 2
   found = acf.data$lag[acf.data$acf > threshold]
   lambdas = c(lambdas, found)
   
   # Periodogram filtering
-  pdg = periodogram(list.ts[[index]])
+  pdg = periodogram(list.ts[[index]], plot=FALSE)
   threshold = max(pdg$spec) / 2
   found = pdg$freq[pdg$spec > threshold] * length(list.ts[[index]])
   lambdas = c(lambdas, found)
@@ -51,7 +51,7 @@ period_detect = function(index)
   lambdas.old = lambdas
   lambdas = c()
   interval = 5
-  multiples = c(1, 2,3,4,5, 6, 12, 24, 7*24) * 60
+  multiples = c(3,4,5, 6, 12, 24, 7*24, 14*24, 21*24) * 60
   for(lambda in lambdas.old)
   {
     if(lambda < 10)
@@ -73,7 +73,7 @@ period_detect = function(index)
   print(lambdas)
         
   # Seach best lambda by ACF
-  acf.data = acf(list.ts[[index]], lag.max=20000)
+  acf.data = acf(list.ts[[index]], lag.max=20000, plot=FALSE)
   lambda.values = c()
   for(lambda in lambdas)
   {

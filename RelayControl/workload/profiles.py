@@ -306,8 +306,8 @@ mix_2 = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_name = 'mix_0'
-selected = mix_0
+selected_name = 'mix_1'
+selected = mix_1
 modified = True
 ##############################
 
@@ -701,7 +701,7 @@ def dump_times():
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    __build_modified_profiles(selected, True)
+    __build_modified_profiles(selected, False)
     # dump_user_profile_maxes()
     #__plot_overlay_mix()
     
