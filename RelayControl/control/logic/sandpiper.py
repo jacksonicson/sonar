@@ -37,6 +37,7 @@ class Sandpiper(logic.LoadBalancer):
         logger.info('M_VALUE = %i' % M_VALUE)
     
     def forecast(self, data):
+        # TODO double exponential smoothing (holt winter)
         import statsmodels.api as sm
         import statsmodels as sm2
 
@@ -85,6 +86,8 @@ class Sandpiper(logic.LoadBalancer):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
+        
+        # TODO calc underload averaged over all server
         for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
@@ -234,3 +237,61 @@ class Sandpiper(logic.LoadBalancer):
                                 self.migrate(domain, source, target, K_VALUE)                                    
                                 raise StopIteration()
             except StopIteration: pass
+        
+            
+        ############################################
+        ## SWAP TRIGGER ############################
+        ############################################
+        
+        time_now = time.time()
+        sleep_time = 10
+        for node in nodes:
+            node.dump()
+            
+            try:
+                #Overload situation
+                if node.overloaded:
+                    # Source node to swap from
+                    source =node
+                    
+                    # Sort domains by their VSR value in decreasing order
+                    node_domains = []
+                    node_domains.extend(node.domains.values())
+                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
+                    
+                    # Try to swap all domains by decreasing VSR value
+                    for domain in node_domains:
+                        
+                        # Try all targets for swapping
+                        for target_node in reversed(range(nodes.index(node) + 1, len(nodes))):
+                            target_node = nodes[target_node]
+                            
+                            # Sort domains of target by their VSR value in ascending order
+                            target_domains = []
+                            target_domains.extend(target_node.domains.values())
+                            target_domains.sort(lambda a, b: int(b.volume_size - a.volume_size), reverse=True)
+                            
+                            # Try to find TWO nodes for swapping
+                            for target in range(0, len(target_domains)-2):
+                                target_one = target_domains[target]
+                                target_two = target_domains[target+1]
+                                
+                                test = True
+                                # TODO correct test
+                                test &= (target_node.percentile_load(PERCENTILE, k) - target_one.percentile_load(PERCENTILE, k) - target_two.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD
+                                test &= (node.percentile_load(PERCENTILE, k) - domain.percentile_load(PERCENTILE, k) + target_one.percentile_load(PERCENTILE, k) + target_two.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD
+                                test &= len(node.domains) < 6
+                                test &= (time_now - target_node.blocked) > sleep_time
+                                test &= (time_now - source.blocked) > sleep_time
+                                
+                                if test:
+                                    print 'Overload swap: %s from %s swapped with %s and %s from %s' % (domain.name, source.name, target_one.name, target_two.name, target_node.name)
+                                    self.migrate(domain, source, target_node, K_VALUE)
+                                    self.migrate(target_one, target_node, source, K_VALUE)
+                                    self.migrate(target_two, target_node, source, K_VALUE)
+                                    raise StopIteration()
+                                    raise StopIteration()
+                
+            except StopIteration: pass
+        
+        
