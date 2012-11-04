@@ -53,7 +53,7 @@ class Driver(Thread):
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            service_name = domains.profile_by_name(domain.name)
+            service_name = domains.cpu_profile_by_name(domain.name)
             load = service_name + profiles.POSTFIX_NORM
             print 'loading service: %s ...' % (load)
             ts = connection.load(load)

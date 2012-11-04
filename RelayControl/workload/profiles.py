@@ -191,6 +191,21 @@ selected = mix_2
 modified = True
 ##############################
 
+def get_current_cpu_profile(index):
+    '''
+    Gets cpu profile by index from the selected workload mix. The selection
+    depends on the modified flag. 
+    '''
+    
+    desc = by_index(index)
+    name = desc.name + POSTFIX_NORM
+    if modified:
+        name += POSTFIX_MODIFIED
+        
+    print 'Selected cpu profile: %s' % name
+    return name
+
+
 def get_current_user_profile(index):
     '''
     Gets user profile by index from the selected workload mix. The selection
@@ -201,7 +216,7 @@ def get_current_user_profile(index):
     if modified:
         name += POSTFIX_MODIFIED
         
-    print 'Selected profile: %s' % name
+    print 'Selected user profile: %s' % name
     return name 
          
 
@@ -492,7 +507,7 @@ def __plot_overlay_mix():
     # Connect with times
     connection = times_client.connect()
     
-    plot_mix = mix_0
+    plot_mix = mix_1
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -508,7 +523,8 @@ def __plot_overlay_mix():
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
 
     plot.rstyle(ax)
-    plt.savefig('C:/temp/convolution/overlay_mix0.png')
+    plt.savefig('C:/temp/convolution/overlay.png')
+    plt.savefig('C:/temp/convolution/overlay.pdf')
     
     # Close times connection
     times_client.close()
@@ -582,9 +598,9 @@ def dump_times():
     
 # Builds the profiles and saves them in Times
 if __name__ == '__main__':
-    __build_modified_profiles(selected, True)
+    #__build_modified_profiles(selected, True)
     # dump_user_profile_maxes()
-    #__plot_overlay_mix()
+    __plot_overlay_mix()
     
 #    __build_all_profiles_for_mix(mix_0, False)
 #    __build_all_profiles_for_mix(mix_1, False)

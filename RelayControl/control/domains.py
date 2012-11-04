@@ -32,6 +32,14 @@ domain_profile_mapping = [
     ]
 
 
+def cpu_profile_by_name(domain):
+    for entry in domain_profile_mapping:
+        if entry.domain == domain:
+            return profiles.get_current_cpu_profile(entry.profileId)
+        
+    print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
+    return profiles.get_current_cpu_profile(0)
+
 def user_profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry.domain == domain:

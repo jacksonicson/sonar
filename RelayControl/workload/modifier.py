@@ -175,6 +175,7 @@ def __plot():
         
     # plt.show()
     plot.rstyle(ax)
+    plt.savefig('C:/temp/convolution/modifiers.pdf')
     plt.savefig('C:/temp/convolution/modifiers.png')
 
 def main():
