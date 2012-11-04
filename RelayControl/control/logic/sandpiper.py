@@ -87,7 +87,21 @@ class Sandpiper(logic.LoadBalancer):
         ## HOTSPOT DETECTOR ########################
         ############################################
         
-        # TODO calc underload averaged over all server
+        sum_readings = 0
+        counter = 0
+        min_value = 100
+        for node in self.model.get_hosts(types.NODE):
+            counter += 1
+            readings = node.get_readings()
+            
+            # only sum the latest reading and get value of least loaded node
+            for reading in readings[-1:]:
+                sum_readings += reading
+                # TODO if node name is unique, better save node name
+                if reading < min_value: min_value = reading
+            
+        avg_reading = sum_readings / counter;
+        
         for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
@@ -98,11 +112,11 @@ class Sandpiper(logic.LoadBalancer):
             underload = 0
             for reading in readings[-k:]:
                 if reading > THRESHOLD_OVERLOAD: overload += 1
-                if reading < THRESHOLD_UNDERLOAD: underload += 1
+                if reading == min_value: underload += 1
 
             m = M_VALUE
             overload = (overload >= m)
-            underload = (underload >= m)
+            underload = (underload != 0) and (avg_reading < THRESHOLD_UNDERLOAD)
              
             if overload:
                 print 'Overload in %s - %s' % (node.name, readings[-k:])  
