@@ -161,7 +161,7 @@ class Sandpiper(logic.LoadBalancer):
                                 continue
                              
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
@@ -175,7 +175,7 @@ class Sandpiper(logic.LoadBalancer):
                             target = nodes[target]
                              
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
@@ -209,7 +209,7 @@ class Sandpiper(logic.LoadBalancer):
                                 continue
                             
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
@@ -224,7 +224,7 @@ class Sandpiper(logic.LoadBalancer):
                             target = nodes[target]
                             
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + (domain.percentile_load(PERCENTILE, k) / 2.0)) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
