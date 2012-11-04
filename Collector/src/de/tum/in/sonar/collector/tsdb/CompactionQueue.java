@@ -146,9 +146,8 @@ class CompactionQueue extends Thread {
 	public void run() {
 		logger.info("Starting compaction thread...");
 
+		List<byte[]> compacts = new ArrayList<byte[]>();
 		while (true) {
-
-			List<byte[]> compacts = new ArrayList<byte[]>();
 			try {
 				RowKeyJob data = delayQueue.take();
 
@@ -187,7 +186,7 @@ class CompactionQueue extends Thread {
 
 			// Rate limit compaction
 			try {
-				Thread.sleep(500);
+				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				// pass
 			}
