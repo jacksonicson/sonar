@@ -734,8 +734,7 @@ function sensorNamesHandler(req, resp){
             console.log(ss);
             resp.end(ss);
 
-            // Close connection
-            connection.close()
+            // connection.connection.emit('close');
         });
     });
 }
