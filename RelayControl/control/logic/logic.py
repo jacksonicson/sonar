@@ -128,7 +128,7 @@ class LoadBalancer(Thread):
         
         while self.running:
             # Sleeping till next balancing operation
-            # time.sleep(INTERVAL)
+            print 'Waiting for controller queues to fill up...'
             self.event.wait(self.interval)
             if self.running == False:
                 break

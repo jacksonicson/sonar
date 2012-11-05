@@ -11,7 +11,7 @@ from workload import profiles as _profiles #@UnusedImport
 
 ##########################
 ## GLOBAL               ##
-PRODUCTION = False # & (gethostname() == 'Andreas-PC')
+PRODUCTION = False
 
 ##########################
 ## COLLECTOR            ##
@@ -25,6 +25,8 @@ RELAY_PORT = 7900
 
 ##########################
 ## LOGGING              ##
+# Logging to Sonar is only enabled in production mode. Everything else
+# is debugging or playground tests. 
 SONAR_LOGGING = PRODUCTION
 LOGGING_PORT = 7921
 HOSTNAME = gethostname()

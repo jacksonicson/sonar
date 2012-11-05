@@ -259,7 +259,7 @@ class ProcessManager(object):
             return False
            
         base_time = time.time()
-        for _ in xrange(0, 3): # Restart process if it fails
+        for _ in xrange(0, 20): # Restart process if it fails
             # Launch process
             print 'Launching process...'            
             process = self.processLoader.newProcess(name)
@@ -304,7 +304,7 @@ class ProcessManager(object):
                         return True
             
             # Sleep some time between process restarts
-            time.sleep(1)
+            time.sleep(15)
         
         # Process was restarted too often
         print 'Error: process was restarted too often'

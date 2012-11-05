@@ -3,6 +3,7 @@ package de.tum.in.sonar.collector.tsdb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -356,7 +357,7 @@ public class TimeSeriesDatabase extends Thread {
 								CompactTimeseries ts = new CompactTimeseries();
 								deserializer.deserialize(ts, familyMap.get(key));
 
-								// TODO: Detect duplicated points! 
+								// TODO: Detect duplicated points!
 								for (CompactPoint point : ts.getPoints()) {
 									long timestamp = rowTimestampHours + point.getTimestamp();
 									if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
@@ -410,11 +411,12 @@ public class TimeSeriesDatabase extends Thread {
 			Scan scan = new Scan();
 			ResultScanner scanner = table.getScanner(scan);
 
-			Result next;
-			while ((next = scanner.next()) != null) {
-				KeyValue value = next.getColumnLatest(Bytes.toBytes(Const.FAMILY_UID_FORWARD), Bytes.toBytes("sensor"));
+			Iterator<Result> it = scanner.iterator();
+			for (Result next; it.hasNext();) {
+				next = it.next();
+				byte[] value = next.getValue(Bytes.toBytes(Const.FAMILY_UID_FORWARD), Bytes.toBytes("sensor"));
 				if (value != null)
-					result.add(Bytes.toString(value.getKey()));
+					result.add(Bytes.toString(next.getRow()));
 			}
 
 			scanner.close();

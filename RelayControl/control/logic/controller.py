@@ -110,6 +110,8 @@ def main():
     # Create notification handler
     handler = MetricHandler()
     
+    # Decides whether a simulation or a real
+    # control system is run
     if config.PRODUCTION:
         # Connect with sonar to receive metric readings
         import connector
@@ -133,9 +135,6 @@ def main():
     signal.signal(signal.SIGTERM, sigtermHandler)
     
     # Wait for balancer to exit
-    print 'Controller is functional...'
-    
-    
     print 'Waiting for shutdown event...'
     
     # acquire condition
@@ -163,8 +162,6 @@ def main():
     
     print 'Waiting for threads to finish...'
     
-    
-
 if __name__ == '__main__':
     main()
     
