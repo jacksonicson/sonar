@@ -31,27 +31,29 @@ def build_from_current_allocation():
     from virtual import allocation
     allocation = allocation.determine_current_allocation()
     
+    from virtual import nodes
+    
     for host in allocation.iterkeys():
-        node = model.Node(host)
+        node = model.Node(host, nodes.NODE_CPU_CORES)
         
         for domain in allocation[host]:
-            node.add_domain(model.Domain(domain))
+            node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
 
 def build_test_allocation():
     # Build internal infrastructure representation
-    node = model.Node('srv0')
-    node.add_domain(model.Domain('target0'))
-    node.add_domain(model.Domain('target1'))
+    node = model.Node('srv0', 4)
+    node.add_domain(model.Domain('target0', 2))
+    node.add_domain(model.Domain('target1', 2))
     
-    node = model.Node('srv1')
-    node.add_domain(model.Domain('target2'))
-    node.add_domain(model.Domain('target3'))
-    node.add_domain(model.Domain('target4'))
-    node.add_domain(model.Domain('target5'))
+    node = model.Node('srv1', 4)
+    node.add_domain(model.Domain('target2', 2))
+    node.add_domain(model.Domain('target3', 2))
+    node.add_domain(model.Domain('target4', 2))
+    node.add_domain(model.Domain('target5', 2))
     
-    node = model.Node('srv2')
-    node = model.Node('srv3')
+    node = model.Node('srv2', 4)
+    node = model.Node('srv3', 4)
     
 
 def build_initial_model():
