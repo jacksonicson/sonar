@@ -15,7 +15,7 @@ PRODUCTION = False
 
 ##########################
 ## COLLECTOR            ##
-COLLECTOR_IP = 'monitor0'
+COLLECTOR_IP = 'monitor0.dfg'
 COLLECTOR_HOST = 'monitor0.dfg'
 COLLECTOR_PORT = 7911
 

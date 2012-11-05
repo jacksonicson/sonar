@@ -7,7 +7,7 @@ transport = None
 
 def connect():
     global transport
-    transport = TSocket.TSocket('monitor0', 7855)
+    transport = TSocket.TSocket('monitor0.dfg', 7855)
     transport = TTransport.TBufferedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
     client = TimeService.Client(protocol)
