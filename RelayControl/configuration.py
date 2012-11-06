@@ -13,9 +13,18 @@ from workload import profiles as _profiles #@UnusedImport
 ##########################
 ## GLOBAL               ##
 PRODUCTION = False
+
+# Ask user explicitly if production mode is enabled
 __asked = False
 if PRODUCTION == False and __asked == False:
     __asked = True
+    
+    if gethostname() != 'Andreas-PC':
+        print 'ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR '
+        print 'You hostname is not allowed to launch in production mode'
+        print 'ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR '
+        sys.exit(0)
+    
     print 'WARNING WARNING WARNING WARNING WARNING WARNING WARNING'
     print 'Production mode is set to TRUE'
     print 'WARNING WARNING WARNING WARNING WARNING WARNING WARNING'
