@@ -115,7 +115,7 @@ SET_SIS_D9 = ProfileSet(3, minu(5), 3000, day=9)
 mix_0 = [
             Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD8, (1.2, 1), minu(10), 20),
             Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1.1, 1), minu(-15), 20),
-            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1, 1), minu(10), 20),
+            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD3, (1.3, 1.1), minu(10), 20),
             Desc('O2_retail_ADDORDER', SET_O2_RETAIL, modifier.MOD8, (1, 0.8), minu(30), 10),
             Desc('SIS_161_cpu', SET_SIS, modifier.MOD5, (1.1, 0.9), minu(10), 5),
             Desc('SIS_162_cpu', SET_SIS, modifier.MOD7, (1, 1), minu(15), 20),
@@ -137,32 +137,32 @@ mix_0 = [
 
 # MIX1
 mix_1 = [
-         Desc('SIS_397_cpu', SET_SIS, modifier.MOD7, (1.1, 0.6), minu(10), 50),
+         Desc('SIS_397_cpu', SET_SIS, modifier.MOD7, (1.1, 1), minu(10), 30),
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 0.9), minu(-5), 50),
          Desc('SIS_207_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(0), 50),
-         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD6, (1.2, 0.8), minu(10), 50),
-         Desc('SIS_213_cpu', SET_SIS_D9, modifier.MOD7, (1, 1), minu(20), 50),
-         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD6, (1.2, 1.4), minu(0), 50),
-         Desc('SIS_221_cpu', SET_SIS_D9, modifier.MOD7, (1, 2), minu(-10), 50),
-         Desc('SIS_222_cpu', SET_SIS_D9, modifier.MOD1, (1.0, 1), minu(-50), 50),
-         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD8, (1.1, 1.2), minu(10), 50),
+         Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD0, (1.2, 0.8), minu(10), 30),
+         Desc('SIS_213_cpu', SET_SIS_D9, modifier.MOD5, (1, 1.1), minu(20), 10),
+         Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD5, (1.2, 1), minu(0), 40),
+         Desc('SIS_221_cpu', SET_SIS_D9, modifier.MOD7, (1, 1.3), minu(-10), 30),
+         Desc('SIS_222_cpu', SET_SIS_D9, modifier.MOD1, (1.0, 1), minu(-50), 30),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD9, (1.1, 1.3), minu(10), 10),
          Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD8, (1, 1), minu(6), 50),
-         Desc('SIS_245_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(0), 50),
-         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD5, (1, 1), minu(-15), 50),
-         Desc('SIS_271_cpu', SET_SIS_D9, modifier.MOD6, (1.1, 1.03), minu(20), 50),
-         Desc('SIS_275_cpu', SET_SIS_D9, modifier.MOD5, (1.02, 1.3), minu(15), 50),
-         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1, 1), minu(0), 50),
-         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1.05, 1), minu(6), 50),
-         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1.3, 1.1), minu(0), 50),
-         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD8, (1, 1), minu(0), 50),
+         Desc('SIS_245_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(0), 20),
+         Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD3, (1, 1), minu(-15), 50),
+         Desc('SIS_271_cpu', SET_SIS_D9, modifier.MOD6, (1.1, 1.4), minu(50), 40),
+         Desc('SIS_275_cpu', SET_SIS_D9, modifier.MOD5, (1.02, 1.3), minu(15), 10),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1.2, 1), minu(0), 10),
+         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1.05, 1), minu(6), 60),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD0, (1.3, 1.1), minu(-100), 30),
+         Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD8, (1, 1), minu(0), 30),
          Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD3, (1.03, 1.4), minu(10), 50),
-         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD6, (1.03, 1.1), minu(0), 50),
+         Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD6, (1.1, 1.7), minu(50), 50),
          ]
 
 # MIX2
 mix_2 = [
          Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD1, (1, 1), minu(10), 20),
-         Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2, (1, 1), minu(-5), 20),
+         Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD7, (1, 1), minu(-5), 20),
          Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD8, (1.1, 1), minu(20), 20),
          Desc('SIS_163_cpu', SET_SIS, modifier.MOD4, (1, 1), minu(10), 20),
          Desc('SIS_175_cpu', SET_SIS, modifier.MOD5, (1, 1.1), minu(-20), 20),
@@ -174,11 +174,11 @@ mix_2 = [
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD4, (1, 1), minu(10), 20),
          Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD4, (1.03, 1.1), minu(0), 20),
          Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD7, (1.1, 1), minu(20), 0),
-         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1.7, 1), minu(-15), 20),
+         Desc('SIS_225_cpu', SET_SIS_D9, modifier.MOD7, (1.3, 1), minu(-15), 20),
          Desc('SIS_234_cpu', SET_SIS_D9, modifier.MOD1, (1.4, 1.2), minu(0), 20),
          Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD2, (1, 1), minu(10), 20),
-         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD4, (1.2, 1), minu(20), 20),
-         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1.5), minu(0), 20),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD0, (1.2, 1), minu(20), 40),
+         Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD8, (1, 1.5), minu(0), 40),
          Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD4, (1.3, 1), minu(15), 20),
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 1), minu(0), 20),
          ]
@@ -186,8 +186,8 @@ mix_2 = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_name = 'mix_2'
-selected = mix_2
+selected_name = 'mix_1'
+selected = mix_1
 modified = True
 ##############################
 
@@ -596,16 +596,19 @@ def dump_times():
     times_client.close()
     
     
+
+    
 # Builds the profiles and saves them in Times
-if __name__ == '__main__':
-    #__build_modified_profiles(selected, True)
+def main():
+    __build_modified_profiles(selected, True)
     # dump_user_profile_maxes()
-    __plot_overlay_mix()
+    # __plot_overlay_mix()
     
 #    __build_all_profiles_for_mix(mix_0, False)
 #    __build_all_profiles_for_mix(mix_1, False)
-    # __build_all_profiles_for_mix(mix_2, False)
+    #__build_all_profiles_for_mix(mix_2, False)
 
     # dump_times()
 
-
+if __name__ == '__main__':
+    main()

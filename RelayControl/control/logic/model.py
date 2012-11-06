@@ -50,8 +50,11 @@ class __Host(object):
     elements of the infrastructure.  
     '''
     
-    def __init__(self, name):
+    def __init__(self, name, cores):
         self.name = name
+        
+        # Number of cores 
+        self.cpu_cores = cores
         
         # Stores readings over the window
         self.readings = [0 for _ in xrange(0, WINDOW)]
@@ -94,8 +97,8 @@ class __Host(object):
         
     
 class Domain(__Host):
-    def __init__(self, name):
-        super(Domain, self).__init__(name)
+    def __init__(self, name, cores):
+        super(Domain, self).__init__(name, cores)
         
         # Adds itself to the hosts list
         hosts[name] = self
@@ -108,8 +111,8 @@ class Domain(__Host):
     
 
 class Node(__Host):
-    def __init__(self, name):
-        super(Node, self).__init__(name)
+    def __init__(self, name, cores):
+        super(Node, self).__init__(name, cores)
         
         # Adds itself to the hosts list
         hosts[name] = self

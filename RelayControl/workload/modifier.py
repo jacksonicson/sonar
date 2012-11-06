@@ -25,6 +25,11 @@ class Element(object):
         self.height = height
         self.top_width = top_width
 
+MOD0 = [
+        Element(hour(0), hour(4), 50),
+        Element(hour(4), hour(1), 10),
+        Element(hour(5), hour(6), 30)
+        ]
 MOD1 = [
         Element(hour(3), hour(3), 80),
         Element(hour(7), hour(3), 40),
@@ -72,6 +77,13 @@ MOD8 = [
         Element(hour(8), hour(6), 60),
         Element(hour(16), hour(3), 10),
         Element(hour(19), hour(3), -20),
+        ]
+MOD9 = [
+        Element(hour(1), hour(3), +30),
+        Element(hour(7), hour(3), -50),
+        Element(hour(10), hour(8), -20),
+        Element(hour(18), hour(3), 60),
+        Element(hour(21), hour(3), 30),
         ]
 
 def __generate_mod_ts(demand, modification, interval_length):
@@ -155,8 +167,8 @@ def process_trace(connection, name, modifier, additive, scale, shift):
 
 
 def __plot():
-    modifications = [MOD1, MOD2, MOD3, MOD4, MOD5,
-                     MOD6, MOD7, MOD8]
+    modifications = [MOD0, MOD1, MOD2, MOD3, MOD4, MOD5,
+                     MOD6, MOD7, MOD8, MOD9]
     
     fig = plt.figure()
     ax = fig.add_subplot(111)

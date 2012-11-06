@@ -202,6 +202,10 @@ class SSAPvPlacement(Placement):
         print 'Solving model...'
         logger.info('Placement strategy: SSAPv')
         server, assignment = ssapv.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
+        
+        # Set assignment for getter functions 
+        self.assignment = assignment
+        
         if assignment != None:
             print 'Required servers: %i' % (server)
             logger.info('Required servers: %i' % server)
