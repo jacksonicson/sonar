@@ -173,8 +173,59 @@ class Sandpiper(logic.LoadBalancer):
                                 self.migrate(domain, source, target, K_VALUE)
                                 raise StopIteration()
                             
-                        # Swap    
                             
+                        # Try all targets for swapping
+                        for target_node in reversed(range(nodes.index(node) + 1, len(nodes))):
+                            target_node = nodes[target_node]
+                            
+                            if len(target_node.domains) == 0:
+                                # print 'skip %s - %s' % (target.name, target.domains)
+                                continue
+                            
+                            # Sort domains of target by their VSR value in ascending order
+                            target_domains = []
+                            target_domains.extend(target_node.domains.values())
+                            target_domains.sort(lambda a, b: int(b.volume_size - a.volume_size), reverse=True)
+                            
+                            # Try to find one or more low VSR VMs for swapping
+                            for target in range(0, len(target_domains)):
+                                targets = []
+                                
+                                # Get one or more VMs
+                                for i in range(0, target+1):
+                                    targets.append(target_domains[i])                
+                                
+                                # Calculate new loads
+                                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)
+                                new_source_node_load = node.percentile_load(PERCENTILE, k) - domain.percentile_load(PERCENTILE, k)
+                                for target_domain in targets:
+                                    tmp_load = target_domain.percentile_load(PERCENTILE, k)
+                                    new_target_node_load -= tmp_load
+                                    new_source_node_load += tmp_load                              
+                                
+                                #Test if swap violates rules
+                                test = True
+                                test &= new_target_node_load < THRESHOLD_OVERLOAD
+                                test &= new_source_node_load < THRESHOLD_OVERLOAD     
+                                test &= len(node.domains) < 6
+                                test &= (time_now - target_node.blocked) > sleep_time
+                                test &= (time_now - source.blocked) > sleep_time
+                                
+                                if test:
+                                    output = 'Overload swap: ' + domain.name + ' from ' + source.name + ' swapped with '
+                                    for target_domain in targets:
+                                        #TODO remove comma for last elem
+                                        output += target_domain.name + ', '
+                                    output += 'from ' + target_node.name
+                                    print '%s' % (output)
+                                    
+                                    self.migrate(domain, source, target_node, K_VALUE)
+                                    
+                                    for target_domain in targets:
+                                        self.migrate(target_domain, target_node, source, K_VALUE)
+                                        
+                                    raise StopIteration() 
+                        
                             
                         for target in reversed(range(nodes.index(node) + 1, len(nodes))):
                             target = nodes[target]
@@ -239,61 +290,6 @@ class Sandpiper(logic.LoadBalancer):
                                 self.migrate(domain, source, target, K_VALUE)                                    
                                 raise StopIteration()
             except StopIteration: pass
-        
-            
-        ############################################
-        ## SWAP TRIGGER ############################
-        ############################################
-        
-        time_now = time.time()
-        sleep_time = 10
-        for node in nodes:
-            node.dump()
-            
-            try:
-                #Overload situation
-                if node.overloaded:
-                    # Source node to swap from
-                    source =node
-                    
-                    # Sort domains by their VSR value in decreasing order
-                    node_domains = []
-                    node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
-                    
-                    # Try to swap all domains by decreasing VSR value
-                    for domain in node_domains:
-                        
-                        # Try all targets for swapping
-                        for target_node in reversed(range(nodes.index(node) + 1, len(nodes))):
-                            target_node = nodes[target_node]
-                            
-                            # Sort domains of target by their VSR value in ascending order
-                            target_domains = []
-                            target_domains.extend(target_node.domains.values())
-                            target_domains.sort(lambda a, b: int(b.volume_size - a.volume_size), reverse=True)
-                            
-                            # Try to find TWO nodes for swapping
-                            for target in range(0, len(target_domains)-2):
-                                target_one = target_domains[target]
-                                target_two = target_domains[target+1]
-                                
-                                test = True
-                                # TODO correct test
-                                test &= (target_node.percentile_load(PERCENTILE, k) - target_one.percentile_load(PERCENTILE, k) - target_two.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD
-                                test &= (node.percentile_load(PERCENTILE, k) - domain.percentile_load(PERCENTILE, k) + target_one.percentile_load(PERCENTILE, k) + target_two.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD
-                                test &= len(node.domains) < 6
-                                test &= (time_now - target_node.blocked) > sleep_time
-                                test &= (time_now - source.blocked) > sleep_time
-                                
-                                if test:
-                                    print 'Overload swap: %s from %s swapped with %s and %s from %s' % (domain.name, source.name, target_one.name, target_two.name, target_node.name)
-                                    self.migrate(domain, source, target_node, K_VALUE)
-                                    self.migrate(target_one, target_node, source, K_VALUE)
-                                    self.migrate(target_two, target_node, source, K_VALUE)
-                                    raise StopIteration()
-                                    raise StopIteration()
-                
-            except StopIteration: pass
+
         
         
