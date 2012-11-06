@@ -56,12 +56,16 @@ def main():
 
         # Plot accumulated loads
         fig = plt.figure()
+        fig.set
         ax = fig.add_subplot(111)
+        ax.set_title("Workload %s Overload %s" % (profiles.selected_name, profiles.modified))
         ax.axis([0.0, ts_length, 0, 500])
         for load in acc_load:
             ax.plot(range(0, len(load)), load)
     
-        plt.show()
+        # plt.savefig('C:/temp/tesoverload_%s_%s.pdf' % (profiles.selected_name, profiles.modified))
+        fig.show()
+        input("ok")
              
     else:
         print 'Could not check overload - no feasible assignment found'
@@ -69,4 +73,5 @@ def main():
     
 
 if __name__ == '__main__':
+    profiles.main()
     main() 

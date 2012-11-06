@@ -25,6 +25,11 @@ class Element(object):
         self.height = height
         self.top_width = top_width
 
+MOD0 = [
+        Element(hour(0), hour(4), 100),
+        Element(hour(4), hour(1), 10),
+        Element(hour(5), hour(6), 100)
+        ]
 MOD1 = [
         Element(hour(3), hour(3), 80),
         Element(hour(7), hour(3), 40),
@@ -155,7 +160,7 @@ def process_trace(connection, name, modifier, additive, scale, shift):
 
 
 def __plot():
-    modifications = [MOD1, MOD2, MOD3, MOD4, MOD5,
+    modifications = [MOD0, MOD1, MOD2, MOD3, MOD4, MOD5,
                      MOD6, MOD7, MOD8]
     
     fig = plt.figure()
