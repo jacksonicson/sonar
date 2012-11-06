@@ -16,7 +16,7 @@ PRODUCTION = False
 
 # Ask user explicitly if production mode is enabled
 __asked = False
-if PRODUCTION == False and __asked == False:
+if PRODUCTION == True and __asked == False:
     __asked = True
     
     if gethostname() != 'Andreas-PC':
