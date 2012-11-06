@@ -3,6 +3,7 @@ Global Configuration File
 '''
 
 from socket import gethostname
+import sys
 
 # Other configuration files
 from virtual import nodes as _nodes #@UnusedImport
@@ -12,6 +13,16 @@ from workload import profiles as _profiles #@UnusedImport
 ##########################
 ## GLOBAL               ##
 PRODUCTION = False
+__asked = False
+if PRODUCTION == False and __asked == False:
+    __asked = True
+    print 'WARNING WARNING WARNING WARNING WARNING WARNING WARNING'
+    print 'Production mode is set to TRUE'
+    print 'WARNING WARNING WARNING WARNING WARNING WARNING WARNING'
+    yes = raw_input('Enter "y" to continue:')
+    if yes != 'y':
+        print 'Exiting'
+        sys.exit(0);
 
 ##########################
 ## COLLECTOR            ##
