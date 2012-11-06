@@ -42,6 +42,8 @@ def main():
             
         times_client.close()
         
+        print node_assignment
+        
         # Run simulation and report overload situations
         acc_load = [[] for _ in xrange(len(nodes.NODES))]
         for t in xrange(ts_length):
@@ -63,9 +65,8 @@ def main():
         for load in acc_load:
             ax.plot(range(0, len(load)), load)
     
-        # plt.savefig('C:/temp/tesoverload_%s_%s.pdf' % (profiles.selected_name, profiles.modified))
-        fig.show()
-        input("ok")
+        plt.savefig('C:/temp/convolution/tesoverload_%s_%s.png' % (profiles.selected_name, profiles.modified))
+        
              
     else:
         print 'Could not check overload - no feasible assignment found'
