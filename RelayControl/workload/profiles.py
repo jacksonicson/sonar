@@ -139,7 +139,7 @@ mix_0 = [
 mix_1 = [
          Desc('SIS_397_cpu', SET_SIS, modifier.MOD7, (1.1, 1), minu(10), 30),
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 0.9), minu(-5), 50),
-         Desc('SIS_207_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(0), 50),
+         Desc('SIS_207_cpu', SET_SIS_D9, modifier.MOD4, (1.1, 1), minu(-30), 50),
          Desc('SIS_211_cpu', SET_SIS_D9, modifier.MOD0, (1.2, 0.8), minu(10), 50),
          Desc('SIS_213_cpu', SET_SIS_D9, modifier.MOD5, (1, 1.1), minu(20), 30),
          Desc('SIS_216_cpu', SET_SIS_D9, modifier.MOD5, (1.2, 1), minu(0), 20),
@@ -151,11 +151,11 @@ mix_1 = [
          Desc('SIS_264_cpu', SET_SIS_D9, modifier.MOD3, (1, 1), minu(-20), 50),
          Desc('SIS_271_cpu', SET_SIS_D9, modifier.MOD6, (1.1, 1.4), minu(50), 40),
          Desc('SIS_275_cpu', SET_SIS_D9, modifier.MOD5, (1.02, 1.3), minu(15), 10),
-         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1.2, 1), minu(0), 10),
-         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1.05, 1), minu(6), 60),
+         Desc('SIS_279_cpu', SET_SIS_D9, modifier.MOD1, (1.2, 1), minu(30), 10),
+         Desc('SIS_344_cpu', SET_SIS_D8, modifier.MOD2, (1.05, 1), minu(6), 30),
          Desc('SIS_345_cpu', SET_SIS_D8, modifier.MOD0, (1.3, 1.1), minu(-100), 30),
          Desc('SIS_350_cpu', SET_SIS_D8, modifier.MOD8, (1, 1), minu(0), 10),
-         Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD3, (1.03, 1.4), minu(10), 50),
+         Desc('SIS_385_cpu', SET_SIS_D9, modifier.MOD3, (1.03, 1.4), minu(10), 20),
          Desc('SIS_387_cpu', SET_SIS_D9, modifier.MOD6, (1.1, 1.7), minu(50), 50),
          ]
 
