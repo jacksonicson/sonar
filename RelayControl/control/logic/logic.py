@@ -110,8 +110,7 @@ class LoadBalancer(Thread):
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.callback, maxDowntime=10000, info=info)
         else:
-            # TODO: Add some migration time simulation
-            self.callback(domain.name, source.name, target.name, True, None)
+            self.callback(domain.name, source.name, target.name, 0, 0, info, True, None)
         
         
     def lb(self):

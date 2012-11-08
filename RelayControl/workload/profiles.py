@@ -186,8 +186,8 @@ mix_2 = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_name = 'mix_0'
-selected = mix_0
+selected_name = 'mix_1'
+selected = mix_1
 modified = True
 ##############################
 
