@@ -1,6 +1,6 @@
 # Experiments - ANOVA max. resp. t. .csv
 # data = read.csv('C:/temp/Experiments - ANOVA.csv')
-data = read.csv('C:/temp/Experiments - ANOVA max. resp. t. .csv')
+data = read.csv('D:/work/dev/sonar/results/mix0 - ops per second comparsion.csv')
 print(data)
 org.data = data
 
