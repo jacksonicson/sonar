@@ -1,6 +1,23 @@
-data = read.csv('C:/temp/Experiments - ANOVA.csv')
+# Experiments - ANOVA max. resp. t. .csv
+# data = read.csv('C:/temp/Experiments - ANOVA.csv')
+data = read.csv('D:/work/dev/sonar/results/mix0 - ops per second comparsion.csv')
 print(data)
 org.data = data
+
+
+boxplot(data)
+data = stack(data)
+names(data) = c('mrt', 'controller') # mrt = max. resp. time
+res = aov(mrt ~ controller, data=data)
+
+tk = TukeyHSD(res)
+# tk
+plot(tk)
+summary(res)
+
+if(FALSE)
+{
+
 # number of factors (one factor in this case - CPU for this)
 # factors are split into levels (RR, SSAPv and Sandpiper for this)
 # deepen is the number of samples per level
@@ -34,5 +51,5 @@ shapiro.test(org.data$Sandpiper)
 qqnorm(org.data$Sandpiper)
 # Check for equal variations
 # homoscedascity 
-
+}
 
