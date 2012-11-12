@@ -140,8 +140,8 @@ class Sandpiper(logic.LoadBalancer):
         for node in nodes:
             node.dump()
             
+            # Overload situation
             try:
-                # Overload situation
                 if node.overloaded:
                     # Source node to migrate from 
                     source = node
@@ -153,17 +153,14 @@ class Sandpiper(logic.LoadBalancer):
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
-                        
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, k, False)
-                        
                         self.swap(node, nodes, source, domain, time_now, sleep_time, k)
-                        
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, k, True)
                             
             except StopIteration: pass 
             
+            # Underload situation
             try:
-                # Underload  situation
                 if node.underloaded:
                     # Source node to migrate from 
                     source = node
@@ -175,9 +172,7 @@ class Sandpiper(logic.LoadBalancer):
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
-                        
                         self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, k, False)
-                        
                         self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, k, True)
                         
             except StopIteration: pass
@@ -204,6 +199,7 @@ class Sandpiper(logic.LoadBalancer):
                 print 'Overload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
                 self.migrate(domain, source, target, K_VALUE)
                 raise StopIteration()
+        
         
     def swap(self, node, nodes, source, domain, time_now, sleep_time, k):
         # Try all targets for swapping
@@ -258,6 +254,7 @@ class Sandpiper(logic.LoadBalancer):
                         
                     raise StopIteration() 
 
+
     def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration
         for target in range(nodes.index(node) - 1):
@@ -278,3 +275,5 @@ class Sandpiper(logic.LoadBalancer):
                 print 'Underload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
                 self.migrate(domain, source, target, K_VALUE)                                    
                 raise StopIteration()
+            
+            
