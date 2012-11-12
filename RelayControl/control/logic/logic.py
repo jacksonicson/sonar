@@ -126,8 +126,8 @@ class LoadBalancer(Thread):
         logger.log(sonarlog.SYNC, 'Releasing load balancer')
         
         while self.running:
-            # Sleeping till next balancing operation
-            print 'Waiting for controller queues to fill up...'
+            # Wait for next control cycle
+            print 'Wait for next control cycle...'
             self.event.wait(self.interval)
             if self.running == False:
                 break
