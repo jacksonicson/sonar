@@ -187,10 +187,8 @@ class Sandpiper(logic.LoadBalancer):
                 # print 'skip %s - %s' % (target.name, target.domains)
                 continue
                              
-            domain_cpu_factor = target.cpu_cores / domain.cpu_cores
-                             
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= self.domain_to_server_cpu(target, domain, target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -263,10 +261,8 @@ class Sandpiper(logic.LoadBalancer):
             if len(target.domains) == 0 and empty == False:
                 continue
             
-            domain_cpu_factor = target.cpu_cores / domain.cpu_cores
-            
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= self.domain_to_server_cpu(target, domain, target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
