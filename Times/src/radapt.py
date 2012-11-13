@@ -15,7 +15,7 @@ try:
     name = sys.argv[1]
     
     result = connection.find(name)
-    if len(result) != 1:
+    if len(result) == 0:
         print 'No TS found with name: %s' %name
         sys.exit(1)
         
