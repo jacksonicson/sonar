@@ -3,6 +3,7 @@ from model import types
 import json
 import logic
 import time
+import numpy
 
 ######################
 ## CONFIGURATION    ##
@@ -231,7 +232,7 @@ class Sandpiper(logic.LoadBalancer):
                 
                 #Test if swap violates rules
                 test = True
-                print 'Source Load: %s ; Target Load: %s' % (new_source_node_load, new_target_node_load)
+                print ' ---------- Source Load: %s ; Target Load: %s' % (new_source_node_load, new_target_node_load)
                 test &= new_target_node_load < THRESHOLD_OVERLOAD
                 test &= new_source_node_load < THRESHOLD_OVERLOAD     
                 test &= len(node.domains) < 6
@@ -274,3 +275,19 @@ class Sandpiper(logic.LoadBalancer):
                 raise StopIteration()
             
             
+    def normalized_entitlement(self, node, domains, k):
+        # Based on DRS, but use of precentile load as entitlement
+        sum_entitlement = 0
+        for domain in domains:
+            sum_entitlement += domain.percentile_load(PERCENTILE, k)
+          
+        return sum_entitlement / node.percentile_load(PERCENTILE, k)    
+                
+                
+    def imbalance(self, nodes, k):
+        # Based on DRS
+        normalized_entitlements = []
+        for node in nodes:
+            normalized_entitlements.append(self.normalized_entitlement(node, node.domains, k))
+        
+        return numpy.std(normalized_entitlements) 
