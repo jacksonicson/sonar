@@ -147,6 +147,7 @@ class Action2(Action):
     def action(self):
         d = defer.Deferred()
         print "Executing Actio2n"
+        self.blackboard.addData("test","val")
         reactor.callLater(4, d.callback, False)
         return d
 
@@ -155,21 +156,6 @@ class Action3(Action):
     def action(self):
         d = defer.Deferred()
         print "Executing Actio3n"
+        self.blackboard.addData("test","val2")
         reactor.callLater(4, d.callback, True)
         return d
-
-def stop(data):
-    print "Stop method"
-    print data
-    reactor.stop()
-
-b = BlackBoard()
-#s = Sequence(b).addChild(Action3(b)).addChild(Action3(b))
-#s2 = Selector(b).addChild(Action(b)).addChild(Action2(b)).addChild(s)
-#s2 = Selector(b).addChild(Action(b)).addChild(Action(b)).addChild(s)
-s = ParallelNode(b).addChild(Action(b)).addChild(Action2(b))
-d = s.execute()     
-d.addCallback(stop)
-
-reactor.run()
-print b.getData("hi")
