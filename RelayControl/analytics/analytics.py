@@ -13,6 +13,7 @@ import numpy as np
 import sys
 import time
 import traceback
+import matplotlib.pyplot as plt
 
 ##########################
 ## Configuration        ##
@@ -204,6 +205,7 @@ def __fetch_migrations(connection, load_host, timeframe):
     successful = []
     failed = []
     server_active = [] 
+    triggered = []
     
     # scan logs for results
     for log in logs:
@@ -220,13 +222,16 @@ def __fetch_migrations(connection, load_host, timeframe):
             STR_MIGRATION_TRIGGERED = 'Live Migration Triggered: '
             if log.logMessage.startswith(STR_MIGRATION_TRIGGERED):
                 log.logMessage[len(STR_MIGRATION_TRIGGERED):]
+                msg = log.logMessage[len(STR_MIGRATION_TRIGGERED):]
+                migration = json.loads(msg)
+                triggered.append((log.timestamp, migration)) 
             
             # Migration finished
             STR_MIGRATION_FINISHED = 'Live Migration Finished: '
             if log.logMessage.startswith(STR_MIGRATION_FINISHED):
                 msg = log.logMessage[len(STR_MIGRATION_FINISHED):]
                 migration = json.loads(msg)
-                successful.append(migration)
+                successful.append((log.timestamp, migration))
             
             # Migration failed
             STR_MIGRATION_FAILED = 'Live Migration Failed: '
@@ -243,7 +248,7 @@ def __fetch_migrations(connection, load_host, timeframe):
                 active_state = (log.timestamp, active['count'], active['servers'])
                 server_active.append(active_state)
                 
-    return successful, failed, server_active
+    return successful, failed, server_active, triggered
 
 '''
 Extracts all JSON configuration and metric information from the Rain log. This
@@ -499,10 +504,53 @@ def __processing_generate_profiles(domain_workload_map, cpu):
             # Create profile from CPU load
             profiles.process_sonar_trace(workload, cpu[domain][0], cpu[domain][1], True)
  
+ 
+def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
+    for node in nodes.NODES:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
+        
+        cc = mem[node]  
+        ax.axis([min(cc[1]), max(cc[1]), 0, 100])
+        ax.plot(cc[1], cc[0])
+                
+        # Add annotations to the trace
+        for mig in migrations_triggered:
+            if mig[1]['from'] == node:
+                ax.axvline(mig[0] + 40, color='r')
+                
+            if mig[1]['to'] == node:
+                ax.axvline(mig[0] +40, color='c')
+       
+        offset = 10
+        for mig in migrations_successful: 
+            if mig[1]['from'] == node:
+                ax.axvline(mig[0]+40, color='g')
+                ax.annotate('from=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
+                xytext=(-50, -30), textcoords='offset points',
+                arrowprops=dict(arrowstyle="->",
+                                connectionstyle="arc3,rad=.2"),
+                )
+                offset = (offset + 10) % 90
+                
+            if mig[1]['to'] == node:
+                ax.axvline(mig[0]+40, color='m')
+                
+                ax.annotate('to=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
+                xytext=(-50, -30), textcoords='offset points',
+                arrowprops=dict(arrowstyle="->",
+                                connectionstyle="arc3,rad=.2"),
+                )
+                offset = (offset + 10) % 90
+        
+        plt.show()
+    
+ 
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
     migration_durations = []
     for migration in migrations:
-        migration_durations.append(migration['duration'])
+        migration_durations.append(migration[1]['duration'])
     print 'Average migration time: %f' % np.mean(migration_durations)
     
     last_state = None
@@ -784,7 +832,7 @@ def connect_sonar(connection):
     #####################################################################################################################################
     ### Reading Migrations ##############################################################################################################
     #####################################################################################################################################
-    migrations_successful, migrations_failed, server_active_flags = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
+    migrations_successful, migrations_failed, server_active_flags, migrations_triggered = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
     
     print '## MIGRATIONS ##'
     print 'Successful: %i' % len(migrations_successful)
@@ -832,6 +880,7 @@ def connect_sonar(connection):
     print '## MIGRATIONS ##'
     if migrations_successful: 
         servers, avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
+        __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
     else:
         print 'No migrations'
     
