@@ -222,15 +222,16 @@ class Sandpiper(logic.LoadBalancer):
                     targets.append(target_domains[i])                
                 
                 # Calculate new loads
-                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)
-                new_source_node_load = node.percentile_load(PERCENTILE, k) - domain.percentile_load(PERCENTILE, k)
+                new_target_node_load = self.domain_to_server_cpu(target_node, domain, target_node.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k))
+                new_source_node_load = self.domain_to_server_cpu(node, domain, node.percentile_load(PERCENTILE, k) - domain.percentile_load(PERCENTILE, k))
                 for target_domain in targets:
                     tmp_load = target_domain.percentile_load(PERCENTILE, k)
-                    new_target_node_load -= tmp_load
-                    new_source_node_load += tmp_load                              
+                    new_target_node_load = self.domain_to_server_cpu(target_node, target_domain, new_target_node_load - tmp_load)
+                    new_source_node_load = self.domain_to_server_cpu(node, target_domain, new_source_node_load + tmp_load)                              
                 
                 #Test if swap violates rules
                 test = True
+                print 'Source Load: %s ; Target Load: %s' % (new_source_node_load, new_target_node_load)
                 test &= new_target_node_load < THRESHOLD_OVERLOAD
                 test &= new_source_node_load < THRESHOLD_OVERLOAD     
                 test &= len(node.domains) < 6
