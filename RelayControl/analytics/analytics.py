@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '13/11/2012 10:30:00    13/11/2012 17:30:00'
+RAW = '13/11/2012 21:06:00    14/11/2012 04:00:00'
 ##########################
 
 warns = []
@@ -505,6 +505,32 @@ def __processing_generate_profiles(domain_workload_map, cpu):
             profiles.process_sonar_trace(workload, cpu[domain][0], cpu[domain][1], True)
  
  
+def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful):
+    for domain in domain_track_map.keys():
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
+        for track in domain_track_map[domain]:
+            print 'plotting'
+            res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            
+            ax.plot(res_time, res_resp)
+            
+        # Add annotations to the trace
+        print 'domain: %s' % domain
+        for mig in migrations_triggered:
+            print 'test: %s' % mig[1]['domain']
+            if mig[1]['domain'] == domain:
+                ax.axvline(mig[0] + 40, color='r')
+       
+        for mig in migrations_successful:
+            if mig[1]['domain'] == domain: 
+                ax.axvline(mig[0]+40, color='g')
+            
+            
+        plt.show()
+            
+ 
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
     for node in nodes.NODES:
         fig = plt.figure()
@@ -545,7 +571,42 @@ def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
                 offset = (offset + 10) % 90
         
         plt.show()
-    
+   
+   
+def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful):
+    for migration in migrations_successful:
+        
+        # time shift
+        time_shift = 30
+        end_time = migration[0] + time_shift 
+        start_time = migration[0] - migration[1]['duration'] + time_shift
+        
+        from_server = migration[1]['from']
+        to_server = migration[1]['to']
+        
+        from_cpu = cpu[from_server]
+        to_cpu = cpu[to_server]
+
+        before_cpu = []
+        during_cpu = []
+        after_cpu = []        
+        for i in xrange(len(from_cpu[1])):
+            time = from_cpu[1][i]
+            if time > start_time and time < end_time:
+                during_cpu.append(from_cpu[0][i])
+            elif time > (start_time - 60) and time < start_time:
+                before_cpu.append(from_cpu[0][i])
+            elif time > end_time and time < (end_time + 60):
+                after_cpu.append(from_cpu[0][i])
+            
+#        print before_cpu
+#        print during_cpu
+        print '%d - %d - %d' % (np.mean(before_cpu), np.mean(during_cpu), np.mean(after_cpu))
+        if np.mean(before_cpu) > np.mean(during_cpu):
+            print '--'
+        else:
+            print '++'
+        
  
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
     migration_durations = []
@@ -598,12 +659,8 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
             _sub_cpu = extract(cpu[srv])
             _sub_mem = extract(mem[srv])
             
-            # if np.mean(_sub_cpu) > 3: 
             if srv in last_state[2]:
                 # Checked calculation by sighting TS data - seems to work 
-                #from datetime import datetime
-                #f = lambda i: datetime.fromtimestamp(i).strftime('%H:%M:%S') 
-                #print 'SRV %s FRAME: %s - %s' % (srv, f(last_state[0]), f(state[0]))  
                 _clean_cpu.extend(_sub_cpu)
                 _clean_mem.extend(_sub_mem)
             
@@ -823,7 +880,8 @@ def connect_sonar(connection):
     for key in domain_track_map.keys():
         for track in domain_track_map[key]:
             res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-            # 3 Second response time "User Preferences and Search Engine Latency" by Jake D. et al.  
+            # 3 Second response time "User Preferences and Search Engine Latency" by Jake D. et al.
+            # Response Threshold Failures  
             cond = res_resp > 3000 
             ext = np.extract(cond, res_resp)
             sla_fail_count += len(ext)
@@ -880,7 +938,9 @@ def connect_sonar(connection):
     print '## MIGRATIONS ##'
     if migrations_successful: 
         servers, avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
-        __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
+        # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
+        # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
+        # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
         print 'No migrations'
     
