@@ -3,9 +3,9 @@ import configuration as config
 import json
 import model
 import sandpiper
+import scoreboard
 import threading
 import time
-import scoreboard
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -42,6 +42,30 @@ def build_from_current_allocation():
     
 
 def build_test_allocation():
+    import placement
+    from virtual import nodes
+    
+    nodecount = len(nodes.HOSTS)
+    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+    migrations, _ = splace.execute()
+    
+    _nodes = []
+    for node in nodes.NODES: 
+        mnode = model.Node(node, nodes.NODE_CPU_CORES)
+        _nodes.append(mnode)
+        
+    from control import domains 
+    _domains = {}
+    for domain in domains.domain_profile_mapping:
+        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+        _domains[domain.domain] = dom
+        
+    for migration in migrations:
+        print migration 
+        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
+    
+ 
+def build_debug_allocation():    
     # Build internal infrastructure representation
     node = model.Node('srv0', 4)
     node.add_domain(model.Domain('target0', 2))
@@ -164,6 +188,10 @@ def main():
     print 'Shutting down now... ',
     if driver is not None:
         driver.stop()
+        driver.join()
+        
+        global exited
+        exited = True
         
     if balancer is not None:
         balancer.stop()

@@ -7,8 +7,8 @@ from threading import Thread
 import json
 import scoreboard
 import threading
-import time
 import util
+import time
 
 ######################
 ## CONFIGURATION    ##
@@ -21,6 +21,25 @@ migration_id_counter = 0
 
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
+
+class SimulatedMigration(Thread):
+    def __init__(self, domain, node_from, node_to, callback, info):
+        super(SimulatedMigration, self).__init__()
+        
+        self.domain = domain
+        self.node_from = node_from
+        self.node_to = node_to
+        self.callback = callback
+        self.info = info
+        self.exited = False
+    
+    def run(self):
+        self.start = util.time()
+        time.sleep(util.adjust_for_speedup(32))
+        self.end = util.time() + util.adjust_for_speedup(32)
+        util.sim_time = self.end
+        self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)
+        self.exited = True
 
 class LoadBalancer(Thread):
     '''
@@ -108,8 +127,8 @@ class LoadBalancer(Thread):
         # Set block times in the future to guarantee that the block does not run out 
         # until the migration is finished
         now_time = util.time()
-        source.blocked = now_time + util.adjust_for_speedup(60 * 60)
-        target.blocked = now_time + util.adjust_for_speedup(60 * 60)
+        source.blocked = now_time + util.adjust_for_speedup(600 * 60)
+        target.blocked = now_time + util.adjust_for_speedup(600 * 60)
         
         data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name, 'id': migration_id})
         logger.info('Live Migration Triggered: %s' % data)
@@ -128,16 +147,20 @@ class LoadBalancer(Thread):
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.callback, maxDowntime=10000, info=info)
         else:
-            # TODO: Run some migration simulation
-            self.callback(domain.name, source.name, target.name, 0, 0, info, True, None)
-        
-        
+            thread = SimulatedMigration(domain.name, source.name, target.name, self.callback, info)
+            thread.start()
+            
+       
     def lb(self):
+        # Stub method needs implementation
         print 'No load balancer implemented'
         pass
     
+    
     def dump(self):
+        # Needs implementation
         pass
+    
     
     def domain_to_server_cpu(self, target, domain, domain_cpu):
         domain_cpu_factor = target.cpu_cores / domain.cpu_cores
@@ -145,7 +168,7 @@ class LoadBalancer(Thread):
     
     def run(self):
         # Gather data phase
-        time.sleep(START_WAIT)
+        time.sleep(util.adjust_for_speedup(START_WAIT))
         logger.log(sonarlog.SYNC, 'Releasing load balancer')
         
         while self.running:

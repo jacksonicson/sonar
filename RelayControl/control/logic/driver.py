@@ -83,6 +83,9 @@ class Driver(Thread):
         # Close times connection
         times_client.close()
         
+        # Adapt frequency (24h to 6h)
+        freq = freq / (24.0 / 6.0)
+        
         ###############################
         ## Simulation Loop
         ###############################
@@ -94,6 +97,8 @@ class Driver(Thread):
                 print 'Driver exited!'
                 self.running = False 
                 break
+            
+            print 'Progress: %f' % ((tindex / min_ts_length) * 100)
             
             # For all nodes update their domains and aggregate the load for the node
             for host in self.model.get_hosts(self.model.types.NODE):

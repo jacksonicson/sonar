@@ -123,7 +123,7 @@ class Sandpiper(controller.LoadBalancer):
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = util.time()
-        sleep_time = util.adjust_for_speedup(10)
+        sleep_time = util.adjust_for_speedup(60)
         for node in nodes:
             node.dump()
             
