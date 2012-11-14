@@ -703,7 +703,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     # Calculate average loads
     avg_cpu = np.mean(_clean_cpu)
     avg_mem = np.mean(_clean_mem)
-    avg_servers = occupied_minutes / 60 / duration
+    avg_servers = (occupied_minutes / 60.0) / duration
     
     # Print stats
     print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
@@ -713,7 +713,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     print 'Average servers: %f' % (occupied_minutes / 60 / duration)
     print 'Average server load: %f' % np.mean(_clean_cpu)
     
-    # Regurn analytical results
+    # Return analytical results
     return avg_servers, avg_cpu, avg_mem
     
     
