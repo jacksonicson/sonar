@@ -20,8 +20,8 @@ if configuration.PRODUCTION:
     
 else:
     
-    START_WAIT = 0 
-    INTERVAL = 20
+    START_WAIT = 10*60
+    INTERVAL = 60
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 40
     PERCENTILE = 80.0
@@ -51,12 +51,11 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'm_value' : M_VALUE
                                                                  }))
     
-    def post_migrate_hook(self, success, domain, node_from, node_to):
+    def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:
             # Release block
-            time_now = util.time()
-            node_from.blocked = time_now
-            node_to.blocked = time_now
+            node_from.blocked = end_time
+            node_to.blocked = end_time
             
             # Reset CPU consumption: Necessary because the old CPU readings
             # may trigger another migrations as they do not represent the load
@@ -65,9 +64,8 @@ class Sandpiper(controller.LoadBalancer):
             node_to.flush(50)
             
         else:
-            time_now = util.time()
-            node_from.blocked = time_now
-            node_to.blocked = time_now
+            node_from.blocked = end_time
+            node_to.blocked = end_time
         
         
     def lb(self):
@@ -123,7 +121,7 @@ class Sandpiper(controller.LoadBalancer):
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = util.time()
-        sleep_time = util.adjust_for_speedup(60)
+        sleep_time = 60
         for node in nodes:
             node.dump()
             

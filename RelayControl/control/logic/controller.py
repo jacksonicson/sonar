@@ -35,9 +35,10 @@ class SimulatedMigration(Thread):
     
     def run(self):
         self.start = util.time()
-        time.sleep(util.adjust_for_speedup(32))
-        self.end = util.time() + util.adjust_for_speedup(32)
+        time.sleep(util.adjust_for_speedup(60))
+        self.end = util.time() + 32
         util.sim_time = self.end
+        
         self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)
         self.exited = True
 
@@ -67,10 +68,6 @@ class LoadBalancer(Thread):
         self.event.set()
     
     
-    def post_migrate_hook(self):
-        pass
-    
-    
     def callback(self, domain, node_from, node_to, start, end, info, status, error):
         node_from = self.model.get_host(node_from)
         node_to = self.model.get_host(node_to)
@@ -90,14 +87,14 @@ class LoadBalancer(Thread):
             del node_from.domains[domain.name]
             
             # Call post migration hook in concrete controller implementation
-            self.post_migrate_hook(True, domain, node_from, node_to)
+            self.post_migrate_hook(True, domain, node_from, node_to, end)
             
             print 'Migration finished'
             logger.info('Live Migration Finished: %s' % data)
             
         else:
             # Call post migration hook in concrete controller implementation
-            self.post_migrate_hook(False, domain, node_from, node_to)
+            self.post_migrate_hook(False, domain, node_from, node_to, end)
             
             print 'Migration failed'
             logger.error('Live Migration Failed: %s' % data)
@@ -127,8 +124,8 @@ class LoadBalancer(Thread):
         # Set block times in the future to guarantee that the block does not run out 
         # until the migration is finished
         now_time = util.time()
-        source.blocked = now_time + util.adjust_for_speedup(600 * 60)
-        target.blocked = now_time + util.adjust_for_speedup(600 * 60)
+        source.blocked = now_time + 60 * 60
+        target.blocked = now_time + 60 * 60
         
         data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name, 'id': migration_id})
         logger.info('Live Migration Triggered: %s' % data)

@@ -44,6 +44,7 @@ def build_from_current_allocation():
 def build_test_allocation():
     import placement
     from virtual import nodes
+    from control import domains 
     
     nodecount = len(nodes.HOSTS)
     splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
@@ -54,7 +55,6 @@ def build_test_allocation():
         mnode = model.Node(node, nodes.NODE_CPU_CORES)
         _nodes.append(mnode)
         
-    from control import domains 
     _domains = {}
     for domain in domains.domain_profile_mapping:
         dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)

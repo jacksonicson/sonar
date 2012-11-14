@@ -7,11 +7,12 @@ import configuration
 from workload import util as wutil
 from service import times_client
 import util
+from virtual import nodes
 
 class Driver(Thread):
     
     # The default settings are estimations of the real world infrastructure
-    def __init__(self, model, handler, report_rate=3, resize=1.0):
+    def __init__(self, model, handler, report_rate=3, resize=0.9):
         super(Driver, self).__init__()
 
         # Reference to the data model which stores the current infrastructure status
@@ -83,7 +84,7 @@ class Driver(Thread):
         # Close times connection
         times_client.close()
         
-        # Adapt frequency (24h to 6h)
+        # Reduce length of time series to 6 hours
         freq = freq / (24.0 / 6.0)
         
         ###############################
@@ -98,7 +99,7 @@ class Driver(Thread):
                 self.running = False 
                 break
             
-            print 'Progress: %f' % ((tindex / min_ts_length) * 100)
+            # print 'Progress: %f' % ((tindex / min_ts_length) * 100)
             
             # For all nodes update their domains and aggregate the load for the node
             for host in self.model.get_hosts(self.model.types.NODE):
@@ -106,12 +107,12 @@ class Driver(Thread):
                 
                 # Go over all domains and update their load by their TS
                 for domain in host.domains.values():
-                    load = domain.ts[tindex] / self.resize
+                    load = domain.ts[tindex] * self.resize
                      
                     self.__notify(sim_time, domain.name, 'psutilcpu', load)
                     
                     # Load aggregation for the node
-                    aggregated_load += load
+                    aggregated_load += (load / (nodes.NODE_CPU_CORES / nodes.DOMAIN_CPU_CORES))
 
 
                 # Send aggregated load
@@ -126,6 +127,4 @@ class Driver(Thread):
             # Whole simulation is accelerated 
             time.sleep(self.report_rate)
             util.sim_time = sim_time
-        
-            
             
