@@ -164,6 +164,12 @@ def main():
     
     print 'Waiting for threads to finish...'
     
+    print 'Analytics: '
+    import scoreboard 
+    sb = scoreboard.Scoreboard()
+    sb.dump() 
+    
+    
 if __name__ == '__main__':
     main()
     

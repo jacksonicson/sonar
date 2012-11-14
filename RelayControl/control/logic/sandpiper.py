@@ -21,7 +21,7 @@ if configuration.PRODUCTION:
 else:
     
     START_WAIT = 0 
-    INTERVAL = 20
+    INTERVAL = 5
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 40
     PERCENTILE = 80.0

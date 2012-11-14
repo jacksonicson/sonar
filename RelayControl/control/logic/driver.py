@@ -6,7 +6,7 @@ import time
 
 class Driver(Thread):
     
-    def __init__(self, model, handler, report_rate=3, acceleration=25, sizedown=1.5):
+    def __init__(self, model, handler, report_rate=3, acceleration=50, sizedown=1.0):
         super(Driver, self).__init__()
         
         self.model = model

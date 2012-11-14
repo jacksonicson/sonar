@@ -3,6 +3,7 @@ from logs import sonarlog
 import time
 import json
 import threading
+import scoreboard
 
 ######################
 ## CONFIGURATION    ##
@@ -64,7 +65,6 @@ class LoadBalancer(Thread):
             logger.info('Live Migration Finished: %s' % data)
             
         else:
-            
             print 'Migration failed'
             self.post_migrate_hook(False, domain, node_from, node_to)
             logger.error('Live Migration Failed: %s' % data)
@@ -76,6 +76,9 @@ class LoadBalancer(Thread):
                                                        'servers' : active_server_info[1],
                                                        'timestamp' : time.time()}))
         
+        # Update internal dashboard
+        sb = scoreboard.Scoreboard()
+        sb.add_active_info(active_server_info[0])
         
         
     def migrate(self, domain, source, target, kvalue):
@@ -138,4 +141,8 @@ class LoadBalancer(Thread):
             
             print 'Running load balancer...'
             self.lb()
+      
+            print 'Scoreboard'      
+            sb = scoreboard.Scoreboard()
+            sb.dump() 
                 
