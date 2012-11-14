@@ -1,7 +1,7 @@
 from logs import sonarlog
 from model import types
 import json
-import logic
+import controller
 import time
 import numpy
 
@@ -21,7 +21,7 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper_standard(logic.LoadBalancer):
+class Sandpiper_standard(controller.LoadBalancer):
     
     def __init__(self, model, production):
         super(Sandpiper_standard, self).__init__(model, production, INTERVAL)
