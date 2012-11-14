@@ -40,14 +40,14 @@ class Scoreboard(object):
             
             delta_time = info.timestamp - last_info.timestamp
             servers = last_info.servercount
-            print 'servers %f - time %f' % (servers, delta_time)
+            # print 'servers %f - time %f' % (servers, delta_time)
             server_seconds += (servers * delta_time)
             
             # Update last info
             last_info = info
             
-        total_time = wrapped_infos[-1].timestamp - wrapped_infos[0].timestamp + 1
-        print 'total time %f' % total_time
+        total_time = wrapped_infos[-1].timestamp - wrapped_infos[0].timestamp
+        total_time = max(total_time, 1)
         avg_count = server_seconds / total_time
         return avg_count
              
@@ -56,7 +56,3 @@ class Scoreboard(object):
         print 'Records %i' % len(Scoreboard.active_server_infos)
         print 'Average server count %f' % self.analytics_average_server_count()
         
-        
-        
-        
-         

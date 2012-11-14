@@ -2,8 +2,8 @@ from logs import sonarlog
 from model import types
 import json
 import controller
-import time
 import configuration
+import util
 
 ######################
 ## CONFIGURATION    ##
@@ -21,7 +21,7 @@ if configuration.PRODUCTION:
 else:
     
     START_WAIT = 0 
-    INTERVAL = 5
+    INTERVAL = 20
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 40
     PERCENTILE = 80.0
@@ -39,49 +39,6 @@ class Sandpiper(controller.LoadBalancer):
     def __init__(self, model, production):
         super(Sandpiper, self).__init__(model, production, INTERVAL)
         
-        
-    def dump(self):
-        logger.info('Controller: Sandpiper')
-        logger.info('START_WAIT = %i' % START_WAIT)
-        logger.info('INTERVAL = %i' % INTERVAL)
-        logger.info('THRESHOLD_OVERLOAD = %i' % THRESHOLD_OVERLOAD)
-        logger.info('THRESHOLD_UNDERLOAD = %i' % THRESHOLD_UNDERLOAD)
-        logger.info('_PERCENTILE = %i' % PERCENTILE)
-        logger.info('K_VALUE = %i' % K_VALUE)
-        logger.info('M_VALUE = %i' % M_VALUE)
-    
-    def forecast(self, data):
-        import statsmodels.api as sm
-        import statsmodels as sm2
-
-        model = sm2.tsa.ar_model.AR(data).fit()
-        try:
-            value = model.predict(len(data), len(data) + 1)
-            return value[0]
-        except:
-            return data[-1]
-        
-        
-    def post_migrate_hook(self, success, domain, node_from, node_to):
-        if success:
-            # Release block
-            time_now = time.time()
-            node_from.blocked = time_now
-            node_to.blocked = time_now
-            
-            # Reset CPU consumption: Necessary because the old CPU readings
-            # may trigger another migrations as they do not represent the load
-            # without the VM
-            node_from.flush(50)
-            node_to.flush(50)
-            
-        else:
-            
-            time_now = time.time()
-            node_from.blocked = time_now
-            node_to.blocked = time_now
-        
-        
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
@@ -93,6 +50,24 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'k_value' :K_VALUE,
                                                                  'm_value' : M_VALUE
                                                                  }))
+    
+    def post_migrate_hook(self, success, domain, node_from, node_to):
+        if success:
+            # Release block
+            time_now = util.time()
+            node_from.blocked = time_now
+            node_to.blocked = time_now
+            
+            # Reset CPU consumption: Necessary because the old CPU readings
+            # may trigger another migrations as they do not represent the load
+            # without the VM
+            node_from.flush(50)
+            node_to.flush(50)
+            
+        else:
+            time_now = util.time()
+            node_from.blocked = time_now
+            node_to.blocked = time_now
         
         
     def lb(self):
@@ -147,8 +122,8 @@ class Sandpiper(controller.LoadBalancer):
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
-        time_now = time.time()
-        sleep_time = 10
+        time_now = util.time()
+        sleep_time = util.adjust_for_speedup(10)
         for node in nodes:
             node.dump()
             
