@@ -1,26 +1,40 @@
 from logs import sonarlog
 from model import types
 import json
-import logic
+import controller
 import time
+import configuration
 
 ######################
 ## CONFIGURATION    ##
 ######################
-START_WAIT = 0
-INTERVAL = 20
-THRESHOLD_OVERLOAD = 90
-THRESHOLD_UNDERLOAD = 40
-PERCENTILE = 80.0
+if configuration.PRODUCTION: 
+    START_WAIT = 120
+    INTERVAL = 20
+    THRESHOLD_OVERLOAD = 90
+    THRESHOLD_UNDERLOAD = 40
+    PERCENTILE = 80.0
+    
+    K_VALUE = 20 # sliding windows size
+    M_VALUE = 17 # m values out of the window k must be above or below the threshold
+    
+else:
+    
+    START_WAIT = 0 
+    INTERVAL = 5
+    THRESHOLD_OVERLOAD = 90
+    THRESHOLD_UNDERLOAD = 40
+    PERCENTILE = 80.0
+    
+    K_VALUE = 20 
+    M_VALUE = 17 
 
-K_VALUE = 20 # sliding windows size
-M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(logic.LoadBalancer):
+class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, model, production):
         super(Sandpiper, self).__init__(model, production, INTERVAL)
