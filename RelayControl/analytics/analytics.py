@@ -609,76 +609,111 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
         
  
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
+    # Calculate descriptive statistics on migration time
     migration_durations = []
     for migration in migrations:
         migration_durations.append(migration[1]['duration'])
-    print 'Average migration time: %f' % np.mean(migration_durations)
+        
+    print 'Migration time average: %f' % np.mean(migration_durations)
+    print 'Migration time 50th percentile: %f' % np.percentile(migration_durations, 50)
+    print 'Migration time 90th percentile: %f' % np.percentile(migration_durations, 90)
+    print 'Migration time 99th percentile: %f' % np.percentile(migration_durations, 99)
     
-    last_state = None
-    
-    occupied_minutes = 0.0
-    empty_minutes = 0.0
-    
-    _clean_cpu = []
-    _clean_mem = []
-    
+    # Average server count and server load calculations
+    # Server active flags mark changes in server active count
+    # Wrap server active flags with start and end flag at the beginning and end of experiment
+    # Each state is a tuple with: 
+    # (timestamp, TODO!!!!!!!!!!!!!!!!!! 
     _server_active = []
     _server_active.append((data_frame[0], server_active_flags[0][1], server_active_flags[0][2]))
     _server_active.extend(server_active_flags)
     _server_active.append((data_frame[1], server_active_flags[-1][1], server_active_flags[-1][2]))
+
+    # Hold info about the state of the last iteration interval
+    last_state = None
     
+    # Counts occupied and empty server minutes
+    occupied_minutes = 0.0
+    empty_minutes = 0.0
+    
+    # List of cpu and mem readings for busy server time intervals only
+    # Non active server readings are excluded from these lists 
+    _clean_cpu = []
+    _clean_mem = []
+
+    # Iterate over all server status state changes    
     for state in _server_active:
+        # If last state is not set - this is the last state
         if last_state == None:
             last_state = state
             continue
         
+        # Time between last state and current state
         delta_time = float(state[0] - last_state[0])
         
-        # minutes - timestamps are in seconds
-        # last state server count is used:
+        # Number of active servers 
         # |FLAG (last) | ........ |FLAG (iteration current) |
-        # The info from the last flag was active due to the time stamp
-        # of the iteration current flag!
+        # Servers active: 
+        # |                       ..........................|
+        # |.......................                          |
+        # |^^^this one is taken^^^
+        # The info from the *last flag* was active due *to the iteration current time stamp*
         active_servers = float(last_state[1])
         
-        occupied_minutes += (active_servers * delta_time) / 60.0 
+        # Occupied server minutes
+        occupied_minutes += (active_servers * delta_time) / 60.0
+        
+        # Empty server minutes 
         empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
         
-        for srv in nodes.NODES: 
+        # Go over all servers
+        for srv in nodes.NODES:
+            # Extracts a segment of a load time series
+            # Parameter: tuple with (load TS, time TS) 
             def extract(tupel):
                 _sub_arr = []
+                # Go over all timestamps
                 for i in xrange(len(tupel[1])):
                     value = tupel[0][i]
                     time = tupel[1][i]
                     
-                    if time >= last_state[0] and time <= state[0]:
+                    # Check if time is in range (timestamp of last state and timestamp of current state)
+                    if time >= last_state[0] and time < state[0]:
                         _sub_arr.append(value)
                         
+                # Return segment
                 return _sub_arr
             
+            # Get the cpu and mem load of the server during the delta_time interval
             _sub_cpu = extract(cpu[srv])
             _sub_mem = extract(mem[srv])
             
+            # If the server was active in the interval - add the loads to the total load
             if srv in last_state[2]:
                 # Checked calculation by sighting TS data - seems to work 
                 _clean_cpu.extend(_sub_cpu)
                 _clean_mem.extend(_sub_mem)
             
-        
+        # Update last_state!
         last_state = state
     
+    # Calculate experiment duration in hours as float
     duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
+    
+    # Calculate average loads
+    avg_cpu = np.mean(_clean_cpu)
+    avg_mem = np.mean(_clean_mem)
+    avg_servers = occupied_minutes / 60 / duration
+    
+    # Print stats
     print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
     print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
     print 'Empty minutes: %i' % empty_minutes
     print 'Average servers: %f' % (occupied_minutes / 60 / duration)
-    
     print 'Average server load: %f' % np.mean(_clean_cpu)
-    avg_cpu = np.mean(_clean_cpu)
-    avg_mem = np.mean(_clean_mem)
-    avg_servers = occupied_minutes / 60 / duration
     
+    # Regurn analytical results
     return avg_servers, avg_cpu, avg_mem
     
     
