@@ -21,10 +21,10 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(logic.LoadBalancer):
+class Sandpiper_standard(logic.LoadBalancer):
     
     def __init__(self, model, production):
-        super(Sandpiper, self).__init__(model, production, INTERVAL)
+        super(Sandpiper_standard, self).__init__(model, production, INTERVAL)
         
         
     def dump(self):
@@ -41,10 +41,9 @@ class Sandpiper(logic.LoadBalancer):
         # TODO double exponential smoothing (holt winter)
         import statsmodels.api as sm
         import statsmodels as sm2
-
         model = sm2.tsa.ar_model.AR(data).fit()
         try:
-            value = model.predict(len(data), len(data) + 1)
+            value = model.predict(len(data) - 1, len(data))
             return value[0]
         except:
             return data[-1]
@@ -101,15 +100,21 @@ class Sandpiper(logic.LoadBalancer):
                 if reading < THRESHOLD_UNDERLOAD: underload += 1
 
             m = M_VALUE
-            overload = (overload >= m)
-            underload = (underload >= m)
+            forecast = self.forecast(readings[-k:])        
+            overloaded = True
+            overloaded &= (overload >= m)
+            overloaded &= (forecast > THRESHOLD_OVERLOAD)
+        
+            underloaded = True
+            underloaded &= (underload >= m)
+            underloaded &= (forecast < THRESHOLD_UNDERLOAD)
              
-            if overload:
+            if overloaded:
                 print 'Overload in %s - %s' % (node.name, readings[-k:])  
              
             # Update overload                                
-            node.overloaded = overload
-            node.underloaded = underload
+            node.overloaded = overloaded
+            node.underloaded = underloaded
             
             
         ############################################
@@ -189,13 +194,13 @@ class Sandpiper(logic.LoadBalancer):
                 continue
                              
             test = True
-            test &= self.domain_to_server_cpu(target, domain, target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
                             
             if test: 
-                print 'Overload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
+                print ' --------------- Overload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
                 self.migrate(domain, source, target, K_VALUE)
                 raise StopIteration()
         
@@ -212,7 +217,7 @@ class Sandpiper(logic.LoadBalancer):
             # Sort domains of target by their VSR value in ascending order
             target_domains = []
             target_domains.extend(target_node.domains.values())
-            target_domains.sort(lambda a, b: int(b.volume_size - a.volume_size), reverse=True)
+            target_domains.sort(lambda a, b: int((a.volume_size - b.volume_size) * 100000))
             
             # Try to find one or more low VSR VMs for swapping
             for target in range(0, len(target_domains)):
@@ -221,18 +226,23 @@ class Sandpiper(logic.LoadBalancer):
                 # Get one or more VMs
                 for i in range(0, target+1):
                     targets.append(target_domains[i])                
-                
+
                 # Calculate new loads
-                new_target_node_load = self.domain_to_server_cpu(target_node, domain, target_node.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k))
-                new_source_node_load = self.domain_to_server_cpu(node, domain, node.percentile_load(PERCENTILE, k) - domain.percentile_load(PERCENTILE, k))
+                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
+                new_source_node_load = node.percentile_load(PERCENTILE, k) - self.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
+                #print 'Target Node: Name: %s ;Load: %s' % (target_node.name, target_node.percentile_load(PERCENTILE, k))
+                #print 'Source Node: Name: %s ;Load: %s' % (node.name, node.percentile_load(PERCENTILE, k))
+                #print 'Source VM: Name: %s ;Load: %s' % (domain.name, self.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k)))
                 for target_domain in targets:
                     tmp_load = target_domain.percentile_load(PERCENTILE, k)
-                    new_target_node_load = self.domain_to_server_cpu(target_node, target_domain, new_target_node_load - tmp_load)
-                    new_source_node_load = self.domain_to_server_cpu(node, target_domain, new_source_node_load + tmp_load)                              
+                    #print 'Target Node: Name: %s ;Load on Target: %s' % (target_domain.name, self.domain_to_server_cpu(target_node, target_domain, tmp_load))
+                    #print 'Target Node: Name: %s ;Load on Source: %s' % (target_domain.name, self.domain_to_server_cpu(node, target_domain, tmp_load) )
+                    new_target_node_load -= self.domain_to_server_cpu(target_node, target_domain, tmp_load)
+                    new_source_node_load += self.domain_to_server_cpu(node, target_domain, tmp_load)                              
                 
                 #Test if swap violates rules
                 test = True
-                print ' ---------- Source Load: %s ; Target Load: %s' % (new_source_node_load, new_target_node_load)
+                #print ' --------------- Source Load: %s ; Target Load: %s' % (new_source_node_load, new_target_node_load)
                 test &= new_target_node_load < THRESHOLD_OVERLOAD
                 test &= new_source_node_load < THRESHOLD_OVERLOAD     
                 test &= len(node.domains) < 6
@@ -240,7 +250,7 @@ class Sandpiper(logic.LoadBalancer):
                 test &= (time_now - source.blocked) > sleep_time
                 
                 if test:
-                    output = 'Overload swap: ' + domain.name + ' from ' + source.name + ' swapped with '
+                    output = ' --------------- Overload swap: ' + domain.name + ' from ' + source.name + ' swapped with '
                     for target_domain in targets:
                         #TODO remove comma for last elem
                         output += target_domain.name + ', '
@@ -264,13 +274,13 @@ class Sandpiper(logic.LoadBalancer):
                 continue
             
             test = True
-            test &= self.domain_to_server_cpu(target, domain, target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k)) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
             
             if test: 
-                print 'Underload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
+                print ' --------------- Underload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
                 self.migrate(domain, source, target, K_VALUE)                                    
                 raise StopIteration()
             
