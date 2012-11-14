@@ -37,6 +37,8 @@ class Driver(Thread):
     def stop(self):
         self.running = False
      
+    def is_running(self):
+        return self.running
      
     def __notify(self, timestamp, name, sensor, value):
         data = ttypes.NotificationData()
@@ -87,7 +89,11 @@ class Driver(Thread):
         # Replay time series data
         while self.running:
             # Index for simulation time 
-            tindex = (sim_time / freq) % min_ts_length
+            tindex = (sim_time / freq)
+            if tindex > min_ts_length:
+                print 'Driver exited!'
+                self.running = False 
+                break
             
             # For all nodes update their domains and aggregate the load for the node
             for host in self.model.get_hosts(self.model.types.NODE):

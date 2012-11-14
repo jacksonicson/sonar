@@ -150,6 +150,9 @@ def main():
     while exited == False:
         try:
             condition.wait(10)
+            if driver is not None: 
+                if not driver.is_running(): 
+                    break
         except KeyboardInterrupt:
             exited = True
             continue
