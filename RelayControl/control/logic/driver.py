@@ -3,29 +3,42 @@ from threading import Thread
 import control.domains as domains
 import sys
 import time
+import configuration
+from workload import util as wutil
+from service import times_client
+import util
 
 class Driver(Thread):
     
-    def __init__(self, model, handler, report_rate=3, acceleration=50, sizedown=1.0):
+    # The default settings are estimations of the real world infrastructure
+    def __init__(self, model, handler, report_rate=3, resize=1.0):
         super(Driver, self).__init__()
-        
+
+        # Reference to the data model which stores the current infrastructure status
+        # Time series are attached to the model        
         self.model = model
+        
+        # Callback handler to deliver time series readings
         self.handler = handler
+        
+        # Thread running
         self.running = True
         
         # acceleration * real_time_delta (simulation time runs faster/slower by factor acceleration)
-        self.acceleration = acceleration  
+        self.acceleration = float(configuration.SIM_SPEEDUP)
         
         # report rate in real time (e.g. every 3 seconds a value is reported) 
-        self.report_rate = report_rate 
+        self.report_rate = float(report_rate) / self.acceleration
         
         # CPU consumption of all domains is divided by this factor
-        self.sizedown = sizedown
+        self.resize = float(resize)
+        
         
     def stop(self):
         self.running = False
      
-    def notify(self, timestamp, name, sensor, value):
+     
+    def __notify(self, timestamp, name, sensor, value):
         data = ttypes.NotificationData()
         data.id = ttypes.Identifier()  
         data.id.hostname = name
@@ -38,17 +51,14 @@ class Driver(Thread):
         
         self.handler.receive([data, ])
         
-    def run(self):
-        # Use the existing profiles to load TSD from Times
-        from workload import profiles, util
-        from service import times_client
         
+    def run(self):
         print 'Connecting with Times'
         connection = times_client.connect()
         
-        min_ts_length = sys.maxint
-        freq = 0
-        sim_time = 0 # simulation time
+        min_ts_length = sys.maxint # Minimum length across all TS
+        freq = 0 # Frequency of the TS from Times 
+        sim_time = 0 # Simulation time (update speed depends on speedup)
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
@@ -60,7 +70,7 @@ class Driver(Thread):
             # Convert TS to a numpy array
             # select TS not time index
             freq = ts.frequency
-            ts = util.to_array(ts)[1]
+            ts = wutil.to_array(ts)[1]
             
             # Attach TS to domain 
             domain.ts = ts
@@ -68,11 +78,16 @@ class Driver(Thread):
             # Update max length
             min_ts_length = min(min_ts_length, len(ts))
         
+        # Close times connection
+        times_client.close()
+        
+        ###############################
+        ## Simulation Loop
+        ###############################
         # Replay time series data
         while self.running:
-            # Simulation simulation_time 
+            # Index for simulation time 
             tindex = (sim_time / freq) % min_ts_length
-            # print 'TS index: %i' % tindex
             
             # For all nodes update their domains and aggregate the load for the node
             for host in self.model.get_hosts(self.model.types.NODE):
@@ -80,19 +95,26 @@ class Driver(Thread):
                 
                 # Go over all domains and update their load by their TS
                 for domain in host.domains.values():
-                    load = domain.ts[tindex] / self.sizedown
+                    load = domain.ts[tindex] / self.resize
                      
-                    self.notify(sim_time, domain.name, 'psutilcpu', load)
+                    self.__notify(sim_time, domain.name, 'psutilcpu', load)
                     
                     # Load aggregation for the node
                     aggregated_load += load
 
 
                 # Send aggregated load
-                self.notify(sim_time, host.name, 'psutilcpu', aggregated_load)
+                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
-            # Simulation sleep
+            # report_rate = report_rate / acceleration
+            # sim_time is increased by original report_rate!
+            # time passes faster as querying and sleep is reduced! 
             sim_time += self.report_rate * self.acceleration
+            
+            # Sleep is report_rate / acceleration shorter
+            # Whole simulation is accelerated 
             time.sleep(self.report_rate)
+            util.sim_time = sim_time
+        
             
             

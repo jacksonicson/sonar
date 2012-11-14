@@ -1,9 +1,14 @@
-from threading import Thread
+'''
+Base class for controllers
+'''
+
 from logs import sonarlog
-import time
+from threading import Thread
 import json
-import threading
 import scoreboard
+import threading
+import time
+import util
 
 ######################
 ## CONFIGURATION    ##
@@ -11,10 +16,10 @@ import scoreboard
 START_WAIT = 0
 ######################
 
-# Global migration ID counter
+# Global migration ID counter (identifies migrations)
 migration_id_counter = 0
 
-# Setup logging
+# Setup Sonar logging
 logger = sonarlog.getLogger('controller')
 
 class LoadBalancer(Thread):
@@ -25,9 +30,14 @@ class LoadBalancer(Thread):
     def __init__(self, model, production, interval):
         super(LoadBalancer, self).__init__()
         
+        # Data model
         self.model = model
+        
+        # Production mode 
         self.production = production
-        self.interval = interval
+        
+        # Execution interval
+        self.interval = util.adjust_for_speedup(interval)
         
         self.running = True
         self.event = threading.Event()
@@ -41,6 +51,7 @@ class LoadBalancer(Thread):
     def post_migrate_hook(self):
         pass
     
+    
     def callback(self, domain, node_from, node_to, start, end, info, status, error):
         node_from = self.model.get_host(node_from)
         node_to = self.model.get_host(node_to)
@@ -49,7 +60,7 @@ class LoadBalancer(Thread):
         
         data = json.dumps({'domain': domain.name, 'from': node_from.name,
                            'to': node_to.name, 'start' : start, 'end' : end,
-                           'duration' : duration, 
+                           'duration' : duration,
                            'id': info.migration_id,
                            'source_cpu' : info.source_load_cpu,
                            'target_cpu' : info.target_load_cpu})
@@ -59,24 +70,27 @@ class LoadBalancer(Thread):
             node_to.domains[domain.name] = domain
             del node_from.domains[domain.name]
             
+            # Call post migration hook in concrete controller implementation
             self.post_migrate_hook(True, domain, node_from, node_to)
             
             print 'Migration finished'
             logger.info('Live Migration Finished: %s' % data)
             
         else:
-            print 'Migration failed'
+            # Call post migration hook in concrete controller implementation
             self.post_migrate_hook(False, domain, node_from, node_to)
+            
+            print 'Migration failed'
             logger.error('Live Migration Failed: %s' % data)
             
-        # Log empty servers
-        active_server_info =  self.model.server_active_info()
+        # Log number of empty servers
+        active_server_info = self.model.server_active_info()
         print 'Updated active server count: %i' % active_server_info[0]
         logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
                                                        'servers' : active_server_info[1],
-                                                       'timestamp' : time.time()}))
+                                                       'timestamp' : util.time()}))
         
-        # Update internal dashboard
+        # Update internal scoreboard
         sb = scoreboard.Scoreboard()
         sb.add_active_info(active_server_info[0])
         
@@ -93,9 +107,9 @@ class LoadBalancer(Thread):
         # Block source and target nodes
         # Set block times in the future to guarantee that the block does not run out 
         # until the migration is finished
-        now_time = time.time()
-        source.blocked = now_time + 60 * 60
-        target.blocked = now_time + 60 * 60
+        now_time = util.time()
+        source.blocked = now_time + util.adjust_for_speedup(60 * 60)
+        target.blocked = now_time + util.adjust_for_speedup(60 * 60)
         
         data = json.dumps({'domain': domain.name, 'from': source.name, 'to': target.name, 'id': migration_id})
         logger.info('Live Migration Triggered: %s' % data)
@@ -110,9 +124,11 @@ class LoadBalancer(Thread):
         info.target_load_cpu = target.mean_load(kvalue)
         
         if self.production:
+            # Call migration code and hand over the callback reference
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.callback, maxDowntime=10000, info=info)
         else:
+            # TODO: Run some migration simulation
             self.callback(domain.name, source.name, target.name, 0, 0, info, True, None)
         
         
@@ -141,8 +157,9 @@ class LoadBalancer(Thread):
             
             print 'Running load balancer...'
             self.lb()
-      
-            print 'Scoreboard'      
-            sb = scoreboard.Scoreboard()
-            sb.dump() 
+            
+            if not self.production:
+                print 'Scoreboard:'      
+                sb = scoreboard.Scoreboard()
+                sb.dump() 
                 

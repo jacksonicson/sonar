@@ -1,5 +1,6 @@
-import time
+import util
 
+# Recorded whenever the number of active servers changes
 class ActiveServerInfo(object):
     def __init__(self, timestamp, servercount):
         self.timestamp = timestamp
@@ -7,36 +8,32 @@ class ActiveServerInfo(object):
 
 
 class Scoreboard(object):
+    # Singleton construction by overriding new operation
     _instance = None
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Scoreboard, cls).__new__(cls, *args, **kwargs)
         return cls._instance
     
-    
+    # Scoreboard data
     active_server_infos = []
     start_timestamp = 0
     
     def __init__(self):
-        self.start_timestamp = time.time()
+        Scoreboard.start_timestamp = util.time()
     
     def add_active_info(self, servercount):
-        timestamp = time.time()
+        timestamp = util.time()
         Scoreboard.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
 
-
     def analytics_average_server_count(self):
-        if not self.active_server_infos:
-            return 0  
-        
         wrapped_infos = []
         wrapped_infos.extend(self.active_server_infos)
-        wrapped_infos.append(ActiveServerInfo(time.time(), self.active_server_infos[-1].servercount))
+        wrapped_infos.append(ActiveServerInfo(util.time(), self.active_server_infos[-1].servercount))
         
         last_info = None
         server_seconds = 0
-        total_time = 0
-        for info in self.active_server_infos:
+        for info in wrapped_infos:
             if last_info == None:
                 last_info = info
                 continue
@@ -44,13 +41,9 @@ class Scoreboard(object):
             delta_time = info.timestamp - last_info.timestamp
             servers = last_info.servercount
             server_seconds += (servers * delta_time)
-            total_time += delta_time
             
-        if total_time == 0:
-            return 0 
-        
+        total_time = wrapped_infos[-1].timestamp - wrapped_infos[0].timestamp + 1
         avg_count = server_seconds / total_time
-        print avg_count 
         return avg_count
              
     

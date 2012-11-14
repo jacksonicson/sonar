@@ -5,6 +5,7 @@ import model
 import sandpiper
 import threading
 import time
+import scoreboard
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -58,7 +59,6 @@ def build_test_allocation():
 
 def build_initial_model():
     if config.PRODUCTION: 
-        # Build model from current allocation
         build_from_current_allocation()
     else:
         build_test_allocation()
@@ -72,6 +72,9 @@ def build_initial_model():
     logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
                                                    'servers' : active_server_info[1],
                                                    'timestamp' : time.time()}))
+
+    # Update scoreboard
+    scoreboard.Scoreboard().add_active_info(active_server_info[0])
     
     #################################################
     # IMPORTANT #####################################
@@ -93,7 +96,7 @@ def sigtermHandler(signum, frame):
     
     global exited
     exited = True
-    condition.notify()
+    condition.__notify()
     
     condition.release()
 
@@ -163,11 +166,6 @@ def main():
         balancer.stop()
     
     print 'Waiting for threads to finish...'
-    
-    print 'Analytics: '
-    import scoreboard 
-    sb = scoreboard.Scoreboard()
-    sb.dump() 
     
     
 if __name__ == '__main__':
