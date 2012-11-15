@@ -3,7 +3,7 @@ from collector import ttypes
 
 ################################
 ## Configuration              ##
-WINDOW = 200
+WINDOW = 1000
 ################################
 
 # Holds an internal list of all hosts

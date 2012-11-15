@@ -62,7 +62,6 @@ class Driver(Thread):
         
         min_ts_length = sys.maxint # Minimum length across all TS
         freq = 0 # Frequency of the TS from Times 
-        sim_time = 0 # Simulation time (update speed depends on speedup)
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
@@ -98,7 +97,8 @@ class Driver(Thread):
         ###############################
         # Replay time series data
         while self.running:
-            # Index for simulation time 
+            # Index for simulation time
+            sim_time = util.time() 
             tindex = (sim_time / freq)
             if tindex > min_ts_length:
                 print 'Driver exited!'
@@ -130,13 +130,7 @@ class Driver(Thread):
                 # Send aggregated load
                 self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load + 12)
             
-            # report_rate = report_rate / acceleration
-            # sim_time is increased by original report_rate!
-            # time passes faster as querying and sleep is reduced! 
-            sim_time += self.report_rate * self.acceleration
-            
             # Sleep is report_rate / acceleration shorter
             # Whole simulation is accelerated 
             time.sleep(self.report_rate)
-            util.sim_time = sim_time
             

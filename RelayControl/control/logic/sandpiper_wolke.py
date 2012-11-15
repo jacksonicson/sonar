@@ -4,6 +4,8 @@ import json
 import controller
 import configuration
 import util
+from analytics import dexp_smooth as smoother
+import numpy as np
 
 ######################
 ## CONFIGURATION    ##
@@ -15,19 +17,19 @@ if configuration.PRODUCTION:
     THRESHOLD_UNDERLOAD = 40
     PERCENTILE = 80.0
     
-    K_VALUE = 20 # sliding windows size
-    M_VALUE = 17 # m values out of the window k must be above or below the threshold
+    K_VALUE = 100 # sliding windows size
+    M_VALUE = 99 # m values out of the window k must be above or below the threshold
     
 else:
     
     START_WAIT = 10*60
-    INTERVAL = 60
+    INTERVAL = 5*60
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 40
     PERCENTILE = 80.0
     
-    K_VALUE = 20 
-    M_VALUE = 17 
+    K_VALUE = 100 
+    M_VALUE = 97
 
 ######################
 
@@ -38,6 +40,7 @@ class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, model, production):
         super(Sandpiper, self).__init__(model, production, INTERVAL)
+        self.var = []
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
@@ -62,12 +65,13 @@ class Sandpiper(controller.LoadBalancer):
             # without the VM
             node_from.flush(50)
             node_to.flush(50)
-            
+            print self.var
         else:
             node_from.blocked = end_time
             node_to.blocked = end_time
         
         
+    
     def lb(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
@@ -75,6 +79,10 @@ class Sandpiper(controller.LoadBalancer):
         for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
+            
+            # calculate a forecast
+            forecast = smoother.double_exponential_smoother(readings[-K_VALUE:])
+            print forecast
             
             # m out of the k last measurements are used to detect overloads 
             k = K_VALUE
@@ -85,8 +93,10 @@ class Sandpiper(controller.LoadBalancer):
                 if reading < THRESHOLD_UNDERLOAD: underload += 1
 
             m = M_VALUE
-            overload = (overload >= m)
-            underload = (underload >= m)
+#            overload = (overload >= m)
+#            underload = (underload >= m)
+            overload = (overload >= m and forecast > THRESHOLD_OVERLOAD)
+            underload = (underload >= m and forecast < THRESHOLD_UNDERLOAD)
              
             if overload:
                 print 'Overload in %s - %s' % (node.name, readings[-k:])  

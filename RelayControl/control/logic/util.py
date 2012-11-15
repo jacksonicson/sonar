@@ -1,8 +1,8 @@
 import configuration
-import time
+import time as systime
 
-global sim_time
-sim_time = 0
+global sim_start
+sim_start = systime.time() * 1000
 
 def adjust_for_speedup(value):
     if configuration.PRODUCTION:
@@ -14,6 +14,7 @@ def time():
     if configuration.PRODUCTION: 
         return time.time()
     
-    return sim_time
+    return float(int((((systime.time() * 1000) - sim_start) * float(configuration.SIM_SPEEDUP)) / 1000))
+    
     
     

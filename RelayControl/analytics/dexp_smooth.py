@@ -1,6 +1,9 @@
 
 
-def double_exponential_smoother(data, alpha=0.3, gamma=0.9):
+def double_exponential_smoother(data, alpha=0.8, gamma=0.5):
+    if len(data) < 2:
+        return 0
+    
     alpha = float(alpha)
     gamma = float(gamma)
                 
@@ -8,7 +11,7 @@ def double_exponential_smoother(data, alpha=0.3, gamma=0.9):
     # b_tb = float(data[-1] - data[0]) / float(len(data) - 1)
     b_tb = float(data[1] - data[0])
     
-    print '%s \t\t - \t %s \t\t %s \t\t %s' % ('x_t', 's_t', 'b_t', 'f_t1')
+    # print '%s \t\t - \t %s \t\t %s \t\t %s' % ('x_t', 's_t', 'b_t', 'f_t1')
     for t in xrange(1, len(data)):
         s_t = alpha * data[t] + (1.0 - alpha) * (s_tb + b_tb)
         b_t = gamma * (s_t - s_tb) + (1.0 - gamma) * (b_tb)
@@ -17,7 +20,7 @@ def double_exponential_smoother(data, alpha=0.3, gamma=0.9):
         s_tb = s_t
         b_tb = b_t
         
-        print '%f \t - \t %f \t %f \t %f' % (data[t], s_t, b_t, f_t1)
+        # print '%f \t - \t %f \t %f \t %f' % (data[t], s_t, b_t, f_t1)
         
     return f_t1
         
