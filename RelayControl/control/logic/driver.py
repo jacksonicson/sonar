@@ -88,6 +88,11 @@ class Driver(Thread):
         # Reduce length of time series to 6 hours
         freq = freq / (24.0 / 6.0)
         
+        # Lognormal noise generator
+        random = np.random.lognormal(mean=0.0, sigma=1.3, size=10000)
+        rc = 0
+        print random
+        
         ###############################
         ## Simulation Loop
         ###############################
@@ -108,8 +113,13 @@ class Driver(Thread):
                 
                 # Go over all domains and update their load by their TS
                 for domain in host.domains.values():
-                    load = np.mean(domain.ts[tindex - 1 : tindex+1]) * self.resize
-                    # load = domain.ts[tindex] * self.resize
+                    # load = np.mean(domain.ts[tindex - 2 : tindex]) * self.resize
+                    load = domain.ts[tindex] * self.resize
+                     
+                    rc = (rc + 1) % 10000
+                    load += random[rc]
+                    if load < 0: load=0
+                    if load > 100: load = 100
                      
                     self.__notify(sim_time, domain.name, 'psutilcpu', load)
                     
@@ -118,7 +128,7 @@ class Driver(Thread):
 
 
                 # Send aggregated load
-                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load * 1 + 15)
+                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load + 10)
             
             # report_rate = report_rate / acceleration
             # sim_time is increased by original report_rate!
