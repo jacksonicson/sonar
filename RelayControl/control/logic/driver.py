@@ -8,6 +8,7 @@ from workload import util as wutil
 from service import times_client
 import util
 from virtual import nodes
+import numpy as np
 
 class Driver(Thread):
     
@@ -107,7 +108,8 @@ class Driver(Thread):
                 
                 # Go over all domains and update their load by their TS
                 for domain in host.domains.values():
-                    load = domain.ts[tindex] * self.resize
+                    load = np.mean(domain.ts[tindex - 1 : tindex+1]) * self.resize
+                    # load = domain.ts[tindex] * self.resize
                      
                     self.__notify(sim_time, domain.name, 'psutilcpu', load)
                     
@@ -116,7 +118,7 @@ class Driver(Thread):
 
 
                 # Send aggregated load
-                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
+                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load * 1 + 15)
             
             # report_rate = report_rate / acceleration
             # sim_time is increased by original report_rate!
