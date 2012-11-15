@@ -12,7 +12,7 @@ from virtual import nodes
 class Driver(Thread):
     
     # The default settings are estimations of the real world infrastructure
-    def __init__(self, model, handler, report_rate=3, resize=0.9):
+    def __init__(self, model, handler, report_rate=3, resize=1):
         super(Driver, self).__init__()
 
         # Reference to the data model which stores the current infrastructure status

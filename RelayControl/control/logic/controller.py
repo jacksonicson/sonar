@@ -36,7 +36,7 @@ class SimulatedMigration(Thread):
     def run(self):
         self.start = util.time()
         time.sleep(util.adjust_for_speedup(60))
-        self.end = util.time() + 32
+        self.end = util.time() + 60
         util.sim_time = self.end
         
         self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)

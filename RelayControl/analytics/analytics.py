@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '14/11/2012 09:20:00    14/11/2012 16:50:00'
+RAW = '14/11/2012 23:45:00    15/11/2012 06:30:00'
 ##########################
 
 warns = []
