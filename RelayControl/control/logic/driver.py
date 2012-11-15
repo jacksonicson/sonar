@@ -113,8 +113,8 @@ class Driver(Thread):
                 
                 # Go over all domains and update their load by their TS
                 for domain in host.domains.values():
-                    # load = np.mean(domain.ts[tindex - 2 : tindex]) * self.resize
-                    load = domain.ts[tindex] * self.resize
+                    load = np.mean(domain.ts[tindex - 2 : tindex]) * self.resize
+                    # load = domain.ts[tindex] * self.resize
                      
                     rc = (rc + 1) % 10000
                     load += random[rc]
@@ -128,7 +128,7 @@ class Driver(Thread):
 
 
                 # Send aggregated load
-                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load + 10)
+                self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load + 12)
             
             # report_rate = report_rate / acceleration
             # sim_time is increased by original report_rate!
