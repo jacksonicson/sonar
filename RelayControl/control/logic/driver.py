@@ -27,10 +27,10 @@ class Driver(Thread):
         self.running = True
         
         # acceleration * real_time_delta (simulation time runs faster/slower by factor acceleration)
-        self.acceleration = float(configuration.SIM_SPEEDUP)
+        acceleration = float(configuration.SIM_SPEEDUP)
         
         # report rate in real time (e.g. every 3 seconds a value is reported) 
-        self.report_rate = float(report_rate) / self.acceleration
+        self.report_rate = float(report_rate) / acceleration
         
         # CPU consumption of all domains is divided by this factor
         self.resize = float(resize)
@@ -68,6 +68,7 @@ class Driver(Thread):
             # Select and load TS (based on the configuration)
             load = domains.cpu_profile_by_name(domain.name)
             print 'loading service: %s ...' % (load)
+            
             ts = connection.load(load)
             
             # Convert TS to a numpy array
@@ -85,7 +86,7 @@ class Driver(Thread):
         times_client.close()
         
         # Reduce length of time series to 6 hours
-        freq = freq / (24.0 / 6.0)
+        freq = freq / (24.0 / 5.0)
         
         # Lognormal noise generator
         random = np.random.lognormal(mean=0.0, sigma=1.3, size=10000)

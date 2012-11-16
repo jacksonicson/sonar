@@ -7,6 +7,7 @@ class ActiveServerInfo(object):
         self.servercount = servercount
 
 
+# Scoreboard is a singleton class which overrides the new operator
 class Scoreboard(object):
     # Singleton construction by overriding new operation
     _instance = None

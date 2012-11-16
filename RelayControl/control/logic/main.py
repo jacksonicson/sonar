@@ -2,7 +2,6 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import sandpiper
 import sandpiper_wolke
 import scoreboard
 import threading
@@ -18,15 +17,16 @@ class MetricHandler:
     by the load balancer to resolve over- and underloads.
     '''
     def receive(self, datalist):
-        # print 'handling...'
-        for data in datalist:
-            hostname = data.id.hostname
+        with model.lock(): 
+            for data in datalist:
+                hostname = data.id.hostname
+                
+                host = model.get_host(hostname)
+                if host == None:
+                    return
+                 
+                host.put(data.reading)
             
-            host = model.get_host(hostname)
-            if host == None:
-                return
-             
-            host.put(data.reading)
 
 
 def build_from_current_allocation():
