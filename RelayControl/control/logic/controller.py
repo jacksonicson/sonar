@@ -17,8 +17,6 @@ logger = sonarlog.getLogger('controller')
 
 class SimulatedMigration:
     def __init__(self, pump, domain, node_from, node_to, migration_callback, info):
-        super(SimulatedMigration, self).__init__()
-        
         self.pump = pump
         self.domain = domain
         self.node_from = node_from
@@ -32,6 +30,7 @@ class SimulatedMigration:
         self.pump.callLater(60, self.callback)
         
     def callback(self):
+        print 'Migration finished'
         self.end = self.pump.time()
         self.migration_callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)
         self.exited = True
@@ -114,7 +113,7 @@ class LoadBalancer(object):
         # Block source and target nodes
         # Set block times in the future to guarantee that the block does not run out 
         # until the migration is finished
-        now_time = self.pump.time()
+        now_time = self.pump.sim_time()
         source.blocked = now_time + 60 * 60
         target.blocked = now_time + 60 * 60
         
@@ -135,7 +134,7 @@ class LoadBalancer(object):
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.migration_callback, maxDowntime=10000, info=info)
         else:
-            thread = SimulatedMigration(domain.name, source.name, target.name, self.migration_callback, info)
+            thread = SimulatedMigration(self.pump, domain.name, source.name, target.name, self.migration_callback, info)
             thread.start()
 
             

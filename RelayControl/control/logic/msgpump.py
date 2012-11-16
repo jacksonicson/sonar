@@ -19,6 +19,7 @@ class Pump(threading.Thread):
         self.running = True
         self.handlers = []
         self.start_time = time.time()
+        self.speedup = float(configuration.SIM_SPEEDUP)
         
         self.handlers.append(Entry(0, initial_handler, self, *handler_args))
         
@@ -34,10 +35,7 @@ class Pump(threading.Thread):
         
     def sim_time(self):
         delta = time.time() - self.start_time
-        return float(delta)
-        
-    def to_sim_time(self, value):
-        return value
+        return float(delta) * self.speedup
         
     def run(self):
         while self.running and self.handlers:
@@ -45,7 +43,7 @@ class Pump(threading.Thread):
             
             sim_time = self.sim_time()
             if sim_time < entry.cb_time:
-                delta = self.to_sim_time(entry.cb_time - sim_time)
+                delta = (entry.cb_time - sim_time) / self.speedup
 #                print 'Sleeping %f' % delta
                 time.sleep(delta)
                 continue
