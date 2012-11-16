@@ -44,7 +44,6 @@ class Pump(threading.Thread):
             sim_time = self.sim_time()
             if sim_time < entry.cb_time:
                 delta = (entry.cb_time - sim_time) / self.speedup
-#                print 'Sleeping %f' % delta
                 time.sleep(delta)
                 continue
             else:

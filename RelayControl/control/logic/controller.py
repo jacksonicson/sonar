@@ -15,6 +15,7 @@ migration_id_counter = 0
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
 
+
 class SimulatedMigration:
     def __init__(self, pump, domain, node_from, node_to, migration_callback, info):
         self.pump = pump
@@ -26,14 +27,14 @@ class SimulatedMigration:
         self.exited = False
     
     def run(self):
-        self.start = self.pump.time()
+        self.start = self.pump.sim_time()
         self.pump.callLater(60, self.callback)
         
     def callback(self):
-        print 'Migration finished'
-        self.end = self.pump.time()
+        self.end = self.pump.sim_time()
         self.migration_callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, True, None)
         self.exited = True
+        
 
 class LoadBalancer(object):
     def __init__(self, pump, model, interval):
@@ -94,7 +95,7 @@ class LoadBalancer(object):
         print 'Updated active server count: %i' % active_server_info[0]
         logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
                                                        'servers' : active_server_info[1],
-                                                       'timestamp' : self.pump.time()}))
+                                                       'timestamp' : self.pump.sim_time()}))
         
         # Update internal scoreboard
         sb = scoreboard.Scoreboard()
@@ -134,9 +135,9 @@ class LoadBalancer(object):
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name, self.migration_callback, maxDowntime=10000, info=info)
         else:
-            thread = SimulatedMigration(self.pump, domain.name, source.name, target.name, self.migration_callback, info)
-            thread.start()
-
+            migration = SimulatedMigration(self.pump, domain.name, source.name, target.name, self.migration_callback, info)
+            migration.run()
+            
             
     def run(self):
         print 'Running load balancer...'
