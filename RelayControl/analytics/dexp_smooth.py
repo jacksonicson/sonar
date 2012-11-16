@@ -1,6 +1,6 @@
 import math
 
-def double_exponential_smoother(data, alpha=0.85, gamma=0.9):
+def double_exponential_smoother(data, alpha=0.9, gamma=0.05):
     if len(data) < 2:
         return 0
     
@@ -18,6 +18,7 @@ def double_exponential_smoother(data, alpha=0.85, gamma=0.9):
         s_t = alpha * data[t] + (1.0 - alpha) * (s_tb + b_tb)
         b_t = gamma * (s_t - s_tb) + (1.0 - gamma) * (b_tb)
         f_t1 = s_t + b_t
+        f_t2 = s_t + 1 * b_t
         
         error = 0
         if len(data) > (t+1):
@@ -30,7 +31,7 @@ def double_exponential_smoother(data, alpha=0.85, gamma=0.9):
         # print '%f \t - \t %f \t %f \t %f \t %f' % (data[t], s_t, b_t, f_t1, error)
         
     # print 'RMSE: %f' % (errors / len(data))
-    return f_t1
+    return f_t2
         
 
 def main():

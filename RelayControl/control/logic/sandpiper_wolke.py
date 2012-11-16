@@ -31,7 +31,7 @@ else:
     # This is equal to an percentile
     # K_VALUE = 100 
     # M_VALUE = 97
-    THR_PERCENTILE = 0.1
+    THR_PERCENTILE = 0.2
 
 ######################
 
@@ -85,6 +85,7 @@ class Sandpiper(controller.LoadBalancer):
             # Calculate percentile on the data
             slc = readings[-k:]
             forecast = smoother.double_exponential_smoother(slc)
+            forecast = np.mean(slc)
             percentile = np.percentile(slc, THR_PERCENTILE)
             percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
             
