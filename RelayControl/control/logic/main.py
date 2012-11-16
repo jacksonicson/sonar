@@ -160,6 +160,9 @@ def main():
     
     # Start message pump
     pump.start()
+    pump.join()
+    scoreboard.Scoreboard().dump(pump)
+    
     
 
 

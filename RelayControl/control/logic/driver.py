@@ -90,7 +90,8 @@ class Driver:
         tindex = (sim_time / self.freq)
         if tindex > self.min_ts_length:
             print 'Driver exited!'
-            self.running = False 
+            self.running = False
+            self.pump.stop() 
             return
         
         # print 'Progress: %f' % ((tindex / min_ts_length) * 100)
