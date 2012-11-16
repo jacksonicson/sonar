@@ -18,7 +18,7 @@ class Pump(threading.Thread):
         
         self.running = True
         self.handlers = []
-        self.production = True # configuration.PRODUCTION
+        self.production = False # configuration.PRODUCTION
         self.start_time =  time.time() if self.production else 0
         self.speedup = float(configuration.SIM_SPEEDUP)
         
@@ -61,8 +61,5 @@ class Pump(threading.Thread):
                 self.handlers.remove(entry)
                 entry.call()
                 
-            if not self.production:
-                self.start_time += 1 
-            
         print 'Message pump exited'     
             
