@@ -18,7 +18,8 @@ class Pump(threading.Thread):
         
         self.running = True
         self.handlers = []
-        self.start_time = 0
+        self.production = True # configuration.PRODUCTION
+        self.start_time =  time.time() if self.production else 0
         self.speedup = float(configuration.SIM_SPEEDUP)
         
         self.handlers.append(Entry(0, initial_handler, self, *handler_args))
@@ -34,6 +35,9 @@ class Pump(threading.Thread):
         self.running = False
         
     def sim_time(self):
+        if self.production: 
+            return (time.time() - self.start_time) * self.speedup
+    
         return self.start_time
         
     def run(self):
@@ -42,9 +46,12 @@ class Pump(threading.Thread):
             
             sim_time = self.sim_time()
             if sim_time < entry.cb_time:
-                self.start_time = entry.cb_time
-#                delta = (entry.cb_time - sim_time) / self.speedup
-#                time.sleep(delta)
+                if self.production:
+                    delta = (entry.cb_time - sim_time) / self.speedup
+                    time.sleep(delta)
+                else:
+                    self.start_time = entry.cb_time
+                    
                 continue
             else:
                 valid = entry.cb_time - sim_time
@@ -54,7 +61,8 @@ class Pump(threading.Thread):
                 self.handlers.remove(entry)
                 entry.call()
                 
-            self.start_time += 1 
+            if not self.production:
+                self.start_time += 1 
             
         print 'Message pump exited'     
             

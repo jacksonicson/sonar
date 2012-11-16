@@ -5,7 +5,6 @@ import configuration
 import controller
 import json
 import numpy as np
-import util
 
 ######################
 ## CONFIGURATION    ##
