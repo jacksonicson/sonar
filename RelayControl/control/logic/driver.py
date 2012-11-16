@@ -105,10 +105,10 @@ class Driver:
                 load = np.mean(domain.ts[tindex - 2 : tindex]) * self.resize
                 # load = domain.ts[tindex] * self.resize
                  
-                rc = (self.rc + 1) % 10000
-                load += self.random[rc]
-                if load < 0: load=0
-                if load > 100: load = 100
+#                rc = (self.rc + 1) % 10000
+#                load += self.random[rc]
+#                if load < 0: load=0
+#                if load > 100: load = 100
                  
                 self.__notify(sim_time, domain.name, 'psutilcpu', load)
                 
