@@ -38,12 +38,12 @@ def __find_domain(connections, domain_name):
 
 
 class MigrationThread(Thread):
-    def __init__(self, domain, node_from, node_to, callback, info):
+    def __init__(self, domain, node_from, node_to, migration_callback, info):
         super(MigrationThread, self).__init__()
         self.domain = domain
         self.node_from = node_from
         self.node_to = node_to
-        self.callback = callback
+        self.migration_callback = migration_callback
         self.info = info
         self.exited = False
     
@@ -70,7 +70,7 @@ class MigrationThread(Thread):
             error = e
         finally:
             print 'Calling back...'
-            self.callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, success, error)
+            self.migration_callback(self.domain, self.node_from, self.node_to, self.start, self.end, self.info, success, error)
             
             util.close(connection_from)
             util.close(connection_to)
@@ -78,9 +78,9 @@ class MigrationThread(Thread):
             self.exited = True
                 
 
-def migrateDomain(domain, node_from, node_to, callback, info=None, maxDowntime=20000):
+def migrateDomain(domain, node_from, node_to, migration_callback, info=None, maxDowntime=20000):
     # Start a new migration thread
-    thread = MigrationThread(domain, node_from, node_to, callback, info)
+    thread = MigrationThread(domain, node_from, node_to, migration_callback, info)
     thread.start()
     
     # Set the max downtime after migration has started

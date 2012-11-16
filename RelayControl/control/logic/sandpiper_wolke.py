@@ -40,8 +40,8 @@ logger = sonarlog.getLogger('controller')
 
 class Sandpiper(controller.LoadBalancer):
     
-    def __init__(self, model, production):
-        super(Sandpiper, self).__init__(model, production, INTERVAL)
+    def __init__(self, pump, model):
+        super(Sandpiper, self).__init__(pump, model, INTERVAL)
         self.var = []
         
     def dump(self):
@@ -125,7 +125,7 @@ class Sandpiper(controller.LoadBalancer):
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
-        time_now = util.time()
+        time_now = self.pump.sim_time()
         sleep_time = 60
         for node in nodes:
             node.dump()

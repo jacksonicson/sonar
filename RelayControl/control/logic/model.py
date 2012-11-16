@@ -1,6 +1,5 @@
 import numpy as np
 from collector import ttypes
-import threading
 
 ################################
 ## Configuration              ##
@@ -10,19 +9,11 @@ WINDOW = 1000
 # Holds an internal list of all hosts
 hosts = {}
 
-# Thread lock (only used for simulation)
-global __lock
-__lock = threading.Lock()
-
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
 
 types = enum('NODE', 'DOMAIN')
-
-def lock():
-    global __lock
-    return __lock
 
 def get_hosts(host_type=None):
     if host_type == None:

@@ -6,6 +6,7 @@ import sandpiper_wolke
 import scoreboard
 import threading
 import time
+import msgpump
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -17,15 +18,14 @@ class MetricHandler:
     by the load balancer to resolve over- and underloads.
     '''
     def receive(self, datalist):
-        with model.lock(): 
-            for data in datalist:
-                hostname = data.id.hostname
-                
-                host = model.get_host(hostname)
-                if host == None:
-                    return
-                 
-                host.put(data.reading)
+        for data in datalist:
+            hostname = data.id.hostname
+            
+            host = model.get_host(hostname)
+            if host == None:
+                return
+             
+            host.put(data.reading)
             
 
 
@@ -99,7 +99,7 @@ def build_initial_model():
                                                    'timestamp' : time.time()}))
 
     # Update scoreboard
-    scoreboard.Scoreboard().add_active_info(active_server_info[0])
+    scoreboard.Scoreboard().add_active_info(active_server_info[0], 0)
     
     #################################################
     # IMPORTANT #####################################
@@ -126,11 +126,44 @@ def sigtermHandler(signum, frame):
     condition.release()
 
 
-def dump():
-    balancer.dump()
-
+def heartbeat(pump):
+    print 'Message pump started'
 
 def main():
+    # New message pump
+    pump = msgpump.Pump(heartbeat)
+    
+    # Build internal infrastructure representation
+    build_initial_model()
+    
+    # Create notification handler
+    handler = MetricHandler()
+    
+    # Decides whether a simulation or a real
+    # control system is run
+    if config.PRODUCTION:
+        # Connect with sonar to receive metric readings 
+        # This will start a new service in a separate thread
+        # The controller and simulation run single threaded by message pump
+        import connector
+        connector.connect_sonar(model, handler)
+    else:
+        # Start the driver thread which simulates Sonar
+        import driver
+        driver = driver.Driver(pump, model, handler)
+        driver.start()
+    
+    # Start load balancer thread which detects hot-spots and triggers migrations
+    balancer = sandpiper_wolke.Sandpiper(pump, model)
+    balancer.dump()
+    balancer.start()
+    
+    # Start message pump
+    pump.start()
+    
+
+
+def main_old():
     global driver
     global balancer
     
@@ -191,7 +224,6 @@ def main():
         driver.stop()
         driver.join()
         
-        global exited
         exited = True
         
     if balancer is not None:
@@ -199,7 +231,19 @@ def main():
     
     print 'Waiting for threads to finish...'
     
+def test2(pump):
+    print 'test2 callled'
+    pump.callLater(1, test2, pump)
+    
+def test(pump, i):
+    print 'exit callback called %i' % i
+    pump.callLater(1, test2, pump)
     
 if __name__ == '__main__':
     main()
+#    pump = msgpump.Pump(test, 0)
+#    pump.start()
+#    
+#    pump.join()
     
+

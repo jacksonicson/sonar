@@ -20,17 +20,13 @@ class Scoreboard(object):
     active_server_infos = []
     start_timestamp = 0
     
-    def __init__(self):
-        Scoreboard.start_timestamp = util.time()
-    
-    def add_active_info(self, servercount):
-        timestamp = util.time()
+    def add_active_info(self, servercount, timestamp):
         Scoreboard.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
 
-    def analytics_average_server_count(self):
+    def analytics_average_server_count(self, pump):
         wrapped_infos = []
         wrapped_infos.extend(Scoreboard.active_server_infos)
-        wrapped_infos.append(ActiveServerInfo(util.time(), Scoreboard.active_server_infos[-1].servercount))
+        wrapped_infos.append(ActiveServerInfo(pump.sim_time(), Scoreboard.active_server_infos[-1].servercount))
         
         last_info = None
         server_seconds = 0
@@ -53,7 +49,7 @@ class Scoreboard(object):
         return avg_count
              
     
-    def dump(self):
+    def dump(self, pump):
         print 'Records %i' % len(Scoreboard.active_server_infos)
-        print 'Average server count %f' % self.analytics_average_server_count()
+        print 'Average server count %f' % self.analytics_average_server_count(pump)
         
