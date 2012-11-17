@@ -1,5 +1,3 @@
-import util
-
 # Recorded whenever the number of active servers changes
 class ActiveServerInfo(object):
     def __init__(self, timestamp, servercount):
