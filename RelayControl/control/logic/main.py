@@ -4,7 +4,6 @@ import json
 import model
 import sandpiper_wolke
 import scoreboard
-import threading
 import time
 import msgpump
 
@@ -83,8 +82,10 @@ def build_debug_allocation():
     
 
 def build_initial_model():
+    # Flush model
     model.flush()
     
+    # Run configuration
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
@@ -109,24 +110,6 @@ def build_initial_model():
     # Initialize controller specific variables
     for host in model.get_hosts():
         host.blocked = 0
-
-
-# Globals
-driver = None
-balancer = None
-exited = False
-condition = threading.Condition()
-
-# React to kill signals
-def sigtermHandler(signum, frame):
-    condition.acquire()
-    
-    global exited
-    exited = True
-    condition.__notify()
-    
-    condition.release()
-
 
 def heartbeat(pump):
     print 'Message pump started'

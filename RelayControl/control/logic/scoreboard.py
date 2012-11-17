@@ -16,26 +16,34 @@ class Scoreboard(object):
             cls._instance = super(Scoreboard, cls).__new__(cls, *args, **kwargs)
         return cls._instance
     
-    # Scoreboard data
-    active_server_infos = []
-    start_timestamp = 0
-    cpu_violations = 0
+    def __init__(self):
+        self.closed = False
+        
+        self.active_server_infos = []
+        self.start_timestamp = 0
+        self.cpu_violations = 0
     
     def flush(self):
-        Scoreboard.active_server_infos = []
-        Scoreboard.start_timestamp = 0
-        Scoreboard.cpu_violations = 0
+        self.closed = False
+        self.active_server_infos = []
+        self.start_timestamp = 0
+        self.cpu_violations = 0
+    
+    def close(self):
+        self.closed = True
     
     def add_cpu_violations(self, violations):
-        Scoreboard.cpu_violations += violations
+        if not self.closed:
+            self.cpu_violations += violations
     
     def add_active_info(self, servercount, timestamp):
-        Scoreboard.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
+        if not self.closed:
+            self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
 
     def analytics_average_server_count(self, pump):
         wrapped_infos = []
-        wrapped_infos.extend(Scoreboard.active_server_infos)
-        wrapped_infos.append(ActiveServerInfo(pump.sim_time(), Scoreboard.active_server_infos[-1].servercount))
+        wrapped_infos.extend(self.active_server_infos)
+        wrapped_infos.append(ActiveServerInfo(pump.sim_time(), self.active_server_infos[-1].servercount))
         
         last_info = None
         server_seconds = 0
@@ -58,9 +66,9 @@ class Scoreboard(object):
         return avg_count
        
     def get_results(self, pump):
-        return (len(Scoreboard.active_server_infos), self.analytics_average_server_count(pump), Scoreboard.cpu_violations)
+        return (len(self.active_server_infos), self.analytics_average_server_count(pump), self.cpu_violations)
     
     def dump(self, pump):
-        print 'Records %i' % len(Scoreboard.active_server_infos)
+        print 'Records %i' % len(self.active_server_infos)
         print 'Average server count %f' % self.analytics_average_server_count(pump)
         

@@ -84,10 +84,10 @@ class Sandpiper(controller.LoadBalancer):
             # Calculate percentile on the data
             slc = readings[-k:]
             
-            forecast = smoother.double_exponential_smoother(slc)[0]
-            forecast = smoother.single_exponential_smoother(slc)
-            forecast = smoother.ar_forecast(slc)
+            forecast = smoother.single_exponential_smoother(slc)[0]
             forecast = np.mean(slc)
+            forecast = smoother.double_exponential_smoother(slc)[0]
+            forecast = smoother.ar_forecast(slc)
             
             percentile = np.percentile(slc, THR_PERCENTILE)
             percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)

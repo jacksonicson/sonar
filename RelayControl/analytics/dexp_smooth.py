@@ -49,11 +49,11 @@ def single_exponential_smoother(data, alpha=0.3):
     # Update RMSE error
     errors = (errors / len(data))
     
-    # Return last forecast 
-    return f_t, smoothed
+    # Return forecast, smoothened TS and the RMSE error
+    return f_t, smoothed, errors
     
 
-def double_exponential_smoother(data, periods=1,alpha=0.1, beta=0.08):
+def double_exponential_smoother(data, periods=1,alpha=0.2, beta=0.1):
     if len(data) < 2:
         return 50 # neutral cpu value
     
@@ -98,8 +98,8 @@ def double_exponential_smoother(data, periods=1,alpha=0.1, beta=0.08):
     # Update RMSE error
     errors = (errors / len(data))
     
-    # Return last forecast and the smoothened TS
-    return f_t, smoothed
+    # Return forecast, smoothened TS and the RMSE error
+    return f_t, smoothed, errors
         
 
 def main():
@@ -115,13 +115,15 @@ def main():
     demand += random
 
     # Run smoother
-    _, data = double_exponential_smoother(demand)
+    _, s0, _ = single_exponential_smoother(demand)
+    _, s1, _ = double_exponential_smoother(demand)
     
     # Plot original data with forecasted
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(demand)
-    ax.plot(data)
+    ax.plot(s0)
+    ax.plot(s1)
     plt.show()
 
 
