@@ -14,14 +14,8 @@ class Scoreboard(object):
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Scoreboard, cls).__new__(cls, *args, **kwargs)
+            cls._instance.flush()
         return cls._instance
-    
-    def __init__(self):
-        self.closed = False
-        
-        self.active_server_infos = []
-        self.start_timestamp = 0
-        self.cpu_violations = 0
     
     def flush(self):
         self.closed = False
@@ -41,6 +35,9 @@ class Scoreboard(object):
             self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
 
     def analytics_average_server_count(self, pump):
+        if not self.active_server_infos:
+            return 0
+        
         wrapped_infos = []
         wrapped_infos.extend(self.active_server_infos)
         wrapped_infos.append(ActiveServerInfo(pump.sim_time(), self.active_server_infos[-1].servercount))

@@ -155,7 +155,7 @@ def main():
 if __name__ == '__main__':
     t = open(config.path('ar'), 'w')
     
-    for i in xrange(0, 50):
+    for i in xrange(0, 1):
         res = main()
         t.write('%f, %f, %i\n' % res)
         t.flush()
