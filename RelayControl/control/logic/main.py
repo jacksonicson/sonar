@@ -153,13 +153,14 @@ def main():
     return scoreboard.Scoreboard().get_results(pump)
 
 if __name__ == '__main__':
-    t = open(config.path('ar'), 'w')
-    
-    for i in xrange(0, 60):
-        res = main()
-        t.write('%f, %f, %i\n' % res)
-        t.flush()
-        
-    t.close()
+    if config.PRODUCTION:
+        main()
+    else:
+        t = open(config.path('ar'), 'w')
+        for i in xrange(0, 60):
+            res = main()
+            t.write('%f, %f, %i\n' % res)
+            t.flush()
+        t.close()
     
 
