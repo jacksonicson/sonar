@@ -55,7 +55,7 @@ HOSTNAME = gethostname()
 ## CONTROLLER           ##
 LISTENING_PORT = 9876
 LISTENING_INTERFACE_IPV4 = '192.168.96.6'
-SIM_SPEEDUP = 100
+PUMP_SPEEDUP = 1
 
 ##########################
 ## FILESE               ##

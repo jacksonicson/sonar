@@ -15,23 +15,14 @@ if configuration.PRODUCTION:
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 30
     PERCENTILE = 80.0
-    
-#    K_VALUE = 100 # sliding windows size
-#    M_VALUE = 99 # m values out of the window k must be above or below the threshold
-    
+    THR_PERCENTILE = 0.2
 else:
-    
     START_WAIT = 10 * 60
     INTERVAL = 5 * 60
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 40
     PERCENTILE = 80.0
-    
-    # This is equal to an percentile
-    # K_VALUE = 100 
-    # M_VALUE = 97
-    THR_PERCENTILE = 0.2 # 0.2
-
+    THR_PERCENTILE = 0.2
 ######################
 
 # Setup logging

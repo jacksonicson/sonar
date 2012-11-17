@@ -149,8 +149,7 @@ def main():
     # Start message pump
     pump.start()
     pump.join()
-    scoreboard.Scoreboard().dump(pump)
-    return scoreboard.Scoreboard().get_results(pump)
+    return pump
 
 if __name__ == '__main__':
     if config.PRODUCTION:
@@ -158,7 +157,8 @@ if __name__ == '__main__':
     else:
         t = open(config.path('ar'), 'w')
         for i in xrange(0, 60):
-            res = main()
+            pump = main()
+            res = scoreboard.Scoreboard().dump(pump)
             t.write('%f, %f, %i\n' % res)
             t.flush()
         t.close()

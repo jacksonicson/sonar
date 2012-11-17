@@ -20,7 +20,7 @@ class Pump(threading.Thread):
         self.handlers = []
         self.production = False # configuration.PRODUCTION
         self.start_time =  time.time() if self.production else 0
-        self.speedup = float(configuration.SIM_SPEEDUP)
+        self.speedup = float(configuration.PUMP_SPEEDUP)
         
         self.handlers.append(Entry(0, initial_handler, self, *handler_args))
         
