@@ -2,7 +2,7 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import sandpiper
+import sandpiper_standard as sandpiper
 import threading
 import time
 
