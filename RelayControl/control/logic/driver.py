@@ -5,6 +5,8 @@ from workload import util as wutil
 from service import times_client
 from virtual import nodes
 import numpy as np
+import configuration
+import scoreboard
 
 class Driver:
     
@@ -63,12 +65,14 @@ class Driver:
         self.freq = freq / (24.0 / 5.0)
         
         # Lognormal noise generator
-        self.random = np.random.lognormal(mean=0.0, sigma=1.3, size=10000)
+        self.random = np.random.lognormal(mean=0.0, sigma=1.0, size=10000)
         self.rc = 0
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
      
+        # Log TSD
+        self.used_tsd = {}
      
     def __notify(self, timestamp, name, sensor, value):
         data = ttypes.NotificationData()
@@ -82,7 +86,14 @@ class Driver:
         data.reading.labels = []
         
         self.handler.receive([data, ])
-        
+     
+    def to_file(self):
+        for domain in self.used_tsd:
+            f = open(configuration.path(domain.name), 'w')
+            tsd = self.used_tsd[domain]
+            for r in tsd:
+                f.write(str(r) + '\n')
+            f.close()   
         
     def run(self):
         # Index for simulation time
@@ -91,7 +102,8 @@ class Driver:
         if tindex > self.min_ts_length:
             print 'Driver exited!'
             self.running = False
-            self.pump.stop() 
+            self.pump.stop()
+            self.to_file() 
             return
         
         # print 'Progress: %f' % ((tindex / min_ts_length) * 100)
@@ -105,10 +117,14 @@ class Driver:
                 load = np.mean(domain.ts[tindex - 2 : tindex]) * self.resize
                 # load = domain.ts[tindex] * self.resize
                  
-#                rc = (self.rc + 1) % 10000
-#                load += self.random[rc]
-#                if load < 0: load=0
-#                if load > 100: load = 100
+                rc = (self.rc + 1) % 10000
+                load += self.random[rc]
+                if load < 0: load=0
+                if load > 100: load = 100
+                 
+                if domain not in self.used_tsd: 
+                    self.used_tsd[domain] = []
+                self.used_tsd[domain].append(load)
                  
                 self.__notify(sim_time, domain.name, 'psutilcpu', load)
                 
@@ -118,6 +134,11 @@ class Driver:
 
             # Send aggregated load
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load + 12)
+            
+            # Update overload counter
+            if (aggregated_load + 12) > 100: 
+                scoreboard.Scoreboard().add_cpu_violations(1)
+            
         
         # Whole simulation might run accelerated
         self.pump.callLater(self.report_rate, self.run) 

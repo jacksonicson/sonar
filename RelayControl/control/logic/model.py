@@ -9,6 +9,10 @@ WINDOW = 1000
 # Holds an internal list of all hosts
 hosts = {}
 
+def flush():
+    global hosts
+    hosts = {}
+
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)

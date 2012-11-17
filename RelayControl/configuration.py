@@ -56,3 +56,8 @@ HOSTNAME = gethostname()
 LISTENING_PORT = 9876
 LISTENING_INTERFACE_IPV4 = '192.168.96.6'
 SIM_SPEEDUP = 100
+
+##########################
+## FILESE               ##
+def path(filename, ending='txt'):
+    return 'C:/temp/%s.%s' % (filename, ending)

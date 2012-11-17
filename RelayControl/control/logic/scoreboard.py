@@ -19,6 +19,15 @@ class Scoreboard(object):
     # Scoreboard data
     active_server_infos = []
     start_timestamp = 0
+    cpu_violations = 0
+    
+    def flush(self):
+        Scoreboard.active_server_infos = []
+        Scoreboard.start_timestamp = 0
+        Scoreboard.cpu_violations = 0
+    
+    def add_cpu_violations(self, violations):
+        Scoreboard.cpu_violations += violations
     
     def add_active_info(self, servercount, timestamp):
         Scoreboard.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
@@ -47,7 +56,9 @@ class Scoreboard(object):
         total_time = max(total_time, 1)
         avg_count = server_seconds / total_time
         return avg_count
-             
+       
+    def get_results(self, pump):
+        return (len(Scoreboard.active_server_infos), self.analytics_average_server_count(pump), Scoreboard.cpu_violations)
     
     def dump(self, pump):
         print 'Records %i' % len(Scoreboard.active_server_infos)

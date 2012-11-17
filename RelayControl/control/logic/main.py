@@ -83,6 +83,8 @@ def build_debug_allocation():
     
 
 def build_initial_model():
+    model.flush()
+    
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
@@ -130,6 +132,9 @@ def heartbeat(pump):
     print 'Message pump started'
 
 def main():
+    # Flush scoreboard
+    scoreboard.Scoreboard().flush()
+    
     # New message pump
     pump = msgpump.Pump(heartbeat)
     
@@ -162,8 +167,16 @@ def main():
     pump.start()
     pump.join()
     scoreboard.Scoreboard().dump(pump)
+    return scoreboard.Scoreboard().get_results(pump)
 
 if __name__ == '__main__':
-    main()
+    t = open(config.path('ar'), 'w')
+    
+    for i in xrange(0, 50):
+        res = main()
+        t.write('%f, %f, %i\n' % res)
+        t.flush()
+        
+    t.close()
     
 
