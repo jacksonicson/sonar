@@ -85,7 +85,7 @@ class __Host(object):
             self.f_t = self.c_t + self.T_t
             self.globalCounter += 1
         elif self.globalCounter > 2:
-            self.f_t, self.c_t, self.T_t = smooth.continuouse_smoothed(self.c_t,
+            self.f_t, self.c_t, self.T_t = smooth.continuouse_double_exponential_smoothed(self.c_t,
                                                                        self.T_t,
                                                                        reading.value)
         else:

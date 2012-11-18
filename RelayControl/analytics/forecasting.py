@@ -17,6 +17,12 @@ def ar_forecast(data, smoothing=False):
         return data[-1]
 
 
+def continous_single_exponential_smoothed(f_t, data_t, alpha):
+    # Smoothing equation (1)
+    # f_t is the forecasted value for f_{t+1}
+    f_t = alpha * data_t + (1 - alpha) * f_t
+    return f_t
+
 def single_exponential_smoother(data, alpha=0.3):
     if len(data) < 2:
         return 50 # Neutral CPU value
@@ -34,9 +40,7 @@ def single_exponential_smoother(data, alpha=0.3):
     
     # Takes y_t and f_t and calculates f_{t+1} 
     for t in xrange(0, len(data)):
-        # Smoothing equation (1)
-        # f_t is the forecasted value for f_{t+1}
-        f_t = alpha * data[t] + (1 - alpha) * f_t
+        f_t = continous_single_exponential_smoothed(f_t, data[t], alpha)
         
         # Ad value to smoothed TS
         smoothed.append(f_t)
@@ -53,7 +57,7 @@ def single_exponential_smoother(data, alpha=0.3):
     return f_t, smoothed, errors
 
 
-def continuouse_smoothed(c_t, T_t, data_t, alpha=0.2, beta=0.1):
+def continuouse_double_exponential_smoothed(c_t, T_t, data_t, alpha=0.2, beta=0.1):
     # Backup current c_t
     c_tp = c_t
     
@@ -89,7 +93,7 @@ def double_exponential_smoother(data, periods=1,alpha=0.2, beta=0.1):
     
     # Run forecasting
     for t in xrange(0, len(data)):
-        f_t, c_t, T_t = continuouse_smoothed(c_t, T_t, data[t], alpha, beta)
+        f_t, c_t, T_t = continuouse_double_exponential_smoothed(c_t, T_t, data[t], alpha, beta)
         smoothed.append(f_t)
         
         # Error calculation
