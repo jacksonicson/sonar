@@ -1,4 +1,4 @@
-from analytics import dexp_smooth as smoother
+from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
 import configuration

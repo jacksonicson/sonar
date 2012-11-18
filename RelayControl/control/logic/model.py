@@ -1,4 +1,4 @@
-from analytics import dexp_smooth as smooth
+from analytics import forecasting as smooth
 from collector import ttypes
 import numpy as np
 
