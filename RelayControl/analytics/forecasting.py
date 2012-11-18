@@ -11,7 +11,7 @@ def ar_forecast(data, smoothing=False):
     
     try:
         model = sm2.tsa.ar_model.AR(data).fit()
-        value = model.predict(len(data), len(data) + 10)
+        value = model.predict(len(data), len(data) + 20)
         return value[-1]
     except:
         return data[-1]
