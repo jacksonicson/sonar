@@ -97,7 +97,7 @@ class Driver:
             
             # Go over all domains and update their load by their TS
             for domain in host.domains.values():
-                load = np.mean(domain.ts[tindex - 2 : tindex])
+                load = domain.ts[tindex]
                  
                 self.__notify(sim_time, domain.name, 'psutilcpu', load)
                 

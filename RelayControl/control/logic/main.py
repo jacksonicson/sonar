@@ -156,9 +156,9 @@ if __name__ == '__main__':
         main()
     else:
         t = open(config.path('ar'), 'w')
-        for i in xrange(0, 60):
+        for i in xrange(0, 10):
             pump = main()
-            res = scoreboard.Scoreboard().dump(pump)
+            res = scoreboard.Scoreboard().get_results(pump)
             t.write('%f, %f, %i\n' % res)
             t.flush()
         t.close()

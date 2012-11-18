@@ -1,5 +1,6 @@
-import numpy as np
+from analytics import dexp_smooth as smooth
 from collector import ttypes
+import numpy as np
 
 ################################
 ## Configuration              ##
@@ -66,9 +67,33 @@ class __Host(object):
         # Current index in the ring buffer
         self.counter = 0
         
+        # Double exponential smoothing parameters
+        self.globalCounter = 0
+        self.f_t = 0
+        self.c_t = 0
+        self.T_t = 0
+        
     def put(self, reading):
         self.readings[self.counter] = reading.value
         self.counter = (self.counter + 1) % WINDOW
+        
+        # Calculates double exponential smoothing
+        if self.globalCounter == 2:
+            print 'Initializing smoothed parameters...'
+            self.c_t = float(self.readings[0]) 
+            self.T_t = float(self.readings[1] - self.readings[0])
+            self.f_t = self.c_t + self.T_t
+            self.globalCounter += 1
+        elif self.globalCounter > 2:
+            self.f_t, self.c_t, self.T_t = smooth.continuouse_smoothed(self.c_t,
+                                                                       self.T_t,
+                                                                       reading.value)
+        else:
+            self.globalCounter += 1
+            
+    
+    def forecast(self):
+        return self.f_t
     
     def flush(self, value=0):
         self.readings = [value for _ in xrange(0, WINDOW)]

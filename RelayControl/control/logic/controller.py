@@ -62,7 +62,7 @@ class LoadBalancer(object):
         
         
     # Abstract load balancing method
-    def lb(self):
+    def balance(self):
         pass
     
     def start(self):
@@ -163,7 +163,7 @@ class LoadBalancer(object):
     def run(self):
         # Run load balancing code
         print 'Running load balancer...'
-        self.lb()
+        self.balance()
         
         # Dump scoreboard information 
         if not configuration.PRODUCTION:

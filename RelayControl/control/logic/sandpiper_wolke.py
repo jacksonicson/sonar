@@ -63,7 +63,7 @@ class Sandpiper(controller.LoadBalancer):
         
         
     
-    def lb(self):
+    def balance(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
@@ -79,6 +79,7 @@ class Sandpiper(controller.LoadBalancer):
             forecast = np.mean(slc)
             forecast = smoother.double_exponential_smoother(slc)[0]
             forecast = smoother.ar_forecast(slc)
+            forecast = node.forecast()
             
             percentile = np.percentile(slc, THR_PERCENTILE)
             percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
