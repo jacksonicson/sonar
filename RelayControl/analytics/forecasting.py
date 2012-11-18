@@ -89,17 +89,7 @@ def double_exponential_smoother(data, periods=1,alpha=0.2, beta=0.1):
     
     # Run forecasting
     for t in xrange(0, len(data)):
-        # Backup current c_t
-        c_tp = c_t
-        
-        # Equation (1) for c_t
-        c_t = alpha * data[t] + (1.0 - alpha) * (c_t + T_t)
-        
-        # Equation (2) for T_t
-        T_t = beta * (c_t - c_tp) + (1.0 - beta) * (T_t)
-        
-        # Forecast next value
-        f_t = c_t + T_t
+        f_t, c_t, T_t = continuouse_smoothed(c_t, T_t, data[t], alpha, beta)
         smoothed.append(f_t)
         
         # Error calculation
