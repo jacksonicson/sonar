@@ -49,7 +49,7 @@ class Sandpiper(controller.LoadBalancer):
         import statsmodels as sm2
         model = sm2.tsa.ar_model.AR(data).fit()
         try:
-            value = model.predict(len(data) - 1, len(data))
+            value = model.predict(len(data), len(data) + 1)
             return value[0]
         except:
             return data[-1]
