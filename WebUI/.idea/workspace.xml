@@ -35,7 +35,7 @@
       <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sonar.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="746" column="0" selection-start="25194" selection-end="25194" vertical-scroll-proportion="0.6352313">
+            <state line="746" column="0" selection-start="25194" selection-end="25194" vertical-scroll-proportion="0.020238096">
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -56,9 +56,7 @@
         <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/index.js">
           <provider selected="true" editor-type-id="text-editor">
             <state line="26" column="0" selection-start="1091" selection-end="1091" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -111,8 +109,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="width" value="1296" />
-    <option name="height" value="1000" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1696" />
+    <option name="height" value="1026" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -280,11 +280,11 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="options.lastSelected" value="preferences.keymap" />
     <property name="recentsLimit" value="5" />
+    <property name="options.lastSelected" value="preferences.keymap" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -386,17 +386,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1296" height="1000" extended-state="0" />
+    <frame x="-8" y="-8" width="1696" height="1026" extended-state="7" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.2100181" sideWeight="0.3048499" order="1" side_tool="true" content_ui="tabs" x="1689" y="355" width="417" height="497" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25616547" sideWeight="0.7747318" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1943271" sideWeight="0.7747318" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39884394" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25750577" sideWeight="0.49788776" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22526817" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22453703" sideWeight="0.47073025" order="2" side_tool="false" content_ui="tabs" x="603" y="481" width="74" height="21" />
       <window_info id="JsTestDriver Server" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -518,37 +518,29 @@
         <state line="187" column="26" selection-start="5653" selection-end="5653" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="4" selection-start="1084" selection-end="1084" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="26" column="0" selection-start="1091" selection-end="1091" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/connect/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="13" selection-start="88" selection-end="88" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/static/config.html">
       <provider selected="true" editor-type-id="text-editor">
         <state line="186" column="32" selection-start="7606" selection-end="7606" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="0" selection-start="1091" selection-end="1091" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/connect/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="13" selection-start="88" selection-end="88" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/connection.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="4" selection-start="1084" selection-end="1084" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sonar.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="746" column="0" selection-start="25194" selection-end="25194" vertical-scroll-proportion="0.6352313">
+        <state line="746" column="0" selection-start="25194" selection-end="25194" vertical-scroll-proportion="0.020238096">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>

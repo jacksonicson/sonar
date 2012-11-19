@@ -10,6 +10,7 @@ import modifier
 import numpy as np
 import plot
 import util
+import configuration
 
 '''
 Times file organization:
@@ -226,7 +227,8 @@ def by_index(index):
     '''
     return selected[index]
 
-def __write_profile(connection, name, profile_ts, interval):
+
+def __write_profile(connection, name, profile_ts, interval, overwrite=False):
     '''
     Saves a TS in the Times service.
     
@@ -239,8 +241,12 @@ def __write_profile(connection, name, profile_ts, interval):
     
     # Check if the profile exists
     if len(connection.find(name)) > 0:
-        print 'removing existing data file'
-        connection.remove(name)
+        if overwrite:
+            print 'removing existing data file'
+            connection.remove(name)
+        else:
+            print 'return - will not overwrite profile %s' % name
+            return
         
     # Store profile
     print 'storing profile with name %s' % (name)
@@ -331,7 +337,7 @@ def __build_sample_day(mix, save):
     times_client.close()
  
  
-def __build_modified_profiles(mix, save):
+def build_modified_profiles(mix, save):
     connection = times_client.connect()
     
     for mi_element in mix:
@@ -458,7 +464,7 @@ def __padprofile(profile_ts, interval):
     curve = np.concatenate((ramup_pad, profile_ts, rampdown_pad))
     return curve 
 
-def __build_all_profiles_for_mix(mix, save):
+def build_all_profiles_for_mix(mix, save):
     # TS for sample day and profile processing
     sample_day = []
     profile = []
@@ -500,7 +506,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
         __write_profile(connection, name + POSTFIX_TRACE, profile, interval)
         times_client.close()
     
-def __plot_overlay_mix():
+def plot_overlay_mix():
     '''
     Plots all TS of a mix in a single axis graph
     '''
@@ -523,8 +529,8 @@ def __plot_overlay_mix():
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
 
     plot.rstyle(ax)
-    plt.savefig('C:/temp/convolution/overlay.png')
-    plt.savefig('C:/temp/convolution/overlay.pdf')
+    plt.savefig(configuration.path('overlay', 'png'))
+    plt.savefig(configuration.path('overlay', 'pdf'))
     
     # Close times connection
     times_client.close()
@@ -559,7 +565,7 @@ def __plot_complete_mix():
         ax.get_yaxis().set_visible(False)
         ax.plot(range(0, len(demand)), demand)
 
-    plt.savefig('D:/work/dev/sonar/docs/mix2.png')
+    plt.savefig(configuration.path('mix_overlay','png'))
     
     # Close times connection
     times_client.close()
@@ -583,32 +589,14 @@ def dump_user_profile_maxes():
     
     times_client.close()
     
-def dump_times():
-    '''
-    Dump all data stored in Times
-    '''
-    
-    connection = times_client.connect()
-    
-    for name in connection.find('.*'):
-        print name
-    
-    times_client.close()
-    
-    
-
     
 # Builds the profiles and saves them in Times
 def main():
-    __build_modified_profiles(selected, True)
     # dump_user_profile_maxes()
-    # __plot_overlay_mix()
-    
-#    __build_all_profiles_for_mix(mix_0, False)
-#    __build_all_profiles_for_mix(mix_1, False)
-    #__build_all_profiles_for_mix(mix_2, False)
-
-    # dump_times()
+    # build_modified_profiles(selected, True)
+    # plot_overlay_mix()
+    # build_all_profiles_for_mix(selected, False)
+    pass
 
 if __name__ == '__main__':
     main()

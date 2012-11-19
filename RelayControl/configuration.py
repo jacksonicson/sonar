@@ -8,7 +8,7 @@ import sys
 # Other configuration files
 from virtual import nodes as _nodes #@UnusedImport
 from workload import profiles as _profiles #@UnusedImport
-
+from control import domains #@UnusedImport
 
 ##########################
 ## GLOBAL               ##
@@ -55,4 +55,9 @@ HOSTNAME = gethostname()
 ## CONTROLLER           ##
 LISTENING_PORT = 9876
 LISTENING_INTERFACE_IPV4 = '192.168.96.6'
-SIM_SPEEDUP = 25
+PUMP_SPEEDUP = 1
+
+##########################
+## FILESE               ##
+def path(filename, ending='txt'):
+    return 'C:/temp/%s.%s' % (filename, ending)

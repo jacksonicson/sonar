@@ -1,3 +1,7 @@
+'''
+Provides a service to receive load data from Sonar
+'''
+
 from collector import NotificationClient, NotificationService
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer

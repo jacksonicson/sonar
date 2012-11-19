@@ -2,9 +2,10 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import sandpiper_standard as sandpiper
-import threading
+import sandpiper_wolke
+import scoreboard
 import time
+import msgpump
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -16,7 +17,6 @@ class MetricHandler:
     by the load balancer to resolve over- and underloads.
     '''
     def receive(self, datalist):
-        # print 'handling...'
         for data in datalist:
             hostname = data.id.hostname
             
@@ -25,6 +25,7 @@ class MetricHandler:
                 return
              
             host.put(data.reading)
+            
 
 
 def build_from_current_allocation():
@@ -41,6 +42,30 @@ def build_from_current_allocation():
     
 
 def build_test_allocation():
+    import placement
+    from virtual import nodes
+    from control import domains 
+    
+    nodecount = len(nodes.HOSTS)
+    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+    migrations, _ = splace.execute()
+    
+    _nodes = []
+    for node in nodes.NODES: 
+        mnode = model.Node(node, nodes.NODE_CPU_CORES)
+        _nodes.append(mnode)
+        
+    _domains = {}
+    for domain in domains.domain_profile_mapping:
+        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+        _domains[domain.domain] = dom
+        
+    for migration in migrations:
+        print migration 
+        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
+    
+ 
+def build_debug_allocation():    
     # Build internal infrastructure representation
     node = model.Node('srv0', 4)
     node.add_domain(model.Domain('target0', 2))
@@ -57,8 +82,11 @@ def build_test_allocation():
     
 
 def build_initial_model():
+    # Flush model
+    model.flush()
+    
+    # Run configuration
     if config.PRODUCTION: 
-        # Build model from current allocation
         build_from_current_allocation()
     else:
         build_test_allocation()
@@ -72,6 +100,9 @@ def build_initial_model():
     logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
                                                    'servers' : active_server_info[1],
                                                    'timestamp' : time.time()}))
+
+    # Update scoreboard
+    scoreboard.Scoreboard().add_active_info(active_server_info[0], 0)
     
     #################################################
     # IMPORTANT #####################################
@@ -80,96 +111,56 @@ def build_initial_model():
     for host in model.get_hosts():
         host.blocked = 0
 
-
-# Globals
-driver = None
-balancer = None
-exited = False
-condition = threading.Condition()
-
-# React to kill signals
-def sigtermHandler(signum, frame):
-    condition.acquire()
-    
-    global exited
-    exited = True
-    condition.notify()
-    
-    condition.release()
-
-
-def dump():
-    balancer.dump()
-
+def heartbeat(pump):
+    print 'Message pump started'
 
 def main():
-    global driver
-    global balancer
+    # Flush scoreboard
+    scoreboard.Scoreboard().flush()
+    
+    # New message pump
+    pump = msgpump.Pump(heartbeat)
     
     # Build internal infrastructure representation
     build_initial_model()
-
+    
     # Create notification handler
     handler = MetricHandler()
     
     # Decides whether a simulation or a real
     # control system is run
     if config.PRODUCTION:
-        # Connect with sonar to receive metric readings
+        # Connect with sonar to receive metric readings 
+        # This will start a new service in a separate thread
+        # The controller and simulation run single threaded by message pump
         import connector
         connector.connect_sonar(model, handler)
     else:
         # Start the driver thread which simulates Sonar
         import driver
-        driver = driver.Driver(model, handler)
+        driver = driver.Driver(pump, model, handler)
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper.Sandpiper(model, config.PRODUCTION)
+    balancer = sandpiper_wolke.Sandpiper(pump, model)
     balancer.dump()
     balancer.start()
     
-    # Dump configuration
-    dump()
+    # Start message pump
+    pump.start()
+    pump.join()
+    return pump
 
-    # Register the signal handlers
-    import signal
-    signal.signal(signal.SIGTERM, sigtermHandler)
-    
-    # Wait for balancer to exit
-    print 'Waiting for shutdown event...'
-    
-    # acquire condition
-    condition.acquire()
-
-    # Spinning until shutdown signal is received
-    global exited        
-    while exited == False:
-        try:
-            condition.wait(10)
-        except KeyboardInterrupt:
-            exited = True
-            continue
-
-    # releasing condition
-    condition.release()
-    
-    # Shutdown
-    print 'Shutting down now... ',
-    if driver is not None:
-        driver.stop()
-        
-    if balancer is not None:
-        balancer.stop()
-    
-    print 'Waiting for threads to finish...'
-    
-    print 'Analytics: '
-    import scoreboard 
-    sb = scoreboard.Scoreboard()
-    sb.dump() 
-    
-    
 if __name__ == '__main__':
-    main()
+    if config.PRODUCTION:
+        main()
+    else:
+        t = open(config.path('ar'), 'w')
+        for i in xrange(0, 50):
+            pump = main()
+            res = scoreboard.Scoreboard().get_results(pump)
+            t.write('%f, %f, %i\n' % res)
+            t.flush()
+        t.close()
     
+
