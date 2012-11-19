@@ -14,7 +14,8 @@ INTERVAL = 20
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 0.25
+THRESHOLD_IMBALANCE = 0.04
+MIN_IMPROVEMENT_IMBALANCE = 0.005
 
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
@@ -22,6 +23,9 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
+
+# Migration Queue
+migration_queue = []
 
 class Sandpiper(controller.LoadBalancer):
     
@@ -155,7 +159,7 @@ class Sandpiper(controller.LoadBalancer):
                     # Sort domains by their VSR value in decreasing order 
                     node_domains = []
                     node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
+                    node_domains.sort(lambda a, b: int((b.volume_size - a.volume_size) * 100000))
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
@@ -174,7 +178,7 @@ class Sandpiper(controller.LoadBalancer):
                     # Sort domains by their VSR value in decreasing order 
                     node_domains = []
                     node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
+                    node_domains.sort(lambda a, b: int((b.volume_size - a.volume_size) * 100000))
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
@@ -184,6 +188,7 @@ class Sandpiper(controller.LoadBalancer):
             except StopIteration: pass
         
         self.migrate_overload_imbalance(time_now, sleep_time, k)
+        self.migration_scheduler()
 
     def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)
@@ -201,12 +206,20 @@ class Sandpiper(controller.LoadBalancer):
             test &= (time_now - source.blocked) > sleep_time
                             
             if test: 
-                print ' --------------- Overload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
-                self.migrate(domain, source, target, K_VALUE)
+                source_load = source.percentile_load(PERCENTILE, k)
+                target_load = target.percentile_load(PERCENTILE, k)
+                domain_load = self.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))
+                print 'source load: %s; target load: %s; domain_load: %s' % (source_load, target_load, domain_load)
+                #self.migrate(domain, source, target, K_VALUE)
+                part = self.migration_part(domain, source, target, 'Overload', k) 
+                migration = []
+                migration.append(part)
+                migration_queue.append(migration)    
                 raise StopIteration()
 
     def migrate_overload_imbalance(self, time_now, sleep_time, k):
-
+        # Based on DSR algorithm
+        
         system_nodes = self.model.get_hosts(types.NODE)
 
         # create snapshot of nodes and domains
@@ -229,20 +242,21 @@ class Sandpiper(controller.LoadBalancer):
             new_node['volume'] = self.volume(node, k).volume
             new_node['domains'] = node_domains
             nodes[node.name] = new_node
+        
             
         imbalance = self.imbalance(nodes, k)
         print 'imbalance before: %s' % (imbalance)
         num_migrations = 0
         max_migrations = 10
         
-        # based on DSR
         while (imbalance > THRESHOLD_IMBALANCE) and (num_migrations < max_migrations):
             best_migration = None
             best_improvement = 0
             
             for domain in domains.itervalues():
+                # for every domain
                 tmp_nodes = nodes
-                
+
                 for node in tmp_nodes.itervalues():
                     # remove domain from parent node and save node extra
                     if domain['name'] in node['domains']:
@@ -254,20 +268,25 @@ class Sandpiper(controller.LoadBalancer):
                     if node['name'] == source['name'] or len(node['domains']) == 0:
                         # cannot migrate to same node and don't consider empty servers
                         continue
-                    
+
                     # migrate domain to node and check new imbalance
                     node['domains'][domain['name']] = domain
                     new_imbalance = self.imbalance(tmp_nodes, k)
                     improvement = imbalance - new_imbalance
                     
-                    if improvement > best_improvement:
-                        best_migration = {'domain': domain['name'], 'source': source['name'], 'target': node['name']}
-                        best_improvement = improvement
+                    if improvement > MIN_IMPROVEMENT_IMBALANCE:
+                        if improvement > best_improvement:
+                            best_migration = {'domain': domain['name'], 'source': source['name'], 'target': node['name']}
+                            best_improvement = improvement
+                        else:
+                            # go back to previous state
+                            source['domains'][domain['name']] = domain
+                            del node['domains'][domain['name']]
                     else:
                         # go back to previous state
                         source['domains'][domain['name']] = domain
                         del node['domains'][domain['name']]
-                    
+                                                
             if best_migration is None:
                 break
             
@@ -277,22 +296,24 @@ class Sandpiper(controller.LoadBalancer):
             num_migrations += 1
             print 'best improvement in this loop: %s; imbalance after: %s; domain: %s; source: %s; target: %s' % (best_improvement, imbalance, best_migration['domain'], best_migration['source'], best_migration['target'])
 
-            
-        print migrations
         
-        # migrate
+        # migrate domains that improve imbalance
         for migration in migrations.itervalues():
             domain = self.model.get_host(migration['domain'])
             source = self.model.get_host(migration['source'])
             target = self.model.get_host(migration['target'])
+            
             test = True
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
                             
             if test: 
-                print ' --------------- Imbalance migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                self.migrate(domain, source, target, K_VALUE)
+                #self.migrate(domain, source, target, K_VALUE)
+                part = self.migration_part(domain, source, target, 'Imbalance', k) 
+                migration = []
+                migration.append(part)
+                migration_queue.append(migration)    
         
         
     def swap(self, node, nodes, source, domain, time_now, sleep_time, k):
@@ -301,7 +322,6 @@ class Sandpiper(controller.LoadBalancer):
             target_node = nodes[target_node]
             
             if len(target_node.domains) == 0:
-                # print 'skip %s - %s' % (target.name, target.domains)
                 continue
             
             # Sort domains of target by their VSR value in ascending order
@@ -320,19 +340,15 @@ class Sandpiper(controller.LoadBalancer):
                 # Calculate new loads
                 new_target_node_load = target_node.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
                 new_source_node_load = node.percentile_load(PERCENTILE, k) - self.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
-                #print 'Target Node: Name: %s ;Load: %s' % (target_node.name, target_node.percentile_load(PERCENTILE, k))
-                #print 'Source Node: Name: %s ;Load: %s' % (node.name, node.percentile_load(PERCENTILE, k))
-                #print 'Source VM: Name: %s ;Load: %s' % (domain.name, self.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k)))
+              
                 for target_domain in targets:
                     tmp_load = target_domain.percentile_load(PERCENTILE, k)
-                    #print 'Target Node: Name: %s ;Load on Target: %s' % (target_domain.name, self.domain_to_server_cpu(target_node, target_domain, tmp_load))
-                    #print 'Target Node: Name: %s ;Load on Source: %s' % (target_domain.name, self.domain_to_server_cpu(node, target_domain, tmp_load) )
                     new_target_node_load -= self.domain_to_server_cpu(target_node, target_domain, tmp_load)
                     new_source_node_load += self.domain_to_server_cpu(node, target_domain, tmp_load)                              
                 
+
                 #Test if swap violates rules
                 test = True
-                #print ' --------------- Source Load: %s ; Target Load: %s' % (new_source_node_load, new_target_node_load)
                 test &= new_target_node_load < THRESHOLD_OVERLOAD
                 test &= new_source_node_load < THRESHOLD_OVERLOAD     
                 test &= len(node.domains) < 6
@@ -340,18 +356,17 @@ class Sandpiper(controller.LoadBalancer):
                 test &= (time_now - source.blocked) > sleep_time
                 
                 if test:
-                    output = ' --------------- Overload swap: ' + domain.name + ' from ' + source.name + ' swapped with '
+                    #self.migrate(domain, source, target_node, K_VALUE)
+                    migration_part = self.migration_part(domain, source, target, 'Swap', k)
+                    migration = []
+                    migration.append(migration_part)
+ 
                     for target_domain in targets:
-                        #TODO remove comma for last elem
-                        output += target_domain.name + ', '
-                    output += 'from ' + target_node.name
-                    print '%s' % (output)
-                    
-                    self.migrate(domain, source, target_node, K_VALUE)
-                    
-                    for target_domain in targets:
-                        self.migrate(target_domain, target_node, source, K_VALUE)
+                        #self.migrate(target_domain, target_node, source, K_VALUE)
+                        migration_part = self.migration_part(target_domain, target_node, source, 'Swap', k)
+                        migration.append(migration_part)
                         
+                    migration_queue.append(migration)
                     raise StopIteration() 
 
 
@@ -370,13 +385,16 @@ class Sandpiper(controller.LoadBalancer):
             test &= (time_now - source.blocked) > sleep_time
             
             if test: 
-                print ' --------------- Underload migration (Empty = %s): %s from %s to %s' % (empty, domain.name, source.name, target.name)
-                self.migrate(domain, source, target, K_VALUE)                                    
+                #self.migrate(domain, source, target, K_VALUE)   
+                part = self.migration_part(domain, source, target, 'Underload', k) 
+                migration = []
+                migration.append(part)
+                migration_queue.append(migration)                                
                 raise StopIteration()
             
     
     def volume(self, node, k):
-        # Calculates volume for node
+        # Calculates volume for node and return node
         volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
         node.volume = volume
         node.volume_size = volume / 8.0 # 8 GByte
@@ -387,16 +405,55 @@ class Sandpiper(controller.LoadBalancer):
     def normalized_volume(self, node, k):
         # Based on DRS, but use of volume as entitlement
         volume_domains = 0
+        
         for domain in node['domains'].itervalues():
             volume_domains += domain['volume']
+
+        print 'node: %s; normalized volume: %s' % (node['name'], volume_domains / 100)   
+        # TODO: divide by node capacity
+        
+        return volume_domains / 100
             
-        return volume_domains / node['volume']   
-                
                 
     def imbalance(self, nodes, k):
         # Based on DRS     
         normalized_volumes = []
-        for node in nodes.itervalues():
-            normalized_volumes.append(self.normalized_volume(node, k))
         
+        for node in nodes.itervalues():
+            volume = self.normalized_volume(node, k)
+            
+            if volume != 0.0:
+                normalized_volumes.append(volume)
+
         return math.fabs(numpy.std(normalized_volumes))
+    
+    
+    def migration_part(self, domain, source, target, description, k):
+        return {
+                'domain' : domain,
+                'source' : source,
+                'target' : target,
+                'description' : description,
+                'k' : k
+                }
+    
+    def migration_scheduler(self):
+        print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(migration_queue))
+
+        for migration in migration_queue:
+            
+            for part in migration:
+                domain = part['domain']
+                source = part['source']
+                target = part['target']
+                description = part['description']
+                k = part['k']
+                print '%s migration: %s from %s to %s' % (description, domain.name, source.name, target.name)
+                self.migrate(domain, source, target, k)
+            
+            migration_queue.remove(migration)
+        
+        
+  
+        
+        
