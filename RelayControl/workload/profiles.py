@@ -335,6 +335,9 @@ def get_traced_cpu_profile(index):
     Gets a traced CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
+    if not configuration.PRODUCTION:
+        return get_current_cpu_profile(index)    
+    
     desc = __by_index(index)
     name = _profile(True, desc.name, POSTFIX_TRACE)
     
