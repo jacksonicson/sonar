@@ -189,10 +189,10 @@ mix_2 = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_name = 'mix_1'
-selected_profile = None
-selected = mix_1
-modified = True
+selected_profile = None # Prefix for picking TS from Times
+selected_name = 'mix_1' # Just for logging
+selected = mix_1        # Selected workload mix
+modified = True         # Modified version of the workload mix
 ##############################
 
 def get_current_cpu_profile(index):
