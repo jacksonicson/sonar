@@ -105,9 +105,8 @@ class FirstFitPlacement(Placement):
             mapping = domains.domain_profile_mapping[service_index]
             
             # Important: Load the trace of the workload profile
-            #  + profiles.POSTFIX_TRACE
-            # service = services[mapping.profileId].name + profiles.POSTFIX_NORM
-            service = profiles.get_current_cpu_profile(service_index)
+            service = profiles.get_traced_cpu_profile(service_index)
+            
             print 'loading service: %s' % (service)
             ts = connection.load(service)
             from workload import util
@@ -171,7 +170,8 @@ class SSAPvPlacement(Placement):
             mapping = domains.domain_profile_mapping[service_index]
             
             # Important: Load the trace of the workload profile
-            service = services[mapping.profileId].name + profiles.POSTFIX_TRACE
+            service = profiles.get_traced_cpu_profile(mapping.profileId)
+            
             print 'loading service: %s' % (service)
             service_log += service + '; '
             
