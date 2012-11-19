@@ -16,9 +16,9 @@ Configuring a benchmark run:
 '''
 
 # Other configuration files
-from virtual import nodes as _nodes #@UnusedImport
-from workload import profiles as _profiles #@UnusedImport
-from control import domains #@UnusedImport
+# from virtual import nodes
+# from workload import profiles
+# from control import domains
 
 ##########################
 ## GLOBAL               ##
