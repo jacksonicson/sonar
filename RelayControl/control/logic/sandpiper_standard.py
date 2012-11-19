@@ -440,7 +440,7 @@ class Sandpiper(controller.LoadBalancer):
     def migration_scheduler(self):
         print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(migration_queue))
 
-        target_nodes = []
+        past_target_nodes = []
         for migration in migration_queue:
             
             for part in migration:
@@ -453,11 +453,11 @@ class Sandpiper(controller.LoadBalancer):
                 print '%s migration: %s from %s to %s' % (description, domain.name, source.name, target.name)
                 self.migrate(domain, source, target, k)
                 
-                if target.name in target_nodes:
+                if target.name in past_target_nodes:
                     # If target was already a target in this cycle -> wait
                     print 'HERE SHOULD BE A BREAK'
                 
-                target_nodes.append(target.name)
+                past_target_nodes.append(target.name)
                 
             migration_queue.remove(migration)
         
