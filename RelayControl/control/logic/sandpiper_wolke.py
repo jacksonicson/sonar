@@ -61,13 +61,65 @@ class Sandpiper(controller.LoadBalancer):
             node_from.blocked = end_time
             node_to.blocked = end_time
         
-        
     
-    def balance(self):
-        ############################################
-        ## HOTSPOT DETECTOR ########################
-        ############################################
-        k = 100
+    def check_imbalance(self, time_now, sleep_time, k):    
+        nodes = self.model.get_hosts(self.model.types.NODE)
+        readings = []
+        for node in nodes:
+            readings.append(node.forecast())
+            
+        sd = np.std(readings)
+        if sd > 40:
+            best_fnode = None
+            best_tnode = None
+            best_domain = None
+            best = 200
+            for fnode in nodes:
+                for domain in fnode.domains.values():
+                    for tnode in nodes:
+                        if fnode == tnode:
+                            continue
+                        
+                        if not tnode.domains:
+                            continue
+                        
+                        domain_cpu_factor = tnode.cpu_cores / domain.cpu_cores
+                        test = True
+                        test &= (tnode.forecast() + domain.forecast() / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                        test &= len(tnode.domains) < 6
+                        test &= (time_now - tnode.blocked) > sleep_time
+                        test &= (time_now - tnode.blocked) > sleep_time
+                        test &= (time_now - fnode.blocked) > sleep_time
+                        test &= (time_now - fnode.blocked) > sleep_time
+                        
+                        if test == False: 
+                            continue
+                        
+                        readings = []
+                        readings.append(fnode.forecast() - domain.forecast() / 2.0)
+                        readings.append(tnode.forecast() + domain.forecast() / 2.0)
+                        
+                        for cnode in nodes:
+                            if cnode == fnode: continue
+                            if cnode == tnode: continue
+                            readings.append(node.percentile_load(PERCENTILE, k))
+                        
+                        sd = np.std(readings)
+                        if sd < best:
+                            best_fnode = fnode
+                            best_tnode = tnode
+                            best_domain = domain
+                            best = sd
+                            
+            if best < 200: 
+                self.migrate(best_domain, best_fnode, best_tnode, k)
+                return True
+            
+        return False
+                        
+                    
+    
+    def check_hostpost(self, k):
         for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
@@ -81,8 +133,8 @@ class Sandpiper(controller.LoadBalancer):
             forecast = np.mean(slc)
             forecast = smoother.ar_forecast(slc)
             
-            percentile = np.percentile(slc, THR_PERCENTILE)
-            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
+            percentile = node.forecast()# np.percentile(slc, THR_PERCENTILE)
+            percentile_ = node.forecast() # np.percentile(slc, 1 - THR_PERCENTILE)
             
             overload = (percentile > THRESHOLD_OVERLOAD)
             underload = (percentile_ < THRESHOLD_UNDERLOAD)
@@ -95,7 +147,65 @@ class Sandpiper(controller.LoadBalancer):
             # Update overload                                
             node.overloaded = overload
             node.underloaded = underload
+    
+    def migration_trigger(self, overload, nodes, node, k, sleep_time, time_now):
+        # Source node to migrate from 
+        source = node
+        
+        # Sort domains by their VSR value in decreasing order 
+        node_domains = []
+        node_domains.extend(node.domains.values())
+        node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
+        
+        # Try to migrate all domains by decreasing VSR value
+        for domain in node_domains:
+            if overload: 
+                targets = reversed(range(nodes.index(node) + 1, len(nodes)))
+            else:
+                targets = range(nodes.index(node) - 1)
             
+            # Try all targets for the migration (reversed - starting at the BOTTOM)
+            for target in targets:
+                target = nodes[target]
+                
+                if len(target.domains) == 0:
+                    continue
+                 
+                domain_cpu_factor = target.cpu_cores / domain.cpu_cores
+                 
+                test = True
+                test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                test &= len(target.domains) < 6
+                test &= (time_now - target.blocked) > sleep_time
+                test &= (time_now - source.blocked) > sleep_time
+                
+                if test: 
+                    print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
+                    self.migrate(domain, source, target, k)
+                    raise StopIteration()
+                
+            for target in targets:
+                target = nodes[target]
+                 
+                domain_cpu_factor = target.cpu_cores / domain.cpu_cores
+                 
+                test = True
+                test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                test &= len(target.domains) < 6
+                test &= (time_now - target.blocked) > sleep_time
+                test &= (time_now - source.blocked) > sleep_time
+                
+                if test: 
+                    print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
+                    self.migrate(domain, source, target, k)
+                    raise StopIteration()
+    
+    def balance(self):
+        ############################################
+        ## HOTSPOT DETECTOR ########################
+        ############################################
+        k = 100
+        self.check_hostpost(k)
         
         ############################################
         ## MIGRATION MANAGER #######################
@@ -116,117 +226,27 @@ class Sandpiper(controller.LoadBalancer):
         # Sort nodes to their volume in DECREASING order
         # Multiplication with a big value to shift post comma digits to the front (integer)
         nodes.sort(lambda a, b: int((b.volume - a.volume) * 100000))
-       
         
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = self.pump.sim_time()
-        sleep_time = 60
+        sleep_time = 10
         for node in nodes:
             node.dump()
             
             try:
                 # Overload situation
                 if node.overloaded:
-                    # Source node to migrate from 
-                    source = node
-                    
-                    # Sort domains by their VSR value in decreasing order 
-                    node_domains = []
-                    node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
-                    
-                    # Try to migrate all domains by decreasing VSR value
-                    for domain in node_domains:
-                        
-                        # Try all targets for the migration (reversed - starting at the BOTTOM)
-                        for target in reversed(range(nodes.index(node) + 1, len(nodes))):
-                            target = nodes[target]
-                            
-                            if len(target.domains) == 0:
-                                # print 'skip %s - %s' % (target.name, target.domains)
-                                continue
-                             
-                            domain_cpu_factor = target.cpu_cores / domain.cpu_cores
-                             
-                            test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
-                            test &= len(target.domains) < 6
-                            test &= (time_now - target.blocked) > sleep_time
-                            test &= (time_now - source.blocked) > sleep_time
-                            
-                            if test: 
-                                print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)
-                                raise StopIteration()
-                            
-                        for target in reversed(range(nodes.index(node) + 1, len(nodes))):
-                            target = nodes[target]
-                             
-                            domain_cpu_factor = target.cpu_cores / domain.cpu_cores
-                             
-                            test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
-                            test &= len(target.domains) < 6
-                            test &= (time_now - target.blocked) > sleep_time
-                            test &= (time_now - source.blocked) > sleep_time
-                            
-                            if test: 
-                                print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)
-                                raise StopIteration()
-                            
+                    self.migration_trigger(True, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass 
             
+            # Balance system
+            self.check_imbalance(time_now, sleep_time, k)
+            
             try:
-                # Underload  situation
+                # Underload situation
                 if node.underloaded:
-                    # Source node to migrate from 
-                    source = node
-                    
-                    # Sort domains by their VSR value in decreasing order 
-                    node_domains = []
-                    node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
-                    
-                    # Try to migrate all domains by decreasing VSR value
-                    for domain in node_domains:
-                        
-                        # Try all targets for the migration
-                        for target in range(nodes.index(node) - 1):
-                            target = nodes[target]
-                            
-                            if len(target.domains) == 0:
-                                continue
-                            
-                            domain_cpu_factor = target.cpu_cores / domain.cpu_cores
-                            
-                            test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
-                            test &= len(target.domains) < 6
-                            test &= (time_now - target.blocked) > sleep_time
-                            test &= (time_now - source.blocked) > sleep_time
-                            
-                            if test: 
-                                print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)                                    
-                                raise StopIteration()
-                        
-                        
-                        for target in range(nodes.index(node) - 1):
-                            target = nodes[target]
-                            
-                            domain_cpu_factor = target.cpu_cores / domain.cpu_cores
-                            
-                            test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
-                            test &= len(target.domains) < 6
-                            test &= (time_now - target.blocked) > sleep_time
-                            test &= (time_now - source.blocked) > sleep_time
-                            
-                            if test: 
-                                print 'Underload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)                                    
-                                raise StopIteration()
+                    self.migration_trigger(False, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass
+            

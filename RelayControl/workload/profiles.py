@@ -5,12 +5,12 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 from service import times_client
 from times import ttypes
 from timeutil import * #@UnusedWildImport
+import configuration
 import matplotlib.pyplot as plt
 import modifier
 import numpy as np
 import plot
 import util
-import configuration
 
 '''
 Times file organization:
@@ -24,17 +24,19 @@ not used by any system and are marked as deprecated!
 [O2_retail_$TYPE] - O2 Retail TS with given type
 
 [TS] = SIS or O2 TS name
-[TS]_profile
-[TS]_profile_norm
-[TS]_profile_user
-[TS]_sampleday
+[PX][TS]_profile
+[PX][TS]_profile_norm
+[PX][TS]_profile_user
+[PX][TS]_sampleday
 
-[TS]_profile_trace
-[TS][_profile_norm]_modified
-[TS][_profile_user]_modified
+[PX][TS]_profile_trace
+[PX][TS][_profile_norm]_modified
+[PX][TS][_profile_user]_modified
 
 The interval of _profile_user is updated so that the length of the TS multiplied 
 with the interval matches the EXPERIMENT_DURATION.
+
+PX is a prefix which depends on the selected workload mix. 
 '''
 
 '''
@@ -81,7 +83,7 @@ class Desc:
     '''
     Describes a single TS which is used to generate a profile
     '''
-    def __init__(self, name, profile_set, modifier=modifier.MOD0, scale=(1, 1), shift=0, additive=0):
+    def __init__(self, name, profile_set, modifier=None, scale=(0, 0), shift=0, additive=0):
         self.name = name
         self.sample_frequency = profile_set.ifreq
         self.profile_set = profile_set
@@ -184,197 +186,27 @@ mix_2 = [
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 1), minu(0), 20),
          ]
 
-mix_sim = [
-        Desc('O2_business_ADDORDER', SET_O2_BUSINESS),
-        Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
-        Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS),
-        Desc('O2_retail_ADDORDER', SET_O2_RETAIL),
-        Desc('O2_retail_CONTRACTEXT', SET_O2_RETAIL),
-        Desc('O2_retail_ADDUCP', SET_O2_RETAIL),
-        Desc('O2_retail_SENDMSG', SET_O2_RETAIL),
-        Desc('O2_retail_UPDATEACCOUNT', SET_O2_RETAIL),
-        Desc('O2_retail_UPDATEDSS', SET_O2_RETAIL),
-        Desc('SIS_163_cpu', SET_SIS),
-        Desc('SIS_175_cpu', SET_SIS),
-        Desc('SIS_179_cpu', SET_SIS),
-        Desc('SIS_298_cpu', SET_SIS),
-        Desc('SIS_310_cpu', SET_SIS),
-        Desc('SIS_340_cpu', SET_SIS),
-        Desc('SIS_29_cpu', SET_SIS_D3),
-        Desc('SIS_199_cpu', SET_SIS_D8),
-        Desc('SIS_211_cpu', SET_SIS_D9),
-        Desc('SIS_216_cpu', SET_SIS_D9),
-        Desc('SIS_225_cpu', SET_SIS_D9),
-        Desc('SIS_234_cpu', SET_SIS_D9),
-        Desc('SIS_264_cpu', SET_SIS_D9),
-        Desc('SIS_279_cpu', SET_SIS_D9),
-        Desc('SIS_345_cpu', SET_SIS_D8),
-        Desc('SIS_387_cpu', SET_SIS_D9),
-        Desc('SIS_199_cpu', SET_SIS_D8),
-        Desc('SIS_207_cpu', SET_SIS_D9),
-        Desc('SIS_208_cpu', SET_SIS_D9),
-        Desc('SIS_210_cpu', SET_SIS_D9),
-        Desc('SIS_211_cpu', SET_SIS_D9),
-        Desc('SIS_213_cpu', SET_SIS_D9),
-        Desc('SIS_214_cpu', SET_SIS_D9),
-        Desc('SIS_216_cpu', SET_SIS_D9),
-        Desc('SIS_219_cpu', SET_SIS_D9),
-        Desc('SIS_220_cpu', SET_SIS_D9),
-        Desc('SIS_221_cpu', SET_SIS_D9),
-        Desc('SIS_222_cpu', SET_SIS_D9),
-        Desc('SIS_223_cpu', SET_SIS_D9),
-        Desc('SIS_225_cpu', SET_SIS_D9),
-        Desc('SIS_234_cpu', SET_SIS_D9),
-        Desc('SIS_235_cpu', SET_SIS_D9),
-        Desc('SIS_243_cpu', SET_SIS_D9),
-        Desc('SIS_245_cpu', SET_SIS_D9),
-        Desc('SIS_264_cpu', SET_SIS_D9),
-        Desc('SIS_269_cpu', SET_SIS_D9),
-        Desc('SIS_270_cpu', SET_SIS_D9),
-        Desc('SIS_271_cpu', SET_SIS_D9),
-        Desc('SIS_275_cpu', SET_SIS_D9),
-        Desc('SIS_279_cpu', SET_SIS_D9),
-        Desc('SIS_312_cpu', SET_SIS_D9),
-        Desc('SIS_315_cpu', SET_SIS_D9),
-        Desc('SIS_328_cpu', SET_SIS_D9),
-        Desc('SIS_385_cpu', SET_SIS_D9),
-        Desc('SIS_386_cpu', SET_SIS_D9),
-        Desc('SIS_387_cpu', SET_SIS_D9),
-        Desc('SIS_29_cpu', SET_SIS_D8),
-        Desc('SIS_31_cpu', SET_SIS_D8),
-        Desc('SIS_123_cpu', SET_SIS_D8),
-        Desc('SIS_124_cpu', SET_SIS_D8),
-        Desc('SIS_125_cpu', SET_SIS_D8),
-        Desc('SIS_145_cpu', SET_SIS_D8),
-        Desc('SIS_147_cpu', SET_SIS_D8),
-        Desc('SIS_148_cpu', SET_SIS_D8),
-        Desc('SIS_149_cpu', SET_SIS_D8),
-        Desc('SIS_192_cpu', SET_SIS_D8),
-        Desc('SIS_199_cpu', SET_SIS_D8),
-        Desc('SIS_211_cpu', SET_SIS_D8),
-        Desc('SIS_283_cpu', SET_SIS_D8),
-        Desc('SIS_337_cpu', SET_SIS_D8),
-        Desc('SIS_344_cpu', SET_SIS_D8),
-        Desc('SIS_345_cpu', SET_SIS_D8),
-        Desc('SIS_350_cpu', SET_SIS_D8),
-        Desc('SIS_352_cpu', SET_SIS_D8),
-        Desc('SIS_354_cpu', SET_SIS_D8),
-        Desc('SIS_357_cpu', SET_SIS_D8),
-        Desc('SIS_383_cpu', SET_SIS_D8),
-        Desc('SIS_21_cpu', SET_SIS_D3),
-        Desc('SIS_24_cpu', SET_SIS_D3),
-        Desc('SIS_27_cpu', SET_SIS_D3),
-        Desc('SIS_29_cpu', SET_SIS_D3),
-        Desc('SIS_31_cpu', SET_SIS_D3),
-        Desc('SIS_110_cpu', SET_SIS_D3),
-        Desc('SIS_145_cpu', SET_SIS_D3),
-        Desc('SIS_147_cpu', SET_SIS_D3),
-        Desc('SIS_150_cpu', SET_SIS_D3),
-        Desc('SIS_162_cpu', SET_SIS_D3),
-        Desc('SIS_209_cpu', SET_SIS_D3),
-        Desc('SIS_210_cpu', SET_SIS_D3),
-        Desc('SIS_236_cpu', SET_SIS_D3),
-        Desc('SIS_243_cpu', SET_SIS_D3),
-        Desc('SIS_252_cpu', SET_SIS_D3),
-        Desc('SIS_253_cpu', SET_SIS_D3),
-        Desc('SIS_272_cpu', SET_SIS_D3),
-        Desc('SIS_373_cpu', SET_SIS_D3),
-        Desc('SIS_29_cpu', SET_SIS_D8),
-        Desc('SIS_31_cpu', SET_SIS_D8),
-        Desc('SIS_123_cpu', SET_SIS_D8),
-        Desc('SIS_124_cpu', SET_SIS_D8),
-        Desc('SIS_125_cpu', SET_SIS_D8),
-        Desc('SIS_145_cpu', SET_SIS_D8),
-        Desc('SIS_147_cpu', SET_SIS_D8),
-        Desc('SIS_148_cpu', SET_SIS_D8),
-        Desc('SIS_149_cpu', SET_SIS_D8),
-        Desc('SIS_192_cpu', SET_SIS_D8),
-        Desc('SIS_199_cpu', SET_SIS_D8),
-        Desc('SIS_211_cpu', SET_SIS_D8),
-        Desc('SIS_283_cpu', SET_SIS_D8),
-        Desc('SIS_337_cpu', SET_SIS_D8),
-        Desc('SIS_344_cpu', SET_SIS_D8),
-        Desc('SIS_345_cpu', SET_SIS_D8),
-        Desc('SIS_350_cpu', SET_SIS_D8),
-        Desc('SIS_352_cpu', SET_SIS_D8),
-        Desc('SIS_354_cpu', SET_SIS_D8),
-        Desc('SIS_357_cpu', SET_SIS_D8),
-        Desc('SIS_383_cpu', SET_SIS_D8),
-        Desc('SIS_21_cpu', SET_SIS_D3),
-        Desc('SIS_24_cpu', SET_SIS_D3),
-        Desc('SIS_27_cpu', SET_SIS_D3),
-        Desc('SIS_29_cpu', SET_SIS_D3),
-        Desc('SIS_31_cpu', SET_SIS_D3),
-        Desc('SIS_110_cpu', SET_SIS_D3),
-        Desc('SIS_145_cpu', SET_SIS_D3),
-        Desc('SIS_147_cpu', SET_SIS_D3),
-        Desc('SIS_150_cpu', SET_SIS_D3),
-        Desc('SIS_162_cpu', SET_SIS_D3),
-        Desc('SIS_209_cpu', SET_SIS_D3),
-        Desc('SIS_210_cpu', SET_SIS_D3),
-        Desc('SIS_236_cpu', SET_SIS_D3),
-        Desc('SIS_243_cpu', SET_SIS_D3),
-        Desc('SIS_252_cpu', SET_SIS_D3),
-        Desc('SIS_253_cpu', SET_SIS_D3),
-        Desc('SIS_272_cpu', SET_SIS_D3),
-        Desc('SIS_373_cpu', SET_SIS_D3),
-        Desc('SIS_161_cpu', SET_SIS),
-        Desc('SIS_162_cpu', SET_SIS),
-        Desc('SIS_163_cpu', SET_SIS),
-        Desc('SIS_172_cpu', SET_SIS),
-        Desc('SIS_175_cpu', SET_SIS),
-        Desc('SIS_177_cpu', SET_SIS),
-        Desc('SIS_178_cpu', SET_SIS),
-        Desc('SIS_179_cpu', SET_SIS),
-        Desc('SIS_188_cpu', SET_SIS),
-        Desc('SIS_189_cpu', SET_SIS),
-        Desc('SIS_198_cpu', SET_SIS),
-        Desc('SIS_194_cpu', SET_SIS),
-        Desc('SIS_209_cpu', SET_SIS),
-        Desc('SIS_240_cpu', SET_SIS),
-        Desc('SIS_253_cpu', SET_SIS),
-        Desc('SIS_269_cpu', SET_SIS),
-        Desc('SIS_292_cpu', SET_SIS),
-        Desc('SIS_298_cpu', SET_SIS),
-        Desc('SIS_305_cpu', SET_SIS),
-        Desc('SIS_308_cpu', SET_SIS),
-        Desc('SIS_309_cpu', SET_SIS),
-        Desc('SIS_310_cpu', SET_SIS),
-        Desc('SIS_313_cpu', SET_SIS),
-        Desc('SIS_314_cpu', SET_SIS),
-        Desc('SIS_340_cpu', SET_SIS),
-        Desc('SIS_374_cpu', SET_SIS),
-        Desc('SIS_393_cpu', SET_SIS),
-        Desc('SIS_394_cpu', SET_SIS),
-        Desc('SIS_397_cpu', SET_SIS),
-        Desc('SIS_398_cpu', SET_SIS),
-        Desc('SIS_399_cpu', SET_SIS),
-        Desc('SIS_310_cpu', SET_SIS),
-        Desc('SIS_311_cpu', SET_SIS),
-        Desc('SIS_312_cpu', SET_SIS),
-        Desc('SIS_313_cpu', SET_SIS),
-        Desc('SIS_330_cpu', SET_SIS),
-        ]
-
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_name = 'mix_sim'
-selected = mix_sim
-modified = True
+selected_profile = None # Prefix for picking TS from Times
+selected_name = 'mix_1' # Just for logging
+selected = mix_1        # Selected workload mix
+modified = True         # Modified version of the workload mix
 ##############################
-
-###############################################################################
-###############################################################################
 
 def get_current_cpu_profile(index):
     '''
     Gets cpu profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
+    if selected_profile is None:
+        prefix = ''
+    else:
+        prefix = selected_profile + '_'
     
     desc = by_index(index)
-    name = desc.name + POSTFIX_NORM
+    name = prefix + desc.name + POSTFIX_NORM
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -387,8 +219,13 @@ def get_current_user_profile(index):
     Gets user profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
+    if selected_profile is None:
+        prefix = ''
+    else:
+        prefix = selected_profile + '_'
+    
     desc = by_index(index)
-    name = desc.name + POSTFIX_USER
+    name = prefix + desc.name + POSTFIX_USER
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -413,6 +250,10 @@ def __write_profile(connection, name, profile_ts, interval, overwrite=False):
     profile_ts -- A numpy array which contains the elements of the TS
     interval -- The time delta between two data points in the profile_ts TS (in seconds) 
     '''
+    
+    # Extend name with the current workload mix prefix
+    if selected_profile is not None:
+        name = selected_profile + '_' + name
     
     # Check if the profile exists
     if len(connection.find(name)) > 0:
@@ -518,10 +359,15 @@ def build_modified_profiles(mix, save):
     for mi_element in mix:
         ts_name = mi_element.name + POSTFIX_NORM
 
+        fig, ax = util.new_plot(util.to_array(connection.load(ts_name))[1], 100)
+        
         # Modify normal profile        
         modified_profile, interval = modifier.process_trace(connection, ts_name,
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
+        
+        util.add_plot(fig, ax, modified_profile)
+        util.write_plot('%s_ORIGINAL' % ts_name)
         
         if save:
             name = ts_name + POSTFIX_MODIFIED
@@ -634,7 +480,7 @@ def __padprofile(profile_ts, interval):
     curve = np.concatenate((ramup_pad, profile_ts, rampdown_pad))
     return curve 
 
-def build_all_profiles(mix, save):
+def build_all_profiles_for_mix(mix, save):
     # TS for sample day and profile processing
     sample_day = []
     profile = []
@@ -735,7 +581,7 @@ def __plot_complete_mix():
         ax.get_yaxis().set_visible(False)
         ax.plot(range(0, len(demand)), demand)
 
-    plt.savefig(configuration.path('mix_overlay','png'))
+    plt.savefig(configuration.path('mix_overlay', 'png'))
     
     # Close times connection
     times_client.close()
@@ -763,9 +609,9 @@ def dump_user_profile_maxes():
 # Builds the profiles and saves them in Times
 def main():
     # dump_user_profile_maxes()
-    build_all_profiles(selected, True)
-    build_modified_profiles(selected, True)
+    # build_modified_profiles(selected, True)
     # plot_overlay_mix()
+    # build_all_profiles_for_mix(selected, False)
     pass
 
 if __name__ == '__main__':
