@@ -54,14 +54,14 @@ def index_of(name):
 
 def print_mapping():
     for entry in domain_profile_mapping:
-        profile = profiles.by_index(entry.profileId).name
+        profile = profiles.get_current_user_profile(entry.profileId).name
         print '%s --- load --> %s' % (profile, entry.domain)
     
   
 def dump(logger):
     out = ''
     for entry in domain_profile_mapping:
-        profile = profiles.by_index(entry.profileId).name
+        profile = profiles.get_current_user_profile(entry.profileId).name
         out += '%s > %s; ' % (profile, entry.domain)
     logger.info("Mapping: %s" % out)
         

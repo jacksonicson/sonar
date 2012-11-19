@@ -15,33 +15,41 @@ import util
 '''
 Times file organization:
 There are still files with names that do not match the syntax below. These files are
-not used by any system and are marked as deprecated!
- 
+not used by any system at all. 
+
+WORKFLOW 
+1) Data gets imported. These TS do not have a PREFIX
+2) Data gets processed. The resulting TS are PREFIXed with the name of the MIX
+
+1) IMPORT
 [SIS_$NUMBER_mem] - SIS TS for memory
 [SIS_$NUMBER_CPU] - SIS TS for CPU
-
 [O2_business_$TYPE] - O2 Business TS with given type
 [O2_retail_$TYPE] - O2 Retail TS with given type
 
-[TS] = SIS or O2 TS name
-[PX][TS]_profile
-[PX][TS]_profile_norm
-[PX][TS]_profile_user
-[PX][TS]_sampleday
+2) PROCESSING
+[TS] = Imported SIS or O2 TS
 
-[PX][TS]_profile_trace
-[PX][TS][_profile_norm]_modified
-[PX][TS][_profile_user]_modified
+[PX][TS]_profile - RAW workload profiles with convolution (y-axis is not scaled)
+[PX][TS]_sampleday -  RAW workload profiles with sampleday (y-axis is not scaled)
+
+[PX][TS]_profile_norm - Normalized workload profile (y-axis is scaled)
+[PX][TS][_profile_norm]_modified - Modified normalized workload profile
+ 
+[PX][TS]_profile_user - User profile - normalized workload profile multiplied which maximum users
+[PX][TS][_profile_user]_modified - Modified normalized user profile
+
+[PX][TS]_profile_trace - User profiles was executed and the resulting CPU load was logged
 
 The interval of _profile_user is updated so that the length of the TS multiplied 
-with the interval matches the EXPERIMENT_DURATION.
-
-PX is a prefix which depends on the selected workload mix. 
+with the interval matches the EXPERIMENT_DURATION. 
 '''
 
 '''
 Prefix and post-fixes used to store data in Times
 '''
+PREFIX_MIX_SIM = 'mix_sim'
+
 POSTIFX_ORIG = '' # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
 POSTFIX_RAW = '_profile' # profile generated from the raw data of the SIS or O2 data set 
 POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
@@ -49,7 +57,6 @@ POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. num
 POSTFIX_DAY = '_sampleday' # A sample day of the time series
 POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
 POSTFIX_MODIFIED = '_modified' # A modified trace
-PREFIX_MIX_SIM = 'mix_sim'
 
 '''
 Experiment specific settings
@@ -306,10 +313,10 @@ def _get_prefix():
 
 def get_current_cpu_profile(index):
     '''
-    Gets cpu profile by index from the selected workload mix. The selection
+    Gets CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    desc = by_index(index)
+    desc = __by_index(index)
     name = _get_prefix() + desc.name + POSTFIX_NORM
     if modified:
         name += POSTFIX_MODIFIED
@@ -317,13 +324,23 @@ def get_current_cpu_profile(index):
     print 'Selected cpu profile: %s' % name
     return name
 
+def get_traced_cpu_profile(index):
+    '''
+    Gets a traced CPU profile by index from the selected workload mix. The selection
+    depends on the modified flag. 
+    '''
+    desc = __by_index(index)
+    name = _get_prefix() + desc.name + POSTFIX_TRACE
+    
+    print 'Selected cpu profile: %s' % name
+    return name
 
 def get_current_user_profile(index):
     '''
     Gets user profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    desc = by_index(index)
+    desc = __by_index(index)
     name = _get_prefix() + desc.name + POSTFIX_USER
     if modified:
         name += POSTFIX_MODIFIED
@@ -332,14 +349,14 @@ def get_current_user_profile(index):
     return name 
          
 
-def by_index(index):
+def __by_index(index):
     '''
     Get TS description by index
     '''
     return selected[index]
 
 
-def __write_profile(connection, name, profile_ts, interval, overwrite=False):
+def __write_profile(connection, name, profile_ts, interval, overwrite=False, noprefix=False):
     '''
     Saves a TS in the Times service.
     
@@ -351,11 +368,16 @@ def __write_profile(connection, name, profile_ts, interval, overwrite=False):
     '''
     
     # Extend name with the current workload mix prefix
-    if selected_profile is not None:
-        name = selected_profile + '_' + name
+    if noprefix == False and selected_profile is not None:
+        if name.find(selected_profile) == 0:
+            print 'ERROR: INVALID STORAGE NAME - append prefix twice'
+            import sys
+            sys.exit(1)
+        name = _get_prefix() + name
     
     # Check if the profile exists
     if len(connection.find(name)) > 0:
+        # Double check if it is allowed to overwrite profiles in Times
         if overwrite:
             print 'removing existing data file'
             connection.remove(name)
@@ -364,7 +386,7 @@ def __write_profile(connection, name, profile_ts, interval, overwrite=False):
             return
         
     # Store profile
-    print 'Storing profile in Times: %s' % (name)
+    print 'STORING - Identifier for profile in Times: %s' % (name)
     connection.create(name, interval)
     
     elements = []
@@ -457,16 +479,15 @@ def build_modified_profiles(mix, save):
     connection = times_client.connect()
     
     for mi_element in mix:
-        ts_name = mi_element.name + POSTFIX_NORM
+        # Operates on pre-processed data. Hence, a prefix is required
+        ts_name = _get_prefix() + mi_element.name + POSTFIX_NORM
 
-        # Modify normal profile        
-        modified_profile, interval = modifier.process_trace(connection, _get_prefix() + ts_name,
+        # Modify CPU normal profile     
+        modified_profile, interval = modifier.process_trace(connection, ts_name,
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
-        
         if save:
-            name = ts_name + POSTFIX_MODIFIED
-            print 'Writing profile: %s' % name
+            name = mi_element.name + POSTFIX_NORM + POSTFIX_MODIFIED
             __write_profile(connection, name, modified_profile, interval)
             
         # Store USER profiles (-> feed into Rain)
@@ -478,10 +499,8 @@ def build_modified_profiles(mix, save):
         user_profile = np.array(modified_profile)
         user_profile = __padprofile(user_profile, interval)
         if save:
-            name = ts_name.replace(POSTFIX_NORM, POSTFIX_USER) + POSTFIX_MODIFIED
-            print 'Writing profile: %s' % name
+            name = mi_element.name + POSTFIX_NORM + POSTFIX_MODIFIED
             __write_profile(connection, name, user_profile, interval)
-            
 
     times_client.close()
 
@@ -524,7 +543,6 @@ def __get_and_apply_set_max(mix):
     Goes over all sets. For each set the maximum value over all TS is determined. This
     value is stored in a map with the set-id as key. 
     '''
-    
     # Holds set maximums
     set_max = {}
     
@@ -541,7 +559,6 @@ def __get_and_apply_set_max(mix):
         set_max[pset.id] = max(max_value, set_max[pset.id])
         if pset.cap:
             set_max[pset.id] = min(pset.cap, set_max[pset.id])
-            
             
     return set_max
 
@@ -568,6 +585,7 @@ def __padprofile(profile_ts, interval):
     # Add padding to the original user profile for Rain
     curve = np.concatenate((ramup_pad, profile_ts, rampdown_pad))
     return curve 
+
 
 def build_all_profiles_for_mix(mix, save):
     # TS for sample day and profile processing
@@ -608,7 +626,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
     # Save the profile
     if save:
         connection = times_client.connect()
-        __write_profile(connection, name + POSTFIX_TRACE, profile, interval)
+        __write_profile(connection, name + POSTFIX_TRACE, profile, interval, noprefix=True)
         times_client.close()
     
 def plot_overlay_mix():
