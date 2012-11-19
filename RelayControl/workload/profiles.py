@@ -279,6 +279,81 @@ mix_sim = [
         Desc('SIS_253_cpu', SET_SIS_D3),
         Desc('SIS_272_cpu', SET_SIS_D3),
         Desc('SIS_373_cpu', SET_SIS_D3),
+        Desc('SIS_29_cpu', SET_SIS_D8),
+        Desc('SIS_31_cpu', SET_SIS_D8),
+        Desc('SIS_123_cpu', SET_SIS_D8),
+        Desc('SIS_124_cpu', SET_SIS_D8),
+        Desc('SIS_125_cpu', SET_SIS_D8),
+        Desc('SIS_145_cpu', SET_SIS_D8),
+        Desc('SIS_147_cpu', SET_SIS_D8),
+        Desc('SIS_148_cpu', SET_SIS_D8),
+        Desc('SIS_149_cpu', SET_SIS_D8),
+        Desc('SIS_192_cpu', SET_SIS_D8),
+        Desc('SIS_199_cpu', SET_SIS_D8),
+        Desc('SIS_211_cpu', SET_SIS_D8),
+        Desc('SIS_283_cpu', SET_SIS_D8),
+        Desc('SIS_337_cpu', SET_SIS_D8),
+        Desc('SIS_344_cpu', SET_SIS_D8),
+        Desc('SIS_345_cpu', SET_SIS_D8),
+        Desc('SIS_350_cpu', SET_SIS_D8),
+        Desc('SIS_352_cpu', SET_SIS_D8),
+        Desc('SIS_354_cpu', SET_SIS_D8),
+        Desc('SIS_357_cpu', SET_SIS_D8),
+        Desc('SIS_383_cpu', SET_SIS_D8),
+        Desc('SIS_21_cpu', SET_SIS_D3),
+        Desc('SIS_24_cpu', SET_SIS_D3),
+        Desc('SIS_27_cpu', SET_SIS_D3),
+        Desc('SIS_29_cpu', SET_SIS_D3),
+        Desc('SIS_31_cpu', SET_SIS_D3),
+        Desc('SIS_110_cpu', SET_SIS_D3),
+        Desc('SIS_145_cpu', SET_SIS_D3),
+        Desc('SIS_147_cpu', SET_SIS_D3),
+        Desc('SIS_150_cpu', SET_SIS_D3),
+        Desc('SIS_162_cpu', SET_SIS_D3),
+        Desc('SIS_209_cpu', SET_SIS_D3),
+        Desc('SIS_210_cpu', SET_SIS_D3),
+        Desc('SIS_236_cpu', SET_SIS_D3),
+        Desc('SIS_243_cpu', SET_SIS_D3),
+        Desc('SIS_252_cpu', SET_SIS_D3),
+        Desc('SIS_253_cpu', SET_SIS_D3),
+        Desc('SIS_272_cpu', SET_SIS_D3),
+        Desc('SIS_373_cpu', SET_SIS_D3),
+        Desc('SIS_161_cpu', SET_SIS),
+        Desc('SIS_162_cpu', SET_SIS),
+        Desc('SIS_163_cpu', SET_SIS),
+        Desc('SIS_172_cpu', SET_SIS),
+        Desc('SIS_175_cpu', SET_SIS),
+        Desc('SIS_177_cpu', SET_SIS),
+        Desc('SIS_178_cpu', SET_SIS),
+        Desc('SIS_179_cpu', SET_SIS),
+        Desc('SIS_188_cpu', SET_SIS),
+        Desc('SIS_189_cpu', SET_SIS),
+        Desc('SIS_198_cpu', SET_SIS),
+        Desc('SIS_194_cpu', SET_SIS),
+        Desc('SIS_209_cpu', SET_SIS),
+        Desc('SIS_240_cpu', SET_SIS),
+        Desc('SIS_253_cpu', SET_SIS),
+        Desc('SIS_269_cpu', SET_SIS),
+        Desc('SIS_292_cpu', SET_SIS),
+        Desc('SIS_298_cpu', SET_SIS),
+        Desc('SIS_305_cpu', SET_SIS),
+        Desc('SIS_308_cpu', SET_SIS),
+        Desc('SIS_309_cpu', SET_SIS),
+        Desc('SIS_310_cpu', SET_SIS),
+        Desc('SIS_313_cpu', SET_SIS),
+        Desc('SIS_314_cpu', SET_SIS),
+        Desc('SIS_340_cpu', SET_SIS),
+        Desc('SIS_374_cpu', SET_SIS),
+        Desc('SIS_393_cpu', SET_SIS),
+        Desc('SIS_394_cpu', SET_SIS),
+        Desc('SIS_397_cpu', SET_SIS),
+        Desc('SIS_398_cpu', SET_SIS),
+        Desc('SIS_399_cpu', SET_SIS),
+        Desc('SIS_310_cpu', SET_SIS),
+        Desc('SIS_311_cpu', SET_SIS),
+        Desc('SIS_312_cpu', SET_SIS),
+        Desc('SIS_313_cpu', SET_SIS),
+        Desc('SIS_330_cpu', SET_SIS),
         ]
 
 ##############################
@@ -288,6 +363,9 @@ selected_name = 'mix_sim'
 selected = mix_sim
 modified = True
 ##############################
+
+###############################################################################
+###############################################################################
 
 def get_current_cpu_profile(index):
     '''
@@ -440,15 +518,10 @@ def build_modified_profiles(mix, save):
     for mi_element in mix:
         ts_name = mi_element.name + POSTFIX_NORM
 
-        fig, ax = util.new_plot(util.to_array(connection.load(ts_name))[1], 100)
-        
         # Modify normal profile        
         modified_profile, interval = modifier.process_trace(connection, ts_name,
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
-        
-        util.add_plot(fig, ax, modified_profile)
-        util.write_plot('%s_ORIGINAL' % ts_name)
         
         if save:
             name = ts_name + POSTFIX_MODIFIED
@@ -690,7 +763,7 @@ def dump_user_profile_maxes():
 # Builds the profiles and saves them in Times
 def main():
     # dump_user_profile_maxes()
-    # build_all_profiles(selected, True)
+    build_all_profiles(selected, True)
     build_modified_profiles(selected, True)
     # plot_overlay_mix()
     pass
