@@ -5,12 +5,12 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 from service import times_client
 from times import ttypes
 from timeutil import * #@UnusedWildImport
+import configuration
 import matplotlib.pyplot as plt
 import modifier
 import numpy as np
 import plot
 import util
-import configuration
 
 '''
 Times file organization:
@@ -24,17 +24,19 @@ not used by any system and are marked as deprecated!
 [O2_retail_$TYPE] - O2 Retail TS with given type
 
 [TS] = SIS or O2 TS name
-[TS]_profile
-[TS]_profile_norm
-[TS]_profile_user
-[TS]_sampleday
+[PX][TS]_profile
+[PX][TS]_profile_norm
+[PX][TS]_profile_user
+[PX][TS]_sampleday
 
-[TS]_profile_trace
-[TS][_profile_norm]_modified
-[TS][_profile_user]_modified
+[PX][TS]_profile_trace
+[PX][TS][_profile_norm]_modified
+[PX][TS][_profile_user]_modified
 
 The interval of _profile_user is updated so that the length of the TS multiplied 
 with the interval matches the EXPERIMENT_DURATION.
+
+PX is a prefix which depends on the selected workload mix. 
 '''
 
 '''
@@ -188,6 +190,7 @@ mix_2 = [
 ## CONFIGURATION            ##
 ##############################
 selected_name = 'mix_1'
+selected_profile = None
 selected = mix_1
 modified = True
 ##############################
@@ -197,9 +200,13 @@ def get_current_cpu_profile(index):
     Gets cpu profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
+    if selected_profile is None:
+        selected_profile = ''
+    else:
+        selected_profile += '_'
     
     desc = by_index(index)
-    name = desc.name + POSTFIX_NORM
+    name = selected_profile + desc.name + POSTFIX_NORM
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -212,8 +219,13 @@ def get_current_user_profile(index):
     Gets user profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
+    if selected_profile is None:
+        selected_profile = ''
+    else:
+        selected_profile += '_'
+    
     desc = by_index(index)
-    name = desc.name + POSTFIX_USER
+    name = selected_profile + desc.name + POSTFIX_USER
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -238,6 +250,10 @@ def __write_profile(connection, name, profile_ts, interval, overwrite=False):
     profile_ts -- A numpy array which contains the elements of the TS
     interval -- The time delta between two data points in the profile_ts TS (in seconds) 
     '''
+    
+    # Extend name with the current workload mix prefix
+    if selected_profile is not None:
+        name = selected_profile + '_' + name
     
     # Check if the profile exists
     if len(connection.find(name)) > 0:
@@ -565,7 +581,7 @@ def __plot_complete_mix():
         ax.get_yaxis().set_visible(False)
         ax.plot(range(0, len(demand)), demand)
 
-    plt.savefig(configuration.path('mix_overlay','png'))
+    plt.savefig(configuration.path('mix_overlay', 'png'))
     
     # Close times connection
     times_client.close()
