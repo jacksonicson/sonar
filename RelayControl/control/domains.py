@@ -12,8 +12,11 @@ class Domain:
 
 # Domain profile mapping
 domain_profile_mapping = []
-for i in xrange(60):
+for i in xrange(90):
     domain_profile_mapping.append(Domain('target%i' % i, i, True))
+
+###############################################################################
+###############################################################################
 
 def cpu_profile_by_name(domain):
     for entry in domain_profile_mapping:
@@ -61,6 +64,7 @@ def dump(logger):
         profile = profiles.by_index(entry.profileId).name
         out += '%s > %s; ' % (profile, entry.domain)
     logger.info("Mapping: %s" % out)
+        
         
 if __name__ == '__main__':
     print_mapping()
