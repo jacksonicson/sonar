@@ -47,9 +47,9 @@ POSTFIX_RAW = '_profile' # profile generated from the raw data of the SIS or O2 
 POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
 POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. number of users
 POSTFIX_DAY = '_sampleday' # A sample day of the time series
-
 POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
 POSTFIX_MODIFIED = '_modified' # A modified trace
+PREFIX_MIX_SIM = 'mix_sim'
 
 '''
 Experiment specific settings
@@ -57,33 +57,16 @@ Everything is in SECONDS
 '''
 CYCLE_TIME = hour(24) # 24 hours cycle
 PROFILE_INTERVAL_COUNT = CYCLE_TIME / minu(5) # For each 5 minutes there is one data point in a workload profile
-
 EXPERIMENT_DURATION = hour(6) # 6 hours steady-state duration of the experiment
 RAMP_UP = minu(10) # Ramp up duration of the experiment
 RAMP_DOWN = minu(10) # Ramp down duration of the experiment
-
 MAX_USERS = user(200) # Maximum number of users
-
-'''
-Generate TS compatible to paper version. COMPATIBLE_AFTER function can be used
-to mark code segments to be compatible starting with a version. 
-Example.
-
-if COMPATIBLE_AFTER(C): - code is compatible with versions after C (exclusive)
-if INCOMPATIBLE_AFTER(C): - code is not compatible with versions after C (still compatible with C)
-'''
-PAPER_DSS = 0
-PAPER_DSS2 = 1 
-COMPATIBILITY_MODE = PAPER_DSS2
-COMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE > C
-INCOMPATIBLE_AFTER = lambda C: COMPATIBILITY_MODE <= C
-
 
 class Desc:
     '''
     Describes a single TS which is used to generate a profile
     '''
-    def __init__(self, name, profile_set, modifier=None, scale=(0, 0), shift=0, additive=0):
+    def __init__(self, name, profile_set, modifier=modifier.MOD0, scale=(1, 1), shift=0, additive=0):
         self.name = name
         self.sample_frequency = profile_set.ifreq
         self.profile_set = profile_set
@@ -99,9 +82,9 @@ class ProfileSet:
     '''
     def __init__(self, sid, ifreq, cap, day=None):
         self.id = sid 
+        self.ifreq = ifreq
         self.cap = cap
         self.day = day
-        self.ifreq = ifreq
 
 
 # List of profile sets
@@ -186,27 +169,148 @@ mix_2 = [
          Desc('SIS_199_cpu', SET_SIS_D8, modifier.MOD7, (1.1, 1), minu(0), 20),
          ]
 
+# MIX Simulation
+mix_sim = [
+            Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD8, (1.2, 1), minu(10), 20),
+            Desc('O2_business_ADDLINEORDER', SET_O2_BUSINESS),
+            Desc('O2_business_CONTRACTEXT', SET_O2_BUSINESS),
+            Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
+            Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS),
+            Desc('O2_business_UPDATEDSS', SET_O2_BUSINESS),
+            
+            Desc('O2_retail_ADDORDER', SET_O2_RETAIL),
+            Desc('O2_retail_CONTRACTEXT', SET_O2_RETAIL),
+            Desc('O2_retail_ADDUCP', SET_O2_RETAIL),
+            Desc('O2_retail_SENDMSG', SET_O2_RETAIL),
+            Desc('O2_retail_UPDATEACCOUNT', SET_O2_RETAIL),
+            Desc('O2_retail_UPDATEDSS', SET_O2_RETAIL),
+            
+            Desc('SIS_161_cpu', SET_SIS),
+            Desc('SIS_162_cpu', SET_SIS),
+            Desc('SIS_163_cpu', SET_SIS),
+            Desc('SIS_172_cpu', SET_SIS),
+            Desc('SIS_175_cpu', SET_SIS),
+            Desc('SIS_177_cpu', SET_SIS),
+            Desc('SIS_178_cpu', SET_SIS),
+            Desc('SIS_179_cpu', SET_SIS),
+            Desc('SIS_188_cpu', SET_SIS),
+            Desc('SIS_189_cpu', SET_SIS),
+            Desc('SIS_198_cpu', SET_SIS),
+            Desc('SIS_194_cpu', SET_SIS),
+            Desc('SIS_209_cpu', SET_SIS),
+            Desc('SIS_240_cpu', SET_SIS),
+            Desc('SIS_253_cpu', SET_SIS),
+            Desc('SIS_269_cpu', SET_SIS),
+            Desc('SIS_292_cpu', SET_SIS),
+            Desc('SIS_298_cpu', SET_SIS),
+            Desc('SIS_305_cpu', SET_SIS),
+            Desc('SIS_308_cpu', SET_SIS),
+            Desc('SIS_309_cpu', SET_SIS),
+            Desc('SIS_310_cpu', SET_SIS),
+            Desc('SIS_313_cpu', SET_SIS),
+            Desc('SIS_314_cpu', SET_SIS),
+            Desc('SIS_340_cpu', SET_SIS),
+            Desc('SIS_374_cpu', SET_SIS),
+            Desc('SIS_393_cpu', SET_SIS),
+            Desc('SIS_394_cpu', SET_SIS),
+            Desc('SIS_397_cpu', SET_SIS),
+            
+            Desc('SIS_21_cpu', SET_SIS_D3),
+            Desc('SIS_24_cpu', SET_SIS_D3),
+            Desc('SIS_27_cpu', SET_SIS_D3),
+            Desc('SIS_29_cpu', SET_SIS_D3),
+            Desc('SIS_31_cpu', SET_SIS_D3),
+            Desc('SIS_110_cpu', SET_SIS_D3),
+            Desc('SIS_145_cpu', SET_SIS_D3),
+            Desc('SIS_147_cpu', SET_SIS_D3),
+            Desc('SIS_150_cpu', SET_SIS_D3),
+            Desc('SIS_162_cpu', SET_SIS_D3),
+            Desc('SIS_209_cpu', SET_SIS_D3),
+            Desc('SIS_210_cpu', SET_SIS_D3),
+            Desc('SIS_236_cpu', SET_SIS_D3),
+            Desc('SIS_243_cpu', SET_SIS_D3),
+            Desc('SIS_252_cpu', SET_SIS_D3),
+            Desc('SIS_253_cpu', SET_SIS_D3),
+            Desc('SIS_272_cpu', SET_SIS_D3),
+            Desc('SIS_373_cpu', SET_SIS_D3),
+            
+            Desc('SIS_29_cpu', SET_SIS_D8),
+            Desc('SIS_31_cpu', SET_SIS_D8),
+            Desc('SIS_123_cpu', SET_SIS_D8),
+            Desc('SIS_124_cpu', SET_SIS_D8),
+            Desc('SIS_125_cpu', SET_SIS_D8),
+            Desc('SIS_145_cpu', SET_SIS_D8),
+            Desc('SIS_147_cpu', SET_SIS_D8),
+            Desc('SIS_148_cpu', SET_SIS_D8),
+            Desc('SIS_149_cpu', SET_SIS_D8),
+            Desc('SIS_192_cpu', SET_SIS_D8),
+            Desc('SIS_199_cpu', SET_SIS_D8),
+            Desc('SIS_211_cpu', SET_SIS_D8),
+            Desc('SIS_283_cpu', SET_SIS_D8),
+            Desc('SIS_337_cpu', SET_SIS_D8),
+            Desc('SIS_344_cpu', SET_SIS_D8),
+            Desc('SIS_345_cpu', SET_SIS_D8),
+            Desc('SIS_350_cpu', SET_SIS_D8),
+            Desc('SIS_352_cpu', SET_SIS_D8),
+            Desc('SIS_354_cpu', SET_SIS_D8),
+            Desc('SIS_357_cpu', SET_SIS_D8),
+            Desc('SIS_383_cpu', SET_SIS_D8),
+            
+            Desc('SIS_207_cpu', SET_SIS_D9),
+            Desc('SIS_208_cpu', SET_SIS_D9),
+            Desc('SIS_210_cpu', SET_SIS_D9),
+            Desc('SIS_211_cpu', SET_SIS_D9),
+            Desc('SIS_213_cpu', SET_SIS_D9),
+            Desc('SIS_214_cpu', SET_SIS_D9),
+            Desc('SIS_216_cpu', SET_SIS_D9),
+            Desc('SIS_219_cpu', SET_SIS_D9),
+            Desc('SIS_220_cpu', SET_SIS_D9),
+            Desc('SIS_221_cpu', SET_SIS_D9),
+            Desc('SIS_222_cpu', SET_SIS_D9),
+            Desc('SIS_223_cpu', SET_SIS_D9),
+            Desc('SIS_225_cpu', SET_SIS_D9),
+            Desc('SIS_234_cpu', SET_SIS_D9),
+            Desc('SIS_235_cpu', SET_SIS_D9),
+            Desc('SIS_243_cpu', SET_SIS_D9),
+            Desc('SIS_245_cpu', SET_SIS_D9),
+            Desc('SIS_264_cpu', SET_SIS_D9),
+            Desc('SIS_269_cpu', SET_SIS_D9),
+            Desc('SIS_270_cpu', SET_SIS_D9),
+            Desc('SIS_271_cpu', SET_SIS_D9),
+            Desc('SIS_275_cpu', SET_SIS_D9),
+            Desc('SIS_279_cpu', SET_SIS_D9),
+            Desc('SIS_312_cpu', SET_SIS_D9),
+            Desc('SIS_315_cpu', SET_SIS_D9),
+            Desc('SIS_328_cpu', SET_SIS_D9),
+            Desc('SIS_385_cpu', SET_SIS_D9),
+            Desc('SIS_386_cpu', SET_SIS_D9),
+            Desc('SIS_387_cpu', SET_SIS_D9),
+           ]
+
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_profile = None # Prefix for picking TS from Times
-selected_name = 'mix_1' # Just for logging
-selected = mix_1        # Selected workload mix
+selected_profile = PREFIX_MIX_SIM # Prefix for picking TS from Times
+selected_name = 'mix_sim' # Just for logging
+selected = mix_sim        # Selected workload mix
 modified = True         # Modified version of the workload mix
 ##############################
+
+def _get_prefix():
+    if selected_profile is None:
+        prefix = ''
+    else:
+        prefix = selected_profile + '_'
+        
+    return prefix
 
 def get_current_cpu_profile(index):
     '''
     Gets cpu profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    if selected_profile is None:
-        prefix = ''
-    else:
-        prefix = selected_profile + '_'
-    
     desc = by_index(index)
-    name = prefix + desc.name + POSTFIX_NORM
+    name = _get_prefix() + desc.name + POSTFIX_NORM
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -219,13 +323,8 @@ def get_current_user_profile(index):
     Gets user profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    if selected_profile is None:
-        prefix = ''
-    else:
-        prefix = selected_profile + '_'
-    
     desc = by_index(index)
-    name = prefix + desc.name + POSTFIX_USER
+    name = _get_prefix() + desc.name + POSTFIX_USER
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -265,7 +364,7 @@ def __write_profile(connection, name, profile_ts, interval, overwrite=False):
             return
         
     # Store profile
-    print 'storing profile with name %s' % (name)
+    print 'Storing profile in Times: %s' % (name)
     connection.create(name, interval)
     
     elements = []
@@ -339,7 +438,8 @@ def __build_sample_day(mix, save):
     for desc in mix:
         print 'processing sample day %s' % (desc.name)
         import sampleday
-        profile = sampleday.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME, desc.profile_set.day)
+        profile = sampleday.process_trace(connection, desc.name,
+                                          desc.sample_frequency, CYCLE_TIME, desc.profile_set.day)
         desc.profile = profile
         
     # Max value in each set of TS
@@ -359,15 +459,10 @@ def build_modified_profiles(mix, save):
     for mi_element in mix:
         ts_name = mi_element.name + POSTFIX_NORM
 
-        fig, ax = util.new_plot(util.to_array(connection.load(ts_name))[1], 100)
-        
         # Modify normal profile        
-        modified_profile, interval = modifier.process_trace(connection, ts_name,
+        modified_profile, interval = modifier.process_trace(connection, _get_prefix() + ts_name,
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
-        
-        util.add_plot(fig, ax, modified_profile)
-        util.write_plot('%s_ORIGINAL' % ts_name)
         
         if save:
             name = ts_name + POSTFIX_MODIFIED
@@ -384,7 +479,7 @@ def build_modified_profiles(mix, save):
         user_profile = __padprofile(user_profile, interval)
         if save:
             name = ts_name.replace(POSTFIX_NORM, POSTFIX_USER) + POSTFIX_MODIFIED
-            print 'Writing profile: %s' % name 
+            print 'Writing profile: %s' % name
             __write_profile(connection, name, user_profile, interval)
             
 
@@ -437,22 +532,16 @@ def __get_and_apply_set_max(mix):
     for i in xrange(len(mix)):
         desc = mix[i]
         profile_ts = desc.profile[0]
-        
         pset = desc.profile_set
-        
-        if COMPATIBLE_AFTER(PAPER_DSS): 
-            indices = profile_ts > pset.cap
-            profile_ts[indices] = pset.cap
         
         if set_max.has_key(pset.id) == False:
             set_max[pset.id] = 0
             
         max_value = np.max(profile_ts)
         set_max[pset.id] = max(max_value, set_max[pset.id])
-        
-        if INCOMPATIBLE_AFTER(PAPER_DSS) and pset.cap is not None:
+        if pset.cap:
             set_max[pset.id] = min(pset.cap, set_max[pset.id])
-        
+            
             
     return set_max
 
@@ -609,9 +698,9 @@ def dump_user_profile_maxes():
 # Builds the profiles and saves them in Times
 def main():
     # dump_user_profile_maxes()
-    # build_modified_profiles(selected, True)
+    # build_all_profiles_for_mix(selected, True)
+    build_modified_profiles(selected, True)
     # plot_overlay_mix()
-    # build_all_profiles_for_mix(selected, False)
     pass
 
 if __name__ == '__main__':

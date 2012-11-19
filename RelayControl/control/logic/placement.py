@@ -90,7 +90,6 @@ class FirstFitPlacement(Placement):
         connection = times_client.connect()
         
         # Loading services to combine the dmain_service_mapping with    
-        services = profiles.selected
         service_count = len(domains.domain_profile_mapping)
         
         # For each node there is one bucket
@@ -106,7 +105,9 @@ class FirstFitPlacement(Placement):
             mapping = domains.domain_profile_mapping[service_index]
             
             # Important: Load the trace of the workload profile
-            service = services[mapping.profileId].name + profiles.POSTFIX_NORM
+            #  + profiles.POSTFIX_TRACE
+            # service = services[mapping.profileId].name + profiles.POSTFIX_NORM
+            service = profiles.get_current_cpu_profile(service_index)
             print 'loading service: %s' % (service)
             ts = connection.load(service)
             from workload import util
