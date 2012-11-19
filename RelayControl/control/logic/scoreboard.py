@@ -63,6 +63,10 @@ class Scoreboard(object):
     def get_results(self, pump):
         return (len(self.active_server_infos), self.analytics_average_server_count(pump), self.cpu_violations)
     
+    def get_result_line(self, pump):
+        res = self.get_results(pump)
+        return '%f, %f, %i' % res
+    
     def dump(self, pump):
         print 'Records %i' % len(self.active_server_infos)
         print 'Average server count %f' % self.analytics_average_server_count(pump)

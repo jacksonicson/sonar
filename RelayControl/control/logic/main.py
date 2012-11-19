@@ -3,6 +3,7 @@ import configuration as config
 import json
 import model
 import sandpiper_wolke
+import sandpiper
 import scoreboard
 import time
 import msgpump
@@ -142,7 +143,7 @@ def main():
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper_wolke.Sandpiper(pump, model)
+    balancer = sandpiper.Sandpiper(pump, model)
     balancer.dump()
     balancer.start()
     
@@ -153,13 +154,15 @@ def main():
 
 if __name__ == '__main__':
     if config.PRODUCTION:
+        # Controller is executed in production
         main()
     else:
-        t = open(config.path('ar'), 'w')
-        for i in xrange(0, 50):
+        name = 'sandpiper simple'
+        t = open(config.path(name), 'w')
+        for i in xrange(0, 1):
             pump = main()
-            res = scoreboard.Scoreboard().get_results(pump)
-            t.write('%f, %f, %i\n' % res)
+            res = scoreboard.Scoreboard().get_result_line(pump)
+            t.write('%s\n' % res)
             t.flush()
         t.close()
     
