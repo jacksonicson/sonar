@@ -2,7 +2,7 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import sandpiper_wolke
+import sandpiper_standard
 import scoreboard
 import time
 import msgpump
@@ -41,29 +41,29 @@ def build_from_current_allocation():
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
 
-def build_test_allocation():
-    import placement
-    from virtual import nodes
-    from control import domains 
-    
-    nodecount = len(nodes.HOSTS)
-    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-    migrations, _ = splace.execute()
-    
-    _nodes = []
-    for node in nodes.NODES: 
-        mnode = model.Node(node, nodes.NODE_CPU_CORES)
-        _nodes.append(mnode)
-        
-    _domains = {}
-    for domain in domains.domain_profile_mapping:
-        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-        _domains[domain.domain] = dom
-        
-    for migration in migrations:
-        print migration 
-        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
-    
+#def build_test_allocation():
+#    import placement
+#    from virtual import nodes
+#    from control import domains 
+#    
+#    nodecount = len(nodes.HOSTS)
+#    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+#    migrations, _ = splace.execute()
+#    
+#    _nodes = []
+#    for node in nodes.NODES: 
+#        mnode = model.Node(node, nodes.NODE_CPU_CORES)
+#        _nodes.append(mnode)
+#        
+#    _domains = {}
+#    for domain in domains.domain_profile_mapping:
+#        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+#        _domains[domain.domain] = dom
+#        
+#    for migration in migrations:
+#        print migration 
+#        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
+#    
  
 def build_debug_allocation():    
     # Build internal infrastructure representation
@@ -76,6 +76,10 @@ def build_debug_allocation():
     node.add_domain(model.Domain('target3', 2))
     node.add_domain(model.Domain('target4', 2))
     node.add_domain(model.Domain('target5', 2))
+    node.add_domain(model.Domain('target6', 2))
+    node.add_domain(model.Domain('target7', 2))
+    node.add_domain(model.Domain('target8', 2))
+    node.add_domain(model.Domain('target9', 2))
     
     node = model.Node('srv2', 4)
     node = model.Node('srv3', 4)
@@ -89,7 +93,7 @@ def build_initial_model():
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
-        build_test_allocation()
+        build_debug_allocation()
     
     # Dump model
     model.dump()
@@ -142,7 +146,7 @@ def main():
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper_wolke.Sandpiper(pump, model)
+    balancer = sandpiper_standard.Sandpiper(pump, model)
     balancer.dump()
     balancer.start()
     
@@ -156,7 +160,7 @@ if __name__ == '__main__':
         main()
     else:
         t = open(config.path('ar'), 'w')
-        for i in xrange(0, 50):
+        for i in xrange(0, 1):
             pump = main()
             res = scoreboard.Scoreboard().get_results(pump)
             t.write('%f, %f, %i\n' % res)

@@ -2,9 +2,9 @@ from logs import sonarlog
 from model import types
 import json
 import controller
-import time
 import numpy
 import math
+import util
 
 ######################
 ## CONFIGURATION    ##
@@ -29,20 +29,10 @@ migration_queue = []
 
 class Sandpiper(controller.LoadBalancer):
     
-    def __init__(self, model, production):
-        super(Sandpiper, self).__init__(model, production, INTERVAL)
+    def __init__(self, pump, model):
+        super(Sandpiper, self).__init__(pump, model, INTERVAL)
         
         
-    def dump(self):
-        logger.info('Controller: Sandpiper')
-        logger.info('START_WAIT = %i' % START_WAIT)
-        logger.info('INTERVAL = %i' % INTERVAL)
-        logger.info('THRESHOLD_OVERLOAD = %i' % THRESHOLD_OVERLOAD)
-        logger.info('THRESHOLD_UNDERLOAD = %i' % THRESHOLD_UNDERLOAD)
-        logger.info('_PERCENTILE = %i' % PERCENTILE)
-        logger.info('K_VALUE = %i' % K_VALUE)
-        logger.info('M_VALUE = %i' % M_VALUE)
-    
     def forecast(self, data):
         # TODO double exponential smoothing (holt winter)
         import statsmodels.api as sm
@@ -55,10 +45,10 @@ class Sandpiper(controller.LoadBalancer):
             return data[-1]
         
         
-    def post_migrate_hook(self, success, domain, node_from, node_to):
+    def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:
             # Release block
-            time_now = time.time()
+            time_now = self.pump.sim_time()
             node_from.blocked = time_now
             node_to.blocked = time_now
             
@@ -70,7 +60,7 @@ class Sandpiper(controller.LoadBalancer):
             
         else:
             
-            time_now = time.time()
+            time_now = self.pump.sim_time()
             node_from.blocked = time_now
             node_to.blocked = time_now
         
@@ -88,7 +78,7 @@ class Sandpiper(controller.LoadBalancer):
                                                                  }))
         
         
-    def lb(self):
+    def balance(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
@@ -145,7 +135,7 @@ class Sandpiper(controller.LoadBalancer):
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
-        time_now = time.time()
+        time_now = self.pump.sim_time()
         sleep_time = 10
         for node in nodes:
             node.dump()
@@ -200,7 +190,7 @@ class Sandpiper(controller.LoadBalancer):
                 continue
                              
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -208,7 +198,7 @@ class Sandpiper(controller.LoadBalancer):
             if test: 
                 source_load = source.percentile_load(PERCENTILE, k)
                 target_load = target.percentile_load(PERCENTILE, k)
-                domain_load = self.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))
+                domain_load = util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))
                 print 'source load: %s; target load: %s; domain_load: %s' % (source_load, target_load, domain_load)
                 #self.migrate(domain, source, target, K_VALUE)
                 part = self.migration_part(domain, source, target, 'Overload', k) 
@@ -338,13 +328,13 @@ class Sandpiper(controller.LoadBalancer):
                     targets.append(target_domains[i])                
 
                 # Calculate new loads
-                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
-                new_source_node_load = node.percentile_load(PERCENTILE, k) - self.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
+                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
+                new_source_node_load = node.percentile_load(PERCENTILE, k) - util.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
               
                 for target_domain in targets:
                     tmp_load = target_domain.percentile_load(PERCENTILE, k)
-                    new_target_node_load -= self.domain_to_server_cpu(target_node, target_domain, tmp_load)
-                    new_source_node_load += self.domain_to_server_cpu(node, target_domain, tmp_load)                              
+                    new_target_node_load -= util.domain_to_server_cpu(target_node, target_domain, tmp_load)
+                    new_source_node_load += util.domain_to_server_cpu(node, target_domain, tmp_load)                              
                 
 
                 #Test if swap violates rules
@@ -379,7 +369,7 @@ class Sandpiper(controller.LoadBalancer):
                 continue
             
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + self.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -405,14 +395,14 @@ class Sandpiper(controller.LoadBalancer):
     def normalized_volume(self, node, k):
         # Based on DRS, but use of volume as entitlement
         volume_domains = 0
-        
+        h = self.model.get_host(node['name'])
         for domain in node['domains'].itervalues():
             volume_domains += domain['volume']
 
         print 'node: %s; normalized volume: %s' % (node['name'], volume_domains / 100)   
         # TODO: divide by node capacity
         
-        return volume_domains / 100
+        return h.percentile_load(80, 50)
             
                 
     def imbalance(self, nodes, k):
@@ -450,7 +440,7 @@ class Sandpiper(controller.LoadBalancer):
                 description = part['description']
                 k = part['k']
                 
-                print '%s migration: %s from %s to %s' % (description, domain.name, source.name, target.name)
+                #print '%s migration: %s from %s to %s' % (description, domain.name, source.name, target.name)
                 self.migrate(domain, source, target, k)
                 
                 if target.name in past_target_nodes:
