@@ -305,18 +305,16 @@ modified = True         # Modified version of the workload mix
 
 def _profile(prefixed, *args):
     name = ''
-    if prefixed: name = _get_prefix() + name
-    for arg in args:
-        name += arg
-    return name
-
-def _get_prefix():
+    
     if selected_profile is None:
         prefix = ''
     else:
         prefix = selected_profile + '_'
-        
-    return prefix
+    
+    if prefixed: name = prefix + name
+    for arg in args:
+        name += arg
+    return name
 
 def get_current_cpu_profile(index):
     '''
@@ -324,9 +322,10 @@ def get_current_cpu_profile(index):
     depends on the modified flag. 
     '''
     desc = __by_index(index)
-    name = _get_prefix() + desc.name + POSTFIX_NORM
     if modified:
-        name += POSTFIX_MODIFIED
+        name = _profile(True, desc.name, POSTFIX_NORM, POSTFIX_MODIFIED)
+    else:
+        name = _profile(True, desc.name, POSTFIX_NORM)
         
     print 'Selected cpu profile: %s' % name
     return name
@@ -376,12 +375,10 @@ def __write_profile(connection, name, profile_ts, interval, overwrite=False, nop
     '''
     
     # Extend name with the current workload mix prefix
-    if noprefix == False and selected_profile is not None:
-        if name.find(selected_profile) == 0:
-            print 'ERROR: INVALID STORAGE NAME - append prefix twice'
-            import sys
-            sys.exit(1)
-        name = _get_prefix() + name
+    if not noprefix and selected_profile is not None:
+        if name.find(selected_profile) != 0:
+            if not selected_profile:
+                name = selected_profile + '_' + name
     
     # Check if the profile exists
     if len(connection.find(name)) > 0:
