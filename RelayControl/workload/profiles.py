@@ -430,7 +430,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     # Store RAW profiles (-> plotting)
     raw_profile = np.array(profile)
     if save:
-        __write_profile(connection, _profile(False, desc.name, POSTFIX_RAW), raw_profile, interval)
+        __write_profile(connection, _profile(True, desc.name, POSTFIX_RAW), raw_profile, interval)
     
     # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
     maxval = float(set_max[pset.id])
@@ -438,7 +438,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     norm_profile = np.array(profile)
     norm_profile *= 100 # Times does not support float values
     if save:
-        __write_profile(connection, _profile(False, desc.name, POSTFIX_NORM), norm_profile, interval)
+        __write_profile(connection, _profile(True, desc.name, POSTFIX_NORM), norm_profile, interval)
     
     # Store USER profiles (-> feed into Rain)
     # - Adapt interval for the benchmark duration
@@ -449,10 +449,10 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     user_profile = __padprofile(user_profile, interval)
     
     if np.max(user_profile) > MAX_USERS:
-        print '%s > max users - %i' % (_profile(False, desc.name, POSTFIX_USER), np.max(user_profile))
+        print '%s > max users - %i' % (_profile(True, desc.name, POSTFIX_USER), np.max(user_profile))
         
     if save:
-        __write_profile(connection, _profile(False, desc.name, POSTFIX_USER), user_profile, interval)
+        __write_profile(connection, _profile(True, desc.name, POSTFIX_USER), user_profile, interval)
     
     # Plotting    
     util.plot(user_profile, desc.name + '.png', MAX_USERS)
@@ -465,7 +465,7 @@ def __build_sample_day(mix, save):
     for desc in mix:
         print 'processing sample day %s' % (desc.name)
         import sampleday
-        profile = sampleday.process_trace(connection, desc.name,
+        profile = sampleday.process_trace(connection, _profile(False, desc.name),
                                           desc.sample_frequency, CYCLE_TIME, desc.profile_set.day)
         desc.profile = profile
         
@@ -492,7 +492,7 @@ def build_modified_profiles(mix, save):
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
         if save:
-            name = _profile(False, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
+            name = _profile(True, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
             __write_profile(connection, name, modified_profile, interval)
             
         # Store USER profiles (-> feed into Rain)
@@ -504,7 +504,7 @@ def build_modified_profiles(mix, save):
         user_profile = np.array(modified_profile)
         user_profile = __padprofile(user_profile, interval)
         if save:
-            name = _profile(False, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
+            name = _profile(True, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
             __write_profile(connection, name, user_profile, interval)
 
     times_client.close()
@@ -526,7 +526,8 @@ def __build_profiles(mix, save):
     for desc in mix:
         print 'processing convolution: %s' % (desc.name)
         import convolution
-        profile = convolution.process_trace(connection, desc.name, desc.sample_frequency, CYCLE_TIME)
+        profile = convolution.process_trace(connection, _profile(False, desc.name),
+                                            desc.sample_frequency, CYCLE_TIME)
         
         # Add profile to mix
         desc.profile = profile
@@ -575,16 +576,15 @@ def __padprofile(profile_ts, interval):
     '''
     
     # Number of elements for ramp-up 
+    # print 'padding ramp up: %i' % (elements)
     elements = RAMP_UP / interval
-    print 'padding ramp up: %i' % (elements)
-    
     ramup_pad = np.zeros(elements, np.float)
     mean = np.mean(profile_ts)
     ramup_pad[range(elements)] = mean
     
     # Number of elements for ramp-down
+    # print 'padding ramp down: %i' % (elements)
     elements = RAMP_DOWN / interval
-    print 'padding ramp down: %i' % (elements)
     rampdown_pad = np.zeros(elements, np.float)
     
     # Add padding to the original user profile for Rain
@@ -631,6 +631,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
     # Save the profile
     if save:
         connection = times_client.connect()
+        # Special case - no prefix is added as this TS is treated as a RAW TS
         __write_profile(connection, _profile(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
         times_client.close()
     
