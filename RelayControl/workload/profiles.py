@@ -303,6 +303,13 @@ selected = mix_sim        # Selected workload mix
 modified = True         # Modified version of the workload mix
 ##############################
 
+def _profile(prefixed, *args):
+    name = ''
+    if prefixed: name = _get_prefix() + name
+    for arg in args:
+        name += arg
+    return name
+
 def _get_prefix():
     if selected_profile is None:
         prefix = ''
@@ -330,7 +337,7 @@ def get_traced_cpu_profile(index):
     depends on the modified flag. 
     '''
     desc = __by_index(index)
-    name = _get_prefix() + desc.name + POSTFIX_TRACE
+    name = _profile(True, desc.name, POSTFIX_TRACE)
     
     print 'Selected cpu profile: %s' % name
     return name
@@ -341,9 +348,10 @@ def get_current_user_profile(index):
     depends on the modified flag. 
     '''
     desc = __by_index(index)
-    name = _get_prefix() + desc.name + POSTFIX_USER
     if modified:
-        name += POSTFIX_MODIFIED
+        name = _profile(True, desc.name, POSTFIX_USER, POSTFIX_MODIFIED)
+    else:
+        name = _profile(True, desc.name, POSTFIX_USER)
         
     print 'Selected user profile: %s' % name
     return name 
@@ -425,7 +433,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     # Store RAW profiles (-> plotting)
     raw_profile = np.array(profile)
     if save:
-        __write_profile(connection, desc.name + POSTFIX_RAW, raw_profile, interval)
+        __write_profile(connection, _profile(False, desc.name, POSTFIX_RAW), raw_profile, interval)
     
     # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
     maxval = float(set_max[pset.id])
@@ -433,7 +441,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     norm_profile = np.array(profile)
     norm_profile *= 100 # Times does not support float values
     if save:
-        __write_profile(connection, desc.name + POSTFIX_NORM, norm_profile, interval)
+        __write_profile(connection, _profile(False, desc.name, POSTFIX_NORM), norm_profile, interval)
     
     # Store USER profiles (-> feed into Rain)
     # - Adapt interval for the benchmark duration
@@ -444,10 +452,10 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     user_profile = __padprofile(user_profile, interval)
     
     if np.max(user_profile) > MAX_USERS:
-        print '%s > max users - %i' % (desc.name + POSTFIX_USER, np.max(user_profile))
+        print '%s > max users - %i' % (_profile(False, desc.name, POSTFIX_USER), np.max(user_profile))
         
     if save:
-        __write_profile(connection, desc.name + POSTFIX_USER, user_profile, interval)
+        __write_profile(connection, _profile(False, desc.name, POSTFIX_USER), user_profile, interval)
     
     # Plotting    
     util.plot(user_profile, desc.name + '.png', MAX_USERS)
@@ -480,14 +488,14 @@ def build_modified_profiles(mix, save):
     
     for mi_element in mix:
         # Operates on pre-processed data. Hence, a prefix is required
-        ts_name = _get_prefix() + mi_element.name + POSTFIX_NORM
+        ts_name = _profile(True, mi_element.name, POSTFIX_NORM)
 
         # Modify CPU normal profile     
         modified_profile, interval = modifier.process_trace(connection, ts_name,
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
         if save:
-            name = mi_element.name + POSTFIX_NORM + POSTFIX_MODIFIED
+            name = _profile(False, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
             __write_profile(connection, name, modified_profile, interval)
             
         # Store USER profiles (-> feed into Rain)
@@ -499,7 +507,7 @@ def build_modified_profiles(mix, save):
         user_profile = np.array(modified_profile)
         user_profile = __padprofile(user_profile, interval)
         if save:
-            name = mi_element.name + POSTFIX_NORM + POSTFIX_MODIFIED
+            name = _profile(False, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
             __write_profile(connection, name, user_profile, interval)
 
     times_client.close()
@@ -626,7 +634,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
     # Save the profile
     if save:
         connection = times_client.connect()
-        __write_profile(connection, name + POSTFIX_TRACE, profile, interval, noprefix=True)
+        __write_profile(connection, _profile(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
         times_client.close()
     
 def plot_overlay_mix():
@@ -646,7 +654,7 @@ def plot_overlay_mix():
         desc = plot_mix[i]
         
         name = desc.name
-        timeSeries = connection.load(name + POSTFIX_USER)
+        timeSeries = connection.load(_profile(True, name, POSTFIX_USER))
         _, demand = util.to_array(timeSeries)
         
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
@@ -679,7 +687,7 @@ def __plot_complete_mix():
     
     for desc in plot_mix:  
         name = desc.name
-        timeSeries = connection.load(name + POSTFIX_USER)
+        timeSeries = connection.load(_profile(True, name, POSTFIX_USER))
         _, demand = util.to_array(timeSeries)
         
         index += 1
