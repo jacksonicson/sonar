@@ -5,6 +5,16 @@ Global Configuration File
 from socket import gethostname
 import sys
 
+'''
+Configuring a benchmark run: 
+- Check settings in nodes
+- Check settings in profiles (all configuration parameters)
+- Check settings in domains
+- Check configuration of Controller: control.logic.controller <I-- subclasses
+- Check Controller reference: control.logic.main.py
+- Check start_benchmark.py configuration
+'''
+
 # Other configuration files
 from virtual import nodes as _nodes #@UnusedImport
 from workload import profiles as _profiles #@UnusedImport
@@ -40,7 +50,7 @@ COLLECTOR_HOST = 'monitor0.dfg'
 COLLECTOR_PORT = 7911
 
 ##########################
-## RELAY    T           ##
+## RELAY                ##
 RELAY_PORT = 7900
 
 ##########################

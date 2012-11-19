@@ -201,12 +201,12 @@ def get_current_cpu_profile(index):
     depends on the modified flag. 
     '''
     if selected_profile is None:
-        selected_profile = ''
+        prefix = ''
     else:
-        selected_profile += '_'
+        prefix = selected_profile + '_'
     
     desc = by_index(index)
-    name = selected_profile + desc.name + POSTFIX_NORM
+    name = prefix + desc.name + POSTFIX_NORM
     if modified:
         name += POSTFIX_MODIFIED
         
@@ -220,12 +220,12 @@ def get_current_user_profile(index):
     depends on the modified flag. 
     '''
     if selected_profile is None:
-        selected_profile = ''
+        prefix = ''
     else:
-        selected_profile += '_'
+        prefix = selected_profile + '_'
     
     desc = by_index(index)
-    name = selected_profile + desc.name + POSTFIX_USER
+    name = prefix + desc.name + POSTFIX_USER
     if modified:
         name += POSTFIX_MODIFIED
         
