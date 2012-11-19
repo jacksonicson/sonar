@@ -62,8 +62,62 @@ class Sandpiper(controller.LoadBalancer):
             node_to.blocked = end_time
         
     
-    def check_imbalance(self):    
-        pass
+    def check_imbalance(self, time_now, sleep_time, k):    
+        nodes = self.model.get_hosts(self.model.types.NODE)
+        readings = []
+        for node in nodes:
+            readings.append(node.forecast())
+            
+        sd = np.std(readings)
+        if sd > 40:
+            best_fnode = None
+            best_tnode = None
+            best_domain = None
+            best = 200
+            for fnode in nodes:
+                for domain in fnode.domains.values():
+                    for tnode in nodes:
+                        if fnode == tnode:
+                            continue
+                        
+                        if not tnode.domains:
+                            continue
+                        
+                        domain_cpu_factor = tnode.cpu_cores / domain.cpu_cores
+                        test = True
+                        test &= (tnode.forecast() + domain.forecast() / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                        test &= len(tnode.domains) < 6
+                        test &= (time_now - tnode.blocked) > sleep_time
+                        test &= (time_now - tnode.blocked) > sleep_time
+                        test &= (time_now - fnode.blocked) > sleep_time
+                        test &= (time_now - fnode.blocked) > sleep_time
+                        
+                        if test == False: 
+                            continue
+                        
+                        readings = []
+                        readings.append(fnode.forecast() - domain.forecast() / 2.0)
+                        readings.append(tnode.forecast() + domain.forecast() / 2.0)
+                        
+                        for cnode in nodes:
+                            if cnode == fnode: continue
+                            if cnode == tnode: continue
+                            readings.append(node.percentile_load(PERCENTILE, k))
+                        
+                        sd = np.std(readings)
+                        if sd < best:
+                            best_fnode = fnode
+                            best_tnode = tnode
+                            best_domain = domain
+                            best = sd
+                            
+            if best < 200: 
+                self.migrate(best_domain, best_fnode, best_tnode, k)
+                return True
+            
+        return False
+                        
+                    
     
     def check_hostpost(self, k):
         for node in self.model.get_hosts(types.NODE):
@@ -79,8 +133,8 @@ class Sandpiper(controller.LoadBalancer):
             forecast = np.mean(slc)
             forecast = smoother.ar_forecast(slc)
             
-            percentile = np.percentile(slc, THR_PERCENTILE)
-            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
+            percentile = node.forecast()# np.percentile(slc, THR_PERCENTILE)
+            percentile_ = node.forecast() # np.percentile(slc, 1 - THR_PERCENTILE)
             
             overload = (percentile > THRESHOLD_OVERLOAD)
             underload = (percentile_ < THRESHOLD_UNDERLOAD)
@@ -177,7 +231,7 @@ class Sandpiper(controller.LoadBalancer):
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = self.pump.sim_time()
-        sleep_time = 60
+        sleep_time = 10
         for node in nodes:
             node.dump()
             
@@ -186,6 +240,9 @@ class Sandpiper(controller.LoadBalancer):
                 if node.overloaded:
                     self.migration_trigger(True, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass 
+            
+            # Balance system
+            self.check_imbalance(time_now, sleep_time, k)
             
             try:
                 # Underload situation
