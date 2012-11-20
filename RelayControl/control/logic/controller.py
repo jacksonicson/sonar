@@ -5,6 +5,7 @@ import model
 import sandpiper
 import threading
 import time
+from control.logic import proactive
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -125,7 +126,7 @@ def main():
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper.Sandpiper(model, config.PRODUCTION)
+    balancer = proactive.Sandpiper(model, config.PRODUCTION)
     balancer.dump()
     balancer.start()
     

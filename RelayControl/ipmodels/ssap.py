@@ -18,6 +18,7 @@ def createVariables(model):
     
     # Server active flags
     var_server_active = empty((server_count), dtype=object)
+    print type(var_server_active)
     for i in xrange(0, server_count):
         v = model.addVar(vtype=GRB.BINARY)
         var_server_active[i] = v 

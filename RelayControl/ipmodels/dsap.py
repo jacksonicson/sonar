@@ -146,7 +146,7 @@ if __name__ == '__main__':
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    solve(12, 100, demand_raw)
+    solve(12, 100, 100, demand_raw, demand_mem)
 
     
 
