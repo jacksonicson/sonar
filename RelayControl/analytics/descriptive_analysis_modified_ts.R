@@ -1,14 +1,36 @@
 source('times.import.R')
 
 # Load TSD
-if(exists('data_csv') == FALSE)
-{
-  data_csv = load_profiles(1:70)
-  list.ts = list()
-  for(element in data_csv) {
-    l = ts(element, frequency=1)  
-    list.ts = c(list.ts, list(l))
-  }
-}
+data = c("O2_retail_ADDLINEORDER_profile_user", "SIS_350_cpu_profile_norm", "SIS_240_cpu_profile_user", "SIS_211_cpu_profile_norm", "SIS_198_cpu_profile_norm", "SIS_199_cpu_profile_user", "SIS_211_cpu_profile_norm", "SIS_345_cpu_profile_norm", "O2_business_ADDLINEORDER_profile_norm", "SIS_253_cpu_profile_norm", "SIS_314_cpu_profile_user", "SIS_385_cpu_profile_user", "SIS_375_cpu_profile_norm", "O2_business_UPDATEDSSLINE_profile_norm", "SIS_222_cpu_profile_user", "SIS_213_cpu_profile_user", "SIS_225_cpu_profile_norm", "O2_retail_UPDATEACCOUNT_profile_user", "SIS_313_cpu_profile_norm", "O2_retail_ADDORDER_profile_norm", "O2_retail_ADDUCP_profile_user", "SIS_305_cpu_profile_user", "SIS_383_cpu_profile_norm", "SIS_279_cpu_profile_user", "SIS_397_cpu_profile_norm", "SIS_207_cpu_profile_norm", "SIS_269_cpu_profile_norm", "O2_retail_PORTORDER_profile_user", "O2_retail_SENDMSG_profile_norm", "SIS_225_cpu_profile_user", "SIS_178_cpu_profile_user", "SIS_172_cpu_profile_user", "O2_business_UPDATEDSS_profile_user", "O2_business_SENDMSG_profile_norm", "SIS_340_cpu_profile_user", "SIS_222_cpu_profile_norm", "SIS_394_cpu_profile_user", "O2_retail_UPDATEACCOUNT_profile_norm", "SIS_271_cpu_profile_user", "SIS_340_cpu_profile_norm", "SIS_163_cpu_profile_norm", "SIS_271_cpu_profile_norm", "SIS_345_cpu_profile_norm", "O2_business_CONTRACTEXT_profile_user", "O2_retail_ADDUCP_profile_norm", "SIS_314_cpu_profile_norm", "SIS_415_cpu_profile_norm", "SIS_83_cpu_profile_norm", "SIS_394_cpu_profile_norm", "SIS_397_cpu_profile_user", "O2_business_UPDATEDSSLINE_profile_user", "SIS_211_cpu_profile_user", "SIS_375_cpu_profile_user", "SIS_221_cpu_profile_norm", "SIS_308_cpu_profile_user", "SIS_350_cpu_profile_user", "SIS_374_cpu_profile_user", "O2_retail_ADDORDER_profile_user", "SIS_179_cpu_profile_user", "SIS_387_cpu_profile_norm", "SIS_298_cpu_profile_norm", "O2_business_ADDUCP_profile_user", "O2_business_LINECONFIRM_profile_norm", "SIS_344_cpu_profile_norm", "SIS_194_cpu_profile_norm", "SIS_344_cpu_profile_user", "O2_retail_SENDMSG_profile_user", "O2_business_ADDUCP_profile_norm", "SIS_175_cpu_profile_user", "SIS_381_cpu_profile_norm", "SIS_345_cpu_profile_user", "SIS_308_cpu_profile_norm", "O2_business_ADDORDER_profile_norm", "O2_retail_UPDATEDSS_profile_norm", "SIS_309_cpu_profile_user", "O2_retail_ADDLINEORDER_profile_norm", "SIS_264_cpu_profile_user", "O2_retail_CONTRACTEXT_profile_user", "SIS_198_cpu_profile_user", "SIS_387_cpu_profile_user", "SIS_83_cpu_profile_user", "SIS_393_cpu_profile_norm", "SIS_234_cpu_profile_norm", "SIS_189_cpu_profile_norm", "SIS_292_cpu_profile_norm", "SIS_161_cpu_profile_user", "SIS_198_cpu_profile_norm", "SIS_29_cpu_profile_user", "SIS_162_cpu_profile_user", "SIS_207_cpu_profile_user", "O2_retail_UPDLINEORDER_profile_norm", "SIS_178_cpu_profile_norm", "SIS_292_cpu_profile_user", "O2_retail_PORTORDER_profile_norm", "SIS_350_cpu_profile_user", "SIS_279_cpu_profile_norm", "SIS_189_cpu_profile_user", "SIS_163_cpu_profile_user", "SIS_213_cpu_profile_norm", "SIS_298_cpu_profile_user", "O2_retail_UPDATEDSS_profile_user", "SIS_172_cpu_profile_norm", "SIS_310_cpu_profile_norm", "SIS_264_cpu_profile_norm", "O2_retail_CONTRACTEXT_profile_norm", "SIS_245_cpu_profile_norm", "SIS_374_cpu_profile_norm", "SIS_310_cpu_profile_user", "SIS_345_cpu_profile_user", "SIS_209_cpu_profile_user", "SIS_161_cpu_profile_norm", "SIS_275_cpu_profile_user", "SIS_175_cpu_profile_norm", "O2_retail_UPDLINEORDER_profile_user", "SIS_383_cpu_profile_user", "SIS_275_cpu_profile_norm", "SIS_216_cpu_profile_norm", "SIS_216_cpu_profile_user", "SIS_198_cpu_profile_user", "O2_business_LINECONFIRM_profile_user", "SIS_350_cpu_profile_norm", "SIS_245_cpu_profile_user", "O2_business_ADDORDER_profile_user", "SIS_393_cpu_profile_user", "O2_business_UPDATEACCOUNT_profile_norm", "O2_business_ADDLINEORDER_profile_user", "SIS_188_cpu_profile_norm", "SIS_179_cpu_profile_norm", "SIS_177_cpu_profile_norm", "SIS_415_cpu_profile_user", "SIS_253_cpu_profile_user", "SIS_29_cpu_profile_norm", "SIS_381_cpu_profile_user", "SIS_209_cpu_profile_norm", "SIS_309_cpu_profile_norm", "O2_business_SENDMSG_profile_user", "SIS_269_cpu_profile_user", "SIS_194_cpu_profile_user", "SIS_221_cpu_profile_user", "SIS_188_cpu_profile_user", "SIS_305_cpu_profile_norm", "SIS_240_cpu_profile_norm", "SIS_211_cpu_profile_user", "SIS_177_cpu_profile_user", "SIS_234_cpu_profile_user", "O2_business_UPDATEDSS_profile_norm", "SIS_313_cpu_profile_user", "SIS_162_cpu_profile_norm", "SIS_385_cpu_profile_norm", "O2_business_CONTRACTEXT_profile_norm", "SIS_211_cpu_profile_user", "O2_business_UPDATEACCOUNT_profile_user", "SIS_211_cpu_profile_norm", "SIS_199_cpu_profile_norm")
 
+results = list()
+for(element in data)
+{
+  print(element)
+  name = element
+  
+  result_nom = load_profile(name)
+  result_nom_mod = load_profile(paste(name, '_modified', sep=''))
+  
+  
+  # Means
+  mean0 = mean(result_nom)
+  mean1 = mean(result_nom_mod)
+  
+  # Quantiles
+  q0 = quantile(result_nom, c(0.5, 0.9, 0.99))
+  q1 = quantile(result_nom_mod, c(0.5, 0.9, 0.99))
+  
+  # Correlation
+  corr = cor(result_nom, result_nom_mod)
+  
+  d_mean = abs(mean1 - mean0)
+  d_quantile = abs(q1 - q0)
+ 
+  nres = c('mean', '0.5', '0.9', '0.99', 'corr')
+  
+  res = c(d_mean, d_quantile[[1]], d_quantile[[1]], d_quantile[[1]], corr)
+  names(res) = nres
+  print(res)
+}
 

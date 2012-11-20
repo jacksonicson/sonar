@@ -13,6 +13,7 @@ import numpy as np
 import sys
 import time
 import traceback
+import matplotlib.pyplot as plt
 
 ##########################
 ## Configuration        ##
@@ -26,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '12/11/2012 14:30:00    12/11/2012 21:50:00'
+RAW = '19/11/2012 11:55:00    19/11/2012 20:30:00'
 ##########################
 
 warns = []
@@ -204,6 +205,7 @@ def __fetch_migrations(connection, load_host, timeframe):
     successful = []
     failed = []
     server_active = [] 
+    triggered = []
     
     # scan logs for results
     for log in logs:
@@ -220,13 +222,16 @@ def __fetch_migrations(connection, load_host, timeframe):
             STR_MIGRATION_TRIGGERED = 'Live Migration Triggered: '
             if log.logMessage.startswith(STR_MIGRATION_TRIGGERED):
                 log.logMessage[len(STR_MIGRATION_TRIGGERED):]
+                msg = log.logMessage[len(STR_MIGRATION_TRIGGERED):]
+                migration = json.loads(msg)
+                triggered.append((log.timestamp, migration)) 
             
             # Migration finished
             STR_MIGRATION_FINISHED = 'Live Migration Finished: '
             if log.logMessage.startswith(STR_MIGRATION_FINISHED):
                 msg = log.logMessage[len(STR_MIGRATION_FINISHED):]
                 migration = json.loads(msg)
-                successful.append(migration)
+                successful.append((log.timestamp, migration))
             
             # Migration failed
             STR_MIGRATION_FAILED = 'Live Migration Failed: '
@@ -243,7 +248,7 @@ def __fetch_migrations(connection, load_host, timeframe):
                 active_state = (log.timestamp, active['count'], active['servers'])
                 server_active.append(active_state)
                 
-    return successful, failed, server_active
+    return successful, failed, server_active, triggered
 
 '''
 Extracts all JSON configuration and metric information from the Rain log. This
@@ -499,81 +504,216 @@ def __processing_generate_profiles(domain_workload_map, cpu):
             # Create profile from CPU load
             profiles.process_sonar_trace(workload, cpu[domain][0], cpu[domain][1], True)
  
+ 
+def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful):
+    for domain in domain_track_map.keys():
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
+        for track in domain_track_map[domain]:
+            print 'plotting'
+            res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            
+            ax.plot(res_time, res_resp)
+            
+        # Add annotations to the trace
+        print 'domain: %s' % domain
+        for mig in migrations_triggered:
+            print 'test: %s' % mig[1]['domain']
+            if mig[1]['domain'] == domain:
+                ax.axvline(mig[0] + 40, color='r')
+       
+        for mig in migrations_successful:
+            if mig[1]['domain'] == domain: 
+                ax.axvline(mig[0]+40, color='g')
+            
+            
+        plt.show()
+            
+ 
+def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
+    for node in nodes.NODES:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
+        
+        cc = mem[node]  
+        ax.axis([min(cc[1]), max(cc[1]), 0, 100])
+        ax.plot(cc[1], cc[0])
+                
+        # Add annotations to the trace
+        for mig in migrations_triggered:
+            if mig[1]['from'] == node:
+                ax.axvline(mig[0] + 40, color='r')
+                
+            if mig[1]['to'] == node:
+                ax.axvline(mig[0] +40, color='c')
+       
+        offset = 10
+        for mig in migrations_successful: 
+            if mig[1]['from'] == node:
+                ax.axvline(mig[0]+40, color='g')
+                ax.annotate('from=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
+                xytext=(-50, -30), textcoords='offset points',
+                arrowprops=dict(arrowstyle="->",
+                                connectionstyle="arc3,rad=.2"),
+                )
+                offset = (offset + 10) % 90
+                
+            if mig[1]['to'] == node:
+                ax.axvline(mig[0]+40, color='m')
+                
+                ax.annotate('to=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
+                xytext=(-50, -30), textcoords='offset points',
+                arrowprops=dict(arrowstyle="->",
+                                connectionstyle="arc3,rad=.2"),
+                )
+                offset = (offset + 10) % 90
+        
+        plt.show()
+   
+   
+def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful):
+    for migration in migrations_successful:
+        
+        # time shift
+        time_shift = 30
+        end_time = migration[0] + time_shift 
+        start_time = migration[0] - migration[1]['duration'] + time_shift
+        
+        from_server = migration[1]['from']
+        to_server = migration[1]['to']
+        
+        from_cpu = cpu[from_server]
+        to_cpu = cpu[to_server]
+
+        before_cpu = []
+        during_cpu = []
+        after_cpu = []        
+        for i in xrange(len(from_cpu[1])):
+            time = from_cpu[1][i]
+            if time > start_time and time < end_time:
+                during_cpu.append(from_cpu[0][i])
+            elif time > (start_time - 60) and time < start_time:
+                before_cpu.append(from_cpu[0][i])
+            elif time > end_time and time < (end_time + 60):
+                after_cpu.append(from_cpu[0][i])
+            
+#        print before_cpu
+#        print during_cpu
+        print '%d - %d - %d' % (np.mean(before_cpu), np.mean(during_cpu), np.mean(after_cpu))
+        if np.mean(before_cpu) > np.mean(during_cpu):
+            print '--'
+        else:
+            print '++'
+        
+ 
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
+    # Calculate descriptive statistics on migration time
     migration_durations = []
     for migration in migrations:
-        migration_durations.append(migration['duration'])
-    print 'Average migration time: %f' % np.mean(migration_durations)
+        migration_durations.append(migration[1]['duration'])
+        
+    print 'Migration time average: %f' % np.mean(migration_durations)
+    print 'Migration time 50th percentile: %f' % np.percentile(migration_durations, 50)
+    print 'Migration time 90th percentile: %f' % np.percentile(migration_durations, 90)
+    print 'Migration time 99th percentile: %f' % np.percentile(migration_durations, 99)
     
-    last_state = None
-    
-    occupied_minutes = 0.0
-    empty_minutes = 0.0
-    
-    _clean_cpu = []
-    _clean_mem = []
-    
+    # Average server count and server load calculations
+    # Server active flags mark changes in server active count
+    # Wrap server active flags with start and end flag at the beginning and end of experiment
+    # Each state is a tuple with: 
+    # (timestamp, TODO!!!!!!!!!!!!!!!!!! 
     _server_active = []
     _server_active.append((data_frame[0], server_active_flags[0][1], server_active_flags[0][2]))
     _server_active.extend(server_active_flags)
     _server_active.append((data_frame[1], server_active_flags[-1][1], server_active_flags[-1][2]))
+
+    # Hold info about the state of the last iteration interval
+    last_state = None
     
+    # Counts occupied and empty server minutes
+    occupied_minutes = 0.0
+    empty_minutes = 0.0
+    
+    # List of cpu and mem readings for busy server time intervals only
+    # Non active server readings are excluded from these lists 
+    _clean_cpu = []
+    _clean_mem = []
+
+    # Iterate over all server status state changes    
     for state in _server_active:
+        # If last state is not set - this is the last state
         if last_state == None:
             last_state = state
             continue
         
+        # Time between last state and current state
         delta_time = float(state[0] - last_state[0])
         
-        # minutes - timestamps are in seconds
-        # last state server count is used:
+        # Number of active servers 
         # |FLAG (last) | ........ |FLAG (iteration current) |
-        # The info from the last flag was active due to the time stamp
-        # of the iteration current flag!
+        # Servers active: 
+        # |                       ..........................|
+        # |.......................                          |
+        # |^^^this one is taken^^^
+        # The info from the *last flag* was active due *to the iteration current time stamp*
         active_servers = float(last_state[1])
         
-        occupied_minutes += (active_servers * delta_time) / 60.0 
+        # Occupied server minutes
+        occupied_minutes += (active_servers * delta_time) / 60.0
+        
+        # Empty server minutes 
         empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
         
-        for srv in nodes.NODES: 
+        # Go over all servers
+        for srv in nodes.NODES:
+            # Extracts a segment of a load time series
+            # Parameter: tuple with (load TS, time TS) 
             def extract(tupel):
                 _sub_arr = []
+                # Go over all timestamps
                 for i in xrange(len(tupel[1])):
                     value = tupel[0][i]
                     time = tupel[1][i]
                     
-                    if time >= last_state[0] and time <= state[0]:
+                    # Check if time is in range (timestamp of last state and timestamp of current state)
+                    if time >= last_state[0] and time < state[0]:
                         _sub_arr.append(value)
                         
+                # Return segment
                 return _sub_arr
             
+            # Get the cpu and mem load of the server during the delta_time interval
             _sub_cpu = extract(cpu[srv])
             _sub_mem = extract(mem[srv])
             
-            # if np.mean(_sub_cpu) > 3: 
+            # If the server was active in the interval - add the loads to the total load
             if srv in last_state[2]:
                 # Checked calculation by sighting TS data - seems to work 
-                #from datetime import datetime
-                #f = lambda i: datetime.fromtimestamp(i).strftime('%H:%M:%S') 
-                #print 'SRV %s FRAME: %s - %s' % (srv, f(last_state[0]), f(state[0]))  
                 _clean_cpu.extend(_sub_cpu)
                 _clean_mem.extend(_sub_mem)
             
-        
+        # Update last_state!
         last_state = state
     
+    # Calculate experiment duration in hours as float
     duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
+    
+    # Calculate average loads
+    avg_cpu = np.mean(_clean_cpu)
+    avg_mem = np.mean(_clean_mem)
+    avg_servers = (occupied_minutes / 60.0) / duration
+    
+    # Print stats
     print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
     print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
     print 'Empty minutes: %i' % empty_minutes
     print 'Average servers: %f' % (occupied_minutes / 60 / duration)
-    
     print 'Average server load: %f' % np.mean(_clean_cpu)
-    avg_cpu = np.mean(_clean_cpu)
-    avg_mem = np.mean(_clean_mem)
-    avg_servers = occupied_minutes / 60 / duration
     
+    # Return analytical results
     return avg_servers, avg_cpu, avg_mem
     
     
@@ -775,7 +915,8 @@ def connect_sonar(connection):
     for key in domain_track_map.keys():
         for track in domain_track_map[key]:
             res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-            # 3 Second response time "User Preferences and Search Engine Latency" by Jake D. et al.  
+            # 3 Second response time "User Preferences and Search Engine Latency" by Jake D. et al.
+            # Response Threshold Failures  
             cond = res_resp > 3000 
             ext = np.extract(cond, res_resp)
             sla_fail_count += len(ext)
@@ -784,7 +925,7 @@ def connect_sonar(connection):
     #####################################################################################################################################
     ### Reading Migrations ##############################################################################################################
     #####################################################################################################################################
-    migrations_successful, migrations_failed, server_active_flags = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
+    migrations_successful, migrations_failed, server_active_flags, migrations_triggered = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
     
     print '## MIGRATIONS ##'
     print 'Successful: %i' % len(migrations_successful)
@@ -832,6 +973,9 @@ def connect_sonar(connection):
     print '## MIGRATIONS ##'
     if migrations_successful: 
         servers, avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
+        # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
+        # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
+        # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
         print 'No migrations'
     

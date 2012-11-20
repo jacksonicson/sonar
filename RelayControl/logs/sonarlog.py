@@ -4,6 +4,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 import time
 import configuration as config
+import sys
 
 LOG_LEVELS = {60: 50010, 
               50:50000, 
@@ -73,7 +74,7 @@ def getLogger(sensor, hostname=config.HOSTNAME):
         if config.SONAR_LOGGING:
             logger.addHandler(SonarLogHandler(config.COLLECTOR_IP, config.LOGGING_PORT, hostname, sensor, "RelayControl"))
         else:
-            ch = logging.StreamHandler()
+            ch = logging.StreamHandler(stream=sys.stdout)
             ch.setLevel(logging.INFO)
             logger.addHandler(ch)
         

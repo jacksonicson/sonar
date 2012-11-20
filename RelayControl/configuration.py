@@ -5,10 +5,20 @@ Global Configuration File
 from socket import gethostname
 import sys
 
-# Other configuration files
-from virtual import nodes as _nodes #@UnusedImport
-from workload import profiles as _profiles #@UnusedImport
+'''
+Configuring a benchmark run: 
+- Check settings in nodes
+- Check settings in profiles (all configuration parameters)
+- Check settings in domains
+- Check configuration of Controller: control.logic.controller <I-- subclasses
+- Check Controller reference: control.logic.main.py
+- Check start_benchmark.py configuration
+'''
 
+# Other configuration files
+# from virtual import nodes
+# from workload import profiles
+# from control import domains
 
 ##########################
 ## GLOBAL               ##
@@ -40,7 +50,7 @@ COLLECTOR_HOST = 'monitor0.dfg'
 COLLECTOR_PORT = 7911
 
 ##########################
-## RELAY    T           ##
+## RELAY                ##
 RELAY_PORT = 7900
 
 ##########################
@@ -55,3 +65,9 @@ HOSTNAME = gethostname()
 ## CONTROLLER           ##
 LISTENING_PORT = 9876
 LISTENING_INTERFACE_IPV4 = '192.168.96.6'
+PUMP_SPEEDUP = 1
+
+##########################
+## FILESE               ##
+def path(filename, ending='txt'):
+    return 'C:/temp/%s.%s' % (filename, ending)

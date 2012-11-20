@@ -1,170 +1,177 @@
 from logs import sonarlog
-import configuration as config
 import json
-import model
-import sandpiper
-import threading
-import time
-from control.logic import proactive
+import scoreboard
+import configuration
 
-# Setup logging
+######################
+## CONFIGURATION    ##
+######################
+START_WAIT = 0
+######################
+
+# Global migration ID counter (identifies migrations)
+migration_id_counter = 0
+
+# Setup Sonar logging
 logger = sonarlog.getLogger('controller')
 
-class MetricHandler:
-    '''
-    Receives metric data from the simulation or from Sonar
-    and feeds the data into the model. The data is later used
-    by the load balancer to resolve over- and underloads.
-    '''
-    def receive(self, datalist):
-        # print 'handling...'
-        for data in datalist:
-            hostname = data.id.hostname
+'''
+Simulates the wait time for a transaction. 
+'''
+class SimulatedMigration:
+    def __init__(self, pump, domain, node_from, node_to, migration_callback, info):
+        self.pump = pump
+        
+        # Callback handler
+        self.migration_callback = migration_callback
+        
+        # Migration information
+        self.domain = domain
+        self.node_from = node_from
+        self.node_to = node_to
+        self.info = info
+    
+    def run(self):
+        # Set migration start time
+        self.start = self.pump.sim_time()
+        
+        # Simulate migration wait time
+        self.pump.callLater(60, self.callback)
+        
+    def callback(self):
+        # Set migration end time
+        self.end = self.pump.sim_time()
+        
+        # Call migration callback
+        self.migration_callback(self.domain, self.node_from, self.node_to, 
+                                self.start, self.end, self.info, True, None)
+        
+
+class LoadBalancer(object):
+    def __init__(self, pump, model, interval):
+        super(LoadBalancer, self).__init__()
+        
+        # Reference to the message pump
+        self.pump = pump 
+        
+        # Data model
+        self.model = model
+        
+        # Execution interval
+        self.interval = interval
+        
+        
+    # Abstract load balancing method
+    def balance(self):
+        pass
+    
+    def start(self):
+        self.pump.callLater(START_WAIT, self.run)
+    
+    def migration_callback(self, domain, node_from, node_to, start, end, info, status, error):
+        domain = self.model.get_host(domain)
+        node_from = self.model.get_host(node_from)
+        node_to = self.model.get_host(node_to)
+        duration = end - start
+        
+        # Migration info in a JSON object
+        data = json.dumps({'domain': domain.name, 
+                           'from': node_from.name,
+                           'to': node_to.name,
+                           'start' : start, 
+                           'end' : end,
+                           'duration' : duration,
+                           'id': info.migration_id,
+                           'source_cpu' : info.source_load_cpu,
+                           'target_cpu' : info.target_load_cpu})
+        
+        # Check if migration was successful
+        if status == True:
+            # Update model
+            node_to.domains[domain.name] = domain
+            del node_from.domains[domain.name]
+        
+            # Call post migration hook
+            self.post_migrate_hook(True, domain, node_from, node_to, end)
             
-            host = model.get_host(hostname)
-            if host == None:
-                return
-             
-            host.put(data.reading)
-
-
-def build_from_current_allocation():
-    from virtual import allocation
-    allocation = allocation.determine_current_allocation()
-    
-    from virtual import nodes
-    
-    for host in allocation.iterkeys():
-        node = model.Node(host, nodes.NODE_CPU_CORES)
+            # Log migration status
+            print 'Migration finished'
+            logger.info('Live Migration Finished: %s' % data)
+            
+        else:
+            # Call post migration hook
+            self.post_migrate_hook(False, domain, node_from, node_to, end)
+            
+            # Log migration status
+            print 'Migration failed'
+            logger.error('Live Migration Failed: %s' % data)
+            
+        # Log number of empty servers
+        active_server_info = self.model.server_active_info()
+        print 'Updated active server count: %i' % active_server_info[0]
+        logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
+                                                       'servers' : active_server_info[1],
+                                                       'timestamp' : self.pump.sim_time()}))
         
-        for domain in allocation[host]:
-            node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
-    
-
-def build_test_allocation():
-    # Build internal infrastructure representation
-    node = model.Node('srv0', 4)
-    node.add_domain(model.Domain('target0', 2))
-    node.add_domain(model.Domain('target1', 2))
-    
-    node = model.Node('srv1', 4)
-    node.add_domain(model.Domain('target2', 2))
-    node.add_domain(model.Domain('target3', 2))
-    node.add_domain(model.Domain('target4', 2))
-    node.add_domain(model.Domain('target5', 2))
-    
-    node = model.Node('srv2', 4)
-    node = model.Node('srv3', 4)
-    
-
-def build_initial_model():
-    if config.PRODUCTION: 
-        # Build model from current allocation
-        build_from_current_allocation()
-    else:
-        build_test_allocation()
-    
-    # Dump model
-    model.dump()
-    
-    # Update empty counts
-    active_server_info = model.server_active_info()
-    print 'Updated active server count: %i' % active_server_info[0]
-    logger.info('Active Servers: %s' % json.dumps({'count' : active_server_info[0],
-                                                   'servers' : active_server_info[1],
-                                                   'timestamp' : time.time()}))
-    
-    #################################################
-    # IMPORTANT #####################################
-    #################################################
-    # Initialize controller specific variables
-    for host in model.get_hosts():
-        host.blocked = 0
-
-
-# Globals
-driver = None
-balancer = None
-exited = False
-condition = threading.Condition()
-
-# React to kill signals
-def sigtermHandler(signum, frame):
-    condition.acquire()
-    
-    global exited
-    exited = True
-    condition.notify()
-    
-    condition.release()
-
-
-def dump():
-    balancer.dump()
-
-
-def main():
-    global driver
-    global balancer
-    
-    # Build internal infrastructure representation
-    build_initial_model()
-
-    # Create notification handler
-    handler = MetricHandler()
-    
-    # Decides whether a simulation or a real
-    # control system is run
-    if config.PRODUCTION:
-        # Connect with sonar to receive metric readings
-        import connector
-        connector.connect_sonar(model, handler)
-    else:
-        # Start the driver thread which simulates Sonar
-        import driver
-        driver = driver.Driver(model, handler)
-        driver.start()
-    
-    # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = proactive.Sandpiper(model, config.PRODUCTION)
-    balancer.dump()
-    balancer.start()
-    
-    # Dump configuration
-    dump()
-
-    # Register the signal handlers
-    import signal
-    signal.signal(signal.SIGTERM, sigtermHandler)
-    
-    # Wait for balancer to exit
-    print 'Waiting for shutdown event...'
-    
-    # acquire condition
-    condition.acquire()
-
-    # Spinning until shutdown signal is received
-    global exited        
-    while exited == False:
-        try:
-            condition.wait(10)
-        except KeyboardInterrupt:
-            exited = True
-            continue
-
-    # releasing condition
-    condition.release()
-    
-    # Shutdown
-    print 'Shutting down now... ',
-    if driver is not None:
-        driver.stop()
+        # Update scoreboard
+        sb = scoreboard.Scoreboard()
+        sb.add_active_info(active_server_info[0], self.pump.sim_time())
         
-    if balancer is not None:
-        balancer.stop()
-    
-    print 'Waiting for threads to finish...'
-    
-if __name__ == '__main__':
-    main()
-    
+        
+    def migrate(self, domain, source, target, kvalue):
+        print 'Migration triggered'
+        assert(source != target)
+        
+        # Update counter
+        global migration_id_counter
+        migration_id = migration_id_counter
+        migration_id_counter += 1
+        
+        # Block source and target nodes: Set block times in the future  
+        # to guarantee that the block does not run out until the migration is finished
+        now_time = self.pump.sim_time()
+        source.blocked = now_time + 60 * 60
+        target.blocked = now_time + 60 * 60
+        
+        # Log migration start
+        data = json.dumps({'domain': domain.name, 
+                           'from': source.name, 
+                           'to': target.name, 
+                           'id': migration_id})
+        logger.info('Live Migration Triggered: %s' % data)
+        
+        # Backup current model status - for later analytics
+        class info(object):
+            pass
+        info = info()
+        info.migration_id = migration_id
+        info.source_load_cpu = source.mean_load(kvalue)
+        info.target_load_cpu = target.mean_load(kvalue)
+        
+        if configuration.PRODUCTION:
+            # Call migration code and hand over the migration_callback reference
+            from virtual import allocation
+            allocation.migrateDomain(domain.name, source.name, target.name, 
+                                     self.migration_callback, maxDowntime=10000, info=info)
+        else:
+            # Simulate migration
+            migration = SimulatedMigration(self.pump, domain.name, source.name, target.name, 
+                                           self.migration_callback, info)
+            migration.run()
+            
+            
+    def run(self):
+        # Run load balancing code
+        print 'Running load balancer...'
+        self.balance()
+        
+        # Dump scoreboard information 
+        if not configuration.PRODUCTION:
+            print 'Scoreboard:'      
+            sb = scoreboard.Scoreboard()
+            sb.dump(self.pump)
+            
+        # Wait for next control cycle
+        print 'Wait for next control cycle...'
+        self.pump.callLater(self.interval, self.run)
+                

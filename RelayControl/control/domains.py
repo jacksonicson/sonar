@@ -31,6 +31,8 @@ domain_profile_mapping = [
     Domain('target17', 17, True),
     ]
 
+###############################################################################
+###############################################################################
 
 def cpu_profile_by_name(domain):
     for entry in domain_profile_mapping:
@@ -68,16 +70,17 @@ def index_of(name):
 
 def print_mapping():
     for entry in domain_profile_mapping:
-        profile = profiles.by_index(entry.profileId).name
+        profile = profiles.get_current_user_profile(entry.profileId)
         print '%s --- load --> %s' % (profile, entry.domain)
     
   
 def dump(logger):
     out = ''
     for entry in domain_profile_mapping:
-        profile = profiles.by_index(entry.profileId).name
+        profile = profiles.get_current_user_profile(entry.profileId)
         out += '%s > %s; ' % (profile, entry.domain)
     logger.info("Mapping: %s" % out)
+        
         
 if __name__ == '__main__':
     print_mapping()
