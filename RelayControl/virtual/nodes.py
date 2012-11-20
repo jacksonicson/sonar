@@ -2,7 +2,13 @@
 List of all hosts/nodes in the infrastructure
 '''
 
-NODES = HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
+# Nodes
+NODES = []
+for i in xrange(30):
+    NODES.append('srv%i' %i)
+HOSTS = NODES
+
+# Node hardware configuration
 NODE_CPU_CORES = 4
 DOMAIN_CPU_CORES = 2
 NODE_MEM = 15*1024 # MByte (available memory of the node estimated)
