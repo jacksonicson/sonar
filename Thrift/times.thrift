@@ -19,8 +19,6 @@ service TimeService {
 
 	TimeSeries load(1:string name);
 	
-	TimeSeries loadRev(1:string name, 2:int rev);
-	
 	void remove(1:string name);
 	
 	void create(1:string name, 2:int frequency);
