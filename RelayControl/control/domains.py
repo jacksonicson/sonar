@@ -12,7 +12,7 @@ class Domain:
 
 # Domain profile mapping
 domain_profile_mapping = []
-for i in xrange(90):
+for i in xrange(170):
     domain_profile_mapping.append(Domain('target%i' % i, i, True))
 
 ###############################################################################
