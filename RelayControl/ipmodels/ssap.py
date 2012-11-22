@@ -18,7 +18,6 @@ def createVariables(model):
     
     # Server active flags
     var_server_active = empty((server_count), dtype=object)
-    print type(var_server_active)
     for i in xrange(0, server_count):
         v = model.addVar(vtype=GRB.BINARY)
         var_server_active[i] = v 
@@ -88,7 +87,7 @@ def solve(_server_count, _server_capacity, _demand):
     model.optimize()
 
     assignment = getAssignment()
-    print assignment
+    print "Assignment: ",assignment
     
     server_count = getServerCount()
     print server_count
