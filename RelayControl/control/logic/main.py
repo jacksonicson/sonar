@@ -3,7 +3,7 @@ import configuration as config
 import json
 import model
 import sandpiper_wolke
-import sandpiper
+#import sandpiper
 import scoreboard
 import time
 import msgpump
@@ -143,7 +143,7 @@ def main():
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper.Sandpiper(pump, model)
+    balancer = sandpiper_wolke.Sandpiper(pump, model)
     balancer.dump()
     balancer.start()
     

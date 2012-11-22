@@ -48,7 +48,7 @@ class Sandpiper(controller.LoadBalancer):
     def check_imbalance(self, time_now, sleep_time, k):   
         pass
         
-    def check_hostpost(self, k):
+    def check_hotspot(self, k):
         pass
         
     def migration_trigger(self, overload, nodes, node, k, sleep_time, time_now):
