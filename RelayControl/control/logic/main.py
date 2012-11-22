@@ -2,7 +2,7 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import sandpiper_wolke
+import proactive
 #import sandpiper
 import scoreboard
 import time
@@ -143,7 +143,7 @@ def main():
         driver.start()
     
     # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper_wolke.Sandpiper(pump, model)
+    balancer = proactive.Sandpiper(pump, model)
     balancer.dump()
     balancer.start()
     
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     else:
         name = 'sandpiper simple'
         t = open(config.path(name), 'w')
-        for i in xrange(0, 1):
+        for i in xrange(0, 1):          # Anzahl der Ausfuehrungen der Simulation
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             t.write('%s\n' % res)
