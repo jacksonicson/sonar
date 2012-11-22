@@ -45,7 +45,7 @@ class Placement(object):
 class RRPlacement(Placement):
     def execute(self):
         # Execute super code
-        super(SSAPvPlacement, self).execute()
+        super(RRPlacement, self).execute()
         
         print 'Distributing domains over all servers ...'
             
