@@ -47,16 +47,13 @@ def setupConstraints(model):
         model.addConstr(quicksum(var_allocation[i, j] for i in xrange(0, server_count)) == 1.0)
         
     # Capacity constraint
-    i = 0
     for d in xrange(demand_duration):
         for i in xrange(server_count):
             server_load = quicksum((demand(j, CPU, d) * var_allocation[i, j]) for j in xrange(0, service_count))
-            model.addConstr(server_load <= (var_server_active[i] * (server_capacity_CPU + i)))
+            model.addConstr(server_load <= (var_server_active[i] * server_capacity_CPU))
             
             server_load = quicksum((demand(j, MEM, d) * var_allocation[i, j]) for j in xrange(0, service_count))
-            model.addConstr(server_load <= (var_server_active[i] * (server_capacity_MEM + i)))
-            
-            i += 0.01
+            model.addConstr(server_load <= (var_server_active[i] * server_capacity_MEM))
         
     model.update()
 
@@ -110,7 +107,6 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     setupConstraints(model) 
     setupObjective(model)
     model.setParam('OutputFlag', False)
-    model.setParam('TimeLimit', 15 * 60)
     model.optimize()
     
     if model.getAttr(GRB.attr.SolCount) > 0:

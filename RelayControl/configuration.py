@@ -10,17 +10,15 @@ Configuring a benchmark run:
 - Check settings in nodes
 - Check settings in profiles (all configuration parameters)
 - Check settings in domains
-- Check settings in control.allocate_domains
-- Run initial allocation 
 - Check configuration of Controller: control.logic.controller <I-- subclasses
 - Check Controller reference: control.logic.main.py
 - Check start_benchmark.py configuration
 '''
 
 # Other configuration files
-# @see virtual.nodes
-# @see workload.profiles
-# @see control.domains
+# from virtual import nodes
+# from workload import profiles
+# from control import domains
 
 ##########################
 ## GLOBAL               ##
