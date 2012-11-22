@@ -3,12 +3,6 @@ import configuration
 import json
 import scoreboard
 
-######################
-## CONFIGURATION    ##
-######################
-START_WAIT = 0
-######################
-
 # Global migration ID counter (identifies migrations)
 migration_id_counter = 0
 
@@ -48,7 +42,7 @@ class SimulatedMigration:
         
 
 class LoadBalancer(object):
-    def __init__(self, pump, model, interval):
+    def __init__(self, pump, model, interval, start_wait):
         super(LoadBalancer, self).__init__()
         
         # Reference to the message pump
@@ -60,6 +54,9 @@ class LoadBalancer(object):
         # Execution interval
         self.interval = interval
         
+        # Start wait
+        self.start_wait = start_wait
+        
         
     # Abstract load balancing method
     def balance(self):
@@ -70,7 +67,8 @@ class LoadBalancer(object):
         pass
     
     def start(self):
-        self.pump.callLater(START_WAIT, self.run)
+        print 'Waiting for start: %i' % self.start_wait
+        self.pump.callLater(self.start_wait, self.run)
     
     def migration_callback(self, domain, node_from, node_to, start, end, info, status, error):
         domain = self.model.get_host(domain)

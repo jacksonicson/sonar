@@ -9,14 +9,18 @@ import numpy as np
 ######################
 ## CONFIGURATION    ##
 ######################
-if configuration.PRODUCTION: 
+if configuration.PRODUCTION:
     START_WAIT = 120
-    INTERVAL = 20
+    INTERVAL = 5 * 60
+    
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 30
+    
     PERCENTILE = 80.0
     THR_PERCENTILE = 0.2
+
 else:
+    
     START_WAIT = 10 * 60
     INTERVAL = 5 * 60
     THRESHOLD_OVERLOAD = 90
@@ -31,7 +35,7 @@ logger = sonarlog.getLogger('controller')
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL)
+        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.var = []
         
     def dump(self):
