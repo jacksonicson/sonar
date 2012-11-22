@@ -107,6 +107,7 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     setupConstraints(model) 
     setupObjective(model)
     model.setParam('OutputFlag', False)
+    model.setParam('TimeLimit', 15 * 60)
     model.optimize()
     
     if model.getAttr(GRB.attr.SolCount) > 0:
