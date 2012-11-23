@@ -20,7 +20,6 @@ if configuration.PRODUCTION:
     THR_PERCENTILE = 0.2
 
 else:
-    
     START_WAIT = 10 * 60
     INTERVAL = 5 * 60
     THRESHOLD_OVERLOAD = 90
@@ -99,7 +98,7 @@ class Sandpiper(controller.LoadBalancer):
             readings.append(node.forecast())
             
         sd = np.std(readings)
-        if sd > 40:
+        if sd > 50:
             best_fnode = None
             best_tnode = None
             best_domain = None
@@ -158,13 +157,13 @@ class Sandpiper(controller.LoadBalancer):
             slc = readings[-k:]
             
             forecast = smoother.single_exponential_smoother(slc)[0]
-            forecast = smoother.double_exponential_smoother(slc)[0]
-            forecast = node.forecast()
             forecast = np.mean(slc)
+            forecast = node.forecast()
+            forecast = smoother.double_exponential_smoother(slc)[0]
             forecast = smoother.ar_forecast(slc)
             
-            percentile = node.forecast()# np.percentile(slc, THR_PERCENTILE)
-            percentile_ = node.forecast() # np.percentile(slc, 1 - THR_PERCENTILE)
+            percentile = np.percentile(slc, THR_PERCENTILE)
+            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
             
             overload = (percentile > THRESHOLD_OVERLOAD)
             underload = (percentile_ < THRESHOLD_UNDERLOAD)
