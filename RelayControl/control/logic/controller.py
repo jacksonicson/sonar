@@ -154,7 +154,7 @@ class LoadBalancer(object):
             # Call migration code and hand over the migration_callback reference
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name,
-                                     self.migration_callback, maxDowntime=30000, info=info)
+                                     self.migration_callback, maxDowntime=15000, info=info)
         else:
             # Simulate migration
             migration = SimulatedMigration(self.pump, domain.name, source.name, target.name,

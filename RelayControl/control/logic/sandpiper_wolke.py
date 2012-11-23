@@ -10,7 +10,7 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 if configuration.PRODUCTION:
-    START_WAIT = 120
+    START_WAIT = 20
     INTERVAL = 30
     
     THRESHOLD_OVERLOAD = 90
@@ -189,17 +189,23 @@ class Sandpiper(controller.LoadBalancer):
         
         # Try to migrate all domains by decreasing VSR value
         for domain in node_domains:
-            if overload: 
-                targets = reversed(range(nodes.index(node) + 1, len(nodes)))
+            if overload:
+                targets = range(nodes.index(node) + 1, len(nodes))[::-1]
             else:
-                targets = range(nodes.index(node) - 1)
+                targets = range(nodes.index(node))[::-1]
+            
+            print 'Potential target nodes for domain %s: ' % domain.name
+            for target in targets:
+                target = nodes[target]
+                print target.name
             
             # Try all targets for the migration (reversed - starting at the BOTTOM)
             for target in targets:
                 target = nodes[target]
-                
                 if len(target.domains) == 0:
                     continue
+                
+                print 'Testing target node %s' % target.name
                  
                 domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                  
@@ -215,11 +221,10 @@ class Sandpiper(controller.LoadBalancer):
                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
                     self.migrate(domain, source, target, k)
                     raise StopIteration()
-                else:
-                    print 'No overload migration: %s - %i' % (target.name, blocked)
                 
             for target in targets:
                 target = nodes[target]
+                print 'Testing inactive target node %s' % target.name
                  
                 domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                  
@@ -235,8 +240,7 @@ class Sandpiper(controller.LoadBalancer):
                     print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
                     self.migrate(domain, source, target, k)
                     raise StopIteration()
-                else:
-                    print 'No overload migration: %s - %i' % (target.name, blocked)
+    
     
     def balance(self):
         ############################################
@@ -276,15 +280,18 @@ class Sandpiper(controller.LoadBalancer):
             try:
                 # Overload situation
                 if node.overloaded:
+                    print 'Overload...'
                     self.migration_trigger(True, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass 
             
             # Balance system
-            self.check_imbalance(time_now, sleep_time, k)
+            print 'Imbalance...'
+            #self.check_imbalance(time_now, sleep_time, k)
             
             try:
                 # Underload situation
                 if node.underloaded:
+                    print 'Underload...'
                     self.migration_trigger(False, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass
             
