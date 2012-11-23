@@ -36,7 +36,7 @@ class Pump(threading.Thread):
         
     def sim_time(self):
         if self.production: 
-            return (time.time() - self.start_time) * self.speedup
+            return time.time()
     
         return self.start_time
         

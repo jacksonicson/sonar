@@ -206,13 +206,17 @@ class Sandpiper(controller.LoadBalancer):
                 test = True
                 test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
                 test &= len(target.domains) < 6
-                test &= (time_now - target.blocked) > sleep_time
-                test &= (time_now - source.blocked) > sleep_time
+                blocked = True
+                blocked &= (time_now - target.blocked) > sleep_time
+                blocked &= (time_now - source.blocked) > sleep_time
+                test &= blocked
                 
                 if test: 
                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
                     self.migrate(domain, source, target, k)
                     raise StopIteration()
+                else:
+                    print 'No overload migration: %s - %i' % (target.name, blocked)
                 
             for target in targets:
                 target = nodes[target]
@@ -222,19 +226,23 @@ class Sandpiper(controller.LoadBalancer):
                 test = True
                 test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
                 test &= len(target.domains) < 6
-                test &= (time_now - target.blocked) > sleep_time
-                test &= (time_now - source.blocked) > sleep_time
+                blocked = True
+                blocked &= (time_now - target.blocked) > sleep_time
+                blocked &= (time_now - source.blocked) > sleep_time
+                test &= blocked
                 
                 if test: 
                     print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
                     self.migrate(domain, source, target, k)
                     raise StopIteration()
+                else:
+                    print 'No overload migration: %s - %i' % (target.name, blocked)
     
     def balance(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
-        k = 100
+        k = 40
         self.check_hostpost(k)
         
         ############################################
@@ -261,7 +269,7 @@ class Sandpiper(controller.LoadBalancer):
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = self.pump.sim_time()
-        sleep_time = 10
+        sleep_time = 30
         for node in nodes:
             node.dump()
             
