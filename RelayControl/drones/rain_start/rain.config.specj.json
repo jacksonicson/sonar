@@ -48,7 +48,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_179_cpu_profile_user_modified",
+		        	"profile" : "SIS_179_cpu_profile_user",
 		        }
     		},
     		{
@@ -61,7 +61,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_179_cpu_profile_user_modified",
+		        	"profile" : "SIS_179_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -75,7 +75,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_188_cpu_profile_user_modified",
+		        	"profile" : "SIS_188_cpu_profile_user",
 		        }
     		},
     		{
@@ -88,7 +88,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_188_cpu_profile_user_modified",
+		        	"profile" : "SIS_188_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -102,7 +102,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_269_cpu_profile_user_modified",
+		        	"profile" : "SIS_269_cpu_profile_user",
 		        }
     		},
     		{
@@ -115,7 +115,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_269_cpu_profile_user_modified",
+		        	"profile" : "SIS_269_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -129,7 +129,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_298_cpu_profile_user_modified",
+		        	"profile" : "SIS_298_cpu_profile_user",
 		        }
     		},
     		{
@@ -142,7 +142,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_298_cpu_profile_user_modified",
+		        	"profile" : "SIS_298_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -156,7 +156,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_305_cpu_profile_user_modified",
+		        	"profile" : "SIS_305_cpu_profile_user",
 		        }
     		},
     		{
@@ -169,7 +169,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_305_cpu_profile_user_modified",
+		        	"profile" : "SIS_305_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -183,7 +183,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_308_cpu_profile_user_modified",
+		        	"profile" : "SIS_308_cpu_profile_user",
 		        }
     		},
     		{
@@ -196,7 +196,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_308_cpu_profile_user_modified",
+		        	"profile" : "SIS_308_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -210,7 +210,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_310_cpu_profile_user_modified",
+		        	"profile" : "SIS_310_cpu_profile_user",
 		        }
     		},
     		{
@@ -223,7 +223,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_310_cpu_profile_user_modified",
+		        	"profile" : "SIS_310_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -237,7 +237,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_340_cpu_profile_user_modified",
+		        	"profile" : "SIS_340_cpu_profile_user",
 		        }
     		},
     		{
@@ -250,7 +250,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_340_cpu_profile_user_modified",
+		        	"profile" : "SIS_340_cpu_profile_user",
 		        }
 	    	},
 	    	
@@ -264,7 +264,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_393_cpu_profile_user_modified",
+		        	"profile" : "SIS_393_cpu_profile_user",
 		        }
     		},
     		{
@@ -277,7 +277,7 @@
 		        "loadScheduleCreatorParameters" : {
 			        "host": "monitor0",
 		        	"mix": "default",
-		        	"profile" : "SIS_393_cpu_profile_user_modified",
+		        	"profile" : "SIS_393_cpu_profile_user",
 		        }
 	    	},
 	    	
