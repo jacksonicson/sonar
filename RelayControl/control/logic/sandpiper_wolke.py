@@ -190,8 +190,10 @@ class Sandpiper(controller.LoadBalancer):
         # Try to migrate all domains by decreasing VSR value
         for domain in node_domains:
             if overload:
+                # walk reversed [::-1] from bottom to the top (low load to high load)
                 targets = range(nodes.index(node) + 1, len(nodes))[::-1]
             else:
+                # walk reversed [::-1] from bottom to the top (low load to high load) 
                 targets = range(nodes.index(node))[::-1]
             
             print 'Potential target nodes for domain %s: ' % domain.name
@@ -199,23 +201,19 @@ class Sandpiper(controller.LoadBalancer):
                 target = nodes[target]
                 print target.name
             
-            # Try all targets for the migration (reversed - starting at the BOTTOM)
+            # Try all targets for the migration
             for target in targets:
                 target = nodes[target]
                 if len(target.domains) == 0:
                     continue
                 
-                print 'Testing target node %s' % target.name
-                 
                 domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                  
                 test = True
                 test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
                 test &= len(target.domains) < 6
-                blocked = True
-                blocked &= (time_now - target.blocked) > sleep_time
-                blocked &= (time_now - source.blocked) > sleep_time
-                test &= blocked
+                test &= (time_now - target.blocked) > sleep_time
+                test &= (time_now - source.blocked) > sleep_time
                 
                 if test: 
                     print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
@@ -224,17 +222,14 @@ class Sandpiper(controller.LoadBalancer):
                 
             for target in targets:
                 target = nodes[target]
-                print 'Testing inactive target node %s' % target.name
                  
                 domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                  
                 test = True
                 test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
                 test &= len(target.domains) < 6
-                blocked = True
-                blocked &= (time_now - target.blocked) > sleep_time
-                blocked &= (time_now - source.blocked) > sleep_time
-                test &= blocked
+                test &= (time_now - target.blocked) > sleep_time
+                test &= (time_now - source.blocked) > sleep_time
                 
                 if test: 
                     print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
@@ -273,7 +268,7 @@ class Sandpiper(controller.LoadBalancer):
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = self.pump.sim_time()
-        sleep_time = 30
+        sleep_time = 60
         for node in nodes:
             node.dump()
             
@@ -286,7 +281,7 @@ class Sandpiper(controller.LoadBalancer):
             
             # Balance system
             print 'Imbalance...'
-            #self.check_imbalance(time_now, sleep_time, k)
+            self.check_imbalance(time_now, sleep_time, k)
             
             try:
                 # Underload situation
