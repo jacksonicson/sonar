@@ -9,13 +9,13 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120 
-INTERVAL = 30
+INTERVAL = 5*60
 
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 30
 
 PERCENTILE = 80.0
-THR_PERCENTILE = 0.2
+THR_PERCENTILE = 0.1
 ######################
 
 # Setup logging
@@ -29,7 +29,7 @@ class Sandpiper(controller.LoadBalancer):
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
+        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper Proactive',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  'threshold_overload' : THRESHOLD_OVERLOAD,
@@ -147,13 +147,13 @@ class Sandpiper(controller.LoadBalancer):
             slc = readings[-k:]
             
             forecast = smoother.single_exponential_smoother(slc)[0]
-            forecast = smoother.double_exponential_smoother(slc)[0]
             forecast = node.forecast()
-            forecast = np.mean(slc)
             forecast = smoother.ar_forecast(slc)
+            forecast = np.mean(slc)
+            forecast = smoother.double_exponential_smoother(slc)[0]
             
-            percentile = node.forecast()# np.percentile(slc, THR_PERCENTILE)
-            percentile_ = node.forecast() # np.percentile(slc, 1 - THR_PERCENTILE)
+            percentile = node.forecast # np.percentile(slc, THR_PERCENTILE)
+            percentile_ = node.forecast # np.percentile(slc, 1 - THR_PERCENTILE)
             
             overload = (percentile > THRESHOLD_OVERLOAD)
             underload = (percentile_ < THRESHOLD_UNDERLOAD)
