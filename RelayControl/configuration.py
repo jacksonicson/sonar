@@ -24,7 +24,7 @@ Configuring a benchmark run:
 
 ##########################
 ## GLOBAL               ##
-PRODUCTION = False
+PRODUCTION = True
 
 # Ask user explicitly if production mode is enabled
 __asked = False
@@ -72,4 +72,4 @@ PUMP_SPEEDUP = 1
 ##########################
 ## FILESE               ##
 def path(filename, ending='txt'):
-    return 'C:/temp/%s.%s' % (filename, ending)
+    return '/home/nepal/%s.%s' % (filename, ending)

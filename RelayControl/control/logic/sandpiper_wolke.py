@@ -10,7 +10,7 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 if configuration.PRODUCTION:
-    START_WAIT = 20
+    START_WAIT = 120
     INTERVAL = 30
     
     THRESHOLD_OVERLOAD = 90
@@ -23,8 +23,10 @@ else:
     
     START_WAIT = 10 * 60
     INTERVAL = 5 * 60
+    
     THRESHOLD_OVERLOAD = 90
     THRESHOLD_UNDERLOAD = 40
+    
     PERCENTILE = 80.0
     THR_PERCENTILE = 0.2
 ######################
