@@ -68,6 +68,7 @@ class LoadBalancer(object):
     
     def start(self):
         print 'Waiting for start: %i' % self.start_wait
+        logger.log(sonarlog.SYNC, 'Releasing load balancer')
         self.pump.callLater(self.start_wait, self.run)
     
     def migration_callback(self, domain, node_from, node_to, start, end, info, status, error):
