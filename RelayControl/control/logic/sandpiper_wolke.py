@@ -1,7 +1,6 @@
 from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
-import configuration
 import controller
 import json
 import numpy as np
@@ -9,26 +8,14 @@ import numpy as np
 ######################
 ## CONFIGURATION    ##
 ######################
-if configuration.PRODUCTION:
-    START_WAIT = 120
-    INTERVAL = 30
-    
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 30
-    
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
+START_WAIT = 120
+INTERVAL = 30
 
-else:
-    
-    START_WAIT = 10 * 60
-    INTERVAL = 5 * 60
-    
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 40
-    
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
+THRESHOLD_OVERLOAD = 90
+THRESHOLD_UNDERLOAD = 30
+
+PERCENTILE = 80.0
+THR_PERCENTILE = 0.2
 ######################
 
 # Setup logging

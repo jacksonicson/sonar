@@ -1,34 +1,19 @@
 from logs import sonarlog
 from model import types
-import json
 import controller
-import configuration
-import util
+import json
 
 ######################
 ## CONFIGURATION    ##
 ######################
-if configuration.PRODUCTION: 
-    START_WAIT = 120
-    INTERVAL = 20
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 40
-    PERCENTILE = 80.0
-    
-    K_VALUE = 20 # sliding windows size
-    M_VALUE = 17 # m values out of the window k must be above or below the threshold
-    
-else:
-    
-    START_WAIT = 10*60
-    INTERVAL = 60
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 40
-    PERCENTILE = 80.0
-    
-    K_VALUE = 20 
-    M_VALUE = 17 
+START_WAIT = 120
+INTERVAL = 20
+THRESHOLD_OVERLOAD = 90
+THRESHOLD_UNDERLOAD = 40
+PERCENTILE = 80.0
 
+K_VALUE = 20 # sliding windows size
+M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
