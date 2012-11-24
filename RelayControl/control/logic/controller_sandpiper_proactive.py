@@ -1,7 +1,6 @@
 from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
-import configuration
 import controller
 import json
 import numpy as np
@@ -9,23 +8,14 @@ import numpy as np
 ######################
 ## CONFIGURATION    ##
 ######################
-if configuration.PRODUCTION:
-    START_WAIT = 20
-    INTERVAL = 30
-    
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 30
-    
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
+START_WAIT = 120 
+INTERVAL = 30
 
-else:
-    START_WAIT = 10 * 60
-    INTERVAL = 5 * 60
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 40
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
+THRESHOLD_OVERLOAD = 90
+THRESHOLD_UNDERLOAD = 30
+
+PERCENTILE = 80.0
+THR_PERCENTILE = 0.2
 ######################
 
 # Setup logging
@@ -98,7 +88,7 @@ class Sandpiper(controller.LoadBalancer):
             readings.append(node.forecast())
             
         sd = np.std(readings)
-        if sd > 50:
+        if sd > 40:
             best_fnode = None
             best_tnode = None
             best_domain = None
@@ -157,13 +147,13 @@ class Sandpiper(controller.LoadBalancer):
             slc = readings[-k:]
             
             forecast = smoother.single_exponential_smoother(slc)[0]
-            forecast = np.mean(slc)
-            forecast = node.forecast()
             forecast = smoother.double_exponential_smoother(slc)[0]
+            forecast = node.forecast()
+            forecast = np.mean(slc)
             forecast = smoother.ar_forecast(slc)
             
-            percentile = np.percentile(slc, THR_PERCENTILE)
-            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
+            percentile = node.forecast()# np.percentile(slc, THR_PERCENTILE)
+            percentile_ = node.forecast() # np.percentile(slc, 1 - THR_PERCENTILE)
             
             overload = (percentile > THRESHOLD_OVERLOAD)
             underload = (percentile_ < THRESHOLD_UNDERLOAD)

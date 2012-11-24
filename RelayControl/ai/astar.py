@@ -36,12 +36,15 @@ class PriorityQueue(object):
         raise KeyError('pop from an empty priority queue')
 
 class ANode(object):
-    def __init__(self, value):
+    def __init__(self, value, nodes=None, domains=None):
         self.successors = []
         self.predecessor = None
         self.costs = []
         self.value = value
         self.g = 9999
+        
+        self.domains = nodes
+        self.nodes = domains
         
     def dump(self):
         print self.value
@@ -51,6 +54,45 @@ class ANode(object):
         self.costs.append(cost)
         successor.attachTo(self)
         
+    def get_successors(self, mesh=None):
+        # generates _all_ successors
+        # The heuristic will not go into all of them
+        
+        # for all migration possibilities create a new state
+        # state heuristics is determined by f_heuristics function 
+        
+        successors = []
+        costs = []
+        
+        # each domain to each node except its own 
+        for d in xrange(len(self.domains)): 
+            for node in self.nodes: 
+                nodes = list(self.nodes)
+                domains = list(self.domains)
+                if domains[d] != node:
+                    domains[d] = node
+                    new = ANode(self.value, nodes, domains)
+                    successors.append(new)
+                    costs.append(1)
+        
+        return (successors, costs)
+       
+    def __eq__(self, another):
+        return hasattr(another, 'domains') and self.domains == another.domains
+    
+    def __hash__(self):
+        return hash(self.domains)
+        
+    def f_heuristics(self, target):
+        counter = 0
+        for i in xrange(len(self.domains)):
+            if target.domains[i] != self.domains[i]:
+                counter += 1
+                
+        # the nearer the better
+        print counter
+        return len(self.domains) - counter
+        
     def attachTo(self, predecessor):
         self.predecessor = predecessor
 
@@ -59,9 +101,11 @@ class AStar(object):
     def __init__(self):
         self.openlist = PriorityQueue()
         self.closelist = Set()
+        self.mesh = Set()
     
     def search(self, graph, start, end):
         self.openlist.add_task(start, 0)
+        self.end = end
         
         while True: 
             value = self.openlist.pop_task()
@@ -76,12 +120,10 @@ class AStar(object):
             if not self.openlist:
                 break
     
-    def h(self, successor):
-        return 1
-    
     def expand(self, current):
-        for i in xrange(len(current.successors)):
-            successor = current.successors[i] 
+        successors = current.get_successors()
+        for i in xrange(len(successors)):
+            successor = successors[i] 
             if successor in self.closelist:
                 print 'Continouing closed list value'
                 continue
@@ -97,7 +139,7 @@ class AStar(object):
             successor.g = new_g
             
             # Update open list
-            f = new_g + self.h(successor)
+            f = new_g + current.f_heuristics(self.end)
             if self.openlist.has(successor):
                 self.openlist.add_task(successor, f) 
             else:
@@ -128,4 +170,22 @@ if __name__ == '__main__':
         if not end.predecessor:
             break
         end = end.predecessor
+        
+    nodes =[0 for _ in xrange(0, 3)]
+    domains = [0 for _ in xrange(0, 10)]
+    node_index = 0
+    for d in xrange(0, 10):
+        domains[d] = node_index
+        node_index = (node_index + 1) % len(nodes)
+        
+    target = list(domains)
+    target[0] = 2
+    target[1] = 2
+        
+    start = ANode('a', nodes, domains)
+    target = ANode('c', nodes, target)
+    end = s.search(None, start, target)
+    
+        
+        
     
