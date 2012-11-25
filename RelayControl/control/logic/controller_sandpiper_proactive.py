@@ -9,14 +9,14 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120 
-INTERVAL = 1*60
+INTERVAL = 5*60
 
 THRESHOLD_OVERLOAD = 90
-THRESHOLD_UNDERLOAD = 30
+THRESHOLD_UNDERLOAD = 40
 
 PERCENTILE = 80.0
 
-THR_PERCENTILE = .10
+THR_PERCENTILE = 0.10
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
@@ -151,8 +151,8 @@ class Sandpiper(controller.LoadBalancer):
             
             forecast = smoother.single_exponential_smoother(slc)[0]
             forecast = node.forecast()
-            forecast = np.mean(slc)
             forecast = smoother.ar_forecast(slc)
+            forecast = np.mean(slc)
             forecast = smoother.double_exponential_smoother(slc)[0]
             
 #            percentile = np.percentile(slc, THR_PERCENTILE)
