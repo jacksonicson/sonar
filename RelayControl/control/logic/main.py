@@ -158,7 +158,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '6nodes'
+        name = '6nodesdi'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()

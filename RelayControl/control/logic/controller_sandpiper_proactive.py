@@ -151,8 +151,8 @@ class Sandpiper(controller.LoadBalancer):
             
             forecast = smoother.single_exponential_smoother(slc)[0]
             forecast = node.forecast()
-            forecast = smoother.ar_forecast(slc)
             forecast = np.mean(slc)
+            forecast = smoother.ar_forecast(slc)
             forecast = smoother.double_exponential_smoother(slc)[0]
             
 #            percentile = np.percentile(slc, THR_PERCENTILE)
@@ -283,7 +283,7 @@ class Sandpiper(controller.LoadBalancer):
             
             # Balance system
             print 'Imbalance...'
-            # self.check_imbalance(time_now, sleep_time, k)
+            self.check_imbalance(time_now, sleep_time, k)
             
             try:
                 # Underload situation
