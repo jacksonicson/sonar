@@ -45,7 +45,7 @@ class Placement(object):
 class RRPlacement(Placement):
     def execute(self):
         # Execute super code
-        super(SSAPvPlacement, self).execute()
+        super(RRPlacement, self).execute()
         
         print 'Distributing domains over all servers ...'
             
@@ -161,7 +161,6 @@ class SSAPvPlacement(Placement):
         connection = times_client.connect()
         
         # Loading services to combine the dmain_service_mapping with    
-        services = profiles.selected
         service_count = len(domains.domain_profile_mapping)
         service_matrix = np.zeros((service_count, profiles.PROFILE_INTERVAL_COUNT), dtype=float)
         

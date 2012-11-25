@@ -13,7 +13,7 @@ import math
 ## CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = False
+start = True
 ######################
 
 # Setup logging
@@ -36,7 +36,7 @@ def finished(done, client_list):
     # print 'No controller used'
     print 'starting controller'
     logger.info('loading controller')
-    from control.logic import controller
+    import logic.main as controller
     controller.main()
 
 

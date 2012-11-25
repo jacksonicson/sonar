@@ -1,13 +1,7 @@
 from logs import sonarlog
+import configuration
 import json
 import scoreboard
-import configuration
-
-######################
-## CONFIGURATION    ##
-######################
-START_WAIT = 0
-######################
 
 # Global migration ID counter (identifies migrations)
 migration_id_counter = 0
@@ -43,12 +37,12 @@ class SimulatedMigration:
         self.end = self.pump.sim_time()
         
         # Call migration callback
-        self.migration_callback(self.domain, self.node_from, self.node_to, 
+        self.migration_callback(self.domain, self.node_from, self.node_to,
                                 self.start, self.end, self.info, True, None)
         
 
 class LoadBalancer(object):
-    def __init__(self, pump, model, interval):
+    def __init__(self, pump, model, interval, start_wait):
         super(LoadBalancer, self).__init__()
         
         # Reference to the message pump
@@ -60,13 +54,22 @@ class LoadBalancer(object):
         # Execution interval
         self.interval = interval
         
+        # Start wait
+        self.start_wait = start_wait
+        
         
     # Abstract load balancing method
     def balance(self):
         pass
     
+    # Initial placement calculation (simulation only!!!)
+    def initial_placement_sim(self):
+        pass
+    
     def start(self):
-        self.pump.callLater(START_WAIT, self.run)
+        print 'Waiting for start: %i' % self.start_wait
+        logger.log(sonarlog.SYNC, 'Releasing load balancer')
+        self.pump.callLater(self.start_wait, self.run)
     
     def migration_callback(self, domain, node_from, node_to, start, end, info, status, error):
         domain = self.model.get_host(domain)
@@ -75,10 +78,10 @@ class LoadBalancer(object):
         duration = end - start
         
         # Migration info in a JSON object
-        data = json.dumps({'domain': domain.name, 
+        data = json.dumps({'domain': domain.name,
                            'from': node_from.name,
                            'to': node_to.name,
-                           'start' : start, 
+                           'start' : start,
                            'end' : end,
                            'duration' : duration,
                            'id': info.migration_id,
@@ -134,9 +137,9 @@ class LoadBalancer(object):
         target.blocked = now_time + 60 * 60
         
         # Log migration start
-        data = json.dumps({'domain': domain.name, 
-                           'from': source.name, 
-                           'to': target.name, 
+        data = json.dumps({'domain': domain.name,
+                           'from': source.name,
+                           'to': target.name,
                            'id': migration_id})
         logger.info('Live Migration Triggered: %s' % data)
         
@@ -151,11 +154,11 @@ class LoadBalancer(object):
         if configuration.PRODUCTION:
             # Call migration code and hand over the migration_callback reference
             from virtual import allocation
-            allocation.migrateDomain(domain.name, source.name, target.name, 
-                                     self.migration_callback, maxDowntime=10000, info=info)
+            allocation.migrateDomain(domain.name, source.name, target.name,
+                                     self.migration_callback, maxDowntime=15000, info=info)
         else:
             # Simulate migration
-            migration = SimulatedMigration(self.pump, domain.name, source.name, target.name, 
+            migration = SimulatedMigration(self.pump, domain.name, source.name, target.name,
                                            self.migration_callback, info)
             migration.run()
             

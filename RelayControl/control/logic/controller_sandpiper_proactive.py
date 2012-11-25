@@ -1,7 +1,6 @@
 from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
-import configuration
 import controller
 import json
 import numpy as np
@@ -9,20 +8,14 @@ import numpy as np
 ######################
 ## CONFIGURATION    ##
 ######################
-if configuration.PRODUCTION: 
-    START_WAIT = 120
-    INTERVAL = 20
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 30
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
-else:
-    START_WAIT = 10 * 60
-    INTERVAL = 5 * 60
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 40
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
+START_WAIT = 120 
+INTERVAL = 5*60
+
+THRESHOLD_OVERLOAD = 90
+THRESHOLD_UNDERLOAD = 30
+
+PERCENTILE = 80.0
+THR_PERCENTILE = 0.1
 ######################
 
 # Setup logging
@@ -31,12 +24,12 @@ logger = sonarlog.getLogger('controller')
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL)
+        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.var = []
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
+        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper Proactive',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  'threshold_overload' : THRESHOLD_OVERLOAD,
@@ -44,6 +37,32 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'percentile' : PERCENTILE,
                                                                  'thr_percentile' : THR_PERCENTILE,
                                                                  }))
+    
+    def initial_placement_sim(self):
+        import placement
+        from virtual import nodes
+        from control import domains 
+        
+        nodecount = len(nodes.HOSTS)
+        splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute()
+        
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            print migration 
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+            
+        return migrations 
+    
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:
@@ -128,13 +147,13 @@ class Sandpiper(controller.LoadBalancer):
             slc = readings[-k:]
             
             forecast = smoother.single_exponential_smoother(slc)[0]
-            forecast = smoother.double_exponential_smoother(slc)[0]
             forecast = node.forecast()
-            forecast = np.mean(slc)
             forecast = smoother.ar_forecast(slc)
+            forecast = np.mean(slc)
+            forecast = smoother.double_exponential_smoother(slc)[0]
             
-            percentile = node.forecast()# np.percentile(slc, THR_PERCENTILE)
-            percentile_ = node.forecast() # np.percentile(slc, 1 - THR_PERCENTILE)
+            percentile = node.forecast # np.percentile(slc, THR_PERCENTILE)
+            percentile_ = node.forecast # np.percentile(slc, 1 - THR_PERCENTILE)
             
             overload = (percentile > THRESHOLD_OVERLOAD)
             underload = (percentile_ < THRESHOLD_UNDERLOAD)
@@ -159,18 +178,24 @@ class Sandpiper(controller.LoadBalancer):
         
         # Try to migrate all domains by decreasing VSR value
         for domain in node_domains:
-            if overload: 
-                targets = reversed(range(nodes.index(node) + 1, len(nodes)))
+            if overload:
+                # walk reversed [::-1] from bottom to the top (low load to high load)
+                targets = range(nodes.index(node) + 1, len(nodes))[::-1]
             else:
-                targets = range(nodes.index(node) - 1)
+                # walk reversed [::-1] from bottom to the top (low load to high load) 
+                targets = range(nodes.index(node))[::-1]
             
-            # Try all targets for the migration (reversed - starting at the BOTTOM)
+            print 'Potential target nodes for domain %s: ' % domain.name
             for target in targets:
                 target = nodes[target]
-                
+                print target.name
+            
+            # Try all targets for the migration
+            for target in targets:
+                target = nodes[target]
                 if len(target.domains) == 0:
                     continue
-                 
+                
                 domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                  
                 test = True
@@ -200,11 +225,12 @@ class Sandpiper(controller.LoadBalancer):
                     self.migrate(domain, source, target, k)
                     raise StopIteration()
     
+    
     def balance(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
-        k = 100
+        k = 40
         self.check_hostpost(k)
         
         ############################################
@@ -231,22 +257,25 @@ class Sandpiper(controller.LoadBalancer):
         ## MIGRATION TRIGGER #######################
         ############################################
         time_now = self.pump.sim_time()
-        sleep_time = 10
+        sleep_time = 60
         for node in nodes:
             node.dump()
             
             try:
                 # Overload situation
                 if node.overloaded:
+                    print 'Overload...'
                     self.migration_trigger(True, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass 
             
             # Balance system
+            print 'Imbalance...'
             self.check_imbalance(time_now, sleep_time, k)
             
             try:
                 # Underload situation
                 if node.underloaded:
+                    print 'Underload...'
                     self.migration_trigger(False, nodes, node, k, sleep_time, time_now)
             except StopIteration: pass
             

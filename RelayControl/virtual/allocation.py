@@ -78,7 +78,7 @@ class MigrationThread(Thread):
             self.exited = True
                 
 
-def migrateDomain(domain, node_from, node_to, migration_callback, info=None, maxDowntime=20000):
+def migrateDomain(domain, node_from, node_to, migration_callback, info=None, maxDowntime=60000):
     # Start a new migration thread
     thread = MigrationThread(domain, node_from, node_to, migration_callback, info)
     thread.start()

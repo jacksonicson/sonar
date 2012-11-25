@@ -10,19 +10,21 @@ Configuring a benchmark run:
 - Check settings in nodes
 - Check settings in profiles (all configuration parameters)
 - Check settings in domains
+- Check settings in control.allocate_domains
+- Run initial allocation 
 - Check configuration of Controller: control.logic.controller <I-- subclasses
 - Check Controller reference: control.logic.main.py
 - Check start_benchmark.py configuration
 '''
 
 # Other configuration files
-# from virtual import nodes
-# from workload import profiles
-# from control import domains
+# @see virtual.nodes
+# @see workload.profiles
+# @see control.domains
 
 ##########################
 ## GLOBAL               ##
-PRODUCTION = False
+PRODUCTION = True
 
 # Ask user explicitly if production mode is enabled
 __asked = False
@@ -70,4 +72,4 @@ PUMP_SPEEDUP = 1
 ##########################
 ## FILESE               ##
 def path(filename, ending='txt'):
-    return 'C:/temp/%s.%s' % (filename, ending)
+    return '/home/nepal/%s.%s' % (filename, ending)

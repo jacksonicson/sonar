@@ -103,7 +103,9 @@ class Driver:
                 
                 # Load aggregation for the node
                 aggregated_load += (load / (nodes.NODE_CPU_CORES / nodes.DOMAIN_CPU_CORES))
-
+                
+                # Update aggregated cpu load
+                scoreboard.Scoreboard().add_cpu_load(load)
 
             # Add hypervisor load to the aggregated load
             aggregated_load += 12 
