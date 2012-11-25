@@ -9,13 +9,16 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120 
-INTERVAL = 5*60
+INTERVAL = 1*60
 
 THRESHOLD_OVERLOAD = 90
-THRESHOLD_UNDERLOAD = 40
+THRESHOLD_UNDERLOAD = 30
 
 PERCENTILE = 80.0
-THR_PERCENTILE = 0.2
+
+THR_PERCENTILE = .10
+K_VALUE = 20 # sliding windows size
+M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
@@ -148,15 +151,25 @@ class Sandpiper(controller.LoadBalancer):
             
             forecast = smoother.single_exponential_smoother(slc)[0]
             forecast = node.forecast()
-            forecast = smoother.ar_forecast(slc)
             forecast = np.mean(slc)
+            forecast = smoother.ar_forecast(slc)
             forecast = smoother.double_exponential_smoother(slc)[0]
             
-            percentile = node.forecast # np.percentile(slc, THR_PERCENTILE)
-            percentile_ = node.forecast # np.percentile(slc, 1 - THR_PERCENTILE)
+#            percentile = np.percentile(slc, THR_PERCENTILE)
+#            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
+#            overload = (percentile > THRESHOLD_OVERLOAD)
+#            underload = (percentile_ < THRESHOLD_UNDERLOAD)
+
+            k = K_VALUE
+            overload = 0
+            underload = 0
+            for reading in readings[-k:]:
+                if reading > THRESHOLD_OVERLOAD: overload += 1
+                if reading < THRESHOLD_UNDERLOAD: underload += 1
             
-            overload = (percentile > THRESHOLD_OVERLOAD)
-            underload = (percentile_ < THRESHOLD_UNDERLOAD)
+            m = M_VALUE
+            overload = (overload >= m)
+            underload = (underload >= m)
             overload = (overload and forecast > THRESHOLD_OVERLOAD)
             underload = (underload and forecast < THRESHOLD_UNDERLOAD)
              
@@ -230,7 +243,7 @@ class Sandpiper(controller.LoadBalancer):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
-        k = 40
+        k = 20
         self.check_hostpost(k)
         
         ############################################
