@@ -283,7 +283,7 @@ class Sandpiper(controller.LoadBalancer):
             
             # Balance system
             print 'Imbalance...'
-            self.check_imbalance(time_now, sleep_time, k)
+            # self.check_imbalance(time_now, sleep_time, k)
             
             try:
                 # Underload situation
