@@ -55,10 +55,10 @@ def setupConstraints(model):
         for i in xrange(server_count):
             server_load = quicksum((demand(j, CPU, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
             model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_CPU))
-            
+          
             server_load = quicksum((demand(j, MEM, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
             model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_MEM))
-        
+    
     model.update()
 
 
@@ -150,10 +150,8 @@ if __name__ == '__main__':
     for i in xrange(len(demand_raw)):
         demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
         
+    demand_mem=3
+    
     print demand_mem
     print demand_raw
     solve(12, 100, 100, demand_raw, demand_mem)
-
-    
-
-

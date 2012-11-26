@@ -72,4 +72,4 @@ PUMP_SPEEDUP = 1
 ##########################
 ## FILESE               ##
 def path(filename, ending='txt'):
-    return '/home/nepal/%s.%s' % (filename, ending)
+    return 'C:/temp/%s.%s' % (filename, ending)
