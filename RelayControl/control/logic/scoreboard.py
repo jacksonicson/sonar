@@ -17,9 +17,11 @@ class Scoreboard(object):
     
     def flush(self):
         self.closed = False
-        self.active_server_infos = []
         self.start_timestamp = 0
+        
+        self.active_server_infos = []
         self.cpu_violations = 0
+        self.cpu_accumulated = 0
     
     def close(self):
         self.closed = True
@@ -27,6 +29,10 @@ class Scoreboard(object):
     def add_cpu_violations(self, violations):
         if not self.closed:
             self.cpu_violations += violations
+    
+    def add_cpu_load(self, load):
+        if not self.closed:
+            self.cpu_accumulated += load
     
     def add_active_info(self, servercount, timestamp):
         if not self.closed:
@@ -61,7 +67,12 @@ class Scoreboard(object):
         return avg_count
        
     def get_results(self, pump):
-        return (len(self.active_server_infos), self.analytics_average_server_count(pump), self.cpu_violations)
+        return (len(self.active_server_infos), self.analytics_average_server_count(pump), 
+                self.cpu_violations, self.cpu_accumulated)
+    
+    def get_result_line(self, pump):
+        res = self.get_results(pump)
+        return '%f \t %f \t %i \t %i' % res
     
     def dump(self, pump):
         print 'Records %i' % len(self.active_server_infos)

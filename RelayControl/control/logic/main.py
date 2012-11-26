@@ -2,7 +2,7 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import sandpiper_standard
+import controller_sandpiper_proactive
 import scoreboard
 import time
 import msgpump
@@ -41,10 +41,10 @@ def build_from_current_allocation():
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
 
-#def build_test_allocation():
-#    import placement
-#    from virtual import nodes
-#    from control import domains 
+def build_test_allocation():
+    import placement
+    from virtual import nodes
+    from control import domains 
 #    
 #    nodecount = len(nodes.HOSTS)
 #    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
@@ -85,7 +85,7 @@ def build_debug_allocation():
     node = model.Node('srv3', 4)
     
 
-def build_initial_model():
+def build_initial_model(controller):
     # Flush model
     model.flush()
     
@@ -93,7 +93,11 @@ def build_initial_model():
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
+<<<<<<< HEAD
         build_debug_allocation()
+=======
+        controller.initial_placement_sim()
+>>>>>>> origin/andreas
     
     # Dump model
     model.dump()
@@ -125,8 +129,11 @@ def main():
     # New message pump
     pump = msgpump.Pump(heartbeat)
     
+    # New controller
+    controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    
     # Build internal infrastructure representation
-    build_initial_model()
+    build_initial_model(controller)
     
     # Create notification handler
     handler = MetricHandler()
@@ -145,10 +152,16 @@ def main():
         driver = driver.Driver(pump, model, handler)
         driver.start()
     
+<<<<<<< HEAD
     # Start load balancer thread which detects hot-spots and triggers migrations
     balancer = sandpiper_standard.Sandpiper(pump, model)
     balancer.dump()
     balancer.start()
+=======
+    # Start controller
+    controller.dump()
+    controller.start()
+>>>>>>> origin/andreas
     
     # Start message pump
     pump.start()
@@ -157,13 +170,20 @@ def main():
 
 if __name__ == '__main__':
     if config.PRODUCTION:
+        # Controller is executed in production
         main()
     else:
+<<<<<<< HEAD
         t = open(config.path('ar'), 'w')
         for i in xrange(0, 1):
+=======
+        name = '6nodesm'
+        t = open(config.path(name), 'w')
+        for i in xrange(0, 30):
+>>>>>>> origin/andreas
             pump = main()
-            res = scoreboard.Scoreboard().get_results(pump)
-            t.write('%f, %f, %i\n' % res)
+            res = scoreboard.Scoreboard().get_result_line(pump)
+            t.write('%s\n' % res)
             t.flush()
         t.close()
     

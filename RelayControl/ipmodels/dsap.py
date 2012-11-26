@@ -146,7 +146,13 @@ if __name__ == '__main__':
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    solve(12, 100, demand_raw)
+    demand_mem = [[] for _ in xrange(len(demand_raw))]
+    for i in xrange(len(demand_raw)):
+        demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
+        
+    print demand_mem
+    print demand_raw
+    solve(12, 100, 100, demand_raw, demand_mem)
 
     
 

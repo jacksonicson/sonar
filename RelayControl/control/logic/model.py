@@ -1,5 +1,7 @@
 from analytics import forecasting as smooth
 from collector import ttypes
+from logs import sonarlog
+import json
 import numpy as np
 
 ################################
@@ -9,6 +11,9 @@ WINDOW = 1000
 
 # Holds an internal list of all hosts
 hosts = {}
+
+# Setup logging
+logger = sonarlog.getLogger('controller')
 
 def flush():
     global hosts
@@ -165,9 +170,17 @@ class Node(__Host):
 
 
 def dump():
+    print 'Dump controller initial model configuration...'
+    json_map = {}
     for node in get_hosts(host_type=types.NODE):
         print 'Node: %s' % (node.name)
+        json_map[node.name] = []
         for domain in node.domains.values():
             print '   Domain: %s' % domain.name
+            json_map[node.name].append(domain.name)
+            
+    logger.info('Controller Initial Model: %s' % json.dumps(json_map))
+
+    
 
 

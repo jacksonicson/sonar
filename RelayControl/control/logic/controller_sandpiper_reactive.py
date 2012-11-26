@@ -1,28 +1,19 @@
-from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
-import configuration
 import controller
 import json
-import numpy as np
 
 ######################
 ## CONFIGURATION    ##
 ######################
-if configuration.PRODUCTION: 
-    START_WAIT = 120
-    INTERVAL = 20
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 30
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
-else:
-    START_WAIT = 10 * 60
-    INTERVAL = 5 * 60
-    THRESHOLD_OVERLOAD = 90
-    THRESHOLD_UNDERLOAD = 40
-    PERCENTILE = 80.0
-    THR_PERCENTILE = 0.2
+START_WAIT = 120
+INTERVAL = 30
+THRESHOLD_OVERLOAD = 90
+THRESHOLD_UNDERLOAD = 40
+PERCENTILE = 80.0
+
+K_VALUE = 20 # sliding windows size
+M_VALUE = 17 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
@@ -32,7 +23,6 @@ class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(Sandpiper, self).__init__(pump, model, INTERVAL)
-        self.var = []
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
@@ -42,7 +32,8 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'threshold_overload' : THRESHOLD_OVERLOAD,
                                                                  'threshold_underload' : THRESHOLD_UNDERLOAD,
                                                                  'percentile' : PERCENTILE,
-                                                                 'thr_percentile' : THR_PERCENTILE,
+                                                                 'k_value' :K_VALUE,
+                                                                 'm_value' : M_VALUE
                                                                  }))
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
@@ -56,47 +47,40 @@ class Sandpiper(controller.LoadBalancer):
             # without the VM
             node_from.flush(50)
             node_to.flush(50)
-            print self.var
+            
         else:
             node_from.blocked = end_time
             node_to.blocked = end_time
         
         
-    
     def balance(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
-        k = 100
         for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
             
-            # Calculate percentile on the data
-            slc = readings[-k:]
-            
-            forecast = smoother.single_exponential_smoother(slc)[0]
-            forecast = smoother.double_exponential_smoother(slc)[0]
-            forecast = node.forecast()
-            forecast = np.mean(slc)
-            forecast = smoother.ar_forecast(slc)
-            
-            percentile = np.percentile(slc, THR_PERCENTILE)
-            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
-            
-            overload = (percentile > THRESHOLD_OVERLOAD)
-            underload = (percentile_ < THRESHOLD_UNDERLOAD)
-            overload = (overload and forecast > THRESHOLD_OVERLOAD)
-            underload = (underload and forecast < THRESHOLD_UNDERLOAD)
+            # m out of the k last measurements are used to detect overloads 
+            k = K_VALUE
+            overload = 0
+            underload = 0
+            for reading in readings[-k:]:
+                if reading > THRESHOLD_OVERLOAD: overload += 1
+                if reading < THRESHOLD_UNDERLOAD: underload += 1
+
+            m = M_VALUE
+            overload = (overload >= m)
+            underload = (underload >= m)
              
             if overload:
-                print 'Overload in %s - %s' % (node.name, slc)  
+                print 'Overload in %s - %s' % (node.name, readings[-k:])  
              
             # Update overload                                
             node.overloaded = overload
             node.underloaded = underload
             
-        
+            
         ############################################
         ## MIGRATION MANAGER #######################
         ############################################
@@ -158,7 +142,7 @@ class Sandpiper(controller.LoadBalancer):
                             
                             if test: 
                                 print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)
+                                self.migrate(domain, source, target, K_VALUE)
                                 raise StopIteration()
                             
                         for target in reversed(range(nodes.index(node) + 1, len(nodes))):
@@ -174,7 +158,7 @@ class Sandpiper(controller.LoadBalancer):
                             
                             if test: 
                                 print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)
+                                self.migrate(domain, source, target, K_VALUE)
                                 raise StopIteration()
                             
             except StopIteration: pass 
@@ -210,7 +194,7 @@ class Sandpiper(controller.LoadBalancer):
                             
                             if test: 
                                 print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)                                    
+                                self.migrate(domain, source, target, K_VALUE)                                    
                                 raise StopIteration()
                         
                         
@@ -227,6 +211,6 @@ class Sandpiper(controller.LoadBalancer):
                             
                             if test: 
                                 print 'Underload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, k)                                    
+                                self.migrate(domain, source, target, K_VALUE)                                    
                                 raise StopIteration()
             except StopIteration: pass
