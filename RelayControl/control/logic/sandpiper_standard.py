@@ -14,8 +14,8 @@ INTERVAL = 20
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 0.04
-MIN_IMPROVEMENT_IMBALANCE = 0.005
+THRESHOLD_IMBALANCE = 15
+MIN_IMPROVEMENT_IMBALANCE = 2
 
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
@@ -58,6 +58,15 @@ class Sandpiper(controller.LoadBalancer):
             node_from.flush(50)
             node_to.flush(50)
             
+            # Set finished status True
+            for migration in migration_queue:
+                domain2 = migration['domain']
+                source2 = migration['source']
+                target2 = migration['target']
+                
+                if domain.name == domain2.name and source2.name == node_from.name and target2.name == node_to.name:
+                    migration['finished'] = True
+                    self.migration_scheduler()
         else:
             
             time_now = self.pump.sim_time()
@@ -75,10 +84,188 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'percentile' : PERCENTILE,
                                                                  'k_value' :K_VALUE,
                                                                  'm_value' : M_VALUE
-                                                                 }))
+                                                                 }))    
+    
+    
+    def migration(self, domain, source, target, migration_type, k):
+        return {
+                'domain' : domain,
+                'source' : source,
+                'target' : target,
+                'migration_type' : migration_type,
+                'k' : k,
+                'triggered' : False,
+                'finished' : False
+                }
+    
+    
+    def volume(self, node, k):
+        # Calculates volume for node and return node
+        volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
+        node.volume = volume
+        node.volume_size = volume / 8.0 # 8 GByte
         
+        return node    
+
+            
+    def normalized_volume(self, node, k):
+        # Based on DRS, but use of server load as entitlement
+
+        h = self.model.get_host(node['name'])
+
+        return h.percentile_load(PERCENTILE, k)
+            
+                
+    def imbalance(self, nodes, k):
+        # Based on DRS     
+        normalized_volumes = []
         
+        for node in nodes.itervalues():
+            volume = self.normalized_volume(node, k)
+            
+            if len(node['domains']) != 0:
+                normalized_volumes.append(volume)
+
+        return math.fabs(numpy.std(normalized_volumes))
+    
+    
     def balance(self):
+        
+        sleep_time = 10
+        time_now = self.pump.sim_time()
+        
+        ############################################
+        ## IMBALANCE MIGRATION #####################
+        ############################################
+        
+        self.migrate_imbalance(time_now, sleep_time, K_VALUE)
+        
+        if len(migration_queue) != 0:
+            # if imbalance algorithm triggered migration, no further migrations will be executed
+            return
+        
+        
+        
+        ############################################
+        ## OVERLOAD/UNDERLOAD/SWAP MIGRATION #######
+        ############################################
+        
+        # detect hotspots
+        self.hotspot_detector()
+            
+        # calculate and sort nodes by their volume
+        nodes = self.migration_manager()
+        
+        # trigger migration
+        self.migration_trigger(nodes, sleep_time, time_now)
+       
+ 
+    def migrate_imbalance(self, time_now, sleep_time, k):
+        # based on DSR algorithm from VMWare Paper
+        
+        # create snapshot of nodes and domains
+        system_nodes = self.model.get_hosts(types.NODE)
+        nodes = {}
+        domains = {}
+        migrations = {}
+        for node in system_nodes:
+            node_domains = {}
+            
+            for domain in node.domains.values():            
+                new_domain = {}
+                new_domain['name'] = domain.name
+                new_domain['volume'] = self.volume(domain, k).volume
+                new_domain['source'] = node.name
+                node_domains[domain.name] = new_domain
+                domains[domain.name] = new_domain
+                
+            new_node = {}
+            new_node['name'] = node.name
+            new_node['volume'] = self.volume(node, k).volume
+            new_node['domains'] = node_domains
+            nodes[node.name] = new_node
+        
+        
+            
+        imbalance = self.imbalance(nodes, k)
+        print 'Imbalance: %s' % (imbalance)
+        
+        num_migrations = 0
+        max_migrations = 10
+        
+        while (imbalance > THRESHOLD_IMBALANCE) and (num_migrations < max_migrations):
+            best_migration = None
+            best_improvement = 0
+            
+            for domain in domains.itervalues():
+                # for every domain
+                tmp_nodes = nodes
+
+                for node in tmp_nodes.itervalues():
+                    # remove domain from parent node and save node extra
+                    if domain['name'] in node['domains']:
+                        del node['domains'][domain['name']]
+                        source = node
+                
+                
+                for node in tmp_nodes.itervalues():
+                    
+                    # calculate new load
+                    target_node = self.model.get_host(node['name'])
+                    target_domain = self.model.get_host(domain['name'])
+                    node_cpu = target_node.percentile_load(PERCENTILE, k)
+                    domain_cpu = util.domain_to_server_cpu(target_node, target_domain, target_domain.percentile_load(PERCENTILE, k))
+                    target_threshold = node_cpu + domain_cpu
+                    
+                    if node['name'] == source['name'] or len(node['domains']) == 0 or target_threshold > THRESHOLD_OVERLOAD:
+                        # don't migrate to same node nor empty node nor if overload threshold is exceeded
+                        continue
+                    
+                    
+                    # migrate domain to node and check new imbalance
+                    node['domains'][domain['name']] = domain
+                    new_imbalance = self.imbalance(tmp_nodes, k)
+                    improvement = imbalance - new_imbalance
+                    
+                    if improvement > MIN_IMPROVEMENT_IMBALANCE and improvement > best_improvement:
+                        best_migration = {'domain': domain['name'], 'source': source['name'], 'target': node['name']}
+                        best_improvement = improvement
+                        #print 'IMBALANCE TRIGGERED; imb bef: %s, imb aft: %s, imrov: %s' % (imbalance, new_imbalance, improvement)
+                    else:
+                        # go back to previous state
+                        source['domains'][domain['name']] = domain
+                        del node['domains'][domain['name']]
+                                                
+            if best_migration is None:
+                break
+            
+            # update imbalance and new nodes
+            imbalance -= best_improvement 
+            migrations[num_migrations] = best_migration
+            num_migrations += 1
+
+        
+        # migrate domains that improve imbalance
+        for migration in migrations.itervalues():
+            domain = self.model.get_host(migration['domain'])
+            source = self.model.get_host(migration['source'])
+            target = self.model.get_host(migration['target'])
+
+            test = True
+            test &= len(target.domains) < 6
+            test &= (time_now - target.blocked) > sleep_time
+            test &= (time_now - source.blocked) > sleep_time
+                            
+            if test: 
+                #self.migrate(domain, source, target, K_VALUE)
+                migration = self.migration(domain, source, target, 'Imbalance', k) 
+                migration_queue.append(migration)    
+        
+        self.migration_scheduler()
+
+        
+    def hotspot_detector(self):
+        
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
@@ -111,8 +298,10 @@ class Sandpiper(controller.LoadBalancer):
             # Update overload                                
             node.overloaded = overloaded
             node.underloaded = underloaded
-            
-            
+        
+    
+    def migration_manager(self):
+        
         ############################################
         ## MIGRATION MANAGER #######################
         ############################################
@@ -120,7 +309,7 @@ class Sandpiper(controller.LoadBalancer):
         nodes = []
         domains = []
         for node in self.model.get_hosts():
-            node = self.volume(node, k)
+            node = self.volume(node, K_VALUE)
             
             if node.type == types.NODE:
                 nodes.append(node)
@@ -130,13 +319,16 @@ class Sandpiper(controller.LoadBalancer):
         # Sort nodes to their volume in DECREASING order
         # Multiplication with a big value to shift post comma digits to the front (integer)
         nodes.sort(lambda a, b: int((b.volume - a.volume) * 100000))
-       
+        
+        return nodes
+    
+    
+    def migration_trigger(self, nodes, sleep_time, time_now):
         
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
-        time_now = self.pump.sim_time()
-        sleep_time = 10
+        
         for node in nodes:
             node.dump()
             
@@ -153,9 +345,9 @@ class Sandpiper(controller.LoadBalancer):
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
-                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, k, False)
-                        self.swap(node, nodes, source, domain, time_now, sleep_time, k)
-                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, k, True)
+                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
+                        self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
+                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
                             
             except StopIteration: pass 
             
@@ -172,21 +364,19 @@ class Sandpiper(controller.LoadBalancer):
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
-                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, k, False)
-                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, k, True)
+                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
+                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
                         
             except StopIteration: pass
+    
         
-        self.migrate_overload_imbalance(time_now, sleep_time, k)
-        self.migration_scheduler()
 
     def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)
         for target in reversed(range(nodes.index(node) + 1, len(nodes))):
             target = nodes[target]
-                            
+               
             if len(target.domains) == 0 and empty == False:
-                # print 'skip %s - %s' % (target.name, target.domains)
                 continue
                              
             test = True
@@ -196,116 +386,36 @@ class Sandpiper(controller.LoadBalancer):
             test &= (time_now - source.blocked) > sleep_time
                             
             if test: 
-                source_load = source.percentile_load(PERCENTILE, k)
-                target_load = target.percentile_load(PERCENTILE, k)
-                domain_load = util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))
-                print 'source load: %s; target load: %s; domain_load: %s' % (source_load, target_load, domain_load)
-                #self.migrate(domain, source, target, K_VALUE)
-                part = self.migration_part(domain, source, target, 'Overload', k) 
-                migration = []
-                migration.append(part)
+                migration = self.migration(domain, source, target, 'Overload', k) 
                 migration_queue.append(migration)    
+                self.migration_scheduler()
                 raise StopIteration()
 
-    def migrate_overload_imbalance(self, time_now, sleep_time, k):
-        # Based on DSR algorithm
-        
-        system_nodes = self.model.get_hosts(types.NODE)
-
-        # create snapshot of nodes and domains
-        nodes = {}
-        domains = {}
-        migrations = {}
-        for node in system_nodes:
-            node_domains = {}
-            
-            for domain in node.domains.values():            
-                new_domain = {}
-                new_domain['name'] = domain.name
-                new_domain['volume'] = self.volume(domain, k).volume
-                new_domain['source'] = node.name
-                node_domains[domain.name] = new_domain
-                domains[domain.name] = new_domain
-                
-            new_node = {}
-            new_node['name'] = node.name
-            new_node['volume'] = self.volume(node, k).volume
-            new_node['domains'] = node_domains
-            nodes[node.name] = new_node
-        
-            
-        imbalance = self.imbalance(nodes, k)
-        print 'imbalance before: %s' % (imbalance)
-        num_migrations = 0
-        max_migrations = 10
-        
-        while (imbalance > THRESHOLD_IMBALANCE) and (num_migrations < max_migrations):
-            best_migration = None
-            best_improvement = 0
-            
-            for domain in domains.itervalues():
-                # for every domain
-                tmp_nodes = nodes
-
-                for node in tmp_nodes.itervalues():
-                    # remove domain from parent node and save node extra
-                    if domain['name'] in node['domains']:
-                        del node['domains'][domain['name']]
-                        source = node
-                
-                for node in tmp_nodes.itervalues():
-                    
-                    if node['name'] == source['name'] or len(node['domains']) == 0:
-                        # cannot migrate to same node and don't consider empty servers
-                        continue
-
-                    # migrate domain to node and check new imbalance
-                    node['domains'][domain['name']] = domain
-                    new_imbalance = self.imbalance(tmp_nodes, k)
-                    improvement = imbalance - new_imbalance
-                    
-                    if improvement > MIN_IMPROVEMENT_IMBALANCE:
-                        if improvement > best_improvement:
-                            best_migration = {'domain': domain['name'], 'source': source['name'], 'target': node['name']}
-                            best_improvement = improvement
-                        else:
-                            # go back to previous state
-                            source['domains'][domain['name']] = domain
-                            del node['domains'][domain['name']]
-                    else:
-                        # go back to previous state
-                        source['domains'][domain['name']] = domain
-                        del node['domains'][domain['name']]
-                                                
-            if best_migration is None:
-                break
-            
-            # update imbalance and new nodes
-            imbalance -= best_improvement 
-            migrations[num_migrations] = best_migration
-            num_migrations += 1
-            print 'best improvement in this loop: %s; imbalance after: %s; domain: %s; source: %s; target: %s' % (best_improvement, imbalance, best_migration['domain'], best_migration['source'], best_migration['target'])
 
         
-        # migrate domains that improve imbalance
-        for migration in migrations.itervalues():
-            domain = self.model.get_host(migration['domain'])
-            source = self.model.get_host(migration['source'])
-            target = self.model.get_host(migration['target'])
+
+    def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
+        # Try all targets for the migration
+        for target in range(nodes.index(node) - 1):
+            target = nodes[target]
+            
+            if len(target.domains) == 0 and empty == False:
+                continue
             
             test = True
+            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
-                            
+            
             if test: 
-                #self.migrate(domain, source, target, K_VALUE)
-                part = self.migration_part(domain, source, target, 'Imbalance', k) 
-                migration = []
-                migration.append(part)
+                #self.migrate(domain, source, target, K_VALUE)   
+                migration = self.migration(domain, source, target, 'Underload', k) 
                 migration_queue.append(migration)    
+                self.migration_scheduler()                            
+                raise StopIteration()
         
-        
+
     def swap(self, node, nodes, source, domain, time_now, sleep_time, k):
         # Try all targets for swapping
         for target_node in reversed(range(nodes.index(node) + 1, len(nodes))):
@@ -346,112 +456,52 @@ class Sandpiper(controller.LoadBalancer):
                 test &= (time_now - source.blocked) > sleep_time
                 
                 if test:
-                    #self.migrate(domain, source, target_node, K_VALUE)
-                    migration_part = self.migration_part(domain, source, target, 'Swap', k)
-                    migration = []
-                    migration.append(migration_part)
+                    migration = self.migration(domain, source, target_node, 'Swap', k)
+                    migration_queue.append(migration)
  
                     for target_domain in targets:
-                        #self.migrate(target_domain, target_node, source, K_VALUE)
-                        migration_part = self.migration_part(target_domain, target_node, source, 'Swap', k)
-                        migration.append(migration_part)
-                        
-                    migration_queue.append(migration)
+                        migration = self.migration(target_domain, target_node, source, 'Swap', k)
+                        migration_queue.append(migration)
+                    
+                    self.migration_scheduler()
                     raise StopIteration() 
 
-
-    def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
-        # Try all targets for the migration
-        for target in range(nodes.index(node) - 1):
-            target = nodes[target]
-            
-            if len(target.domains) == 0 and empty == False:
-                continue
-            
-            test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
-            test &= len(target.domains) < 6
-            test &= (time_now - target.blocked) > sleep_time
-            test &= (time_now - source.blocked) > sleep_time
-            
-            if test: 
-                #self.migrate(domain, source, target, K_VALUE)   
-                part = self.migration_part(domain, source, target, 'Underload', k) 
-                migration = []
-                migration.append(part)
-                migration_queue.append(migration)                                
-                raise StopIteration()
-            
-    
-    def volume(self, node, k):
-        # Calculates volume for node and return node
-        volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
-        node.volume = volume
-        node.volume_size = volume / 8.0 # 8 GByte
         
-        return node    
-
-            
-    def normalized_volume(self, node, k):
-        # Based on DRS, but use of volume as entitlement
-        volume_domains = 0
-        h = self.model.get_host(node['name'])
-        for domain in node['domains'].itervalues():
-            volume_domains += domain['volume']
-
-        print 'node: %s; normalized volume: %s' % (node['name'], volume_domains / 100)   
-        # TODO: divide by node capacity
-        
-        return h.percentile_load(80, 50)
-            
-                
-    def imbalance(self, nodes, k):
-        # Based on DRS     
-        normalized_volumes = []
-        
-        for node in nodes.itervalues():
-            volume = self.normalized_volume(node, k)
-            
-            if volume != 0.0:
-                normalized_volumes.append(volume)
-
-        return math.fabs(numpy.std(normalized_volumes))
-    
-    
-    def migration_part(self, domain, source, target, description, k):
-        return {
-                'domain' : domain,
-                'source' : source,
-                'target' : target,
-                'description' : description,
-                'k' : k
-                }
-    
     def migration_scheduler(self):
         print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(migration_queue))
 
-        past_target_nodes = []
         for migration in migration_queue:
             
-            for part in migration:
-                domain = part['domain']
-                source = part['source']
-                target = part['target']
-                description = part['description']
-                k = part['k']
+            domain = migration['domain']
+            source = migration['source']
+            target = migration['target']
+            migration_type = migration['migration_type']
+            k = migration['k']
+            triggered = migration['triggered']
+            finished = migration['finished']
+            
+            if finished == True:
+                migration_queue.remove(migration)
+                continue
+            
+            skip = False
+            
+            for another_migration in migration_queue:
+                target2 = another_migration['target']
+                triggered2 = another_migration['triggered']
+                finished2 = another_migration['finished']
                 
-                #print '%s migration: %s from %s to %s' % (description, domain.name, source.name, target.name)
-                self.migrate(domain, source, target, k)
-                
-                if target.name in past_target_nodes:
-                    # If target was already a target in this cycle -> wait
-                    print 'HERE SHOULD BE A BREAK'
-                
-                past_target_nodes.append(target.name)
-                
-            migration_queue.remove(migration)
-        
-        
-  
-        
-        
+                if migration != another_migration and target.name == target2.name and finished2 == False and triggered2 == True:
+                    # There is another migration with same target node that isn't finished yet
+                    # -> skip this migration until another migration is finished
+                    skip = True
+     
+            if skip == True or triggered == True:
+                continue
+            
+            print '%s migration: %s from %s to %s' % (migration_type, domain.name, source.name, target.name)
+            import time
+            time.sleep(2)
+            migration['triggered'] = True
+            self.migrate(domain, source, target, k) 
+            
