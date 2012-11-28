@@ -75,14 +75,18 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ANode.h" />
     <ClInclude Include="q2.h" />
     <ClInclude Include="queue.h" />
+    <ClInclude Include="Scoreboard.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ANode.cpp" />
     <ClCompile Include="goap.cpp" />
     <ClCompile Include="queue.cpp" />
+    <ClCompile Include="Scoreboard.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

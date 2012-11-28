@@ -14,131 +14,17 @@
 #include <stdlib.h>
 #include "q2.h"
 #include <time.h>
+#include "ANode.h"
 
 using namespace std; 
 
-// Array length template
-template<typename T, int size>
-int len(T(&)[size]){return size;}
-
-class ANode
-{
-public:
-	int* mapping; 
-	int* volume;
-	int nodeLength; 
-	int domLength;
-	int costs; 
-	int prio;
-	bool root; 
-	ANode* pred;
-
-public:
-	ANode(int* mapping, int* volume, int domLength, int nodeLength)
-	{
-		this->mapping = mapping;
-		this->volume = volume; 
-		this->domLength = domLength;
-		this->nodeLength = nodeLength; 
-		this->costs = 9999; 
-		this->prio = 0; 
-		this->pred = NULL; 
-		this->root = false; 
-	}
-
-	ANode(int* mapping, int* volume, int domLength, int nodeLength, bool root) 
-	{
-		ANode(mapping, volume, domLength, nodeLength);
-		this->root = root;
-	}
-
-	ANode() {
-	}
-
-	bool valid()
-	{
-		int* load = new int[nodeLength];
-		for(int i=0; i<nodeLength; i++)
-			load[i] = 0;
-
-		for(int i=0; i<domLength; i++)
-		{
-			load[mapping[i]] += volume[i];
-			if(load[mapping[i]] > 100)
-				return false;
-		}
-
-		return true; 
-	}
-
-	unsigned hash()
-	{
-		unsigned sum = 0; 
-		for(int i=0; i<domLength; i++)
-		{
-			sum += mapping[i];
-		}
-		return sum; 
-	}
-
-
-	bool operator()(ANode* a, ANode* b)
-	{
-		return a->hash() < b->hash(); 
-	}
-	
-	bool equals(ANode* b)
-	{
-		for(int i=0; i<domLength; i++)
-		{
-			if(mapping[i] != b->mapping[i])
-				return false; 
-		}
-
-		return true; 
-	}
-
-	inline bool operator==(const ANode& a) {
-		ANode* b = (ANode*)&a; 
-		return this->equals(b);
-	}
-
-	inline bool operator <(const ANode& a) {
-		ANode* b = (ANode*)&a; 
-		return this->hash() < b->hash(); 
-	}
-
-	pair<vector<ANode*>, vector<int>> childs(ANode* end);
-
-	void dump() {
-		cout << "node: ";
-		for(int i=0; i<domLength; i++)
-		{
-			cout << mapping[i] << " ,";
-		}
-		cout << endl;
-	}
-
-	int h(ANode* end)
-	{
-		int sum = 0; 
-		for(int i=0; i<domLength; i++)
-		{
-			if(mapping[i] != end->mapping[i])
-				sum += 1;
-		}
-		return sum; 
-	}
-};
-
-// Priority list
+// Priority queue for open nodes
 PriorityQueue<ANode*, unsigned int> pqopen; 
+// Lookup table to check if a node is in open list
 multimap<int, ANode*> openLookup;
-
-// Closed list
+// Closed lookup table
 multimap<int, ANode*> closed; 
-
-// Mesh lookup
+// Holds all nodes of the mesh but no edges
 multimap<int, ANode*> mesh;
 
 void addOpen(ANode* node)
@@ -163,11 +49,8 @@ bool isInOpen(ANode* node)
 
 void remOpen(ANode* node)
 {
-
 	pair<multimap<int, ANode*>::iterator, multimap<int, ANode*>::iterator> found;
-
 	found = openLookup.equal_range(node->hash());
-
 	for (multimap<int, ANode*>::iterator it2 = found.first; it2 != found.second; ++it2)
 	{
 		if((*it2).second->equals(node))
@@ -178,82 +61,15 @@ void remOpen(ANode* node)
 	}
 }
 
-pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end)
-{
-	vector<ANode*> result; 
-	vector<int> costs; 
-	
-	for(int d=0; d<domLength; d++)
-	{
-		for(int n=0; n<this->nodeLength; n++)
-		{
-			if(this->mapping[d] == n)
-				continue;
-
-			int cc = 1;
-			if(end->mapping[d] == mapping[d])
-				cc += 3;
-
-			// Check if node exists already without creating it
-			int backup = this->mapping[d];
-			this->mapping[d] = n;
-
-			bool exist = false;
-			pair<multimap<int, ANode*>::iterator, multimap<int, ANode*>::iterator> found;
-			found = mesh.equal_range(this->hash());
-			for (multimap<int, ANode*>::iterator it2 = found.first; it2 != found.second; ++it2)
-			{
-				if((*it2).second->equals(this))
-				{
-					exist = true;
-					result.insert(result.begin(), (*it2).second);
-					costs.insert(costs.begin(), cc);
-					break;
-				}
-			}
-
-			// Restore mapping
-			this->mapping[d] = backup;
-				
-			// Continue if exists
-			if(exist)
-				continue; 
-
-			// Create the new node for real now
-			int* mapping2 = new int[domLength];
-			memcpy(mapping2, this->mapping, sizeof(int) * domLength); 
-			mapping2[d] = n;
-
-			ANode* newNode = new ANode(mapping2, volume, domLength, nodeLength);
-
-			if(newNode->valid())
-			{
-				mesh.insert(pair<int, ANode*>(newNode->hash(), newNode));
-				result.insert(result.begin(), newNode);
-				costs.insert(costs.begin(), cc);
-			}
-		}
-	}
-
-	return pair<vector<ANode*>, vector<int>>(result, costs); 
-}
-
-
 void expand(ANode* node, ANode* end)
 {
-	// node->dump();
 	// Generate a list of known childs
-	pair<vector<ANode*>, vector<int>> childList = node->childs(end); 
+	pair<vector<ANode*>, vector<int>> childList = node->childs(end, mesh); 
 	vector<ANode*> childs = childList.first; 
 	vector<int> meshCosts = childList.second; 
 	for(int i=0; i<childs.size(); i++)
 	{
 		ANode* child = childs[i];
-		if(child == node)
-		{
-			cout << "warn" << endl;
-			continue;
-		}
 
 		// Check if it is in closed list!
 		bool skip = false;
