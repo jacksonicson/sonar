@@ -312,10 +312,10 @@ void runAstar()
 	int* mapping = new int[lenDomains];
 	int* volume = new int[lenDomains];*/
 
-	int lenDomains = 3; 
-	int lenNodes = 3; 
-	int mapping[] = {0,  1,  2};
-	int volume[] =  {80, 25, 10};
+	int lenDomains = 5; 
+	int lenNodes = 4; 
+	int mapping[] = {0,  1,  2,  2,  3};
+	int volume[] =  {90, 30, 70, 10, 75};
 
 	int* buffer = new int[lenNodes];
 	for(int i=0; i<lenNodes; i++)
