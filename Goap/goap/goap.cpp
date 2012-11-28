@@ -76,7 +76,7 @@ void expand(ANode* node, ANode* end)
 	pair<vector<ANode*>, vector<int>> childList = node->childs(end, mesh); 
 	vector<ANode*> childs = childList.first; 
 	vector<int> meshCosts = childList.second; 
-	for(int i=0; i<childs.size(); i++)
+	for(unsigned i=0; i<childs.size(); i++)
 	{
 		ANode* child = childs[i];
 
@@ -168,20 +168,20 @@ pair<ANode*, ANode*> buildTestConfig()
 	int lenNodes = 4; 
 	int mapping[] = {0,  1,  2,  2,  3};
 	int volume[] =  {90, 30, 70, 10, 75};
-
-	int* buffer = new int[lenNodes];
-	for(int i=0; i<lenNodes; i++)
-		buffer[i] = 0;
-
+	
+	int* mapping0 = new int[lenDomains];
+	int* volume0 = new int[lenDomains];
 	int* mapping2 = new int[lenDomains];
 	int* volume2 = new int[lenDomains];
+	memcpy(mapping0, mapping, lenDomains * sizeof(int)); 
+	memcpy(volume0, volume, lenDomains * sizeof(int)); 
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
 	mapping2[0] = 1;
 	mapping2[1] = 0;
 
-	ANode* start = new ANode(mapping, volume, lenDomains, lenNodes);
+	ANode* start = new ANode(mapping0, volume0, lenDomains, lenNodes);
 	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes); 
 
 	return pair<ANode*, ANode*>(start, end);
@@ -189,7 +189,7 @@ pair<ANode*, ANode*> buildTestConfig()
 
 pair<ANode*, ANode*> buildRandConfig()
 {
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 
 	int lenDomains = 25; 
 	int lenNodes = 6; 
@@ -245,7 +245,7 @@ pair<ANode*, ANode*> buildRandConfig()
 
 int main()
 {
-	pair<ANode*, ANode*> nodes = buildRandConfig(); 
+	pair<ANode*, ANode*> nodes = buildTestConfig(); 
 	ANode* start = nodes.first; 
 	ANode* end = nodes.second; 
 	
