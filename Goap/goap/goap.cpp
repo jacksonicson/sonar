@@ -101,7 +101,7 @@ public:
 		return this->hash() < b->hash(); 
 	}
 
-	vector<ANode*> childs();
+	pair<vector<ANode*>, vector<int>> childs(ANode* end);
 
 	void dump() {
 		cout << "node: ";
@@ -171,9 +171,10 @@ void remOpen(ANode* node)
 	}
 }
 
-vector<ANode*> ANode::childs()
+pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end)
 {
 	vector<ANode*> result; 
+	vector<int> costs; 
 	
 	for(int d=0; d<domLength; d++)
 	{
@@ -181,6 +182,10 @@ vector<ANode*> ANode::childs()
 		{
 			if(this->mapping[d] == n)
 				continue;
+
+			int cc = 1;
+			if(end->mapping[d] == mapping[d])
+				cc += 3;
 
 			// Check if node exists already without creating it
 			int backup = this->mapping[d];
@@ -198,6 +203,7 @@ vector<ANode*> ANode::childs()
 
 					exist = true;
 					result.insert(result.begin(), (*it2).second);
+					costs.insert(costs.begin(), cc);
 					break;
 				}
 			}
@@ -221,11 +227,12 @@ vector<ANode*> ANode::childs()
 			{
 				mesh.insert(pair<int, ANode*>(newNode->hash(), newNode));
 				result.insert(result.begin(), newNode);
+				costs.insert(costs.begin(), cc);
 			}
 		}
 	}
 
-	return result; 
+	return pair<vector<ANode*>, vector<int>>(result, costs); 
 }
 
 
@@ -233,8 +240,10 @@ void expand(ANode* node, ANode* end)
 {
 	// node->dump();
 	// Generate a list of known childs
-	vector<ANode*> childs = node->childs(); 
-	a: for(int i=0; i<childs.size(); i++)
+	pair<vector<ANode*>, vector<int>> childList = node->childs(end); 
+	vector<ANode*> childs = childList.first; 
+	vector<int> meshCosts = childList.second; 
+	for(int i=0; i<childs.size(); i++)
 	{
 		ANode* child = childs[i];
 		if(child == node)
@@ -263,14 +272,14 @@ void expand(ANode* node, ANode* end)
 		bool inOpen = isInOpen(child);
 
 		// Cost relaxion (Attention: weight has to be implemented)
-		int costs = node->costs + 1;
+		int costs = node->costs + meshCosts[i];
 		if(inOpen && costs >= child->costs)
 			continue;
 
 		child->pred = node; 
 		child->costs = costs;
 
-		int prio = costs + 3*child->h(end); // todo: heuristic implementation
+		int prio = costs + 4 * child->h(end); // todo: heuristic implementation
 		child->prio = child->costs + prio;
 		if(!inOpen)
 		{
@@ -293,29 +302,56 @@ ANode* peek()
 
 void runAstar()
 {
-	/*int lenDomains = 50; 
-	int lenNodes = 30; 
+	int lenDomains = 25; 
+	int lenNodes = 6; 
 	int* mapping = new int[lenDomains];
-	int* volume = new int[lenDomains];*/
+	int* volume = new int[lenDomains];
 
-	int lenDomains = 3; 
+	/*int lenDomains = 3; 
 	int lenNodes = 3; 
 	int mapping[] = {0,  1,  2};
-	int volume[] =  {80, 25, 10};
-	
-	/*for(int i=0; i<lenDomains; i++)
+	int volume[] =  {80, 25, 10};*/
+	int* buffer = new int[lenNodes];
+	for(int i=0; i<lenNodes; i++)
+		buffer[i] = 0;
+
+	for(int i=0; i<lenDomains; i++)
 	{
-		mapping[i] = rand() % lenNodes;
-		volume[i] = rand() % 30;
-	}*/
+		mapping[i] = rand() % (lenNodes - 1);
+
+		int load = rand() % 70;
+		while((buffer[mapping[i]] + load) >= 100)
+		{
+			load = rand() % 50;
+		}
+
+		volume[i] = load;
+		buffer[mapping[i]] += load;
+	}
+
 
 	int* mapping2 = new int[lenDomains];
 	int* volume2 = new int[lenDomains];
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
-	mapping2[0] = 1;
-	mapping2[1] = 0;
+	for(int i=0; i<10; i++)
+	{
+		while(true)
+		{
+			int domain = rand() % lenDomains;
+			int to = rand() % (lenNodes ); 
+
+			if((buffer[to] + volume2[domain]) > 100)
+				continue;
+
+			buffer[to] += volume2[domain];
+			buffer[mapping[domain]] -= volume2[domain];
+			mapping2[domain] = to; 
+			
+			break;
+		}
+	}
 
 	ANode start(mapping, volume, lenDomains, lenNodes);
 	ANode end(mapping2, volume2, lenDomains, lenNodes); 
@@ -384,103 +420,9 @@ void runAstar()
 	
 }
 
-
-class Node {
-public:
-	int value; 
-public:
-	Node(int value) {
-		this->value = value; 
-	}
-
-}; 
-
-struct CompareNode : public std::binary_function<Node*, Node*, bool>                                                                                       
-{  
-  bool operator()(const Node* lhs, const Node* rhs) const  
-  {  
-     return lhs->value < rhs->value;  
-  }  
-};  
-
-struct cmp_str
-{
-   bool operator()(const Node* a, const Node* b)
-   {
-      return a->value < b->value; 
-   }
-};
-
-void testStlContainer()
-{
-	using namespace std; 
-	
-	// Testing priority queue
-	priority_queue<Node*, vector<Node*>, CompareNode> test;
-	test.push(&Node(2));
-	test.push(&Node(20));
-
-	printf("Testing map \n"); 
-	// Testing hash map functionality
-	//hash_map<const char*, int, hash<const char*>, eqstr> test1; 
-	multimap<string, Node*> multi;
-	multi.insert(pair<string, Node*>("test", &Node(200)));
-	
-	pair<multimap<string, Node*>::iterator, multimap<string, Node*>::iterator> ppp;
-
-	ppp = multi.equal_range("test");
-
-	for (multimap<string, Node*>::iterator it2 = ppp.first; it2 != ppp.second; ++it2)
-    {
-
-	}
-
-	// Testing sets
-	set<string> tset; 
-	set<Node*, cmp_str> aset; 
-	aset.insert(&Node(20)); 
-	set<Node*, cmp_str>::iterator it = aset.find(&Node(20)); 
-	
-	if(it == aset.end())
-	{
-	} else {
-	}
-}
-
 int main()
 {
-	// testStlContainer(); 
 	runAstar(); 
-/*
-	PriorityQueue<std::string, unsigned int> pq; 
-*/
-/*
-	pq.push("A", 3); 
-	pq.push("C", 1); 
-	pq.push("F", 2); 
-	pq.push("Z", 44); 
-	pq.push("H", 32); 
-	pq.push("Y", 111); 
-
-	pq.print(); 
-
-	cout << "Toping..." << endl; 
-
-	cout << pq.top() << endl; 
-
-	cout << "Poping..." << endl; 
-
-	pq.pop(); 
-
-	pq.print(); 
-
-	cout << "Changing A to 400..." << endl; 
-
-	pq.update("A", 400); 
-
-	pq.print(); 
-	*/
-
 	return 0;
 }
 
