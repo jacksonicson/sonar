@@ -46,6 +46,22 @@ public:
 	ANode() {
 	}
 
+	bool valid()
+	{
+		int* load = new int[nodeLength];
+		for(int i=0; i<nodeLength; i++)
+			load[i] = 0;
+
+		for(int i=0; i<domLength; i++)
+		{
+			load[mapping[i]] += volume[i];
+			if(load[mapping[i]] > 100)
+				return false;
+		}
+
+		return true; 
+	}
+
 	unsigned hash()
 	{
 		unsigned sum = 0; 
@@ -167,8 +183,8 @@ vector<ANode*> ANode::childs()
 				continue;
 
 			// Check if node exists already without creating it
-			int backup = mapping[d];
-			mapping[d] = n;
+			int backup = this->mapping[d];
+			this->mapping[d] = n;
 
 			bool exist = false;
 			pair<multimap<int, ANode*>::iterator, multimap<int, ANode*>::iterator> found;
@@ -177,28 +193,35 @@ vector<ANode*> ANode::childs()
 			{
 				if((*it2).second->equals(this))
 				{
+					if((*it2).second == this)
+						cout << "POBELM" <<endl;
+
 					exist = true;
 					result.insert(result.begin(), (*it2).second);
 					break;
 				}
 			}
 
+			this->mapping[d] = backup;
+
 			if(exist) {
 				continue; 
 			}
+
+
 
 			// Create the new node for real
 			int* mapping2 = new int[domLength];
 			int* volume2 = new int[domLength];
 			memcpy(mapping2, this->mapping, sizeof(int) * domLength); 
 			memcpy(volume2, this->volume, sizeof(int) * domLength); 
-			ANode* newNode = new ANode(mapping2, volume2, domLength, nodeLength);
-			// Switch domain location
 			mapping2[d] = n;
-
-			// If it does not exist - put it into mesh
-			mesh.insert(pair<int, ANode*>(newNode->hash(), newNode));
-			result.insert(result.begin(), newNode);
+			ANode* newNode = new ANode(mapping2, volume2, domLength, nodeLength);
+			if(newNode->valid())
+			{
+				mesh.insert(pair<int, ANode*>(newNode->hash(), newNode));
+				result.insert(result.begin(), newNode);
+			}
 		}
 	}
 
@@ -214,6 +237,11 @@ void expand(ANode* node, ANode* end)
 	a: for(int i=0; i<childs.size(); i++)
 	{
 		ANode* child = childs[i];
+		if(child == node)
+		{
+			cout << "warn" << endl;
+			continue;
+		}
 
 		// Check if it is in closed list!
 		set<ANode*, ANode>::iterator it = closed.find(childs[i]);
@@ -242,8 +270,8 @@ void expand(ANode* node, ANode* end)
 		child->pred = node; 
 		child->costs = costs;
 
-		int prio = costs + child->h(end); // todo: heuristic implementation
-		child->prio = prio;
+		int prio = costs + 3*child->h(end); // todo: heuristic implementation
+		child->prio = child->costs + prio;
 		if(!inOpen)
 		{
 			pqopen.push(child, child->prio);
@@ -265,29 +293,44 @@ ANode* peek()
 
 void runAstar()
 {
-	int lenDomains = 18; 
-	int lenNodes = 6; 
+	/*int lenDomains = 50; 
+	int lenNodes = 30; 
 	int* mapping = new int[lenDomains];
-	int* volume = new int[lenDomains];
+	int* volume = new int[lenDomains];*/
+
+	int lenDomains = 3; 
+	int lenNodes = 3; 
+	int mapping[] = {0,  1,  2};
+	int volume[] =  {80, 25, 10};
 	
-	for(int i=0; i<lenDomains; i++)
+	/*for(int i=0; i<lenDomains; i++)
 	{
 		mapping[i] = rand() % lenNodes;
-	}
+		volume[i] = rand() % 30;
+	}*/
 
 	int* mapping2 = new int[lenDomains];
 	int* volume2 = new int[lenDomains];
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
-	mapping2[0] = 0;
-	mapping2[1] = 1;
-	mapping2[3] = 1;
-	mapping2[4] = 2;
+	mapping2[0] = 1;
+	mapping2[1] = 0;
 
 	ANode start(mapping, volume, lenDomains, lenNodes);
 	ANode end(mapping2, volume2, lenDomains, lenNodes); 
 	
+	if(!start.valid())
+	{
+		cout << "invalid start" << endl; 
+		return;
+	}
+	if(!end.valid())
+	{
+		cout << "invalid end" << endl; 
+		return; 
+	}
+
 	start.dump();
 	end.dump();
 
@@ -324,6 +367,7 @@ void runAstar()
 		closed.insert(current); 
 	}
 
+	
 	if(found != NULL)
 	{
 		while(true)
@@ -333,6 +377,9 @@ void runAstar()
 				break;
 			found = found->pred; 
 		}
+	} else {
+		cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
+		cout << "no solution" << endl;
 	}
 	
 }
