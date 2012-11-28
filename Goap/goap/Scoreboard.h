@@ -6,6 +6,6 @@ class Scoreboard
 public:
 	Scoreboard(void);
 	~Scoreboard(void);
-	record(
+	
 };
 
