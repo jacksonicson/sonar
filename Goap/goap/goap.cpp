@@ -61,6 +61,15 @@ void remOpen(ANode* node)
 	}
 }
 
+ANode* peek()
+{
+	ANode* node = pqopen.top(); 
+	pqopen.pop(); 
+	remOpen(node); 
+
+	return node; 
+}
+
 void expand(ANode* node, ANode* end)
 {
 	// Generate a list of known childs
@@ -110,24 +119,51 @@ void expand(ANode* node, ANode* end)
 	}
 }
 
-ANode* peek()
+ANode* runAstar(ANode* start, ANode* end)
 {
-	ANode* node = pqopen.top(); 
-	pqopen.pop(); 
-	remOpen(node); 
+	// Configure start node
+	start->prio = 0; 
+	start->costs = 0;
+	start->root = true;
 
-	return node; 
+	// Add start to open list
+	pqopen.push(start, start->prio); 
+	addOpen(start); 
+	
+	// Track executiong and store result
+	unsigned expansions = 0;
+	ANode* found = NULL; 
+
+	// Process nodes in open list
+	while(!pqopen.empty())
+	{
+		ANode* current = peek();
+
+		if(current->equals(end))
+		{
+			cout << "Solution found!" << endl;
+			cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
+			found = current; 
+			break;
+		}
+
+		// Expand node
+		expand(current, end); 
+
+		// Close expanded node
+		closed.insert(pair<int, ANode*>(current->hash(), current));
+
+		// Statistics
+		expansions++; 
+		if(expansions % 1000 == 0)
+			cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
+	}
+
+	return found; 
 }
 
-void runAstar()
+pair<ANode*, ANode*> buildTestConfig()
 {
-	srand(time(NULL));
-
-	/*int lenDomains = 25; 
-	int lenNodes = 6; 
-	int* mapping = new int[lenDomains];
-	int* volume = new int[lenDomains];*/
-
 	int lenDomains = 5; 
 	int lenNodes = 4; 
 	int mapping[] = {0,  1,  2,  2,  3};
@@ -137,7 +173,34 @@ void runAstar()
 	for(int i=0; i<lenNodes; i++)
 		buffer[i] = 0;
 
-	/*for(int i=0; i<lenDomains; i++)
+	int* mapping2 = new int[lenDomains];
+	int* volume2 = new int[lenDomains];
+	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
+	memcpy(volume2, volume, lenDomains * sizeof(int)); 
+
+	mapping2[0] = 1;
+	mapping2[1] = 0;
+
+	ANode* start = new ANode(mapping, volume, lenDomains, lenNodes);
+	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes); 
+
+	return pair<ANode*, ANode*>(start, end);
+}
+
+pair<ANode*, ANode*> buildRandConfig()
+{
+	srand(time(NULL));
+
+	int lenDomains = 25; 
+	int lenNodes = 6; 
+	int* mapping = new int[lenDomains];
+	int* volume = new int[lenDomains];
+
+	int* buffer = new int[lenNodes];
+	for(int i=0; i<lenNodes; i++)
+		buffer[i] = 0;
+
+	for(int i=0; i<lenDomains; i++)
 	{
 		mapping[i] = rand() % (lenNodes - 1);
 
@@ -149,15 +212,14 @@ void runAstar()
 
 		volume[i] = load;
 		buffer[mapping[i]] += load;
-	}*/
-
+	}
 
 	int* mapping2 = new int[lenDomains];
 	int* volume2 = new int[lenDomains];
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
-	/*for(int i=0; i<5; i++)
+	for(int i=0; i<5; i++)
 	{
 		while(true)
 		{
@@ -173,63 +235,38 @@ void runAstar()
 			
 			break;
 		}
-	}*/
-
-	mapping2[0] = 1;
-	mapping2[1] = 0;
-
-	ANode start(mapping, volume, lenDomains, lenNodes);
-	ANode end(mapping2, volume2, lenDomains, lenNodes); 
-	
-	if(!start.valid())
-	{
-		cout << "invalid start" << endl; 
-		return;
-	}
-	if(!end.valid())
-	{
-		cout << "invalid end" << endl; 
-		return; 
 	}
 
-	start.dump();
-	end.dump();
+	ANode* start = new ANode(mapping, volume, lenDomains, lenNodes);
+	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes); 
 
-	start.prio = 0; 
-	start.costs = 0;
-	start.root = true;
+	return pair<ANode*, ANode*>(start, end);
+}
 
-	pqopen.push(&start, start.prio); 
-	addOpen(&start); 
+int main()
+{
+	pair<ANode*, ANode*> nodes = buildRandConfig(); 
+	ANode* start = nodes.first; 
+	ANode* end = nodes.second; 
 	
-	unsigned expansions = 0;
-	ANode* found = NULL; 
-	while(!pqopen.empty())
+	if(!start->valid())
 	{
-		ANode* current = peek();
-		if(current == NULL)
-		{
-			break;
-		}
-
-		if(current->equals(&end))
-		{
-			cout << "Solution found... " << endl;
-			cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
-			found = current; 
-			break;
-		}
-
-		expand(current, &end); 
-
-		expansions++; 
-		if(expansions % 1000 == 0)
-			cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
-
-		closed.insert(pair<int, ANode*>(current->hash(), current));
+		cerr << "invalid start" << endl; 
+		return 1;
+	}
+	if(!end->valid())
+	{
+		cerr << "invalid end" << endl; 
+		return 1; 
 	}
 
-	
+	start->dump();
+	end->dump();
+
+	// Execute A* search
+	ANode* found = runAstar(start, end); 
+
+	// Print results
 	if(found != NULL)
 	{
 		int count = 0; 
@@ -243,22 +280,9 @@ void runAstar()
 		}
 		cout << "Lines: " << count << endl;
 	} else {
-		cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
-		cout << "no solution" << endl;
+		cout << "No solution found!" << endl;
 	}
-	
-}
 
-int main()
-{
-	// Verify that it is a min heap
-	PriorityQueue<int, int>* s =new PriorityQueue<int, int>();
-	s->push(1,22);
-	s->push(2,0);
-	if(s->top() == 2)
-		cout << "PQ Works as expected - min values hihgh priority" << endl << endl; 
-
-	runAstar(); 
 	return 0;
 }
 

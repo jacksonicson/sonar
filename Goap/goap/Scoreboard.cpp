@@ -4,9 +4,11 @@
 
 Scoreboard::Scoreboard(void)
 {
+	// Do nothing
 }
 
 
-Scoreboard::~Scoreboard(void)
+void Scoreboard::report(ANode*)
 {
+
 }
