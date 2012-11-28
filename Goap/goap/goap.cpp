@@ -13,6 +13,7 @@
 #include "queue.h"
 #include <stdlib.h>
 #include "q2.h"
+#include <time.h>
 
 using namespace std; 
 
@@ -29,6 +30,7 @@ public:
 	int domLength;
 	int costs; 
 	int prio;
+	bool root; 
 	ANode* pred;
 
 public:
@@ -41,6 +43,13 @@ public:
 		this->costs = 9999; 
 		this->prio = 0; 
 		this->pred = NULL; 
+		this->root = false; 
+	}
+
+	ANode(int* mapping, int* volume, int domLength, int nodeLength, bool root) 
+	{
+		ANode(mapping, volume, domLength, nodeLength);
+		this->root = root;
 	}
 
 	ANode() {
@@ -75,9 +84,7 @@ public:
 
 	bool operator()(ANode* a, ANode* b)
 	{
-		// TODO: FAIL this odes not work!!!
 		return a->hash() < b->hash(); 
-		// return a->costs > b->costs; 
 	}
 	
 	bool equals(ANode* b)
@@ -129,7 +136,7 @@ PriorityQueue<ANode*, unsigned int> pqopen;
 multimap<int, ANode*> openLookup;
 
 // Closed list
-set<ANode*, ANode> closed; 
+multimap<int, ANode*> closed; 
 
 // Mesh lookup
 multimap<int, ANode*> mesh;
@@ -198,9 +205,6 @@ pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end)
 			{
 				if((*it2).second->equals(this))
 				{
-					if((*it2).second == this)
-						cout << "POBELM" <<endl;
-
 					exist = true;
 					result.insert(result.begin(), (*it2).second);
 					costs.insert(costs.begin(), cc);
@@ -208,21 +212,20 @@ pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end)
 				}
 			}
 
+			// Restore mapping
 			this->mapping[d] = backup;
-
-			if(exist) {
+				
+			// Continue if exists
+			if(exist)
 				continue; 
-			}
 
-
-
-			// Create the new node for real
+			// Create the new node for real now
 			int* mapping2 = new int[domLength];
-			int* volume2 = new int[domLength];
 			memcpy(mapping2, this->mapping, sizeof(int) * domLength); 
-			memcpy(volume2, this->volume, sizeof(int) * domLength); 
 			mapping2[d] = n;
-			ANode* newNode = new ANode(mapping2, volume2, domLength, nodeLength);
+
+			ANode* newNode = new ANode(mapping2, volume, domLength, nodeLength);
+
 			if(newNode->valid())
 			{
 				mesh.insert(pair<int, ANode*>(newNode->hash(), newNode));
@@ -253,15 +256,15 @@ void expand(ANode* node, ANode* end)
 		}
 
 		// Check if it is in closed list!
-		set<ANode*, ANode>::iterator it = closed.find(childs[i]);
 		bool skip = false;
-		for (;it!=closed.end(); it++)
+		pair<multimap<int, ANode*>::iterator, multimap<int, ANode*>::iterator> found;
+		found = closed.equal_range(child->hash());
+		for (multimap<int, ANode*>::iterator it2 = found.first; it2 != found.second; ++it2)
 		{
-			// Skip child if closed
-			if((*it)->equals(child))
+			if((*it2).second->equals(child))
 			{
 				skip = true;
-				break;
+				break; 
 			}
 		}
 
@@ -302,20 +305,23 @@ ANode* peek()
 
 void runAstar()
 {
-	int lenDomains = 25; 
+	srand(time(NULL));
+
+	/*int lenDomains = 25; 
 	int lenNodes = 6; 
 	int* mapping = new int[lenDomains];
-	int* volume = new int[lenDomains];
+	int* volume = new int[lenDomains];*/
 
-	/*int lenDomains = 3; 
+	int lenDomains = 3; 
 	int lenNodes = 3; 
 	int mapping[] = {0,  1,  2};
-	int volume[] =  {80, 25, 10};*/
+	int volume[] =  {80, 25, 10};
+
 	int* buffer = new int[lenNodes];
 	for(int i=0; i<lenNodes; i++)
 		buffer[i] = 0;
 
-	for(int i=0; i<lenDomains; i++)
+	/*for(int i=0; i<lenDomains; i++)
 	{
 		mapping[i] = rand() % (lenNodes - 1);
 
@@ -327,7 +333,7 @@ void runAstar()
 
 		volume[i] = load;
 		buffer[mapping[i]] += load;
-	}
+	}*/
 
 
 	int* mapping2 = new int[lenDomains];
@@ -335,7 +341,7 @@ void runAstar()
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
-	for(int i=0; i<10; i++)
+	/*for(int i=0; i<5; i++)
 	{
 		while(true)
 		{
@@ -351,7 +357,10 @@ void runAstar()
 			
 			break;
 		}
-	}
+	}*/
+
+	mapping2[0] = 1;
+	mapping2[1] = 0;
 
 	ANode start(mapping, volume, lenDomains, lenNodes);
 	ANode end(mapping2, volume2, lenDomains, lenNodes); 
@@ -371,7 +380,8 @@ void runAstar()
 	end.dump();
 
 	start.prio = 0; 
-	start.costs = 0; 
+	start.costs = 0;
+	start.root = true;
 
 	pqopen.push(&start, start.prio); 
 	addOpen(&start); 
@@ -400,19 +410,22 @@ void runAstar()
 		if(expansions % 1000 == 0)
 			cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
 
-		closed.insert(current); 
+		closed.insert(pair<int, ANode*>(current->hash(), current));
 	}
 
 	
 	if(found != NULL)
 	{
+		int count = 0; 
 		while(true)
 		{	
 			found->dump();
-			if(found->pred == NULL)
+			count++; 
+			if(found->root == true)
 				break;
 			found = found->pred; 
 		}
+		cout << "Lines: " << count << endl;
 	} else {
 		cout << "expansion: " << expansions << " open size " << pqopen.size() << " close size " << closed.size() << endl; 
 		cout << "no solution" << endl;
@@ -422,6 +435,13 @@ void runAstar()
 
 int main()
 {
+	// Verify that it is a min heap
+	PriorityQueue<int, int>* s =new PriorityQueue<int, int>();
+	s->push(1,22);
+	s->push(2,0);
+	if(s->top() == 2)
+		cout << "PQ Works as expected - min values hihgh priority" << endl << endl; 
+
 	runAstar(); 
 	return 0;
 }
