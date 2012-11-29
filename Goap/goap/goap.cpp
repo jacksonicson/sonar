@@ -164,10 +164,10 @@ ANode* runAstar(ANode* start, ANode* end)
 
 pair<ANode*, ANode*> buildTestConfig()
 {
-	int lenDomains = 5; 
-	int lenNodes = 4; 
-	int mapping[] = {0,  1,  2,  2,  3};
-	int volume[] =  {90, 30, 70, 10, 75};
+	int lenDomains = 10; 
+	int lenNodes = 8; 
+	int mapping[] = {0,  1,  2,  2,  3,  4,  5,  6,  6,  7};
+	int volume[] =  {90, 30, 70, 10, 75, 90, 30, 70, 10, 75};
 	
 	int* mapping0 = new int[lenDomains];
 	int* volume0 = new int[lenDomains];
@@ -180,6 +180,8 @@ pair<ANode*, ANode*> buildTestConfig()
 
 	mapping2[0] = 1;
 	mapping2[1] = 0;
+	mapping2[5] = 5;
+	mapping2[6] = 4;
 
 	ANode* start = new ANode(mapping0, volume0, lenDomains, lenNodes);
 	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes); 
