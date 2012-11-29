@@ -1,6 +1,7 @@
 from gurobipy import *
 from numpy import empty, random
 import numpy as np
+import virtual
 
 ###############################
 ### Configuration            ##
@@ -142,7 +143,7 @@ if __name__ == '__main__':
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
     # Fill demand with random data
-    for j in xrange(service_count):
+    for j in xrange(service_count):         ##von times, profiles
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
@@ -150,7 +151,7 @@ if __name__ == '__main__':
     for i in xrange(len(demand_raw)):
         demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
         
-    demand_mem=3
+    demand_mem= virtual.nodes.DOMAIN_MEM            ##abgreifen
     
     print demand_mem
     print demand_raw

@@ -11,14 +11,14 @@ import json
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class DSAP(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10*60)
+        super(DSAP, self).__init__(pump, model, 10*60)
         self.var = []
         
     def dump(self):
-        print 'Dump Sandpiper controller configuration...'
+        print 'Dump DSAP controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Proactive',
                                                                  }))
     

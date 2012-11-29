@@ -2,10 +2,11 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import controller_sandpiper_proactive
+import controller_dsap
 import scoreboard
 import time
 import msgpump
+from control.logic import controller_dsap
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -122,7 +123,7 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    controller = controller_dsap.DSAP(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
