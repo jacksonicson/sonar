@@ -3,6 +3,9 @@ import configuration as config
 import json
 import model
 import controller_sandpiper_proactive
+import controller_sandpiper_reactive
+import controller_rr
+import controller_ssapv
 import scoreboard
 import time
 import msgpump
@@ -122,7 +125,7 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    controller = controller_ssapv.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -158,7 +161,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '6nodesm'
+        name = '6nodes_mix2'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()

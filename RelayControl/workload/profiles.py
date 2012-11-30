@@ -368,10 +368,10 @@ mix_sim = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_profile = PREFIX_MIX_SIM # Prefix for picking TS from Times
-selected_name = 'mix_sim' # Just for logging
-selected = mix_sim        # Selected workload mix
-modified = True         # Modified version of the workload mix
+selected_profile = None # PREFIX_MIX_SIM # Prefix for picking TS from Times
+selected_name = 'mix_2' # 'mix_sim' # Just for logging
+selected = mix_2 # mix_sim        # Selected workload mix
+modified = False         # Modified version of the workload mix
 ##############################
 
 def _profile(prefixed, *args):
