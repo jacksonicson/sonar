@@ -32,7 +32,6 @@ class DSAP(controller.LoadBalancer):
 #        self.migrate(domain, source, target, k)        # TODO laeuft parallel >> später queue 
 
         
-        
     def dump(self):
         print 'Dump DSAP controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'DSAP-Controller',
@@ -88,6 +87,10 @@ class DSAP(controller.LoadBalancer):
 
 
 #        re-schedule VMs
+        
+        
+        
+        
         
         
         
