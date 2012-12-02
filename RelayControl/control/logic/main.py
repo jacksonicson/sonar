@@ -93,11 +93,7 @@ def build_initial_model(controller):
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
-<<<<<<< HEAD
-        build_debug_allocation()
-=======
         controller.initial_placement_sim()
->>>>>>> origin/andreas
     
     # Dump model
     model.dump()
@@ -152,16 +148,9 @@ def main():
         driver = driver.Driver(pump, model, handler)
         driver.start()
     
-<<<<<<< HEAD
-    # Start load balancer thread which detects hot-spots and triggers migrations
-    balancer = sandpiper_standard.Sandpiper(pump, model)
-    balancer.dump()
-    balancer.start()
-=======
     # Start controller
     controller.dump()
     controller.start()
->>>>>>> origin/andreas
     
     # Start message pump
     pump.start()
@@ -173,14 +162,10 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-<<<<<<< HEAD
-        t = open(config.path('ar'), 'w')
-        for i in xrange(0, 1):
-=======
         name = '6nodesm'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
->>>>>>> origin/andreas
+
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             t.write('%s\n' % res)
