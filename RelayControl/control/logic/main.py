@@ -161,7 +161,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '30nodes_mixsim'
+        name = '6nodes_mix2'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()

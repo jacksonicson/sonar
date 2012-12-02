@@ -368,9 +368,9 @@ mix_sim = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_profile = PREFIX_MIX_SIM # Prefix for picking TS from Times
-selected_name = 'mix_sim' # Just for logging
-selected = mix_sim        # Selected workload mix
+selected_profile = None # Prefix for picking TS from Times
+selected_name = 'mix_2' # Just for logging
+selected = mix_2        # Selected workload mix
 modified = False         # Modified version of the workload mix
 ##############################
 
@@ -406,8 +406,8 @@ def get_traced_cpu_profile(index):
     Gets a traced CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    if not configuration.PRODUCTION:
-        return get_current_cpu_profile(index)    
+#    if not configuration.PRODUCTION:
+#        return get_current_cpu_profile(index)    
     
     desc = __by_index(index)
     name = _profile(True, desc.name, POSTFIX_TRACE)
