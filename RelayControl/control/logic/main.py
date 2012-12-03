@@ -6,7 +6,6 @@ import controller_sandpiper_proactive
 import controller_sandpiper_reactive
 import controller_rr
 import controller_ssapv
-import sandpiper_standard
 import scoreboard
 import time
 import msgpump
@@ -45,29 +44,29 @@ def build_from_current_allocation():
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
 
-#def build_test_allocation():
-#    import placement
-#    from virtual import nodes
-#    from control import domains 
-#    
-#    nodecount = len(nodes.HOSTS)
-#    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-#    migrations, _ = splace.execute()
-#    
-#    _nodes = []
-#    for node in nodes.NODES: 
-#        mnode = model.Node(node, nodes.NODE_CPU_CORES)
-#        _nodes.append(mnode)
-#        
-#    _domains = {}
-#    for domain in domains.domain_profile_mapping:
-#        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-#        _domains[domain.domain] = dom
-#        
-#    for migration in migrations:
-#        print migration 
-#        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
-#    
+def build_test_allocation():
+    import placement
+    from virtual import nodes
+    from control import domains 
+    
+    nodecount = len(nodes.HOSTS)
+    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+    migrations, _ = splace.execute()
+    
+    _nodes = []
+    for node in nodes.NODES: 
+        mnode = model.Node(node, nodes.NODE_CPU_CORES)
+        _nodes.append(mnode)
+        
+    _domains = {}
+    for domain in domains.domain_profile_mapping:
+        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+        _domains[domain.domain] = dom
+        
+    for migration in migrations:
+        print migration 
+        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
+    
  
 def build_debug_allocation():    
     # Build internal infrastructure representation
@@ -80,10 +79,6 @@ def build_debug_allocation():
     node.add_domain(model.Domain('target3', 2))
     node.add_domain(model.Domain('target4', 2))
     node.add_domain(model.Domain('target5', 2))
-    node.add_domain(model.Domain('target6', 2))
-    node.add_domain(model.Domain('target7', 2))
-    node.add_domain(model.Domain('target8', 2))
-    node.add_domain(model.Domain('target9', 2))
     
     node = model.Node('srv2', 4)
     node = model.Node('srv3', 4)
@@ -166,10 +161,9 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '6_migration_swap_06_18_results'
+        name = '6nodes_mix2'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
-
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             t.write('%s\n' % res)

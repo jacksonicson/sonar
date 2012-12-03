@@ -368,10 +368,11 @@ mix_sim = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_profile = PREFIX_MIX_SIM # Prefix for picking TS from Times
-selected_name = 'mix_sim' # Just for logging
-selected = mix_sim        # Selected workload mix
-modified = False         # Modified version of the workload mix
+selected_profile = None     # Prefix for picking TS from Times
+selected_name = 'mix_2'     # Just for logging
+selected = mix_2            # Selected workload mix
+modified = False            # Modified version of the workload mix
+traces_exist = True         # For initial placement profiles traces are used if they exist
 ##############################
 
 def _profile(prefixed, *args):
@@ -401,18 +402,18 @@ def get_current_cpu_profile(index):
     print 'Selected cpu profile: %s' % name
     return name
 
-def get_traced_cpu_profile(index):
+def get_cpu_profile_for_initial_placement(index):
     '''
     Gets a traced CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    if not configuration.PRODUCTION:
-        return get_current_cpu_profile(index)    
+    if traces_exist:
+        desc = __by_index(index)
+        name = _profile(True, desc.name, POSTFIX_TRACE)
+    else:
+        name = get_current_cpu_profile(index)
     
-    desc = __by_index(index)
-    name = _profile(True, desc.name, POSTFIX_TRACE)
-    
-    print 'Selected cpu profile: %s' % name
+    print 'Selected CPU profile for initial placement: %s' % name
     return name
 
 def get_current_user_profile(index):
@@ -421,7 +422,7 @@ def get_current_user_profile(index):
     depends on the modified flag. 
     '''
     desc = __by_index(index)
-    if modified:
+    if modified:    
         name = _profile(True, desc.name, POSTFIX_USER, POSTFIX_MODIFIED)
     else:
         name = _profile(True, desc.name, POSTFIX_USER)

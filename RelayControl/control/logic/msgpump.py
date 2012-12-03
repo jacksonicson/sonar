@@ -1,6 +1,6 @@
+import configuration
 import threading
 import time
-import configuration
 
 class Entry:
     def __init__(self, cb_time, handler, *args):
@@ -19,7 +19,7 @@ class Pump(threading.Thread):
         self.running = True
         self.handlers = []
         self.production = configuration.PRODUCTION
-        self.start_time =  time.time() if self.production else 0
+        self.start_time = time.time() if self.production else 0
         self.speedup = float(configuration.PUMP_SPEEDUP)
         
         self.handlers.append(Entry(0, initial_handler, self, *handler_args))
