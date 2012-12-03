@@ -1,7 +1,12 @@
 from logs import sonarlog
 import controller
 import json
-from control.logic import scoreboard
+import numpy as np
+from numpy import empty, random
+from service import times_client
+from workload import util as wutil
+import control.domains as domains
+import sys
 
 
 ######################
@@ -21,80 +26,45 @@ class DSAP(controller.LoadBalancer):
         print "INIT DSAP"
         self.var = []
         
-        # initial placement via SSAP        TODO
+        # connect to Times
+        loadTimeSteps(self)
         
-        # migrationen schedulen via migration list (later with manager)
+        # launch DSAP in Gurobi (dsap.py) in balance()
         
-        
-        # aktuelle zeit
-        time_now = self.pump.sim_time() 
 
-#        self.migrate(domain, source, target, k)        # TODO laeuft parallel >> später queue 
+# Implement later!
+        # initial placement via SSAP        TODO
+        # migrationen schedulen via migration list (later with manager)
+#        demand_mem = virtual.nodes.DOMAIN_MEM
+        # aktuelle zeit
+#        time_now = self.pump.sim_time() 
+#        self.migrate(domain, source, target, k)        # TODO laeuft parallel >> implement in queue 
 
         
     def dump(self):
-        print 'Dump DSAP controller configuration...'
+        print 'DSAP controller - Dump configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'DSAP-Controller',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  }))
     
     def balance(self):
-        print 'DSAP-Controller'
-        ############################################
-        ## HOTSPOT DETECTOR ########################
-        ############################################
-        k = 40
-        self.check_hotspots(k)
+        print 'DSAP-Controller - Balancing'
         
-        #        check # of hotspots >> call DSAP.py / Gurobi
-        scoreboard.Scoreboard();
-        self.pump.sim_time();   # aktuelle Zeit
- 
-#        determine whether node is OVERLOADED or UNDERLOADED
-        
-        ############################################
-        ## MIGRATION MANAGER #######################
-        ############################################
-        # Calculate volumes of each node
-        nodes = []
-        domains = []
+        demand_duration = 24
+        service_count = 12
+        demand_raw = empty((service_count, demand_duration), dtype=float)
 
-#        re-schedule VMs 
-        
-        
-        ############################################
-        ## TRIGGER MIGRATIONS ######################
-        ############################################
-
-#        time_now = self.pump.sim_time()
-#        sleep_time = 60
+        for j in xrange(service_count):         
+            for t in range(demand_duration):
+                demand_raw[j][t] = random.randint(0, 50)    # fill with data from times, profiles
 
 
-        for node in nodes:
-            node.dump()
 
-#            TODO: handle OVERLOAD + IMBALANCE situations
-
-            try:
-                # Overload situation
-                if node.overloaded:
-                    print 'Overload...'
-#                    self.migration_trigger(True, nodes, node, k, sleep_time, time_now)
-#                    bzw direkt über (ohne zusätzlicher Fkt)
-                    self.migrate(domain, source, target, k)
-            except StopIteration: pass 
-
-
-#        re-schedule VMs
-        
-        
-        
-        
-        
-        
+    
         
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
+        print 'DSAP-Controller - Finished'
         if success:
             # Release block
             node_from.blocked = end_time
@@ -109,4 +79,52 @@ class DSAP(controller.LoadBalancer):
         else:
             node_from.blocked = end_time
             node_to.blocked = end_time
+            
+            
+    
+def run(self):
+    pass    
+        
+def loadTimeSteps(self):
+    print 'Connecting with Times'
+    connection = times_client.connect()
+    
+    self.min_ts_length = sys.maxint # Minimum length across all TS
+    freq = 0 # Frequency of the TS from Times 
+    
+    # Iterate over all domains and assign them a TS
+    for domain in self.model.get_hosts(self.model.types.DOMAIN):
+        # Select and load TS (based on the configuration)
+        load = domains.cpu_profile_by_name(domain.name)
+        print 'loading service: %s ...' % (load)
+        
+        ts = connection.load(load)
+        
+        # Convert TS to a numpy array
+        # select TS not time index
+        freq = ts.frequency
+        ts = wutil.to_array(ts)[1]
+        
+        # Add noise to the time series
+        random = np.random.lognormal(mean=0.0, sigma=1.0, size=len(ts))
+        ts += random
+        ts[ts > 100] = 100
+        ts[ts < 0] = 0
+        
+        # Attach TS to domain 
+        domain.ts = ts
+        
+        # Update max length
+        self.min_ts_length = min(self.min_ts_length, len(ts))
+    
+    # Close times connection
+    times_client.close()
+    
+    # Reduce length of time series to 6 hours
+    self.freq = (freq * 6.0) / 24.0
+    
+    # Schedule message pump
+    self.pump.callLater(0, self.run)
+    
+    
     

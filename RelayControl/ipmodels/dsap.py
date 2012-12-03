@@ -143,52 +143,6 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     
     
     
-def run(self):
-    pass    
-        
-def loadTimeSteps(self):
-    print 'Connecting with Times'
-    connection = times_client.connect()
-    
-    self.min_ts_length = sys.maxint # Minimum length across all TS
-    freq = 0 # Frequency of the TS from Times 
-    
-    # Iterate over all domains and assign them a TS
-    for domain in self.model.get_hosts(self.model.types.DOMAIN):
-        # Select and load TS (based on the configuration)
-        load = domains.cpu_profile_by_name(domain.name)
-        print 'loading service: %s ...' % (load)
-        
-        ts = connection.load(load)
-        
-        # Convert TS to a numpy array
-        # select TS not time index
-        freq = ts.frequency
-        ts = wutil.to_array(ts)[1]
-        
-        # Add noise to the time series
-        random = np.random.lognormal(mean=0.0, sigma=1.0, size=len(ts))
-        ts += random
-        ts[ts > 100] = 100
-        ts[ts < 0] = 0
-        
-        # Attach TS to domain 
-        domain.ts = ts
-        
-        # Update max length
-        self.min_ts_length = min(self.min_ts_length, len(ts))
-    
-    # Close times connection
-    times_client.close()
-    
-    # Reduce length of time series to 6 hours
-    self.freq = (freq * 6.0) / 24.0
-    
-    # Schedule message pump
-    self.pump.callLater(0, self.run)
-    
-    
-    
 # Test program
 if __name__ == '__main__':
     demand_duration = 24
@@ -196,22 +150,19 @@ if __name__ == '__main__':
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
     # A) Fill demand with random data
-#    for j in xrange(service_count):         ##von times, profiles
-#        for t in range(demand_duration):
-#            demand_raw[j][t] = random.randint(0, 50)
-#            
-#    demand_mem = [[] for _ in xrange(len(demand_raw))]
-#    for i in xrange(len(demand_raw)):
-#        demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
-#        
-#    demand_mem=5
+    for j in xrange(service_count):         ##von times, profiles
+        for t in range(demand_duration):
+            demand_raw[j][t] = random.randint(0, 50)
+            
+    demand_mem = [[] for _ in xrange(len(demand_raw))]
+    for i in xrange(len(demand_raw)):
+        demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
+        
+    demand_mem=5
     
     # B) Fill demand with data from monitor0.dfg (TimeSteps)
     
-#    demand_raw[j][t]
-    demand_mem = virtual.nodes.DOMAIN_MEM
-    
-    loadTimeSteps(self)
+    ## see controller_dsap.py
     
 #    print demand_mem
 #    print demand_raw
