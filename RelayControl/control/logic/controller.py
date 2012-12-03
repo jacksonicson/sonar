@@ -179,7 +179,7 @@ class LoadBalancer(object):
         # Check message pump
         for migration in self.migrations:
             if migration.finished == False:
-                if (self.pump.sim_time() - migration.time) > 20: 
+                if (self.pump.sim_time() - migration.time) > 100: 
                     print 'not finished %i' % (migration.id)
         
         # Run load balancing code

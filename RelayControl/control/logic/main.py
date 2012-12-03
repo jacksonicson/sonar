@@ -6,6 +6,7 @@ import controller_sandpiper_proactive
 import controller_sandpiper_reactive
 import controller_rr
 import controller_ssapv
+import sandpiper_standard
 import scoreboard
 import time
 import msgpump
