@@ -13,8 +13,13 @@ logger = sonarlog.getLogger('controller')
 Simulates the wait time for a transaction. 
 '''
 class SimulatedMigration:
-    def __init__(self, pump, domain, node_from, node_to, migration_callback, info):
+    def __init__(self, pump, domain, node_from, node_to, migration_callback, info, idd):
         self.pump = pump
+        
+        # Internal state check
+        self.id = idd
+        self.finished = False
+        self.time = pump.sim_time()
         
         # Callback handler
         self.migration_callback = migration_callback
@@ -39,6 +44,8 @@ class SimulatedMigration:
         # Call migration callback
         self.migration_callback(self.domain, self.node_from, self.node_to,
                                 self.start, self.end, self.info, True, None)
+        self.finished = True
+        
         
 
 class LoadBalancer(object):
@@ -56,6 +63,9 @@ class LoadBalancer(object):
         
         # Start wait
         self.start_wait = start_wait
+        
+        self.migrations = []
+        self.mig_id = 0
         
         
     # Abstract load balancing method
@@ -158,11 +168,19 @@ class LoadBalancer(object):
         else:
             # Simulate migration
             migration = SimulatedMigration(self.pump, domain.name, source.name, target.name,
-                                           self.migration_callback, info)
+                                           self.migration_callback, info, self.mig_id)
             migration.run()
+            self.migrations.append(migration)
+            self.mig_id += 1
             
             
     def run(self):
+        # Check message pump
+        for migration in self.migrations:
+            if migration.finished == False:
+                if (self.pump.sim_time() - migration.time) > 20: 
+                    print 'not finished %i' % (migration.id)
+        
         # Run load balancing code
         print 'Running load balancer...'
         self.balance()
