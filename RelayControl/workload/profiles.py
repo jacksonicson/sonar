@@ -368,11 +368,11 @@ mix_sim = [
 ##############################
 ## CONFIGURATION            ##
 ##############################
-selected_profile = None     # Prefix for picking TS from Times
-selected_name = 'mix_2'     # Just for logging
-selected = mix_2            # Selected workload mix
-modified = False            # Modified version of the workload mix
-traces_exist = True         # For initial placement profiles traces are used if they exist
+selected_profile = PREFIX_MIX_SIM    # Prefix for picking TS from Times
+selected_name = 'mix_sim'     # Just for logging
+selected = mix_sim            # Selected workload mix
+modified = True # Modified version of the workload mix
+traces_exist = False         # For initial placement profiles traces are used if they exist
 ##############################
 
 def _profile(prefixed, *args):

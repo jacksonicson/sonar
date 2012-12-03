@@ -152,7 +152,7 @@ class FirstFitPlacement(Placement):
     
 class SSAPvPlacement(Placement):
     
-    def execute(self, aggregation=False):
+    def execute(self, aggregation=True):
         # Execute super code
         super(SSAPvPlacement, self).execute()
         
@@ -163,9 +163,9 @@ class SSAPvPlacement(Placement):
         # Loading services to combine the dmain_service_mapping with    
         service_count = len(domains.domain_profile_mapping)
         
-        if aggregation: len = profiles.PROFILE_INTERVAL_COUNT
-        else: len = 24*2
-        service_matrix = np.zeros((service_count, len), dtype=float)
+        if aggregation: llen = 24*2
+        else: llen = profiles.PROFILE_INTERVAL_COUNT
+        service_matrix = np.zeros((service_count, llen), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
