@@ -4,7 +4,7 @@ List of all hosts/nodes in the infrastructure
 
 # Nodes
 NODES = []
-for i in xrange(30):
+for i in xrange(6):
     NODES.append('srv%i' %i)
 HOSTS = NODES
 

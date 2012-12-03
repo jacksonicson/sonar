@@ -6,6 +6,7 @@ import controller_sandpiper_proactive
 import controller_sandpiper_reactive
 import controller_rr
 import controller_ssapv
+import sandpiper_standard
 import scoreboard
 import time
 import msgpump
@@ -44,10 +45,10 @@ def build_from_current_allocation():
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
 
-def build_test_allocation():
-    import placement
-    from virtual import nodes
-    from control import domains 
+#def build_test_allocation():
+#    import placement
+#    from virtual import nodes
+#    from control import domains 
 #    
 #    nodecount = len(nodes.HOSTS)
 #    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
@@ -129,7 +130,7 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    controller = controller_ssapv.Sandpiper(pump, model)
+    controller = sandpiper_standard.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -165,7 +166,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '30nodes_mixsim'
+        name = '6_migration_swap_06_18_results'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
 

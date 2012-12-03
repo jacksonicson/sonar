@@ -5,17 +5,18 @@ import controller
 import numpy
 import math
 import util
+import scoreboard
 
 ######################
 ## CONFIGURATION    ##
 ######################
-START_WAIT = 0
-INTERVAL = 20
+START_WAIT = 120
+INTERVAL = 30
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 15
-MIN_IMPROVEMENT_IMBALANCE = 2
+THRESHOLD_IMBALANCE = 4
+MIN_IMPROVEMENT_IMBALANCE = 0.25
 
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
@@ -30,8 +31,8 @@ migration_queue = []
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL)
-        
+        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
+        self.migration_queue = []
         
     def forecast(self, data):
         # TODO double exponential smoothing (holt winter)
@@ -87,6 +88,32 @@ class Sandpiper(controller.LoadBalancer):
                                                                  }))    
     
     
+    def initial_placement_sim(self):
+        import placement
+        from virtual import nodes
+        from control import domains 
+        
+        nodecount = len(nodes.HOSTS)
+        splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute()
+        
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}   
+        for domain in domains.domain_profile_mapping:
+            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            print migration 
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+            
+        return migrations
+    
+        
     def migration(self, domain, source, target, migration_type):
         return {
                 'domain' : domain,
@@ -139,9 +166,9 @@ class Sandpiper(controller.LoadBalancer):
         self.migrate_imbalance(time_now, sleep_time, K_VALUE)
         
         if len(migration_queue) != 0:
-            # if imbalance algorithm triggered migration, no further migrations will be executed
+            ## if imbalance algorithm triggered migration, no further migrations will be executed
             return
-        
+            
         
         
         ############################################
@@ -185,6 +212,7 @@ class Sandpiper(controller.LoadBalancer):
         
         # run load balancing    
         imbalance = self.imbalance(nodes, k)
+        print 'IMBALANCE %s' % (imbalance)
         num_migrations = 0
         max_migrations = 10
         
@@ -195,11 +223,10 @@ class Sandpiper(controller.LoadBalancer):
             for domain in domains.itervalues():
                 # for every domain
                 tmp_nodes = nodes
-
+                
                 for node in tmp_nodes.itervalues():
-                    # remove domain from parent node and save node extra
+                    # save node extra
                     if domain['name'] in node['domains']:
-                        del node['domains'][domain['name']]
                         source = node
                         source_node = self.model.get_host(node['name'])
                 
@@ -216,7 +243,7 @@ class Sandpiper(controller.LoadBalancer):
                     
                     # don't migrate domain to same node nor empty node nor if overload threshold is exceeded
                     test = False
-                    test |= node.name == source_node.name
+                    test |= target_node.name == source_node.name
                     test |= len(target_node.domains) == 0
                     test |= len(target_node.domains) >= 6
                     test |= target_threshold > THRESHOLD_OVERLOAD
@@ -228,17 +255,21 @@ class Sandpiper(controller.LoadBalancer):
                     
                     # migrate domain to node (in snapshot) and check new imbalance
                     node['domains'][domain['name']] = domain
+                    del source['domains'][domain['name']]
                     new_imbalance = self.imbalance(tmp_nodes, k)
                     improvement = imbalance - new_imbalance
                     
                     if improvement > MIN_IMPROVEMENT_IMBALANCE and improvement > best_improvement:
                         best_migration = {'domain': target_domain.name, 'source': source_node.name, 'target': target_node.name}
+                        best_source = source
+                        best_target = node
+                        best_domain = domain
                         best_improvement = improvement
                         #print 'IMBALANCE TRIGGERED; imb bef: %s, imb aft: %s, imrov: %s' % (imbalance, new_imbalance, improvement)
-                    else:
-                        # go back to previous state
-                        source['domains'][domain['name']] = domain
-                        del node['domains'][domain['name']]
+                    
+                    # go back to previous state
+                    source['domains'][domain['name']] = domain
+                    del node['domains'][domain['name']]
                                                 
             if best_migration is None:
                 break
@@ -246,6 +277,8 @@ class Sandpiper(controller.LoadBalancer):
             # update imbalance and new nodes
             imbalance -= best_improvement 
             migrations[num_migrations] = best_migration
+            best_target['domains'][best_domain['name']] = best_domain
+            del best_source['domains'][best_domain['name']]
             num_migrations += 1
 
         
@@ -455,11 +488,11 @@ class Sandpiper(controller.LoadBalancer):
                 test &= (time_now - source.blocked) > sleep_time
                 
                 if test:
-                    migration = self.migration(domain, source, target_node, 'Swap')
+                    migration = self.migration(domain, source, target_node, 'Swap Part 1')
                     migration_queue.append(migration)
  
                     for target_domain in targets:
-                        migration = self.migration(target_domain, target_node, source, 'Swap')
+                        migration = self.migration(target_domain, target_node, source, 'Swap Part 2')
                         migration_queue.append(migration)
                     
                     self.migration_scheduler()
@@ -468,7 +501,7 @@ class Sandpiper(controller.LoadBalancer):
         
     def migration_scheduler(self):
         print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(migration_queue))
-
+        print migration_queue
         for migration in migration_queue:
             
             domain = migration['domain']
@@ -497,8 +530,7 @@ class Sandpiper(controller.LoadBalancer):
                 continue
             
             print '%s migration: %s from %s to %s' % (migration_type, domain.name, source.name, target.name)
-            import time
-            time.sleep(2)
             migration['triggered'] = True
             self.migrate(domain, source, target, K_VALUE) 
+            scoreboard.Scoreboard().add_migration_type(migration_type)
             

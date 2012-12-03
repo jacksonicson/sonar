@@ -22,9 +22,33 @@ class Scoreboard(object):
         self.active_server_infos = []
         self.cpu_violations = 0
         self.cpu_accumulated = 0
+        
+        self.imbalance_migrations = 0
+        self.overload_migrations = 0
+        self.underload_migrations = 0
+        self.swaps = 0
     
     def close(self):
         self.closed = True
+    
+    def add_migration_type(self, migration_type):
+        if migration_type == 'Imbalance':
+            self.imbalance_migrations += 1
+            return
+        if migration_type == 'Overload (Empty=False)':
+            self.overload_migrations +=1
+            return
+        if migration_type == 'Overload (Empty=True)':
+            self.overload_migrations +=1
+            return
+        if migration_type == 'Underload (Empty=False)':
+            self.underload_migrations +=1
+            return
+        if migration_type == 'Underload (Empty=True)':
+            self.underload_migrations +=1
+            return
+        if migration_type == 'Swap Part 1':
+            self.swaps +=1           
     
     def add_cpu_violations(self, violations):
         if not self.closed:
@@ -68,11 +92,12 @@ class Scoreboard(object):
        
     def get_results(self, pump):
         return (len(self.active_server_infos), self.analytics_average_server_count(pump), 
-                self.cpu_violations, self.cpu_accumulated)
+                self.cpu_violations, self.cpu_accumulated, self.imbalance_migrations,
+                self.overload_migrations, self.underload_migrations, self.swaps)
     
     def get_result_line(self, pump):
         res = self.get_results(pump)
-        return '%f \t %f \t %i \t %i' % res
+        return '%f \t %f \t %i \t %i \t %i \t %i \t %i \t %i' % res
     
     def dump(self, pump):
         print 'Records %i' % len(self.active_server_infos)
