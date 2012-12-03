@@ -20,6 +20,7 @@ class SimulatedMigration:
         self.id = idd
         self.finished = False
         self.time = pump.sim_time()
+        self.see_count = 0
         
         # Callback handler
         self.migration_callback = migration_callback
@@ -178,7 +179,10 @@ class LoadBalancer(object):
         # Check message pump
         for migration in self.migrations:
             if migration.finished == False:
-                if (self.pump.sim_time() - migration.time) > 20: 
+                migration.see_count += 1
+                if (self.pump.sim_time() - migration.time) > 100: 
+                    print 'not finished %i' % (migration.id)
+                if migration.see_count > 10:
                     print 'not finished %i' % (migration.id)
         
         # Run load balancing code
