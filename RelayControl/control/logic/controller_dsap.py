@@ -2,6 +2,7 @@ from logs import sonarlog
 import controller
 import json
 import numpy as np
+from ipmodels import dsap
 from numpy import empty, random
 from service import times_client
 from workload import util as wutil
@@ -27,10 +28,7 @@ class DSAP(controller.LoadBalancer):
         self.var = []
         
         # connect to Times
-        loadTimeSteps(self)
-        
-        # launch DSAP in Gurobi (dsap.py) in balance()
-        
+        loadTimeSeries(self)        
 
 # Implement later!
         # initial placement via SSAP        TODO
@@ -47,19 +45,56 @@ class DSAP(controller.LoadBalancer):
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  }))
+    def initial_placement_sim(self):
+        import placement
+        from virtual import nodes
+        from control import domains 
+        
+        nodecount = len(nodes.HOSTS)
+        splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute()
+        
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            print migration 
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+            
+        return migrations 
     
     def balance(self):
         print 'DSAP-Controller - Balancing'
         
+        # B) Fill demand values with data from monitor0.dfg (TimeSteps)
         demand_duration = 24
         service_count = 12
         demand_raw = empty((service_count, demand_duration), dtype=float)
 
+        #TODO
+#        domain.ts
+#        for i in range(0, len(timeSeries.elements)):
+#            time[i] = timeSeries.elements[i].timestamp
+#            demand[i] = timeSeries.elements[i].value
+            
         for j in xrange(service_count):         
             for t in range(demand_duration):
                 demand_raw[j][t] = random.randint(0, 50)    # fill with data from times, profiles
-
-
+        
+        demand_mem=5    #temp, delete 
+        
+        dsap.solve(12, 100, 100, demand_raw, demand_mem)
+        
+        
+        #sampling
+        
 
     
         
@@ -85,12 +120,14 @@ class DSAP(controller.LoadBalancer):
 def run(self):
     pass    
         
-def loadTimeSteps(self):
+def loadTimeSeries(self):
     print 'Connecting with Times'
     connection = times_client.connect()
     
     self.min_ts_length = sys.maxint # Minimum length across all TS
     freq = 0 # Frequency of the TS from Times 
+    
+    print "DEBUG: ",self.model.get_hosts(self.model.types.DOMAIN)
     
     # Iterate over all domains and assign them a TS
     for domain in self.model.get_hosts(self.model.types.DOMAIN):
@@ -113,6 +150,8 @@ def loadTimeSteps(self):
         
         # Attach TS to domain 
         domain.ts = ts
+        
+        print "DEBUG: ",domain.ts
         
         # Update max length
         self.min_ts_length = min(self.min_ts_length, len(ts))

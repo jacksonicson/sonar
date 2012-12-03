@@ -149,8 +149,8 @@ if __name__ == '__main__':
     service_count = 12
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
-    # A) Fill demand with random data
-    for j in xrange(service_count):         ##von times, profiles
+    # A) Fill demand values with random data
+    for j in xrange(service_count):
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
@@ -160,8 +160,7 @@ if __name__ == '__main__':
         
     demand_mem=5
     
-    # B) Fill demand with data from monitor0.dfg (TimeSteps)
-    
+    # B) Fill demand values with data from monitor0.dfg (TimeSteps)
     ## see controller_dsap.py
     
 #    print demand_mem
