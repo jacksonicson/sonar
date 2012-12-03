@@ -15,8 +15,9 @@ INTERVAL = 30
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 4
-MIN_IMPROVEMENT_IMBALANCE = 0.25
+THRESHOLD_IMBALANCE = 0.06
+MIN_IMPROVEMENT_IMBALANCE = 0.001
+NODE_CAPACITY = 100
 
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
@@ -26,7 +27,6 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 logger = sonarlog.getLogger('controller')
 
 # Migration Queue
-migration_queue = []
 
 class Sandpiper(controller.LoadBalancer):
     
@@ -60,7 +60,7 @@ class Sandpiper(controller.LoadBalancer):
             node_to.flush(50)
             
             # Set finished status True
-            for migration in migration_queue:
+            for migration in self.migration_queue:
                 domain2 = migration['domain']
                 source2 = migration['source']
                 target2 = migration['target']
@@ -123,8 +123,15 @@ class Sandpiper(controller.LoadBalancer):
                 'triggered' : False,
                 'finished' : False
                 }
+
     
-    
+    def add_migration(self, migration):
+        for mig in self.migration_queue:
+            if mig['source'].name == migration['source'].name and mig['target'].name == migration['target'].name and mig['domain'].name == migration['domain'].name and mig['finished'] == False:
+                return
+        self.migration_queue.append(migration)    
+
+  
     def volume(self, node, k):
         # Calculates volume for node and return node
         volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
@@ -135,10 +142,15 @@ class Sandpiper(controller.LoadBalancer):
 
             
     def entitlement(self, node, k):
-
+                
         h = self.model.get_host(node['name'])
-
-        return h.percentile_load(PERCENTILE, k)
+        load = 0
+        for domain in node['domains'].itervalues():
+            d = self.model.get_host(domain['name'])
+            d_load = d.percentile_load(PERCENTILE, k)
+            load += util.domain_to_server_cpu(h, d, d_load)
+        
+        return load / NODE_CAPACITY
             
                 
     def imbalance(self, nodes, k):
@@ -165,10 +177,9 @@ class Sandpiper(controller.LoadBalancer):
         
         self.migrate_imbalance(time_now, sleep_time, K_VALUE)
         
-        if len(migration_queue) != 0:
-            ## if imbalance algorithm triggered migration, no further migrations will be executed
+        if len(self.migration_queue) != 0:
+            # if imbalance algorithm triggered migration, no further migrations will be executed
             return
-            
         
         
         ############################################
@@ -183,8 +194,8 @@ class Sandpiper(controller.LoadBalancer):
         
         # trigger migration
         self.migration_trigger(nodes, sleep_time, time_now)
-       
- 
+        
+        
     def migrate_imbalance(self, time_now, sleep_time, k):
         # based on DSR algorithm
         
@@ -289,7 +300,7 @@ class Sandpiper(controller.LoadBalancer):
             target = self.model.get_host(migration['target'])
 
             migration = self.migration(domain, source, target, 'Imbalance') 
-            migration_queue.append(migration)    
+            self.add_migration(migration)
         
         self.migration_scheduler()
 
@@ -376,7 +387,7 @@ class Sandpiper(controller.LoadBalancer):
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
+                        #self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
                             
             except StopIteration: pass 
@@ -399,7 +410,6 @@ class Sandpiper(controller.LoadBalancer):
                         
             except StopIteration: pass
     
-        
 
     def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)
@@ -418,7 +428,7 @@ class Sandpiper(controller.LoadBalancer):
             if test: 
                 migration_type = 'Overload (Empty=%s)' % (empty)
                 migration = self.migration(domain, source, target, migration_type) 
-                migration_queue.append(migration)    
+                self.add_migration(migration)
                 self.migration_scheduler()
                 raise StopIteration()
 
@@ -443,10 +453,10 @@ class Sandpiper(controller.LoadBalancer):
                 #self.migrate(domain, source, target, K_VALUE)   
                 migration_type = 'Underload (Empty=%s)' % (empty)
                 migration = self.migration(domain, source, target, migration_type) 
-                migration_queue.append(migration)    
+                self.add_migration(migration)    
                 self.migration_scheduler()                            
                 raise StopIteration()
-        
+    
 
     def swap(self, node, nodes, source, domain, time_now, sleep_time, k):
         # Try all targets for swapping
@@ -489,20 +499,22 @@ class Sandpiper(controller.LoadBalancer):
                 
                 if test:
                     migration = self.migration(domain, source, target_node, 'Swap Part 1')
-                    migration_queue.append(migration)
+                    self.add_migration(migration)
  
                     for target_domain in targets:
                         migration = self.migration(target_domain, target_node, source, 'Swap Part 2')
-                        migration_queue.append(migration)
+                        self.add_migration(migration)
                     
                     self.migration_scheduler()
                     raise StopIteration() 
 
         
     def migration_scheduler(self):
-        print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(migration_queue))
-        print migration_queue
-        for migration in migration_queue:
+        print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(self.migration_queue))
+        for migration in self.migration_queue:
+            print 'domain: %s; source: %s; target: %s; migration_type: %s; triggered: %s; finished: %s' % (migration['domain'].name, migration['source'].name, migration['target'].name, migration['migration_type'], migration['triggered'], migration['finished'])
+        
+        for migration in self.migration_queue:
             
             domain = migration['domain']
             source = migration['source']
@@ -513,11 +525,11 @@ class Sandpiper(controller.LoadBalancer):
             
             if finished == True:
                 # remove finished migrations from queue
-                migration_queue.remove(migration)
+                self.migration_queue.remove(migration)
                 continue
             
             skip = False           
-            for another_migration in migration_queue:
+            for another_migration in self.migration_queue:
                 target2 = another_migration['target']
                 triggered2 = another_migration['triggered']
                 finished2 = another_migration['finished']
