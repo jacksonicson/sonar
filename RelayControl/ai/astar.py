@@ -1,87 +1,138 @@
-import heapq
-import itertools
+from heapq import heapify, heappop
 from sets import Set
+import sys
 
-class PriorityQueue(object):
-    def __init__(self):
-        self.pq = []                         # list of entries arranged in a heap
-        self.entry_finder = {}               # mapping of tasks to entries
-        self.REMOVED = '<removed-task>'      # placeholder for a removed task
-        self.counter = itertools.count()     # unique sequence count
+class pq(object):
+    def __init__(self, init=None):
+        self.inner, self.item_f = [], {}
+        if not None is init:
+            self.inner = [[priority, item] for item, priority in enumerate(init)]
+            heapify(self.inner)
+            self.item_f = {pi[1]: pi for pi in self.inner}
+
+    def __contains__(self, item):
+        return item in self.item_f
+
+    def put(self, item, priority, heap=True):
+        entry = [priority, item]
+        self.inner.append(entry)
+        if heap:
+            heapify(self.inner)
+        self.item_f[item] = entry
+
+    def top_one(self):
+        if not len(self.inner): return None
+        priority, item = heappop(self.inner)
+        del self.item_f[item]
+        return item
+
+    def re_prioritize(self, items, prioritizer): # =lambda x: x + 1
+        for item in items:
+            if not item in self.item_f: continue
+            entry = self.item_f[item]
+            entry[0] = prioritizer(entry[0])
     
-    def has(self, task):
-        return task in self.entry_finder
-    
-    def add_task(self, task, priority=0):
-        'Add a new task or update the priority of an existing task'
-        if task in self.entry_finder:
-            self.remove_task(task)
-        count = next(self.counter)
-        entry = [priority, count, task]
-        self.entry_finder[task] = entry
-        heapq.heappush(self.pq, entry)
-    
-    def remove_task(self,task):
-        'Mark an existing task as REMOVED.  Raise KeyError if not found.'
-        entry = self.entry_finder.pop(task)
-        entry[-1] = self.REMOVED
-    
-    def pop_task(self):
-        'Remove and return the lowest priority task. Raise KeyError if empty.'
-        while self.pq:
-            priority, count, task = heapq.heappop(self.pq)
-            if task is not self.REMOVED:
-                del self.entry_finder[task]
-                return task
-        raise KeyError('pop from an empty priority queue')
+    def heap(self):
+        heapify(self.inner)
 
 class ANode(object):
-    def __init__(self, value, nodes=None, domains=None):
-        self.successors = []
+    def __init__(self, nodeload, domains, domainload):
         self.predecessor = None
-        self.costs = []
-        self.value = value
-        self.g = 9999
+        self.g = 99999
         
-        self.domains = nodes
-        self.nodes = domains
+        self.nodeload = nodeload
+        self.domainload = domainload
+        self.domains = domains
         
+        self.successors = None
+        self.costs = None
+        
+        self.hash = None
+        self.tmp = None
+     
     def dump(self):
-        print self.value
+        print self.nodes
+        print self.domains
         
-    def add(self, successor, cost=1):
-        self.successors.append(successor)
-        self.costs.append(cost)
-        successor.attachTo(self)
         
-    def get_successors(self, mesh=None):
+    def get_successors(self, mesh, target):
         # generates _all_ successors
         # The heuristic will not go into all of them
         
         # for all migration possibilities create a new state
         # state heuristics is determined by f_heuristics function 
         
+        if not self.successors is None:
+            print 'REAL'
+            return self.successors, self.costs 
+        
         successors = []
         costs = []
         
         # each domain to each node except its own 
         for d in xrange(len(self.domains)): 
-            for node in self.nodes: 
-                nodes = list(self.nodes)
+            for node in xrange(len(self.nodeload)): 
+                nodes = list(self.nodeload)
                 domains = list(self.domains)
-                if domains[d] != node:
-                    domains[d] = node
-                    new = ANode(self.value, nodes, domains)
-                    successors.append(new)
-                    costs.append(1)
+                
+                if domains[d] == node:
+                    continue
+                
+                # remove from source node
+                currnode = domains[d]
+                nodes[currnode] -= self.domainload[d]
+                # add to target node
+                nodes[node] += self.domainload[d]
+                # Change node of domain
+                domains[d] = node
+                
+                # Check overload constraint
+                if nodes[node] > 100:
+                    continue 
+                
+                cost = 1
+                # cost += 0.5 * (nodes[node] / 100.0) # increases expansions 
+                if target.domains[d] == self.domains[d]: # decreases expansions
+                    cost += 3
+                elif target.domains[d] == domains[d]:
+                    cost -= 1
+                elif nodes[node] == 0:
+                    cost -= 1
+                elif nodes[node] > 80:
+                    cost += 1
+                    
+                new = ANode(nodes, domains, self.domainload)
+                
+                # Check constraints
+                                
+                # check if node is in mesh already
+                test = mesh.find(new)
+                if test:
+                    new = test
+                else:
+                    new.predecessor = self
+                    mesh.put(new)
+                    
+                successors.append(new)
+                costs.append(cost)
         
+        self.successors = successors
+        self.costs = costs
         return (successors, costs)
        
     def __eq__(self, another):
-        return hasattr(another, 'domains') and self.domains == another.domains
+        return self.domains == another.domains
     
     def __hash__(self):
-        return hash(self.domains)
+        if self.hash:
+            return self.hash
+        
+        h = 0
+        for i, v in enumerate(self.domains):
+            h += (i + 1) * v
+            
+        self.hash = h 
+        return h
         
     def f_heuristics(self, target):
         counter = 0
@@ -89,49 +140,61 @@ class ANode(object):
             if target.domains[i] != self.domains[i]:
                 counter += 1
                 
-        # the nearer the better
-        print counter
-        return len(self.domains) - counter
         
-    def attachTo(self, predecessor):
-        self.predecessor = predecessor
+                
+        return counter
 
 
 class AStar(object):
     def __init__(self):
-        self.openlist = PriorityQueue()
+        self.openlist = pq()
         self.closelist = Set()
-        self.mesh = Set()
     
-    def search(self, graph, start, end):
-        self.openlist.add_task(start, 0)
+    def search(self, mesh, start, end):
+        self.mesh = mesh
         self.end = end
         
-        while True: 
-            value = self.openlist.pop_task()
-            value.dump
-            
-            if value == end:
-                return end
-            
-            self.expand(value)
-            self.closelist.add(value)  
-            
-            if not self.openlist:
-                break
+        # Add start node to the open list
+        start.g = 0
+        self.openlist.put(start, 0)
+        expansions = 0
+        try:
+            while True:
+                # sys.stdout.write('.') 
+                value = self.openlist.top_one()
+                if value is None:
+                    print 'nothing found again'
+                    print 'expansions %i' % expansions
+                    return
+                
+                if value == end:
+                    print 'END FOUND.... run backtracking now'
+                    print 'expansions %i' % expansions
+                    return end
+                
+                if (expansions % 50) == 0:
+                    print 'expansions %i' % expansions
+                
+                expansions += 1
+                self.expand(value)
+                self.closelist.add(value)  
+                
+        except KeyError:
+            pass
+                    
+        print 'nothing found'
+        
     
     def expand(self, current):
-        successors = current.get_successors()
+        successors, costs = current.get_successors(self.mesh, self.end)
         for i in xrange(len(successors)):
             successor = successors[i] 
             if successor in self.closelist:
-                print 'Continouing closed list value'
                 continue
             
-            new_g = current.g + current.costs[i]
-            
-            # New costs are more expensive - skip
-            if self.openlist.has(successor) and new_g >= successor.g:
+            # Relaxion on costs
+            new_g = current.g + costs[i]
+            if successor in self.openlist and new_g >= successor.g:
                 continue
             
             # Update predecessor for backtracking
@@ -140,51 +203,156 @@ class AStar(object):
             
             # Update open list
             f = new_g + current.f_heuristics(self.end)
-            if self.openlist.has(successor):
-                self.openlist.add_task(successor, f) 
+            if successor in self.openlist:
+                self.openlist.re_prioritize((successor,), lambda x: f)
             else:
-                self.openlist.add_task(successor, f)
-             
-    
+                self.openlist.put(successor, f, False)
+        
+        self.openlist.heap() 
 
-if __name__ == '__main__':
-    a = ANode('a')
-    c = ANode('c')
-    d = ANode('d')
-    b = ANode('b')
+def main():
+    # Create initial state
+    nodes = 50
+    domainc = 50
     
-    a.add(c, 4)
-    a.add(d, 20)
+    domains = []
+    domainl = []
+    nodel = [0 for _ in xrange(nodes)]
     
-    c.add(b, 100000)
-    d.add(b, 300)
+    for i in xrange(domainc):
+        while True: 
+            import random
+            node = random.randint(0, nodes-1)
+            load = abs(random.randint(0, 50-1))
+            if (nodel[node] + load) > 100:
+                continue
+            domains.append(node)
+            domainl.append(load)
+            nodel[node] += load
+            break
+        
+    nodel.append(0)
     
-    # Der suchbaum muss komplett aufgespannt werden (FEAR code kucken ob das so ist)
-    # Migrationskosten = Gewichte
-    # Heursitik = Delta - bevorzugen von aktionen mit direktem einfluss auf den end state
+#    nodes = 6
+#    domains = [1,2,2,3,4,5]
+#    target = [2,1,2,3,5,4]
+#    domainl = [90,20,00,0,90,20]
+#    nodel = [0 for _ in xrange(nodes)]
+#    for i in xrange(len(domains)):
+#        nodel[domains[i]] += domainl[i]
     
+    print domains
+    print domainl
+    print nodel
+    print 'A*'
+        
+    # Create target state
+    target = list(domains)
+    target[3] = 1
+    
+    
+    # Validate overload
+    targetl = [0 for _ in xrange(nodes)]
+    for i, v in enumerate(target):
+        targetl[v] += domainl[i]
+        
+    for i in targetl:
+        if i > 100:
+            print 'INVALID TARGET STATE' 
+            return
+    
+        
+    # Create target and end node
+    print list(nodel)
+    start = ANode(nodel, domains, domainl)
+    target = ANode(nodel, target, domainl)
+    
+    # Create a new mesh
+    mesh = Mesh()
+    mesh.put(start)
+    mesh.put(target)
+    
+    # Run search
     s = AStar()
-    end = s.search(None, a, b)
-    while True: 
-        print end.value
-        if not end.predecessor:
+    end = s.search(mesh, start, target)
+    while True:
+        print end.domains
+        if end.predecessor is None:
             break
         end = end.predecessor
+
+class Mesh(object):
+    def __init__(self):
+        self.dict = {}
+     
+    def dump(self):
+        print self.dict
         
-    nodes =[0 for _ in xrange(0, 3)]
-    domains = [0 for _ in xrange(0, 10)]
-    node_index = 0
-    for d in xrange(0, 10):
-        domains[d] = node_index
-        node_index = (node_index + 1) % len(nodes)
+    def find(self, node):
+        if self.dict.has_key(node):
+            return self.dict[node]
+        return None
+    
+    def put(self, node):
+        if self.find(node) is None:
+            self.dict[node] = node
+
+def testNode():
+    # Create initial state
+    nodes = [0 for _ in xrange(3)] # the load of a node
+    domainload = [0 for _ in xrange(10)]
+    
+    domains = [0, 1, 2, 1, 2, 1]
+    domainl = [10, 20, 30, 10, 40, 20]
+    
+    for i, domain in enumerate(domains):
+        nodes[domain] += domainl[i]
         
-    target = list(domains)
-    target[0] = 2
-    target[1] = 2
-        
-    start = ANode('a', nodes, domains)
-    target = ANode('c', nodes, target)
-    end = s.search(None, start, target)
+    print nodes
+    
+    # Calc initial node load
+    
+    # Create target and end node
+    start = ANode(nodes, domains)
+    
+    nodes = list(nodes)
+    domains = list(domains)
+    domains[0] = 4
+    end = ANode(nodes, domains)
+    print start == end
+    
+    print 'hahses'
+    print end.__hash__()
+    print start.__hash__()
+
+    test = {}
+    test[end] = 'asdf'
+    test[start] = 'super'
+    print test[end]
+    
+    print 'in test'
+    print start in test
+    
+    print 'test pq'
+    q = pq()
+    q.put(start, 1)
+    q.put(end, 0)
+    print q.top_one() == end
+    q.put(end, 0)
+    print q.top_one() == end
+    print q.top_one() == start
+    
+    print 'test successors'
+    mesh = Mesh()
+    s, c = start.get_successors(mesh)
+    print len(s) 
+#    for i in s:
+#        print i.domains  
+
+if __name__ == '__main__':
+    # testNode()
+    for i in xrange(1):
+        main()
     
         
         
