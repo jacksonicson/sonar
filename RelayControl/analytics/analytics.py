@@ -774,6 +774,11 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
             
             # Run aggregation
             global_metric_aggregation[element] = agg_desc[element](value0, value1)
+            
+        op = global_metric['operational']['operations']
+        for o in op:
+            print '%s - %d %d' % (o['operation_name'], o['average_response_time'],o['sample_stdev'])
+        
 
     # Add other stuff to the global metric
     global_metric_aggregation['server_count'] = (servers, 0)
