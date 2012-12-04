@@ -280,19 +280,29 @@ class DSAPPlacement(Placement):
         # Close Times connection
         times_client.close()
         
-        # Apply downsampling
-        
-        
+        # Downsampling TS (service_matrix)
+        target = 30 * 60 # 10 minutes
+        elements = target / ts.frequency
+        buckets = []
+        for i in xrange(ts_len / elements):
+            start = i * elements
+            end = min(ts_len, (i+1) * elements) 
+            tmp = data[start : end]
+            buckets.append(np.mean(tmp))
+            
+        print "DEBUG: service_matrix=",len(service_matrix)
+        print "DEBUG: buckets=",len(buckets)
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')
-        server, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
+        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
                 
-        # return initial placement - A(0) only
+        # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
+        self.assignment_list = assignment_list
         assignment = assignment_list[0]
         
-#        print "DEBUG: assignment_list ", assignment_list
-#        print "DEBUG: assignment_list[0] ", assignment_list[0]
+        self.server_list = server_list
+        server = server_list[0]
         
         # Set assignment for getter functions 
         self.assignment = assignment

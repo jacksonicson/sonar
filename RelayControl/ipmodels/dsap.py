@@ -125,8 +125,9 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
 
     assignment_list = getAssignment()
     i = 0
+    print "# output commented in code"
     for interval in assignment_list: 
-        print '%i: %s' % (i, interval)
+#        print '%i: %s' % (i, interval)
         i += 1
     
     server_counts = getServerCounts()
