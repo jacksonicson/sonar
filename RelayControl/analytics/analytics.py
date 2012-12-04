@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '03/12/2012 08:45:01    03/12/2012 15:30:01'
+RAW = '30/09/2012 20:13:01    01/10/2012 03:00:00'
 ##########################
 
 warns = []
@@ -777,7 +777,7 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
             
         op = global_metric['operational']['operations']
         for o in op:
-            print '%s - %d %d' % (o['operation_name'], o['average_response_time'],o['sample_stdev'])
+            print '%s \t %i \t %d \t %d' % (o['operation_name'], o['samples_seen'], o['sample_mean'],o['sample_stdev'])
         
 
     # Add other stuff to the global metric
