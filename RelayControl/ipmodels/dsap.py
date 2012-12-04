@@ -1,12 +1,6 @@
 from gurobipy import *
 from numpy import empty, random
-from service import times_client
-from workload import util as wutil
-import control.domains as domains
-import sys
 import numpy as np
-import virtual
-from cProfile import run
 
 ###############################
 ### Configuration            ##
@@ -129,9 +123,9 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     model.setParam('OutputFlag', False)
     model.optimize()
 
-    assignment = getAssignment()
+    assignment_list = getAssignment()
     i = 0
-    for interval in assignment: 
+    for interval in assignment_list: 
         print '%i: %s' % (i, interval)
         i += 1
     
@@ -139,7 +133,7 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     print 'Servers per interval: %s' % server_counts
     print 'Average server count: %f' % (np.mean(server_counts))
     
-    return server_counts, assignment    
+    return server_counts, assignment_list    
     
     
     

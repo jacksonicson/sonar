@@ -1,5 +1,6 @@
 from control import domains
 from ipmodels import ssapv
+from ipmodels import dsap
 from logs import sonarlog
 from service import times_client
 from virtual import nodes
@@ -228,3 +229,92 @@ class SSAPvPlacement(Placement):
             print 'model infeasible'
             return None, None
         
+        
+  
+class DSAPPlacement(Placement):
+    
+    def execute(self):
+        # Execute super code
+        super(DSAPPlacement, self).execute()
+        
+        # Connect with Times
+        print 'Connecting with Times'
+        connection = times_client.connect()
+        
+        # Loading services to combine the dmain_service_mapping with    
+        service_count = len(domains.domain_profile_mapping)
+        service_matrix = np.zeros((service_count, profiles.PROFILE_INTERVAL_COUNT), dtype=float)
+        
+        service_log = ''
+        for service_index in xrange(service_count):
+            mapping = domains.domain_profile_mapping[service_index]
+            
+            # Important: Load the trace of the workload profile
+            service = profiles.get_traced_cpu_profile(mapping.profileId)
+            
+            print 'loading service: %s' % (service)
+            service_log += service + '; '
+            
+            ts = connection.load(service)
+            ts_len = len(ts.elements)
+        
+            # put TS into service matrix
+            data = np.empty((ts_len), dtype=float)
+            for i in xrange(ts_len):
+                data[i] = ts.elements[i].value
+                
+            data = data[0:profiles.PROFILE_INTERVAL_COUNT]
+    
+            service_matrix[service_index] = data
+            # print data
+    
+        # Log services
+        logger.info('Selected profile: %s' % profiles.selected_name)
+        logger.info('Loading services: %s' % service_log)
+    
+        # Dumpservice_matrix
+        print 'Logging service matrix...'
+        np.set_printoptions(linewidth=200, threshold=99999999)
+        logger.info('Service matrix: %s' % service_matrix)
+    
+        # Close Times connection
+        times_client.close()
+        
+        # Apply downsampling
+        
+        
+        
+        print 'Solving model...'
+        logger.info('Placement strategy: DSAP')
+        server, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
+                
+        # return initial placement - A(0) only
+        assignment = assignment_list[0]
+        
+#        print "DEBUG: assignment_list ", assignment_list
+#        print "DEBUG: assignment_list[0] ", assignment_list[0]
+        
+        # Set assignment for getter functions 
+        self.assignment = assignment
+        
+        if assignment != None:
+            print 'Required servers: %i' % (server)
+            logger.info('Required servers: %i' % server)
+            print assignment
+            logger.info('Assignment: %s' % assignment)
+            
+            print 'Assigning domains to servers'
+            migrations = []
+            for key in assignment.keys():
+                mapping = domains.domain_profile_mapping[key]
+                migration = (mapping.domain, assignment[key])
+                migrations.append(migration)
+            
+            
+            print 'Migrations: %s' % migrations
+            logger.info('Migrations: %s' % migrations)
+            return migrations, self._count_active_servers(assignment)
+    
+        else:
+            print 'model infeasible'
+            return None, None
