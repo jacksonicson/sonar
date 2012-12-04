@@ -245,7 +245,12 @@ class DSAPPlacement(Placement):
         
         # Loading services to combine the dmain_service_mapping with    
         service_count = len(domains.domain_profile_mapping)
-        service_matrix = np.zeros((service_count, 24), dtype=float)
+    
+        # downsampling ratio
+        target = 60 * 60 # one bucket per hour (measured in seconds)
+            
+        _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target / 60)      # conversion ratio from TS to #buckets
+        service_matrix = np.zeros((service_count, _numBuckets), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
@@ -271,7 +276,6 @@ class DSAPPlacement(Placement):
             data = data[0:profiles.PROFILE_INTERVAL_COUNT]
             
             # Downsampling TS (service_matrix)
-            target = 60 * 60 # every hour
             elements = target / ts.frequency
             buckets = []
             for i in xrange(ts_len / elements):
