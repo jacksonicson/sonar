@@ -232,8 +232,10 @@ class SSAPvPlacement(Placement):
         
   
 class DSAPPlacement(Placement):
-    
+
     def execute(self):
+        from workload import util
+                
         # Execute super code
         super(DSAPPlacement, self).execute()
         
@@ -243,7 +245,7 @@ class DSAPPlacement(Placement):
         
         # Loading services to combine the dmain_service_mapping with    
         service_count = len(domains.domain_profile_mapping)
-        service_matrix = np.zeros((service_count, profiles.PROFILE_INTERVAL_COUNT), dtype=float)
+        service_matrix = np.zeros((service_count, 24), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
@@ -259,13 +261,26 @@ class DSAPPlacement(Placement):
             ts_len = len(ts.elements)
         
             # put TS into service matrix
-            data = np.empty((ts_len), dtype=float)
-            for i in xrange(ts_len):
-                data[i] = ts.elements[i].value
-                
+#            data = np.empty((ts_len), dtype=float)
+#            for i in xrange(ts_len):
+#                data[i] = ts.elements[i].value
+#                
+            # put TS into service matrix / pull data from util
+            _time, data = util.to_array(ts)
+            
             data = data[0:profiles.PROFILE_INTERVAL_COUNT]
+            
+            # Downsampling TS (service_matrix)
+            target = 60 * 60 # every hour
+            elements = target / ts.frequency
+            buckets = []
+            for i in xrange(ts_len / elements):
+                start = i * elements
+                end = min(ts_len, (i+1) * elements) 
+                tmp = data[start : end]
+                buckets.append(np.mean(tmp))
     
-            service_matrix[service_index] = data
+            service_matrix[service_index] = buckets
             # print data
     
         # Log services
@@ -280,22 +295,13 @@ class DSAPPlacement(Placement):
         # Close Times connection
         times_client.close()
         
-        # Downsampling TS (service_matrix)
-        target = 30 * 60 # 10 minutes
-        elements = target / ts.frequency
-        buckets = []
-        for i in xrange(ts_len / elements):
-            start = i * elements
-            end = min(ts_len, (i+1) * elements) 
-            tmp = data[start : end]
-            buckets.append(np.mean(tmp))
-            
+
         print "DEBUG: service_matrix=",len(service_matrix)
         print "DEBUG: buckets=",len(buckets)
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')
-        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
+        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem) ###service_count
                 
         # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
         self.assignment_list = assignment_list

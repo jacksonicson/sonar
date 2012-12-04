@@ -30,10 +30,6 @@ class DSAP(controller.LoadBalancer):
 # Implement later!
         # initial placement via SSAP        TODO
         # migrationen schedulen via migration list (later with manager)
-#        demand_mem = virtual.nodes.DOMAIN_MEM
-        # aktuelle zeit
-#        time_now = self.pump.sim_time() 
-#        self.migrate(domain, source, target, k)        # TODO laeuft parallel >> implement in queue 
 
         
     def dump(self):
@@ -70,9 +66,11 @@ class DSAP(controller.LoadBalancer):
     
     
     def balance(self):
-        print 'DSAP-Controller - Balancing'        
+        print 'DSAP-Controller - Balancing'
+        # work with self.assignment_list and self.server_list, time t = 1 - N (t element 0,N)
 
-    
+#        time_now = self.pump.sim_time()                # current time
+#        self.migrate(domain, source, target, k)        # TODO laeuft parallel >> implement in queue
         
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         print 'DSAP-Controller - Finished'
@@ -90,11 +88,6 @@ class DSAP(controller.LoadBalancer):
         else:
             node_from.blocked = end_time
             node_to.blocked = end_time
-            
-        
-def loadTimeSeries(self):
-    pass
-    
     
 def run(self):
     pass
