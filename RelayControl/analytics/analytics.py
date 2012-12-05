@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '04/12/2012 23:56:17    05/12/2012 07:00:00'
+RAW = '26/10/2012 09:40:00    26/10/2012 16:30:00'
 ##########################
 
 warns = []
@@ -613,11 +613,20 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     migration_durations = []
     for migration in migrations:
         migration_durations.append(migration[1]['duration'])
-        
+
     print 'Migration time average: %f' % np.mean(migration_durations)
     print 'Migration time 50th percentile: %f' % np.percentile(migration_durations, 50)
     print 'Migration time 90th percentile: %f' % np.percentile(migration_durations, 90)
     print 'Migration time 99th percentile: %f' % np.percentile(migration_durations, 99)
+    
+    min_servers = sys.maxint
+    max_servers = 0
+    for active in server_active_flags:
+        print active
+        min_servers = min(min_servers, active[1])
+        max_servers = max(max_servers, active[1])
+    print 'Min servers: %i' % min_servers
+    print 'Max servers: %i' % max_servers
     
     # Average server count and server load calculations
     # Server active flags mark changes in server active count
@@ -714,7 +723,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     print 'Average server load: %f' % np.mean(_clean_cpu)
     
     # Return analytical results
-    return avg_servers, avg_cpu, avg_mem
+    return avg_servers, avg_cpu, avg_mem, min_servers, max_servers
     
     
  
@@ -745,7 +754,7 @@ def __analytics_server_utilization(cpu, mem):
     
     return _cpu, _mem
  
-def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count, migration_count):
+def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count, migration_count, min_nodes, max_nodes):
     global_metric_aggregation = {}
     
     # Define the elements to aggregate and the aggregation function
@@ -786,10 +795,12 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
     global_metric_aggregation['mem_load'] = (avg_mem, 0)
     global_metric_aggregation['total_response_time_threshold'] = (sla_fail_count, 0)
     global_metric_aggregation['migrations_successful'] = (migration_count, 0)
+    global_metric_aggregation['min_nodes'] = (min_nodes, 0)
+    global_metric_aggregation['max_nodes'] = (max_nodes, 0)
 
     dump = ('server_count', 'cpu_load', 'mem_load', 'total_ops_successful', 'total_operations_failed', 'average_response_time',
              'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold',
-             'migrations_successful')
+             'migrations_successful', 'min_nodes', 'max_nodes')
     data = []
     for element in dump:
         try:
@@ -974,10 +985,11 @@ def connect_sonar(connection):
     # This approach does only work for static allocations. For dynamic allocations 
     # the _cpu and _mem values are updated by the migration analytics!
     avg_cpu, avg_mem = __analytics_server_utilization(cpu, mem)
+    min_nodes, max_nodes = '', ''
     
     print '## MIGRATIONS ##'
     if migrations_successful: 
-        servers, avg_cpu, avg_mem = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
+        servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
         # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
@@ -986,7 +998,7 @@ def connect_sonar(connection):
     
     print '## GLOBAL METRIC AGGREGATION ###'
     __analytics_global_aggregation(_global_metrics, servers, avg_cpu, avg_mem,
-                                   sla_fail_count, len(migrations_successful))
+                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes)
     
     
     # Dump all warnings
