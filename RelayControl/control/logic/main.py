@@ -125,7 +125,7 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    controller = controller_ssapv.Sandpiper(pump, model)
+    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)

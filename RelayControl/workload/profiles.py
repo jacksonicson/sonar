@@ -105,6 +105,7 @@ SET_SIS_D8 = ProfileSet(3, minu(5), 3000, day=8)
 SET_SIS_D9 = ProfileSet(3, minu(5), 3000, day=9)
 SET_SIS_D10 = ProfileSet(3, minu(5), 3000, day=10)
 SET_SIS_D26 = ProfileSet(3, minu(5), 3000, day=26)
+SET_SIS_D30 = ProfileSet(3, minu(5), 3000, day=30)
 
 # MIX0
 mix_0 = [
@@ -363,6 +364,16 @@ mix_sim = [
             Desc('O2_business_SENDMSG', SET_O2_BUSINESS, modifier.MOD2),
             Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD4),
             Desc('O2_business_UPDATEDSS', SET_O2_BUSINESS, modifier.MOD3),
+            
+            Desc('SIS_145_cpu', SET_SIS_D30),
+            Desc('SIS_147_cpu', SET_SIS_D30),
+            Desc('SIS_150_cpu', SET_SIS_D30),
+            Desc('SIS_162_cpu', SET_SIS_D30),
+            Desc('SIS_209_cpu', SET_SIS_D30),
+            Desc('SIS_210_cpu', SET_SIS_D30),
+            Desc('SIS_236_cpu', SET_SIS_D30),
+            Desc('SIS_243_cpu', SET_SIS_D30),
+            Desc('SIS_252_cpu', SET_SIS_D30),
            ]
 
 ##############################
