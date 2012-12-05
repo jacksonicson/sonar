@@ -716,17 +716,16 @@ def plot_overlay_mix():
     # Connect with times
     connection = times_client.connect()
     
-    plot_mix = mix_0
+    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
+    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
+    plot_mix = mix0
     
     fig = plt.figure()
     
     ax = fig.add_subplot(111)
-    import random
-    for i in xrange(0, 3):
-        i = random.randint(0, len(plot_mix) - 1)
-        desc = plot_mix[i]
-        
-        name = desc.name
+    ax.set_xlim([0,300])
+    
+    for name in plot_mix:
         timeSeries = connection.load(_profile(True, name, POSTFIX_USER))
         _, demand = util.to_array(timeSeries)
         

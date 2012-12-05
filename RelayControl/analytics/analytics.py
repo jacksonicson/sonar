@@ -9,11 +9,11 @@ from times import ttypes as times_ttypes
 from virtual import nodes
 from workload import profiles, util
 import json
+import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import time
 import traceback
-import matplotlib.pyplot as plt
 
 ##########################
 ## Configuration        ##
@@ -27,7 +27,7 @@ TRACE_EXTRACT = False
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '26/10/2012 09:40:00    26/10/2012 16:30:00'
+RAW = '02/12/2012 14:05:01    02/12/2012 20:40:01'
 ##########################
 
 warns = []
@@ -525,7 +525,7 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
        
         for mig in migrations_successful:
             if mig[1]['domain'] == domain: 
-                ax.axvline(mig[0]+40, color='g')
+                ax.axvline(mig[0] + 40, color='g')
             
             
         plt.show()
@@ -547,12 +547,12 @@ def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
                 ax.axvline(mig[0] + 40, color='r')
                 
             if mig[1]['to'] == node:
-                ax.axvline(mig[0] +40, color='c')
+                ax.axvline(mig[0] + 40, color='c')
        
         offset = 10
         for mig in migrations_successful: 
             if mig[1]['from'] == node:
-                ax.axvline(mig[0]+40, color='g')
+                ax.axvline(mig[0] + 40, color='g')
                 ax.annotate('from=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
                 xytext=(-50, -30), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->",
@@ -561,7 +561,7 @@ def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
                 offset = (offset + 10) % 90
                 
             if mig[1]['to'] == node:
-                ax.axvline(mig[0]+40, color='m')
+                ax.axvline(mig[0] + 40, color='m')
                 
                 ax.annotate('to=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
                 xytext=(-50, -30), textcoords='offset points',
@@ -622,7 +622,6 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     min_servers = sys.maxint
     max_servers = 0
     for active in server_active_flags:
-        print active
         min_servers = min(min_servers, active[1])
         max_servers = max(max_servers, active[1])
     print 'Min servers: %i' % min_servers
@@ -771,6 +770,7 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
                 }
     
     # Iterate over all global results
+    print '### Operation Sampling Table ###'
     for global_metric in global_metrics:
         # For each element in the global result
         for element in agg_desc.keys():
@@ -786,7 +786,7 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
             
         op = global_metric['operational']['operations']
         for o in op:
-            print '%s \t %i \t %d \t %d' % (o['operation_name'], o['samples_seen'], o['sample_mean'],o['sample_stdev'])
+            print '%s \t %i \t %d \t %d' % (o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev'])
         
 
     # Add other stuff to the global metric
@@ -809,6 +809,135 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
         except: 
             print 'Error in %s' % element
     __dump_elements(tuple(data), dump, separator='\t')   
+
+def __load_experiment_db(file):
+    import csv
+    experiments = []
+    header = False
+    with open(file, 'r') as file:
+        dbreader = csv.reader(file, delimiter='\t')
+        
+        controller = None
+        mix = None
+        type = None
+        
+        for row in dbreader:
+            if header == False:
+                header = True
+                continue
+            
+            if row[2] == '*':
+                controller = row[0] 
+                continue
+            
+            if row[0] != '':
+                mix = row[0]
+                
+            if row[1] != '':
+                type = row[1]
+            
+            if row[3] != '' and row[4] != '':
+                date = row[3] + '    ' + row[4]
+                experiments.append((date, controller, mix, type))
+                
+    return experiments
+
+def __load_response_times(file):
+    import csv
+    lines = []
+    with open('C:/temp/%s.csv' % file, 'rb') as file:
+        dbreader = csv.reader(file, delimiter='\t')
+        for line in dbreader:
+            lines.append(line)
+    return lines
+
+def t_test_response_statistics():
+    
+    compare0 = 'Optimization_MIX0_Default'
+    compare1 = 'Proactive_MIX0_Default'
+     
+    set0 = __load_response_times(compare0)
+    set1 = __load_response_times(compare1)
+    
+    print set0
+    print set1
+     
+    import math
+    for i in xrange(len(set0)):
+        line0 = set0[i]
+        line1 = set1[i]
+        
+        n0 = float(line0[1])
+        n1 = float(line1[1])
+        m0 = float(line0[2])
+        m1 = float(line1[2])
+        s0 = float(line0[3])
+        s1 = float(line1[3])
+        
+        t_val = abs(m0 - m1) / math.sqrt( (math.pow(s0,2) / n0) + (math.pow(s1,2) / n1) )
+        print t_val
+
+def load_response_statistics(connection):
+    # Load experiments database
+    counter = 0
+    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
+        global START, END, RAW
+        RAW = entry[0]
+        START, END = RAW.split('    ')
+    
+        if counter > 300:
+            break
+        counter += 1
+    
+        # Dump the configuration
+        __dump_configuration()
+        
+        # Configure experiment
+        start = __to_timestamp(START)
+        stop = __to_timestamp(END)
+        raw_frame = (start, stop)
+        
+        # Get sync markers from control (start of driving load)
+        sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
+        print '## SYNC MARKERS ##'
+        __dump_elements(sync_markers)
+        
+        # Estimate sync markers if no sync markers where found
+        if sync_markers[0] is None:
+            __warn('Sync marker not found')
+            sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
+            
+        _schedules = []
+        _track_configs = []
+        _global_metrics = []
+        _rain_metrics = []
+        _track_metrics = []
+        _spec_metrics = []
+        _errors = []
+        
+        # Fetch rain data
+        for host in DRIVER_NODES:
+            print 'Fetching driver node: %s ...' % host
+            rain_data = __fetch_rain_data(connection, host, raw_frame)
+            schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
+            
+            if schedule is not None: _schedules.append(schedule)
+            if track_config is not None: _track_configs.append((track_config, host))
+            if global_metrics is not None: _global_metrics.append(global_metrics)
+            if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
+            if track_metrics is not None: _track_metrics.extend(track_metrics)
+            if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
+        
+        import csv
+        with open('C:/temp/%s_%s_%s.csv' % (entry[1:]), 'wb') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter='\t')
+            print '### Operation Sampling Table ###'
+            for global_metric in _global_metrics:
+                op = global_metric['operational']['operations']
+                for o in op:
+                    spamwriter.writerow((o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev']))
+                    print '%s \t %i \t %d \t %d' % (o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev'])
+        
 
 def connect_sonar(connection):
     # Dump the configuration
@@ -1008,7 +1137,9 @@ def connect_sonar(connection):
 if __name__ == '__main__':
     connection = __connect()
     try:
-        connect_sonar(connection)
+        # connect_sonar(connection)
+        # load_response_statistics(connection)
+        t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
