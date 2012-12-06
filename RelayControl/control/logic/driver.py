@@ -46,10 +46,10 @@ class Driver:
             ts = wutil.to_array(ts)[1]
             
             # Add noise to the time series
-            random = np.random.lognormal(mean=0.0, sigma=1.0, size=len(ts))
-            ts += random
-            ts[ts > 100] = 100
-            ts[ts < 0] = 0
+#            random = np.random.lognormal(mean=0.0, sigma=1.0, size=len(ts))
+#            ts += random
+#            ts[ts > 100] = 100
+#            ts[ts < 0] = 0
             
             # Attach TS to domain 
             domain.ts = ts
@@ -93,12 +93,14 @@ class Driver:
         
         # For all nodes update their domains and aggregate the load for the node
         for host in self.model.get_hosts(self.model.types.NODE):
+            # Reset aggregated server load
             aggregated_load = 0
             
             # Go over all domains and update their load by their TS
             for domain in host.domains.values():
                 load = domain.ts[tindex]
                  
+                # Notify load to the domain
                 self.__notify(sim_time, domain.name, 'psutilcpu', load)
                 
                 # Load aggregation for the node
@@ -108,11 +110,12 @@ class Driver:
                 scoreboard.Scoreboard().add_cpu_load(load)
 
             # Add hypervisor load to the aggregated load
-            aggregated_load += 12 
+            # For the SSAPv this causes service level violations
+            aggregated_load += 10 
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter
-            if aggregated_load > 100: 
+            if aggregated_load > 100:
                 scoreboard.Scoreboard().add_cpu_violations(1)
         
         # Whole simulation might run accelerated

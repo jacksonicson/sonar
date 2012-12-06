@@ -40,7 +40,7 @@ config = mix0
 ##############################
 
 ##############################
-selected_profile = config.profile   # Prefix for picking TS from Times
+selected_profile = config.prefix   # Prefix for picking TS from Times
 selected_name = config.name         # Just for logging
 selected = config.data              # Selected workload mix
 modified = config.modified          # Modified version of the workload mix
