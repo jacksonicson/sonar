@@ -860,10 +860,11 @@ def __load_response_times(file):
 
 def t_test_response_statistics():
     
-    mixes = ['MIX0', 'MIX1', 'MIX2']
+    mixes = ['MIX0', 'MIX1', 'MIX2', 'MIX0M', 'MIX1M', 'MIX2M']
     controllers = {
                   'Optimization' : ['Underbooking', 'Overbooking', 'Default'],
-                  'Reactive' : ['Default']
+                  'Reactive' : ['Default'],
+                  'Proactive' : ['Default']
                   }
     
     rows = []
@@ -874,13 +875,20 @@ def t_test_response_statistics():
             for type0 in controllers[control0]:
                 for control1 in controllers.keys():
                     for type1 in controllers[control1]:
-                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 0)
-                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 0)
+                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 2)
+                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 2)
                         try:
                             set0 = __load_response_times(file0)
                             set1 = __load_response_times(file1)
                         except:
                             print 'Skip %s x %s' % (file0, file1)
+                            row = [file0 + ' x ' + file1]
+                            rows.append(row)
+                            continue
+                        
+                        if len(set0) != len(set1):
+                            row = [file0 + ' x ' + file1]
+                            rows.append(row)
                             continue
                         
                         ts = []
@@ -896,6 +904,10 @@ def t_test_response_statistics():
                             line1 = set1[i]
                             op = line0[0]
                             ops.append(op)
+                            
+                            if line0[0] != line1[0]:
+                                sum_n0 = 0
+                                break
                             
                             n0 = float(line0[1])
                             n1 = float(line1[1])
@@ -914,14 +926,18 @@ def t_test_response_statistics():
                             t_val = abs(m0 - m1) / math.sqrt( (math.pow(s0,2) / n0) + (math.pow(s1,2) / n1) )
                             ts.append(t_val)
                         
+                        if sum_n0 == 0 or sum_n1 == 0:
+                            row = [file0 + ' x ' + file1]
+                            rows.append(row)
+                            continue
+                        
                         sum_m0 /= sum_n0
                         sum_m1 /= sum_n1
                         sum_s0 /= sum_n0
                         sum_s1 /= sum_n1
                         
                         print sum_m0
-                        
-                        
+                                                
                         t_val = abs(sum_m0 - sum_m1) / math.sqrt( (math.pow(sum_s0,2) / sum_n0) + (math.pow(sum_s1,2) / sum_n1) )
                         ops.append('all')
                         ts.append(t_val)
@@ -963,8 +979,8 @@ def load_response_statistics(connection):
         
         # Get sync markers from control (start of driving load)
         sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
-        print '## SYNC MARKERS ##'
-        __dump_elements(sync_markers)
+        # print '## SYNC MARKERS ##'
+        # __dump_elements(sync_markers)
         
         # Estimate sync markers if no sync markers where found
         if sync_markers[0] is None:
@@ -981,7 +997,7 @@ def load_response_statistics(connection):
         
         # Fetch rain data
         for host in DRIVER_NODES:
-            print 'Fetching driver node: %s ...' % host
+            # print 'Fetching driver node: %s ...' % host
             rain_data = __fetch_rain_data(connection, host, raw_frame)
             schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
             
@@ -996,6 +1012,11 @@ def load_response_statistics(connection):
         with open('C:/temp/%s_%s_%s_%i.csv' % (entry[1:]), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             print '### Operation Sampling Table ###'
+            
+            if len(_global_metrics) < 2:
+                print 'error only one global metric found' 
+                pass
+            
             for global_metric in _global_metrics:
                 op = global_metric['operational']['operations']
                 for o in op:
@@ -1202,8 +1223,8 @@ if __name__ == '__main__':
     connection = __connect()
     try:
         # connect_sonar(connection)
-        # load_response_statistics(connection)
-        t_test_response_statistics()
+        load_response_statistics(connection)
+        # t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
