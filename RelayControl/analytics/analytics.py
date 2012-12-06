@@ -24,6 +24,7 @@ MANAGEMENT_PORT = 7931
 LOGGING_PORT = 7921
 DEBUG = False
 TRACE_EXTRACT = False
+DRIVERS = 2
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
@@ -1082,6 +1083,10 @@ def connect_sonar(connection):
         
     # Print metrics
     __dump_metrics(_global_metrics, _rain_metrics, _track_metrics, _spec_metrics)
+        
+    # Consistency checks
+    if len(_global_metrics) < DRIVERS:
+        __warn('Not each driver logged a global metric. Usually one driver exited with an error in this case')
         
     print '## ERRORS ##'
     for error in _errors:
