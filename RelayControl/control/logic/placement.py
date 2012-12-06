@@ -294,11 +294,13 @@ class DSAPPlacement(Placement):
         # Close Times connection
         times_client.close()
         
-        print "Downsampling: ",ts_len-1," to ",len(buckets)," (ratio =",profiles.PROFILE_INTERVAL_COUNT ,"* 5 /",target_ratio/60,")"
+        self.buckets_len = len(buckets)
+        
+        print "Downsampling: ",ts_len-1," to ",self.buckets_len," (ratio =",profiles.PROFILE_INTERVAL_COUNT ,"* 5 /",target_ratio/60,")"
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')
-        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem) ###service_count
+        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
                 
         # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
         self.assignment_list = assignment_list
@@ -308,8 +310,6 @@ class DSAPPlacement(Placement):
         initial_server_count = server_list[0]
         
         # Set initial_placement for getter functions 
-        self.assignment = initial_placement
-        
         if initial_placement != None:
             print 'Required servers: %i' % (initial_server_count)
             logger.info('Required servers: %i' % initial_server_count)

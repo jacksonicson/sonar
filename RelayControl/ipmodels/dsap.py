@@ -125,7 +125,7 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
 
     assignment_list = getAssignment()
     i = 0
-    print "# output commented in code"
+    print "# Gurobi output commented in code (dsap.py line 128)"
     for interval in assignment_list: 
 #        print '%i: %s' % (i, interval)
         i += 1
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     service_count = 12
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
-    # A) Fill demand values with random data
+    # A) Filling demand values with random data for testing purposes
     for j in xrange(service_count):
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
@@ -156,8 +156,6 @@ if __name__ == '__main__':
     demand_mem=5
     
     # B) Fill demand values with data from monitor0.dfg (TimeSteps)
-    ## see controller_dsap.py
+    ## >> see controller_dsap.py / placement.py
     
-#    print demand_mem
-#    print demand_raw
     solve(12, 100, 100, demand_raw, demand_mem)

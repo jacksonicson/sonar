@@ -6,8 +6,14 @@ from ipmodels import dsap
 from numpy import empty, random
 from service import times_client
 from workload import util as wutil
+from workload import profiles
+from virtual import nodes
 import control.domains as domains
 import sys
+from control.logic.placement import Placement
+from control.logic import placement
+import service
+import math
 
 
 ######################
@@ -15,6 +21,8 @@ import sys
 ######################
 START_WAIT = 120
 INTERVAL = 10*60
+kvalue = 10             # value given by Andreas
+
 ######################
 
 # Setup logging
@@ -28,7 +36,6 @@ class DSAP(controller.LoadBalancer):
         self.var = []
         
 # Implement later!
-        # initial placement via SSAP        TODO
         # migrationen schedulen via migration list (later with manager)
 
         
@@ -40,13 +47,14 @@ class DSAP(controller.LoadBalancer):
                                                                  }))
         
     def initial_placement_sim(self):
-        import placement
-        from virtual import nodes
+        import placement as plcmt
         from control import domains 
         
+        global placement
+
         nodecount = len(nodes.HOSTS)
-        splace = placement.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute()
+        placement = plcmt.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = placement.execute()
         
         _nodes = []
         for node in nodes.NODES: 
@@ -62,32 +70,67 @@ class DSAP(controller.LoadBalancer):
             print migration 
             _nodes[migration[1]].add_domain(_domains[migration[0]])
             
+            
+        # initialising values for balance()
+        _total_bucket_length = 6 * 60 * 60
+        self.time_per_bucket = _total_bucket_length / placement.buckets_len     # delta for duration per bucket (balance())
+        self.time_init = self.pump.sim_time()                                   # time_now synched to beginning of migration
+            
         return migrations 
     
     
     def balance(self):
         print 'DSAP-Controller - Balancing'
-        # work with self.assignment_list and self.server_list, time t = 1 - N (t element 0,N)
+#        sleep_time = 60                    # TODO later
 
-#        time_now = self.pump.sim_time()                # current time
-#        self.migrate(domain, source, target, k)        # TODO laeuft parallel >> implement in queue
+        time_now = self.pump.sim_time()     # current system time
         
-    def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
-        print 'DSAP-Controller - Finished'
-        if success:
-            # Release block
-            node_from.blocked = end_time
-            node_to.blocked = end_time
+        placement.assignment_list
+        placement.server_list
+
+                
+        # calculate current index for current time
+        _bucket_number = (time_now - self.time_init) / self.time_per_bucket  
+        
+        _index = int(math.floor(_bucket_number))     
+        print "DEBUG: ",_bucket_number," = Bucket#",_index
+        
+        if _index < 0.5:    #break for T=0, since there will be no source-destination of T=-1
+            return
+        
+        print "DEBUG: Allocation, T =", _index
+        print "DEBUG: assignment_list[",_index,"]:",placement.assignment_list[ _index ]
+#            print "DEBUG ",placement.assignment_list[ _allocation ]
             
-            # Reset CPU consumption: Necessary because the old CPU readings
-            # may trigger another migrations as they do not represent the load
-            # without the VM
-            node_from.flush(50)
-            node_to.flush(50)
-            print self.var
+        for _service in placement.assignment_list[ _index ]:
+            _server = placement.assignment_list[ _index ][ _service ]
+
+            domain = domains.domain_profile_mapping[ _service ].domain
+            
+            # domain name for domain ID
+            source = placement.assignment_list[ _index-1 ] [ _service ]
+            target = _server
+
+            if (source != target):
+                print _service,"->",_server,"(triggered migration)"
+                self.migrate(domain, source, target, kvalue)
+            else:
+                print _service,"->",_server
+
+
+#        target = nodes.get_node_name(i)
+
+#DEBUG
+#        for domain in domains.domain_profile_mapping:
+#            print "DEBUG domain",i,"=",domain.domain
+#            i+=1
+            
+            # TODO laeuft parallel >> implement in queue
+            
+            
+            
+    def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
+        if success:
+            print "SUCCESSFUL MIGRATION (DEBUG)"
         else:
-            node_from.blocked = end_time
-            node_to.blocked = end_time
-    
-def run(self):
-    pass
+            print "MIGRATION FAILED (DEBUG)"
