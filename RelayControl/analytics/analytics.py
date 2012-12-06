@@ -957,7 +957,47 @@ def t_test_response_statistics():
         spamwriter.writerow(ops)
         spamwriter.writerows(rows)
           
-                    
+        
+def load_migration_times(connection):
+    # Load experiments database
+    counter = 0
+    times = []
+    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
+        global START, END, RAW
+        RAW = entry[0]
+        START, END = RAW.split('    ')
+    
+        if counter > 3000:
+            break
+        counter += 1    
+    
+        # Dump the configuration
+        __dump_configuration()
+        
+        # Configure experiment
+        start = __to_timestamp(START)
+        stop = __to_timestamp(END)
+        raw_frame = (start, stop)
+        
+        # Get sync markers from control (start of driving load)
+        sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
+        # print '## SYNC MARKERS ##'
+        __dump_elements(sync_markers)
+        
+        # Estimate sync markers if no sync markers where found
+        if sync_markers[0] is None:
+            __warn('Sync marker not found')
+            sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
+        
+        successful, _, _, _ = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
+        for end in successful:
+            times.append((end[1]['duration'],))
+            
+    import csv
+    with open('C:/temp/migrations.csv', 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter='\t')
+        spamwriter.writerows(times)
+
 
 def load_response_statistics(connection):
     # Load experiments database
@@ -982,7 +1022,7 @@ def load_response_statistics(connection):
         # Get sync markers from control (start of driving load)
         sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
         # print '## SYNC MARKERS ##'
-        # __dump_elements(sync_markers)
+        __dump_elements(sync_markers)
         
         # Estimate sync markers if no sync markers where found
         if sync_markers[0] is None:
@@ -1230,7 +1270,8 @@ if __name__ == '__main__':
     try:
         # connect_sonar(connection)
         # load_response_statistics(connection)
-        t_test_response_statistics()
+        load_migration_times(connection)
+        # t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
