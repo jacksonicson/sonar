@@ -876,18 +876,19 @@ def t_test_response_statistics():
             for type0 in controllers[control0]:
                 for control1 in controllers.keys():
                     for type1 in controllers[control1]:
-                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 2)
-                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 2)
+                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 0)
+                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 0)
                         try:
                             set0 = __load_response_times(file0)
                             set1 = __load_response_times(file1)
                         except:
-                            print 'Skip %s x %s' % (file0, file1)
+                            # print 'Skip %s x %s' % (file0, file1)
                             row = [file0 + ' x ' + file1]
                             rows.append(row)
                             continue
                         
                         if len(set0) != len(set1):
+                            print 'skip set size'
                             row = [file0 + ' x ' + file1]
                             rows.append(row)
                             continue
@@ -907,6 +908,7 @@ def t_test_response_statistics():
                             ops.append(op)
                             
                             if line0[0] != line1[0]:
+                                print 'skip line number' 
                                 sum_n0 = 0
                                 break
                             
@@ -928,6 +930,7 @@ def t_test_response_statistics():
                             ts.append(t_val)
                         
                         if sum_n0 == 0 or sum_n1 == 0:
+                            print 'skip null sum'
                             row = [file0 + ' x ' + file1]
                             rows.append(row)
                             continue
@@ -937,8 +940,6 @@ def t_test_response_statistics():
                         sum_s0 /= sum_n0
                         sum_s1 /= sum_n1
                         
-                        print sum_m0
-                                                
                         t_val = abs(sum_m0 - sum_m1) / math.sqrt( (math.pow(sum_s0,2) / sum_n0) + (math.pow(sum_s1,2) / sum_n1) )
                         ops.append('all')
                         ts.append(t_val)
@@ -1228,8 +1229,8 @@ if __name__ == '__main__':
     connection = __connect()
     try:
         # connect_sonar(connection)
-        load_response_statistics(connection)
-        # t_test_response_statistics()
+        # load_response_statistics(connection)
+        t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
