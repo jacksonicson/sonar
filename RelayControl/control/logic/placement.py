@@ -105,7 +105,7 @@ class FirstFitPlacement(Placement):
             mapping = domains.domain_profile_mapping[service_index]
             
             # Important: Load the trace of the workload profile
-            service = profiles.get_traced_cpu_profile(service_index)
+            service = profiles.get_cpu_profile_for_initial_placement(service_index)
             
             print 'loading service: %s' % (service)
             ts = connection.load(service)
@@ -152,7 +152,7 @@ class FirstFitPlacement(Placement):
     
 class SSAPvPlacement(Placement):
     
-    def execute(self):
+    def execute(self, aggregation=True):
         # Execute super code
         super(SSAPvPlacement, self).execute()
         
@@ -162,14 +162,17 @@ class SSAPvPlacement(Placement):
         
         # Loading services to combine the dmain_service_mapping with    
         service_count = len(domains.domain_profile_mapping)
-        service_matrix = np.zeros((service_count, profiles.PROFILE_INTERVAL_COUNT), dtype=float)
+        
+        if aggregation: llen = 24*2
+        else: llen = profiles.PROFILE_INTERVAL_COUNT
+        service_matrix = np.zeros((service_count, llen), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
             mapping = domains.domain_profile_mapping[service_index]
             
             # Important: Load the trace of the workload profile
-            service = profiles.get_traced_cpu_profile(mapping.profileId)
+            service = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
             print 'loading service: %s' % (service)
             service_log += service + '; '
@@ -182,10 +185,23 @@ class SSAPvPlacement(Placement):
             for i in xrange(ts_len):
                 data[i] = ts.elements[i].value
                 
+            
             data = data[0:profiles.PROFILE_INTERVAL_COUNT]
     
-            service_matrix[service_index] = data
-            # print data
+            # Downsample TS
+            if aggregation:
+                target = 30 * 60 # 10 minutes
+                elements = target / ts.frequency
+                buckets = []
+                for i in xrange(ts_len / elements):
+                    start = i * elements
+                    end = min(ts_len, (i+1) * elements) 
+                    tmp = data[start : end]
+                    buckets.append(np.mean(tmp))
+                
+                service_matrix[service_index] = buckets
+            else:
+                service_matrix[service_index] = data
     
         # Log services
         logger.info('Selected profile: %s' % profiles.selected_name)

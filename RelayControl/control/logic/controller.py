@@ -39,6 +39,8 @@ class SimulatedMigration:
         # Call migration callback
         self.migration_callback(self.domain, self.node_from, self.node_to,
                                 self.start, self.end, self.info, True, None)
+        self.finished = True
+        
         
 
 class LoadBalancer(object):
@@ -161,7 +163,6 @@ class LoadBalancer(object):
             migration = SimulatedMigration(self.pump, domain.name, source.name, target.name,
                                            self.migration_callback, info)
             migration.run()
-            
             
     def run(self):
         # Run load balancing code
