@@ -247,9 +247,9 @@ class DSAPPlacement(Placement):
         service_count = len(domains.domain_profile_mapping)
     
         # downsampling ratio
-        target = 60 * 60 # one bucket per hour (measured in seconds)
+        target_ratio = 60 * 60 # one bucket per hour (measured in seconds)
             
-        _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target / 60)      # conversion ratio from TS to #buckets
+        _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target_ratio / 60)      # conversion ratio from TS to #buckets
         service_matrix = np.zeros((service_count, _numBuckets), dtype=float)
         
         service_log = ''
@@ -266,17 +266,12 @@ class DSAPPlacement(Placement):
             ts_len = len(ts.elements)
         
             # put TS into service matrix
-#            data = np.empty((ts_len), dtype=float)
-#            for i in xrange(ts_len):
-#                data[i] = ts.elements[i].value
-#                
-            # put TS into service matrix / pull data from util
             _time, data = util.to_array(ts)
             
             data = data[0:profiles.PROFILE_INTERVAL_COUNT]
             
             # Downsampling TS (service_matrix)
-            elements = target / ts.frequency
+            elements = target_ratio / ts.frequency
             buckets = []
             for i in xrange(ts_len / elements):
                 start = i * elements
@@ -299,9 +294,7 @@ class DSAPPlacement(Placement):
         # Close Times connection
         times_client.close()
         
-
-        print "DEBUG: service_matrix=",len(service_matrix)
-        print "DEBUG: buckets=",len(buckets)
+        print "Downsampling: ",ts_len-1," to ",len(buckets)," (ratio =",profiles.PROFILE_INTERVAL_COUNT ,"* 5 /",target_ratio/60,")"
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')
@@ -309,31 +302,31 @@ class DSAPPlacement(Placement):
                 
         # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
         self.assignment_list = assignment_list
-        assignment = assignment_list[0]
+        initial_placement = assignment_list[0]
         
         self.server_list = server_list
-        server = server_list[0]
+        initial_server_count = server_list[0]
         
-        # Set assignment for getter functions 
-        self.assignment = assignment
+        # Set initial_placement for getter functions 
+        self.assignment = initial_placement
         
-        if assignment != None:
-            print 'Required servers: %i' % (server)
-            logger.info('Required servers: %i' % server)
-            print assignment
-            logger.info('Assignment: %s' % assignment)
+        if initial_placement != None:
+            print 'Required servers: %i' % (initial_server_count)
+            logger.info('Required servers: %i' % initial_server_count)
+            print initial_placement
+            logger.info('Assignment: %s' % initial_placement)
             
             print 'Assigning domains to servers'
             migrations = []
-            for key in assignment.keys():
+            for key in initial_placement.keys():
                 mapping = domains.domain_profile_mapping[key]
-                migration = (mapping.domain, assignment[key])
+                migration = (mapping.domain, initial_placement[key])
                 migrations.append(migration)
             
             
             print 'Migrations: %s' % migrations
             logger.info('Migrations: %s' % migrations)
-            return migrations, self._count_active_servers(assignment)
+            return migrations, self._count_active_servers(initial_placement)
     
         else:
             print 'model infeasible'
