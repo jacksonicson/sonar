@@ -14,6 +14,7 @@ import numpy as np
 import sys
 import time
 import traceback
+import math
 
 ##########################
 ## Configuration        ##
@@ -820,6 +821,7 @@ def __load_experiment_db(file):
         controller = None
         mix = None
         type = None
+        crt = 0
         
         for row in dbreader:
             if header == False:
@@ -827,18 +829,23 @@ def __load_experiment_db(file):
                 continue
             
             if row[2] == '*':
-                controller = row[0] 
+                controller = row[0]
                 continue
             
             if row[0] != '':
                 mix = row[0]
                 
             if row[1] != '':
+                crt = 0
                 type = row[1]
+            
+            if row[5] != 'OK':
+                continue
             
             if row[3] != '' and row[4] != '':
                 date = row[3] + '    ' + row[4]
-                experiments.append((date, controller, mix, type))
+                experiments.append((date, controller, mix, type, crt))
+                crt += 1
                 
     return experiments
 
@@ -853,29 +860,86 @@ def __load_response_times(file):
 
 def t_test_response_statistics():
     
-    compare0 = 'Optimization_MIX0_Default'
-    compare1 = 'Proactive_MIX0_Default'
-     
-    set0 = __load_response_times(compare0)
-    set1 = __load_response_times(compare1)
+    mixes = ['MIX0', 'MIX1', 'MIX2']
+    controllers = {
+                  'Optimization' : ['Underbooking', 'Overbooking', 'Default'],
+                  'Reactive' : ['Default']
+                  }
     
-    print set0
-    print set1
-     
-    import math
-    for i in xrange(len(set0)):
-        line0 = set0[i]
-        line1 = set1[i]
-        
-        n0 = float(line0[1])
-        n1 = float(line1[1])
-        m0 = float(line0[2])
-        m1 = float(line1[2])
-        s0 = float(line0[3])
-        s1 = float(line1[3])
-        
-        t_val = abs(m0 - m1) / math.sqrt( (math.pow(s0,2) / n0) + (math.pow(s1,2) / n1) )
-        print t_val
+    rows = []
+    ops = []
+    
+    for mix in mixes:
+        for control0 in controllers.keys():
+            for type0 in controllers[control0]:
+                for control1 in controllers.keys():
+                    for type1 in controllers[control1]:
+                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 0)
+                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 0)
+                        try:
+                            set0 = __load_response_times(file0)
+                            set1 = __load_response_times(file1)
+                        except:
+                            print 'Skip %s x %s' % (file0, file1)
+                            continue
+                        
+                        ts = []
+                        ops = ['']
+                        sum_n0 = 0.0
+                        sum_n1 = 0.0
+                        sum_m0 = 0.0
+                        sum_m1 = 0.0
+                        sum_s0 = 0.0
+                        sum_s1 = 0.0
+                        for i in xrange(len(set0)):
+                            line0 = set0[i]
+                            line1 = set1[i]
+                            op = line0[0]
+                            ops.append(op)
+                            
+                            n0 = float(line0[1])
+                            n1 = float(line1[1])
+                            m0 = float(line0[2])
+                            m1 = float(line1[2])
+                            s0 = float(line0[3])
+                            s1 = float(line1[3])
+                            
+                            sum_n0 += n0
+                            sum_n1 += n1
+                            sum_m0 += m0 * n0
+                            sum_m1 += m1 * n1
+                            sum_s0 += s0 * n0
+                            sum_s1 += s1 * n1
+                            
+                            t_val = abs(m0 - m1) / math.sqrt( (math.pow(s0,2) / n0) + (math.pow(s1,2) / n1) )
+                            ts.append(t_val)
+                        
+                        sum_m0 /= sum_n0
+                        sum_m1 /= sum_n1
+                        sum_s0 /= sum_n0
+                        sum_s1 /= sum_n1
+                        
+                        print sum_m0
+                        
+                        
+                        t_val = abs(sum_m0 - sum_m1) / math.sqrt( (math.pow(sum_s0,2) / sum_n0) + (math.pow(sum_s1,2) / sum_n1) )
+                        ops.append('all')
+                        ts.append(t_val)
+                            
+                        row = [file0 + ' x ' + file1]
+                        row.extend(ts)
+                        rows.append(row)
+                        
+                    
+                    
+                                                    
+    import csv
+    with open('C:/temp/result.csv', 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter='\t')
+        spamwriter.writerow(ops)
+        spamwriter.writerows(rows)
+          
+                    
 
 def load_response_statistics(connection):
     # Load experiments database
@@ -929,7 +993,7 @@ def load_response_statistics(connection):
             if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
         
         import csv
-        with open('C:/temp/%s_%s_%s.csv' % (entry[1:]), 'wb') as csvfile:
+        with open('C:/temp/%s_%s_%s_%i.csv' % (entry[1:]), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             print '### Operation Sampling Table ###'
             for global_metric in _global_metrics:
