@@ -7,10 +7,45 @@ from times import ttypes
 from timeutil import * #@UnusedWildImport
 import configuration
 import matplotlib.pyplot as plt
-import numpy as np
-import util
 import modifier
+import numpy as np
 import pdata
+import util
+
+'''
+Configs
+'''
+class Config(object):
+    def __init__(self, prefix, name, data, modified, traces=False):
+        self.prefix = prefix
+        self.name = name
+        self.data = data
+        self.modified = modified
+        self.traces = traces
+
+mix0 = Config(None, 'mix_0', pdata.mix_0, False)
+mix1 = Config(None, 'mix_1', pdata.mix_1, False)
+mix2 = Config(None, 'mix_2', pdata.mix_2, False)
+
+mix0m = Config(None, 'mix_0', pdata.mix_0, True)
+mix1m = Config(None, 'mix_1', pdata.mix_1, True)
+mix2m = Config(None, 'mix_2', pdata.mix_2, True)
+
+mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
+
+##############################
+## CONFIGURATION            ##
+##############################
+config = mix0
+##############################
+
+##############################
+selected_profile = config.profile   # Prefix for picking TS from Times
+selected_name = config.name         # Just for logging
+selected = config.data              # Selected workload mix
+modified = config.modified          # Modified version of the workload mix
+traces_exist = config.traces        # For initial placement profiles traces are used if they exist
+##############################
 
 '''
 Times file organization:
@@ -30,7 +65,7 @@ WORKFLOW
 2) PROCESSING
 [TS] = Imported SIS or O2 TS
 
-[PX][TS]_profile - RAW workload profiles with convolution (y-axis is not scaled)
+[PX][TS]__times_name - RAW workload profiles with convolution (y-axis is not scaled)
 [PX][TS]_sampleday -  RAW workload profiles with sampleday (y-axis is not scaled)
 
 [PX][TS]_profile_norm - Normalized workload profile (y-axis is scaled)
@@ -48,15 +83,13 @@ with the interval matches the EXPERIMENT_DURATION.
 '''
 Prefix and post-fixes used to store data in Times
 '''
-PREFIX_MIX_SIM = 'mix_sim'
-
 POSTIFX_ORIG = '' # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
-POSTFIX_RAW = '_profile' # profile generated from the raw data of the SIS or O2 data set 
-POSTFIX_NORM = '_profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
-POSTFIX_USER = '_profile_user' # Normalized profile multiplied with the max. number of users
-POSTFIX_DAY = '_sampleday' # A sample day of the time series
-POSTFIX_TRACE = '_profile_trace' # Recorded profile which resulted using the user profile in the load driver
-POSTFIX_MODIFIED = '_modified' # A modified trace
+POSTFIX_RAW = 'profile' # profile generated from the raw data of the SIS or O2 data set 
+POSTFIX_NORM = 'profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
+POSTFIX_USER = 'profile_user' # Normalized profile multiplied with the max. number of users
+POSTFIX_DAY = 'sampleday' # A sample day of the time series
+POSTFIX_TRACE = 'profile_trace' # Recorded profile which resulted using the user profile in the load driver
+POSTFIX_MODIFIED = 'modified' # A modified trace
 
 '''
 Experiment specific settings
@@ -69,48 +102,6 @@ RAMP_UP = minu(10) # Ramp up duration of the experiment
 RAMP_DOWN = minu(10) # Ramp down duration of the experiment
 MAX_USERS = user(200) # Maximum number of users
 
-class Config(object):
-    def __init__(self, prefix, name, data, modified):
-        self.prefix = prefix
-        self.name = name
-        self.data = data
-        self.modified = modified
-
-'''
-Configurations
-'''
-mix0 = Config(None, 'mix_0', pdata.mix_0, False)
-mix1 = Config(None, 'mix_1', pdata.mix_1, False)
-mix2 = Config(None, 'mix_2', pdata.mix_2, False)
-
-mix0m = Config(None, 'mix_0', pdata.mix_0, True)
-mix1m = Config(None, 'mix_1', pdata.mix_1, True)
-mix2m = Config(None, 'mix_2', pdata.mix_2, True)
-
-mixsim = Config(PREFIX_MIX_SIM, 'mix_sim', pdata.mix_sim, False)
-
-##############################
-## CONFIGURATION            ##
-##############################
-selected_profile = None # Prefix for picking TS from Times
-selected_name = 'mix_0' # Just for logging
-selected = pdata.mix_0  # Selected workload mix
-modified = False        # Modified version of the workload mix
-traces_exist = False         # For initial placement profiles traces are used if they exist
-##############################
-
-def _profile(prefixed, *args):
-    name = ''
-    
-    if selected_profile is None:
-        prefix = ''
-    else:
-        prefix = selected_profile + '_'
-    
-    if prefixed: name = prefix + name
-    for arg in args:
-        name += arg
-    return name
 
 def get_current_cpu_profile(index):
     '''
@@ -119,9 +110,9 @@ def get_current_cpu_profile(index):
     '''
     desc = __by_index(index)
     if modified:
-        name = _profile(True, desc.name, POSTFIX_NORM, POSTFIX_MODIFIED)
+        name = __times_name(True, desc.name, POSTFIX_NORM, POSTFIX_MODIFIED)
     else:
-        name = _profile(True, desc.name, POSTFIX_NORM)
+        name = __times_name(True, desc.name, POSTFIX_NORM)
         
     print 'Selected cpu profile: %s' % name
     return name
@@ -133,7 +124,7 @@ def get_cpu_profile_for_initial_placement(index):
     '''
     if traces_exist:
         desc = __by_index(index)
-        name = _profile(True, desc.name, POSTFIX_TRACE)
+        name = __times_name(True, desc.name, POSTFIX_TRACE)
     else:
         name = get_current_cpu_profile(index)
     
@@ -147,13 +138,24 @@ def get_current_user_profile(index):
     '''
     desc = __by_index(index)
     if modified:    
-        name = _profile(True, desc.name, POSTFIX_USER, POSTFIX_MODIFIED)
+        name = __times_name(True, desc.name, POSTFIX_USER, POSTFIX_MODIFIED)
     else:
-        name = _profile(True, desc.name, POSTFIX_USER)
+        name = __times_name(True, desc.name, POSTFIX_USER)
         
     print 'Selected user profile: %s' % name
     return name 
+
          
+def __times_name(prefixed, *args):
+    if prefixed:
+        if selected_profile is None:
+            name = ''
+        else:
+            name = selected_profile + '_'
+             
+    name += '_'.join(args)
+    return name
+
 
 def __by_index(index):
     '''
@@ -229,7 +231,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     # Store RAW profiles (-> plotting)
     raw_profile = np.array(profile)
     if save:
-        __write_profile(connection, _profile(True, desc.name, POSTFIX_RAW), raw_profile, interval)
+        __write_profile(connection, __times_name(True, desc.name, POSTFIX_RAW), raw_profile, interval)
     
     # Store NORMALIZED profiles (normalized with the set maximum, see above) (-> feed into SSAPv)
     maxval = float(set_max[pset.id])
@@ -237,7 +239,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     norm_profile = np.array(profile)
     norm_profile *= 100 # Times does not support float values
     if save:
-        __write_profile(connection, _profile(True, desc.name, POSTFIX_NORM), norm_profile, interval)
+        __write_profile(connection, __times_name(True, desc.name, POSTFIX_NORM), norm_profile, interval)
     
     # Store USER profiles (-> feed into Rain)
     # - Adapt interval for the benchmark duration
@@ -248,10 +250,10 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     user_profile = __padprofile(user_profile, interval)
     
     if np.max(user_profile) > MAX_USERS:
-        print '%s > max users - %i' % (_profile(True, desc.name, POSTFIX_USER), np.max(user_profile))
+        print '%s > max users - %i' % (__times_name(True, desc.name, POSTFIX_USER), np.max(user_profile))
         
     if save:
-        __write_profile(connection, _profile(True, desc.name, POSTFIX_USER), user_profile, interval)
+        __write_profile(connection, __times_name(True, desc.name, POSTFIX_USER), user_profile, interval)
     
     # Plotting    
     util.plot(user_profile, desc.name + '.png', MAX_USERS)
@@ -264,7 +266,7 @@ def __build_sample_day(mix, save):
     for desc in mix:
         print 'processing sample day %s' % (desc.name)
         import sampleday
-        profile = sampleday.process_trace(connection, _profile(False, desc.name),
+        profile = sampleday.process_trace(connection, __times_name(False, desc.name),
                                           desc.sample_frequency, CYCLE_TIME, desc.profile_set.day)
         desc.profile = profile
         
@@ -284,14 +286,14 @@ def build_modified_profiles(mix, save):
     
     for mi_element in mix:
         # Operates on pre-processed data. Hence, a prefix is required
-        ts_name = _profile(True, mi_element.name, POSTFIX_NORM)
+        ts_name = __times_name(True, mi_element.name, POSTFIX_NORM)
 
         # Modify CPU normal profile     
         modified_profile, interval = modifier.process_trace(connection, ts_name,
                                                             mi_element.modifier, mi_element.additive,
                                                             mi_element.scale, mi_element.shift)
         if save:
-            name = _profile(True, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
+            name = __times_name(True, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
             __write_profile(connection, name, modified_profile, interval)
             
         # Store USER profiles (-> feed into Rain)
@@ -303,7 +305,7 @@ def build_modified_profiles(mix, save):
         user_profile = np.array(modified_profile)
         user_profile = __padprofile(user_profile, interval)
         if save:
-            name = _profile(True, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
+            name = __times_name(True, mi_element.name, POSTFIX_NORM, POSTFIX_MODIFIED)
             __write_profile(connection, name, user_profile, interval)
 
     times_client.close()
@@ -325,7 +327,7 @@ def __build_profiles(mix, save):
     for desc in mix:
         print 'processing convolution: %s' % (desc.name)
         import convolution
-        profile = convolution.process_trace(connection, _profile(False, desc.name),
+        profile = convolution.process_trace(connection, __times_name(False, desc.name),
                                             desc.sample_frequency, CYCLE_TIME)
         
         # Add profile to mix
@@ -431,7 +433,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
     if save:
         connection = times_client.connect()
         # Special case - no prefix is added as this TS is treated as a RAW TS
-        __write_profile(connection, _profile(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
+        __write_profile(connection, __times_name(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
         times_client.close()
     
 def plot_overlay_mix():
@@ -448,10 +450,10 @@ def plot_overlay_mix():
     fig = plt.figure()
     
     ax = fig.add_subplot(111)
-    ax.set_xlim([0,300])
+    ax.set_xlim([0, 300])
     
     for name in plot_mix:
-        timeSeries = connection.load(_profile(True, name, POSTFIX_USER))
+        timeSeries = connection.load(__times_name(True, name, POSTFIX_USER))
         _, demand = util.to_array(timeSeries)
         
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
@@ -487,7 +489,7 @@ def __plot_complete_mix():
     
     for desc in plot_mix:  
         name = desc.name
-        timeSeries = connection.load(_profile(True, name, POSTFIX_USER))
+        timeSeries = connection.load(__times_name(True, name, POSTFIX_USER))
         _, demand = util.to_array(timeSeries)
         
         index += 1
