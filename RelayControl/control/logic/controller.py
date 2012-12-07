@@ -6,9 +6,6 @@ import numpy as np
 from virtual import nodes
 from control import domains
 
-# Global migration ID counter (identifies migrations)
-migration_id_counter = 0
-
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
 
@@ -65,6 +62,9 @@ class LoadBalancer(object):
         
         # Start wait
         self.start_wait = start_wait
+        
+        # Migration id counter
+        self.migration_id_counter = 0
         
         
     # Abstract load balancing method
@@ -150,9 +150,8 @@ class LoadBalancer(object):
         assert(source != target)
         
         # Update counter
-        global migration_id_counter
-        migration_id = migration_id_counter
-        migration_id_counter += 1
+        migration_id = self.migration_id_counter
+        self.migration_id_counter += 1
         
         # Block source and target nodes: Set block times in the future  
         # to guarantee that the block does not run out until the migration is finished
