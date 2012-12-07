@@ -3,6 +3,8 @@ import configuration
 import json
 import scoreboard
 import numpy as np
+from virtual import nodes
+from control import domains
 
 # Global migration ID counter (identifies migrations)
 migration_id_counter = 0
@@ -72,6 +74,21 @@ class LoadBalancer(object):
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
         pass
+    
+    def build_internal_model(self, migrations):
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+    
     
     def start(self):
         print 'Waiting for start: %i' % self.start_wait

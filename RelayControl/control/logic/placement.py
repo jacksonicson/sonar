@@ -4,9 +4,9 @@ from ipmodels import ssapv
 from logs import sonarlog
 from matplotlib.dates import hours
 from service import times_client
-from workload.timeutil import * #@UnusedWildImport
 from virtual import nodes
 from workload import profiles
+from workload.timeutil import * #@UnusedWildImport
 import numpy as np
 
 # Setup logging
@@ -32,7 +32,11 @@ class Placement(object):
             
         return active_servers, active_server_list
             
-    
+    '''
+    Returns a tuple of migrations and number of active servers. Migrations is a dictionary 
+    with domain indices as keys and node indices as values. 
+    [domain index] -> server index  
+    '''
     def execute(self):
         # Dump profiles
         profiles.dump(logger)

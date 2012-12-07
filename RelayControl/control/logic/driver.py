@@ -1,15 +1,19 @@
 from collector import ttypes
-import control.domains as domains
-import sys
-from workload import util as wutil
 from service import times_client
 from virtual import nodes
+from workload import util as wutil
+import control.domains as domains
 import numpy as np
 import scoreboard
+import sys
+from workload.timeutil import * #@UnusedWildImport
 
 ##########################
 ## CONFIGURATION        ##
 BASE_LOAD = 10
+NOISE = True
+NOISE_MEAN = 0.0
+NOISE_SIGMA = 1.0
 ##########################
 
 class Driver:
@@ -35,7 +39,7 @@ class Driver:
         connection = times_client.connect()
         
         self.min_ts_length = sys.maxint # Minimum length across all TS
-        freq = 0 # Frequency of the TS from Times 
+        freq = 0 # Frequency of the TS from Times
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
@@ -51,10 +55,11 @@ class Driver:
             ts = wutil.to_array(ts)[1]
             
             # Add noise to the time series
-            random = np.random.lognormal(mean=0.0, sigma=1.00, size=len(ts))
-            ts += random
-            ts[ts > 100] = 100
-            ts[ts < 0] = 0
+            if NOISE:
+                random = np.random.lognormal(mean=NOISE_MEAN, sigma=NOISE_SIGMA, size=len(ts))
+                ts += random
+                ts[ts > 100] = 100
+                ts[ts < 0] = 0
             
             # Attach TS to domain 
             domain.ts = ts
@@ -66,7 +71,8 @@ class Driver:
         times_client.close()
         
         # Reduce length of time series to 6 hours
-        self.freq = (freq * 6.0) / 24.0
+        # self.freq = (freq * 6.0) / 24.0
+        self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
@@ -89,10 +95,10 @@ class Driver:
         # Index for simulation time
         sim_time = self.pump.sim_time() 
         tindex = (sim_time / self.freq)
-        if tindex > self.min_ts_length:
+        if tindex >= self.min_ts_length:
             print 'Driver exited!'
             print 'Shutting down simulation...'
-            scoreboard.Scoreboard().close()
+            scoreboard.Scoreboard().close() 
             self.pump.stop()
             return
         
@@ -109,8 +115,8 @@ class Driver:
                 self.__notify(sim_time, domain.name, 'psutilcpu', load)
                 
                 # Load aggregation for the node
-                aggregated_load += (load / (nodes.NODE_CPU_CORES / nodes.DOMAIN_CPU_CORES))
-                
+                aggregated_load += nodes.to_node_load(load)
+                                
                 # Update aggregated cpu load
                 scoreboard.Scoreboard().add_cpu_load(load)
 
