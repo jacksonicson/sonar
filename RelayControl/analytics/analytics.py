@@ -29,7 +29,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '02/12/2012 14:05:01    02/12/2012 20:40:01'
+RAW = '06/12/2012 16:55:00    06/12/2012 23:40:00'
 ##########################
 
 warns = []
@@ -1268,9 +1268,9 @@ def connect_sonar(connection):
 if __name__ == '__main__':
     connection = __connect()
     try:
-        # connect_sonar(connection)
+        connect_sonar(connection)
         # load_response_statistics(connection)
-        load_migration_times(connection)
+        # load_migration_times(connection)
         # t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
