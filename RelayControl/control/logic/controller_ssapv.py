@@ -1,6 +1,7 @@
 from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
+from workload import profiles
 import configuration
 import controller
 import json
@@ -17,7 +18,7 @@ logger = sonarlog.getLogger('controller')
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10*60, 120)
+        super(Sandpiper, self).__init__(pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):
@@ -32,7 +33,7 @@ class Sandpiper(controller.LoadBalancer):
         
         nodecount = len(nodes.HOSTS)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute()
+        migrations, _ = splace.execute(aggregation=False) # , width=profiles.CYCLE_TIME, buckets=48)
         
         _nodes = []
         for node in nodes.NODES: 

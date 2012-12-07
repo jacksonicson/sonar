@@ -7,6 +7,11 @@ from virtual import nodes
 import numpy as np
 import scoreboard
 
+##########################
+## CONFIGURATION        ##
+BASE_LOAD = 10
+##########################
+
 class Driver:
     
     # The default settings are estimations of the real world infrastructure
@@ -46,10 +51,10 @@ class Driver:
             ts = wutil.to_array(ts)[1]
             
             # Add noise to the time series
-#            random = np.random.lognormal(mean=0.0, sigma=1.0, size=len(ts))
-#            ts += random
-#            ts[ts > 100] = 100
-#            ts[ts < 0] = 0
+            random = np.random.lognormal(mean=0.0, sigma=1.00, size=len(ts))
+            ts += random
+            ts[ts > 100] = 100
+            ts[ts < 0] = 0
             
             # Attach TS to domain 
             domain.ts = ts
@@ -111,7 +116,7 @@ class Driver:
 
             # Add hypervisor load to the aggregated load
             # For the SSAPv this causes service level violations
-            aggregated_load += 10 
+            aggregated_load += BASE_LOAD
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter
