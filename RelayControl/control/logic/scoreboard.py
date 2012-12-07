@@ -35,8 +35,8 @@ class Scoreboard(object):
             self.cpu_accumulated += load
     
     def add_active_info(self, servercount, timestamp):
-        if not self.closed:
-            self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
+        # if not self.closed:
+        self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
 
     def analytics_average_server_count(self, pump):
         if not self.active_server_infos:

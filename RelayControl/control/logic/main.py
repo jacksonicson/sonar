@@ -161,10 +161,11 @@ if __name__ == '__main__':
     else:
         name = 'dsap'
         t = open(config.path(name), 'w')
-        for i in xrange(0, 30):
+        for i in xrange(0, 1):
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             t.write('%s\n' % res)
             t.flush()
+            scoreboard.Scoreboard().dump(pump)
         t.close()
     

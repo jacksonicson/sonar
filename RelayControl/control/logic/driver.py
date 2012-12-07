@@ -87,7 +87,7 @@ class Driver:
         if tindex > self.min_ts_length:
             print 'Driver exited!'
             print 'Shutting down simulation...'
-            scoreboard.Scoreboard().close()
+            # scoreboard.Scoreboard().close()
             self.pump.stop()
             return
         
@@ -108,7 +108,7 @@ class Driver:
                 scoreboard.Scoreboard().add_cpu_load(load)
 
             # Add hypervisor load to the aggregated load
-            aggregated_load += 12 
+            aggregated_load += 10
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter

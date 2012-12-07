@@ -19,9 +19,9 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-START_WAIT = 120
-INTERVAL = 10*60
-kvalue = 10             # value given by Andreas
+START_WAIT = 0
+INTERVAL = 60
+KVALUE = 10             # value given by Andreas
 
 ######################
 
@@ -34,9 +34,6 @@ class DSAP(controller.LoadBalancer):
         super(DSAP, self).__init__(pump, model, INTERVAL, START_WAIT)
         print "INIT DSAP"
         self.var = []
-        
-# Implement later!
-        # migrationen schedulen via migration list (later with manager)
 
         
     def dump(self):
@@ -71,7 +68,7 @@ class DSAP(controller.LoadBalancer):
             _nodes[migration[1]].add_domain(_domains[migration[0]])
             
             
-        # initialising values for balance()
+        # initialize values for balance()
         _total_bucket_length = 6 * 60 * 60
         self.time_per_bucket = _total_bucket_length / placement.buckets_len     # delta for duration per bucket (balance())
         self.time_init = self.pump.sim_time()                                   # time_now synched to beginning of migration
@@ -89,48 +86,45 @@ class DSAP(controller.LoadBalancer):
         placement.server_list
 
                 
-        # calculate current index for current time
-        _bucket_number = (time_now - self.time_init) / self.time_per_bucket  
+        # calculate current bucket-index from system time
+        bucket_index = int((time_now - self.time_init) / self.time_per_bucket)
         
-        _index = int(math.floor(_bucket_number))     
-        print "DEBUG: ",_bucket_number," = Bucket#",_index
-        
-        if _index < 0.5:    #break for T=0, since there will be no source-destination of T=-1
-            return
-        
-        print "DEBUG: Allocation, T =", _index
-        print "DEBUG: assignment_list[",_index,"]:",placement.assignment_list[ _index ]
-#            print "DEBUG ",placement.assignment_list[ _allocation ]
-            
-        for _service in placement.assignment_list[ _index ]:
-            _server = placement.assignment_list[ _index ][ _service ]
+        print 'BUCKET # %i' % bucket_index
 
-            domain = domains.domain_profile_mapping[ _service ].domain
+            
+        for _service in placement.assignment_list[ bucket_index ]:
+            _server = placement.assignment_list[ bucket_index ][ _service ]
+
+            _domain = domains.domain_profile_mapping[ _service ].domain
             
             # domain name for domain ID
-            source = placement.assignment_list[ _index-1 ] [ _service ]
+            source = placement.assignment_list[ bucket_index-1 ] [ _service ]
             target = _server
 
-            if (source != target):
-                print _service,"->",_server,"(triggered migration)"
-                self.migrate(domain, source, target, kvalue)
-            else:
-                print _service,"->",_server
+            _source_node = nodes.get_node_name(source)
+            _target_node = nodes.get_node_name(target)
 
+            domain = self.model.get_host(_domain)
+            source_node = self.model.get_host(_source_node)
+            target_node = self.model.get_host(_target_node)
+            
+            # prevent parallel migrations (check for blocked servers)
+            if time_now < target_node.blocked or time_now < source_node.blocked:
+                print "Server locked, for migration:",source_node.name,"->",target_node.name
+                continue
+            
+            if target_node.domains.has_key(domain.name): #  or not source_node.domains.has_key(_domain):
+                continue
+            
+            # migrate
+            self.migrate(domain, source_node, target_node, KVALUE)
 
-#        target = nodes.get_node_name(i)
-
-#DEBUG
-#        for domain in domains.domain_profile_mapping:
-#            print "DEBUG domain",i,"=",domain.domain
-#            i+=1
-            
-            # TODO laeuft parallel >> implement in queue
-            
-            
             
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
+        node_from.blocked = self.pump.sim_time() -1
+        node_to.blocked = self.pump.sim_time()-1
         if success:
-            print "SUCCESSFUL MIGRATION (DEBUG)"
+            pass
         else:
-            print "MIGRATION FAILED (DEBUG)"
+            print "MIGRATION FAILED (post_migrate_hook)"
+            
