@@ -10,7 +10,7 @@
     
     "usePipe": false,
     "useThrift": true,
-    
+    "sonarHost" : "monitor0.dfg",
     
     "### Track generators #########":"##",
     
