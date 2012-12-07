@@ -2,11 +2,11 @@ from collector import ttypes
 from service import times_client
 from virtual import nodes
 from workload import util as wutil
+from workload.timeutil import * #@UnusedWildImport
 import control.domains as domains
 import numpy as np
 import scoreboard
 import sys
-from workload.timeutil import * #@UnusedWildImport
 
 ##########################
 ## CONFIGURATION        ##
@@ -56,7 +56,8 @@ class Driver:
             
             # Add noise to the time series
             if NOISE:
-                random = np.random.lognormal(mean=NOISE_MEAN, sigma=NOISE_SIGMA, size=len(ts))
+                # random = np.random.lognormal(mean=NOISE_MEAN, sigma=NOISE_SIGMA, size=len(ts))
+                random = np.random.normal(loc=NOISE_MEAN, scale=NOISE_SIGMA, size=len(ts))
                 ts += random
                 ts[ts > 100] = 100
                 ts[ts < 0] = 0
