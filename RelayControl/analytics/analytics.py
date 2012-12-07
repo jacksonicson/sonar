@@ -926,6 +926,7 @@ def t_test_response_statistics():
                             sum_s0 += s0 * n0
                             sum_s1 += s1 * n1
                             
+                            # Welch's t-test
                             t_val = abs(m0 - m1) / math.sqrt( (math.pow(s0,2) / n0) + (math.pow(s1,2) / n1) )
                             ts.append(t_val)
                         
