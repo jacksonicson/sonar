@@ -154,7 +154,7 @@ class FirstFitPlacement(Placement):
     
 class SSAPvPlacement(Placement):
     
-    def execute(self, aggregation=True, width=hours(24), buckets=24):
+    def execute(self, aggregation=True, bucketCount=24):
         # Execute super code
         super(SSAPvPlacement, self).execute()
         
@@ -166,7 +166,7 @@ class SSAPvPlacement(Placement):
         service_count = len(domains.domain_profile_mapping)
         
         if aggregation:
-            llen = buckets
+            llen = bucketCount
         else: 
             llen = profiles.PROFILE_INTERVAL_COUNT
         service_matrix = np.zeros((service_count, llen), dtype=float)
@@ -175,9 +175,7 @@ class SSAPvPlacement(Placement):
         for service_index in xrange(service_count):
             mapping = domains.domain_profile_mapping[service_index]
             
-            # Important: Load the trace of the workload profile
             service = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
-            
             print 'loading service: %s' % (service)
             service_log += service + '; '
             
@@ -194,19 +192,14 @@ class SSAPvPlacement(Placement):
     
             # Downsample TS
             if aggregation:
-                target = width / buckets  # Seconds for each bucket
-                print target
-                elements = target / ts.frequency
+                elements = ts_len / bucketCount
                 bucket_data = []
-                for i in xrange(ts_len / elements):
+                for i in xrange(bucketCount):
                     start = i * elements
                     end = min(ts_len, (i + 1) * elements)
                     tmp = data[start : end]
-                    # buckets.append(np.max(tmp))
-                    bucket_data.append(np.percentile(tmp, 100))
-                
+                    bucket_data.append(np.max(tmp))
                 service_matrix[service_index] = bucket_data
-                print bucket_data
             else:
                 service_matrix[service_index] = data
     

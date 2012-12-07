@@ -33,7 +33,7 @@ class Sandpiper(controller.LoadBalancer):
         
         nodecount = len(nodes.HOSTS)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute(aggregation=False) # , width=profiles.CYCLE_TIME, buckets=48)
+        migrations, _ = splace.execute(aggregation=False , bucketCount=12)
         
         _nodes = []
         for node in nodes.NODES: 
