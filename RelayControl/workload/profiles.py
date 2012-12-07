@@ -23,20 +23,20 @@ class Config(object):
         self.modified = modified
         self.traces = traces
 
-mix0 = Config(None, 'mix_0', pdata.mix_0, False)
-mix1 = Config(None, 'mix_1', pdata.mix_1, False)
-mix2 = Config(None, 'mix_2', pdata.mix_2, False)
+mix0 = Config(None, 'mix_0', pdata.mix_0, False, True)
+mix1 = Config(None, 'mix_1', pdata.mix_1, False, True)
+mix2 = Config(None, 'mix_2', pdata.mix_2, False, True)
 
-mix0m = Config(None, 'mix_0', pdata.mix_0, True)
-mix1m = Config(None, 'mix_1', pdata.mix_1, True)
-mix2m = Config(None, 'mix_2', pdata.mix_2, True)
+mix0m = Config(None, 'mix_0', pdata.mix_0, True, True)
+mix1m = Config(None, 'mix_1', pdata.mix_1, True, True)
+mix2m = Config(None, 'mix_2', pdata.mix_2, True, True)
 
 mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
 
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mix1m
+config = mix0
 ##############################
 
 ##############################
