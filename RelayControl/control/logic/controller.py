@@ -2,6 +2,7 @@ from logs import sonarlog
 import configuration
 import json
 import scoreboard
+import numpy as np
 
 # Global migration ID counter (identifies migrations)
 migration_id_counter = 0
@@ -29,8 +30,12 @@ class SimulatedMigration:
         # Set migration start time
         self.start = self.pump.sim_time()
         
+        # Parameters are determined by experimental results
+        wait = np.random.lognormal(mean=3.29, sigma=0.27, size=1)
+        wait = wait[0]
+        # wait = 60 # const value used before
         # Simulate migration wait time
-        self.pump.callLater(60, self.callback)
+        self.pump.callLater(wait, self.callback)
         
     def callback(self):
         # Set migration end time
