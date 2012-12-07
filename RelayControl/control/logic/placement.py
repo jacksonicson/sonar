@@ -2,7 +2,6 @@ from control import domains
 from control.domains import domain_profile_mapping as mapping
 from ipmodels import ssapv
 from logs import sonarlog
-from matplotlib.dates import hours
 from service import times_client
 from virtual import nodes
 from workload import profiles
