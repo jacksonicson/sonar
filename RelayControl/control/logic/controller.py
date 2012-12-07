@@ -1,10 +1,11 @@
+from control import domains
 from logs import sonarlog
+from virtual import nodes
 import configuration
 import json
-import scoreboard
 import numpy as np
-from virtual import nodes
-from control import domains
+import scoreboard
+import placement
 
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
@@ -30,9 +31,10 @@ class SimulatedMigration:
         self.start = self.pump.sim_time()
         
         # Parameters are determined by experimental results
+        # wait = 60 # const value used before
         wait = np.random.lognormal(mean=3.29, sigma=0.27, size=1)
         wait = wait[0]
-        # wait = 60 # const value used before
+        
         # Simulate migration wait time
         self.pump.callLater(wait, self.callback)
         
@@ -73,7 +75,11 @@ class LoadBalancer(object):
     
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
-        pass
+        nodecount = len(nodes.HOSTS)
+        splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute(aggregation=True , bucketCount=12)
+        self.build_internal_model(migrations)
+        return migrations
     
     def build_internal_model(self, migrations):
         _nodes = []
