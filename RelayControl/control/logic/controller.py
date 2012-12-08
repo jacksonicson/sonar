@@ -4,8 +4,8 @@ from virtual import nodes
 import configuration
 import json
 import numpy as np
-import scoreboard
 import placement
+import scoreboard
 
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
@@ -32,8 +32,8 @@ class SimulatedMigration:
         
         # Parameters are determined by experimental results
         # wait = 60 # const value used before
-        wait = np.random.lognormal(mean=3.29, sigma=0.27, size=1)
-        wait = wait[0]
+        wait = np.random.lognormal(mean=3.29, sigma=0.27, size=100)
+        wait = wait[50]
         
         # Simulate migration wait time
         self.pump.callLater(wait, self.callback)
