@@ -121,8 +121,9 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    import controller_ssapv
-    controller = controller_ssapv.Sandpiper(pump, model)
+    import controller_ssapv #@UnusedImport
+    import controller_sandpiper_reactive #@UnusedImport
+    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -158,9 +159,9 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '60nodes_mix_sim'
+        name = '6nodes_mixsim_trace'
         t = open(config.path(name), 'w')
-        for i in xrange(0, 1):
+        for i in xrange(0, 30):
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)
