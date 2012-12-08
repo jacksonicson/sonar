@@ -123,7 +123,8 @@ def main():
     # New controller
     import controller_ssapv #@UnusedImport
     import controller_sandpiper_reactive #@UnusedImport
-    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    import controller_sandpiper_proactive #@UnusedImport
+    controller = controller_ssapv.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
