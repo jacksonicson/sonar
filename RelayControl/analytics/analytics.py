@@ -533,6 +533,38 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         plt.show()
             
  
+def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
+    loads = []
+    
+    delta = data_frame[1] - data_frame[0]
+    delta /= 100
+    for t in xrange(data_frame[0], data_frame[1], delta):
+        ss = 0
+        for node in nodes.NODES:
+            ni = []
+            for i in xrange(len(cpu[node][1])):
+                tim = cpu[node][1][i]
+                ld= cpu[node][0][i]
+                if tim > t and tim < (t+delta):
+                    ni.append(ld)
+            ss += np.mean(ni) 
+        loads.append(ss)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(range(data_frame[0], data_frame[1], delta), loads)
+    
+    times = []
+    data = []
+    for mig in server_active_flags:
+        times.append(mig[0])
+        data.append(mig[1]*50)
+        print mig[1]
+    ax.plot(times,data); 
+    
+    plt.show()
+
+ 
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
     for node in nodes.NODES:
         fig = plt.figure()
@@ -882,8 +914,8 @@ def t_test_response_statistics():
             for type0 in controllers[control0]:
                 for control1 in controllers.keys():
                     for type1 in controllers[control1]:
-                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 0)
-                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 0)
+                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 2)
+                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 2)
                         try:
                             set0 = __load_response_times(file0)
                             set1 = __load_response_times(file1)
@@ -1258,6 +1290,7 @@ def connect_sonar(connection):
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
+        __plot_load_servers(data_frame, cpu, mem, server_active_flags)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
         # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
@@ -1276,8 +1309,9 @@ if __name__ == '__main__':
     connection = __connect()
     try:
         connect_sonar(connection)
-        # load_response_statistics(connection)
         # load_migration_times(connection)
+        
+        # load_response_statistics(connection)
         # t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
