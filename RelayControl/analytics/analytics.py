@@ -1092,7 +1092,7 @@ def load_response_times(connection):
         RAW = entry[0]
         START, END = RAW.split('    ')
     
-        if counter > 300:
+        if counter > 3000:
             break
         counter += 1
     
@@ -1185,10 +1185,13 @@ def load_response_times(connection):
         for key in domain_track_map.keys():
             for track in domain_track_map[key]:
                 res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-                sum.extend(res_resp)
+                agg_resp_time.extend(res_resp)
         print 'Average response time: %i, samples: %i' % (np.mean(agg_resp_time), len(agg_resp_time))
-        
-        break
+           
+        import csv
+        with open('C:/temp/rtime_%s_%s_%s_%i.csv' % (entry[1:]), 'wb') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter='\t') 
+            spamwriter.writerows((time, ) for time in agg_resp_time)
             
 
 def load_response_statistics(connection):
