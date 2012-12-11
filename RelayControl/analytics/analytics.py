@@ -29,7 +29,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '08/12/2012 22:49:27    09/12/2012 05:40:27'
+RAW = '14/11/2012 09:20:00    14/11/2012 16:50:00'
 ##########################
 
 warns = []
@@ -544,25 +544,53 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
             ni = []
             for i in xrange(len(cpu[node][1])):
                 tim = cpu[node][1][i]
-                ld= cpu[node][0][i]
-                if tim > t and tim < (t+delta):
+                ld = cpu[node][0][i]
+                if tim > t and tim < (t + delta):
                     ni.append(ld)
             ss += np.mean(ni) 
         loads.append(ss)
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    ax.set_xlim(data_frame)
+    ax.set_ylabel('Accumulated server load')
+    ax.set_xlabel('Time in hour:minute')
+    
+    def to_hour(ts):
+        dt = datetime.fromtimestamp(ts)
+        return '%i:%i' % (dt.hour, dt.minute)
+    
+    td = data_frame[1] - data_frame[0]
+    td /= 10
+    xt = [t for t in xrange(data_frame[0], data_frame[1], td)]
+    xl = [to_hour(t) for t in xrange(data_frame[0], data_frame[1], td)]
+    ax.set_xticks(xt)
+    ax.set_xticklabels(xl)
+    
     ax.plot(range(data_frame[0], data_frame[1], delta), loads)
     
     times = []
     data = []
+    times.append(data_frame[0])
+    data.append(len(nodes.NODES))
     for mig in server_active_flags:
         times.append(mig[0])
-        data.append(mig[1]*50)
+        data.append(mig[1])
         print mig[1]
-    ax.plot(times,data); 
+    times.append(data_frame[1])
+    data.append(data[-1])
+        
+    ax2 = ax.twinx()
+    ax2.set_ylabel('Number of active servers')
+    ax2.set_ylim([0, len(nodes.NODES) + 1])
+    ax2.set_xlim(data_frame)
+    ax2.step(times, data, color='red', ls='-'); 
     
-    plt.show()
+    ax2.set_xticks(xt)
+    ax2.set_xticklabels(xl)
+    
+    
+    plt.savefig('C:/temp/servers.pdf')
 
  
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
@@ -791,7 +819,7 @@ def __analytics_server_utilization(cpu, mem):
     
     return _cpu, _mem, _violations
  
-def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count, 
+def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count,
                                    migration_count, min_nodes, max_nodes, srv_cpu_violations):
     global_metric_aggregation = {}
     
