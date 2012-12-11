@@ -15,6 +15,7 @@ import numpy as np
 import sys
 import time
 import traceback
+import configuration
 
 ##########################
 ## Configuration        ##
@@ -29,7 +30,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '14/11/2012 09:20:00    14/11/2012 16:50:00'
+RAW = '03/12/2012 22:25:01    04/12/2012 05:15:01'
 ##########################
 
 warns = []
@@ -511,11 +512,14 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
     for domain in domain_track_map.keys():
         fig = plt.figure()
         ax = fig.add_subplot(111)
+        ax.set_xlabel('Time in seconds')
+        ax.set_ylabel('Response time in milliseconds')
+        
+        
         
         for track in domain_track_map[domain]:
             print 'plotting'
             res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-            
             ax.plot(res_time, res_resp)
             
         # Add annotations to the trace
@@ -523,14 +527,29 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         for mig in migrations_triggered:
             print 'test: %s' % mig[1]['domain']
             if mig[1]['domain'] == domain:
-                ax.axvline(mig[0] + 40, color='r')
+                ax.axvline(mig[0] + 20, color='r')
        
         for mig in migrations_successful:
             if mig[1]['domain'] == domain: 
-                ax.axvline(mig[0] + 40, color='g')
+                ax.axvline(mig[0] + 20, color='g')
             
+        def to_hour(ts):
+            dt = datetime.fromtimestamp(ts)
+            return '%i' % (dt.second)
+        
+        for mig in migrations_successful:
+            if mig[1]['domain'] == domain:
+                ax.set_xlim([mig[0] - 120, mig[0] + 120])
+                
+                xt = [t for t in xrange(mig[0] - 120, mig[0] + 120, 30)]
+                xl = [t*30 for t in xrange(0, len(xt))]
+                ax.set_xticks(xt)
+                ax.set_xticklabels(xl)
+                
+                break
             
-        plt.show()
+        plt.savefig(configuration.path('migration_%s' % domain, 'pdf'))
+        
             
  
 def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
@@ -589,8 +608,7 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
     ax2.set_xticks(xt)
     ax2.set_xticklabels(xl)
     
-    
-    plt.savefig('C:/temp/servers.pdf')
+    plt.savefig(configuration.path('servers_load', 'pdf'))
 
  
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
@@ -1066,6 +1084,113 @@ def load_migration_times(connection):
         spamwriter.writerows(times)
 
 
+def load_response_times(connection):
+    # Load experiments database
+    counter = 0
+    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
+        global START, END, RAW
+        RAW = entry[0]
+        START, END = RAW.split('    ')
+    
+        if counter > 300:
+            break
+        counter += 1
+    
+        # Dump the configuration
+        __dump_configuration()
+        
+        # Configure experiment
+        start = __to_timestamp(START)
+        stop = __to_timestamp(END)
+        raw_frame = (start, stop)
+        
+        # Get sync markers from control (start of driving load)
+        sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
+        # print '## SYNC MARKERS ##'
+        __dump_elements(sync_markers)
+        
+        # Estimate sync markers if no sync markers where found
+        if sync_markers[0] is None:
+            __warn('Sync marker not found')
+            sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
+            
+        _schedules = []
+        _track_configs = []
+        _global_metrics = []
+        _rain_metrics = []
+        _track_metrics = []
+        _spec_metrics = []
+        _errors = []
+        
+        # Fetch rain data
+        for host in DRIVER_NODES:
+            # print 'Fetching driver node: %s ...' % host
+            rain_data = __fetch_rain_data(connection, host, raw_frame)
+            schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
+            
+            if schedule is not None: _schedules.append(schedule)
+            if track_config is not None: _track_configs.append((track_config, host))
+            if global_metrics is not None: _global_metrics.append(global_metrics)
+            if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
+            if track_metrics is not None: _track_metrics.extend(track_metrics)
+            if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
+            
+        print '## SCHEDULE ##'
+        # Each rain driver logs an execution schedule which defines the timestamp to start the
+        # steady state phase and to end it
+        schedule_starts = []
+        schedule_ends = []
+        for schedule in _schedules:
+            schedule_starts.append(schedule[0])
+            schedule_ends.append(schedule[1])
+            __dump_elements(schedule)
+           
+        # refine data raw_frame with schedules
+        print '## REFINED TIME FRAME ##'
+        data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
+        __dump_elements(data_frame)
+        duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
+        print 'Frame duration is: %f hours' % (duration)
+            
+        print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
+        # Results
+        domains = []
+        domain_track_map = {}
+        domain_workload_map = {}
+        
+        for track_config, source_host in _track_configs:
+            for track in track_config:
+                host = track_config[track]['target']['hostname']
+                workload = track_config[track]['loadScheduleCreatorParameters']['profile']
+                
+                if host not in domains:
+                    domains.append(host)
+                
+                if domain_track_map.has_key(host) == False:
+                    domain_track_map[host] = []
+                domain_track_map[host].append((source_host, track))
+        
+                if domain_workload_map.has_key(host) == False:
+                    domain_workload_map[host] = workload
+                else:
+                    if domain_workload_map[host] != workload:
+                        print 'WARN: Multiple load profiles on the same target'
+                        
+        # print 'domain track map: %s' % domain_track_map
+        # print 'domain workload map: %s' % domain_workload_map
+    
+        print '## RESPONSE TIME AGGREGATION ###'
+        # Fetch track response time and calculate average
+        agg_resp_time = []
+        for key in domain_track_map.keys():
+            for track in domain_track_map[key]:
+                res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+                sum.extend(res_resp)
+        print 'Average response time: %i, samples: %i' % (np.mean(agg_resp_time), len(agg_resp_time))
+        
+        break
+            
+
 def load_response_statistics(connection):
     # Load experiments database
     counter = 0
@@ -1318,7 +1443,7 @@ def connect_sonar(connection):
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
-        __plot_load_servers(data_frame, cpu, mem, server_active_flags)
+        # __plot_load_servers(data_frame, cpu, mem, server_active_flags)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
         # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
@@ -1336,11 +1461,12 @@ def connect_sonar(connection):
 if __name__ == '__main__':
     connection = __connect()
     try:
-        connect_sonar(connection)
+        # connect_sonar(connection)
         # load_migration_times(connection)
         
         # load_response_statistics(connection)
         # t_test_response_statistics()
+        load_response_times(connection)
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
