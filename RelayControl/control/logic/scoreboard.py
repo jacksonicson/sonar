@@ -1,3 +1,5 @@
+import sys
+
 # Recorded whenever the number of active servers changes
 class ActiveServerInfo(object):
     def __init__(self, timestamp, servercount):
@@ -23,10 +25,15 @@ class Scoreboard(object):
         self.cpu_violations = 0
         self.cpu_accumulated = 0
         
+
         self.imbalance_migrations = 0
         self.overload_migrations = 0
         self.underload_migrations = 0
         self.swaps = 0
+
+        self.min_servers = sys.maxint
+        self.max_servers = 0
+
     
     def close(self):
         self.closed = True
@@ -61,6 +68,8 @@ class Scoreboard(object):
     def add_active_info(self, servercount, timestamp):
         if not self.closed:
             self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
+            self.min_servers = min(self.min_servers, servercount)
+            self.max_servers = max(self.max_servers, servercount)
 
     def analytics_average_server_count(self, pump):
         if not self.active_server_infos:
@@ -91,13 +100,25 @@ class Scoreboard(object):
         return avg_count
        
     def get_results(self, pump):
-        return (len(self.active_server_infos), self.analytics_average_server_count(pump), 
-                self.cpu_violations, self.cpu_accumulated, self.imbalance_migrations,
-                self.overload_migrations, self.underload_migrations, self.swaps)
+        # Tuple contains
+        # count of active server infos
+        # average server count
+        # cpu violations
+        # accumulated cpu load
+        # min server
+        # max servers
+        # count of imbalance migrations
+        # count of overload migrations
+        # count of underload migrations
+        # count of swap migrations
+        return (len(self.active_server_infos), self.analytics_average_server_count(pump),
+                self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers,
+                self.imbalance_migrations, self.overload_migrations, self.underload_migrations,
+                self.swaps)
     
     def get_result_line(self, pump):
         res = self.get_results(pump)
-        return '%f \t %f \t %i \t %i \t %i \t %i \t %i \t %i' % res
+        return '%f \t %f \t %i \t %i \t %i \t %i \t %i \t %i \t %i \t %i' % res
     
     def dump(self, pump):
         print 'Records %i' % len(self.active_server_infos)

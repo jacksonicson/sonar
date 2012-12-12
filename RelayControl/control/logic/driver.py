@@ -1,11 +1,22 @@
 from collector import ttypes
-import control.domains as domains
-import sys
-from workload import util as wutil
+from control import domains
 from service import times_client
 from virtual import nodes
+from workload import profiles, util as wutil
+from workload.timeutil import * #@UnusedWildImport
+import control.domains as domains
 import numpy as np
 import scoreboard
+import sys
+
+##########################
+## CONFIGURATION        ##
+TRACE = True
+BASE_LOAD = 10
+NOISE = True
+NOISE_MEAN = 0.0
+NOISE_SIGMA = 1.0
+##########################
 
 class Driver:
     
@@ -30,13 +41,16 @@ class Driver:
         connection = times_client.connect()
         
         self.min_ts_length = sys.maxint # Minimum length across all TS
-        freq = 0 # Frequency of the TS from Times 
+        freq = 0 # Frequency of the TS from Times
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            load = domains.cpu_profile_by_name(domain.name)
-            print 'loading service: %s ...' % (load)
+            if TRACE: 
+                load = profiles.get_cpu_profile_for_initial_placement(domains.index_of(domain.name))
+            else:
+                load = domains.cpu_profile_by_name(domain.name)
+            print 'Driver is loading service for replay: %s ' % (load)
             
             ts = connection.load(load)
             
@@ -46,10 +60,12 @@ class Driver:
             ts = wutil.to_array(ts)[1]
             
             # Add noise to the time series
-            random = np.random.lognormal(mean=0.0, sigma=1.0, size=len(ts))
-            ts += random
-            ts[ts > 100] = 100
-            ts[ts < 0] = 0
+            if NOISE:
+                # random = np.random.lognormal(mean=NOISE_MEAN, sigma=NOISE_SIGMA, size=len(ts))
+                random = np.random.normal(loc=NOISE_MEAN, scale=NOISE_SIGMA, size=len(ts))
+                ts += random
+                ts[ts > 100] = 100
+                ts[ts < 0] = 0
             
             # Attach TS to domain 
             domain.ts = ts
@@ -61,7 +77,8 @@ class Driver:
         times_client.close()
         
         # Reduce length of time series to 6 hours
-        self.freq = (freq * 6.0) / 24.0
+        # self.freq = (freq * 6.0) / 24.0
+        self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
@@ -84,35 +101,38 @@ class Driver:
         # Index for simulation time
         sim_time = self.pump.sim_time() 
         tindex = (sim_time / self.freq)
-        if tindex > self.min_ts_length:
+        if tindex >= self.min_ts_length:
             print 'Driver exited!'
             print 'Shutting down simulation...'
-            scoreboard.Scoreboard().close()
+            scoreboard.Scoreboard().close() 
             self.pump.stop()
             return
         
         # For all nodes update their domains and aggregate the load for the node
         for host in self.model.get_hosts(self.model.types.NODE):
+            # Reset aggregated server load
             aggregated_load = 0
             
             # Go over all domains and update their load by their TS
             for domain in host.domains.values():
                 load = domain.ts[tindex]
                  
+                # Notify load to the domain
                 self.__notify(sim_time, domain.name, 'psutilcpu', load)
                 
                 # Load aggregation for the node
-                aggregated_load += (load / (nodes.NODE_CPU_CORES / nodes.DOMAIN_CPU_CORES))
-                
+                aggregated_load += nodes.to_node_load(load)
+                                
                 # Update aggregated cpu load
                 scoreboard.Scoreboard().add_cpu_load(load)
 
             # Add hypervisor load to the aggregated load
-            aggregated_load += 12 
+            # For the SSAPv this causes service level violations
+            aggregated_load += BASE_LOAD
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter
-            if aggregated_load > 100: 
+            if aggregated_load > 100:
                 scoreboard.Scoreboard().add_cpu_violations(1)
         
         # Whole simulation might run accelerated

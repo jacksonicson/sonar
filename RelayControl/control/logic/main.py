@@ -2,11 +2,6 @@ from logs import sonarlog
 import configuration as config
 import json
 import model
-import controller_sandpiper_proactive
-import controller_sandpiper_reactive
-import controller_rr
-import controller_ssapv
-import sandpiper_standard
 import scoreboard
 import time
 import msgpump
@@ -126,7 +121,11 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    controller = sandpiper_standard.Sandpiper(pump, model)
+    import controller_ssapv #@UnusedImport
+    import controller_sandpiper_reactive #@UnusedImport
+    import controller_sandpiper_proactive #@UnusedImport
+    import controller_rr #@UnusedImport
+    controller = controller_rr.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -162,11 +161,12 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = 'test_06_18'
+        name = '6nodes_mixsim_trace'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
+            scoreboard.Scoreboard().dump(pump)
             t.write('%s\n' % res)
             t.flush()
         t.close()

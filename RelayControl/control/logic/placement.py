@@ -1,11 +1,12 @@
 from control import domains
+from control.domains import domain_profile_mapping as mapping
 from ipmodels import ssapv
 from logs import sonarlog
 from service import times_client
 from virtual import nodes
 from workload import profiles
+from workload.timeutil import * #@UnusedWildImport
 import numpy as np
-from control.domains import domain_profile_mapping as mapping
 
 # Setup logging
 logger = sonarlog.getLogger('allocate_domains')
@@ -30,7 +31,11 @@ class Placement(object):
             
         return active_servers, active_server_list
             
-    
+    '''
+    Returns a tuple of migrations and number of active servers. Migrations is a dictionary 
+    with domain indices as keys and node indices as values. 
+    [domain index] -> server index  
+    '''
     def execute(self):
         # Dump profiles
         profiles.dump(logger)
@@ -152,7 +157,7 @@ class FirstFitPlacement(Placement):
     
 class SSAPvPlacement(Placement):
     
-    def execute(self, aggregation=False):
+    def execute(self, aggregation=True, bucketCount=24):
         # Execute super code
         super(SSAPvPlacement, self).execute()
         
@@ -163,17 +168,17 @@ class SSAPvPlacement(Placement):
         # Loading services to combine the dmain_service_mapping with    
         service_count = len(domains.domain_profile_mapping)
         
-        if aggregation: len = profiles.PROFILE_INTERVAL_COUNT
-        else: len = 24*2
-        service_matrix = np.zeros((service_count, len), dtype=float)
+        if aggregation:
+            llen = bucketCount
+        else: 
+            llen = profiles.PROFILE_INTERVAL_COUNT
+        service_matrix = np.zeros((service_count, llen), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
             mapping = domains.domain_profile_mapping[service_index]
             
-            # Important: Load the trace of the workload profile
             service = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
-            
             print 'loading service: %s' % (service)
             service_log += service + '; '
             
@@ -190,16 +195,14 @@ class SSAPvPlacement(Placement):
     
             # Downsample TS
             if aggregation:
-                target = 30 * 60 # 10 minutes
-                elements = target / ts.frequency
-                buckets = []
-                for i in xrange(ts_len / elements):
+                elements = ts_len / bucketCount
+                bucket_data = []
+                for i in xrange(bucketCount):
                     start = i * elements
-                    end = min(ts_len, (i+1) * elements) 
+                    end = min(ts_len, (i + 1) * elements)
                     tmp = data[start : end]
-                    buckets.append(np.mean(tmp))
-                
-                service_matrix[service_index] = buckets
+                    bucket_data.append(np.max(tmp))
+                service_matrix[service_index] = bucket_data
             else:
                 service_matrix[service_index] = data
     

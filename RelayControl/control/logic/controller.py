@@ -1,10 +1,11 @@
+from control import domains
 from logs import sonarlog
+from virtual import nodes
 import configuration
 import json
+import numpy as np
+import placement
 import scoreboard
-
-# Global migration ID counter (identifies migrations)
-migration_id_counter = 0
 
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
@@ -29,8 +30,13 @@ class SimulatedMigration:
         # Set migration start time
         self.start = self.pump.sim_time()
         
+        # Parameters are determined by experimental results
+        # wait = 60 # const value used before
+        wait = np.random.lognormal(mean=3.29, sigma=0.27, size=100)
+        wait = wait[50]
+        
         # Simulate migration wait time
-        self.pump.callLater(60, self.callback)
+        self.pump.callLater(wait, self.callback)
         
     def callback(self):
         # Set migration end time
@@ -59,6 +65,9 @@ class LoadBalancer(object):
         # Start wait
         self.start_wait = start_wait
         
+        # Migration id counter
+        self.migration_id_counter = 0
+        
         
     # Abstract load balancing method
     def balance(self):
@@ -66,7 +75,26 @@ class LoadBalancer(object):
     
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
-        pass
+        nodecount = len(nodes.HOSTS)
+        splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute(aggregation=True , bucketCount=12)
+        self.build_internal_model(migrations)
+        return migrations
+    
+    def build_internal_model(self, migrations):
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+    
     
     def start(self):
         print 'Waiting for start: %i' % self.start_wait
@@ -128,9 +156,8 @@ class LoadBalancer(object):
         assert(source != target)
         
         # Update counter
-        global migration_id_counter
-        migration_id = migration_id_counter
-        migration_id_counter += 1
+        migration_id = self.migration_id_counter
+        self.migration_id_counter += 1
         
         # Block source and target nodes: Set block times in the future  
         # to guarantee that the block does not run out until the migration is finished
@@ -157,7 +184,7 @@ class LoadBalancer(object):
             # Call migration code and hand over the migration_callback reference
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name,
-                                     self.migration_callback, maxDowntime=15000, info=info)
+                                     self.migration_callback, maxDowntime=configuration.MIGRATION_DOWNTIME, info=info)
         else:
             # Simulate migration
             migration = SimulatedMigration(self.pump, domain.name, source.name, target.name,
