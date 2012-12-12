@@ -19,7 +19,7 @@ class ProfileSet:
     '''
     A profile set describes shared properties between sets of TS
     '''
-    def __init__(self, sid, ifreq, cap, day=None):
+    def __init__(self, sid, ifreq, cap=None, day=None):
         self.id = sid 
         self.ifreq = ifreq
         self.cap = cap
@@ -30,6 +30,7 @@ class ProfileSet:
 SET_O2_BUSINESS = ProfileSet(0, hour(1), None)
 SET_O2_RETAIL = ProfileSet(1, hour(1), None)
 SET_SIS = ProfileSet(2, minu(5), 3000)
+SET_SIS_SIM = ProfileSet(2, minu(5), 2500)
 
 # List of profile days
 SET_SIS_D3 = ProfileSet(3, minu(5), 3000, day=3)
@@ -301,7 +302,7 @@ mix_sim = [
 
 mix_sim2 = []
 for i in xrange(1, 400):
-    desc = Desc('SIS_%i_cpu' % i, SET_SIS)
+    desc = Desc('SIS_%i_cpu' % i, SET_SIS_SIM)
     mix_sim2.append(desc)
     
     
