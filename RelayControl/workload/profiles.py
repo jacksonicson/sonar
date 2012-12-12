@@ -32,15 +32,16 @@ mix1m = Config(None, 'mix_1', pdata.mix_1, True)
 mix2m = Config(None, 'mix_2', pdata.mix_2, True)
 
 mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
+mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mix0
+config = mixsim2
 ##############################
 
 ##############################
-selected_profile = config.prefix   # Prefix for picking TS from Times
+selected_profile = config.prefix    # Prefix for picking TS from Times
 selected_name = config.name         # Just for logging
 selected = config.data              # Selected workload mix
 modified = config.modified          # Modified version of the workload mix
@@ -152,6 +153,8 @@ def __times_name(prefixed, *args):
             name = ''
         else:
             name = selected_profile + '_'
+    else:
+        name = ''
              
     name += '_'.join(args)
     return name
@@ -256,7 +259,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
         __write_profile(connection, __times_name(True, desc.name, POSTFIX_USER), user_profile, interval)
     
     # Plotting    
-    util.plot(user_profile, desc.name + '.png', MAX_USERS)
+    # util.plot(user_profile, desc.name + '.png', MAX_USERS)
 
 
 def __build_sample_day(mix, save):
@@ -526,9 +529,9 @@ def dump_user_profile_maxes():
 # Builds the profiles and saves them in Times
 def main():
     # dump_user_profile_maxes()
-    # build_all_profiles_for_mix(selected, True)
-    # build_modified_profiles(selected, True)
-    plot_overlay_mix()
+    build_all_profiles_for_mix(selected, False)
+    # build_modified_profiles(selected, False)
+    # plot_overlay_mix()
     pass
 
 if __name__ == '__main__':

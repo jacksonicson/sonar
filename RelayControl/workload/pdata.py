@@ -297,3 +297,11 @@ mix_sim = [
             Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS, modifier.MOD4),
             Desc('O2_business_UPDATEDSS', SET_O2_BUSINESS, modifier.MOD3),
            ]
+
+
+mix_sim2 = []
+for i in xrange(1, 400):
+    desc = Desc('SIS_%i_cpu' % i, SET_SIS)
+    mix_sim2.append(desc)
+    
+    
