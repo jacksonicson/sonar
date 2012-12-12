@@ -258,6 +258,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	@Override
 	public void addHost(String hostname) throws TException {
 		logger.debug("add host: " + hostname);
+		
+		// Check if hostname is null
+		if(hostname == null)
+			return; 
+		
 		Jedis jedis = jedisPool.getResource();
 		try {
 			// Add hostname to the hosts list
