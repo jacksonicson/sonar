@@ -125,7 +125,8 @@ def main():
     import controller_sandpiper_reactive #@UnusedImport
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
-    controller = controller_rr.Sandpiper(pump, model)
+    import sandpiper_standard
+    controller = sandpiper_standard.Sandpiper(pump, model)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -161,7 +162,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '6nodes_mixsim_trace'
+        name = 'imb_low_mixsim_6_18'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()
