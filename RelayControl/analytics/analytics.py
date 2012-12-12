@@ -984,17 +984,18 @@ def t_test_response_statistics():
                             set1 = __load_response_times(file1)
                         except:
                             row = [file0 + ' x ' + file1]
-                            rows.append(row)
+                            # rows.append(row)
                             continue
                         
                         if len(set0) != len(set1):
                             row = [file0 + ' x ' + file1]
-                            rows.append(row)
+                            # rows.append(row)
                             continue
                         
                         # t-test for all operations
                         ts = []
-                        ops = []
+                        ops = ['Mix', 'Control','Type', 'Control', 'Type', 'Name']
+                        line_found = False
                         
                         for i in xrange(len(set0)):
                             line0 = set0[i]
@@ -1019,23 +1020,35 @@ def t_test_response_statistics():
                             # Welch's t-test
                             t, test, df = t_test(m1, m2, s1, s2, n1, n2)
                             
-                            
                             if t > test:
-                                pass
-                                # print 'Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
-                                ts.append(0)
                                 operation = line0[0]
                                 ops.append(operation)
-                            else:
-                                print '!Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
-                                ts.append(t)
-                                operation = line0[0]
-                                ops.append(operation)
+                                ops.append('df')
+                                ops.append('sig')
+                                line_found = True
                                 
+                                print 'Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
+                                ts.append('%0.2f' % t)
+                                ts.append('%i' % df)
+                                ts.append('*')
+                            else:
+                                operation = line0[0]
+                                ops.append(operation)
+                                ops.append('df')
+                                ops.append('sig')
+                                line_found = True
+                                
+                                print '!Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
+                                ts.append('%0.2f' % t)
+                                ts.append('%i' % df)
+                                ts.append('')
+                               
+                        if line_found: 
+                            row = [mix, control0, type0, control1, type1, file0 + ' x ' + file1]
+                            row.extend(ts)
+                            rows.append(row)
                         
-                        row = [file0 + ' x ' + file1]
-                        row.extend(ts)
-                        rows.append(row)
+                        
                         
                                                     
     import csv
