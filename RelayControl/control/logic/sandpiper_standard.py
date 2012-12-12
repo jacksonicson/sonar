@@ -15,8 +15,8 @@ INTERVAL = 30
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 0.06
-MIN_IMPROVEMENT_IMBALANCE = 0.001
+THRESHOLD_IMBALANCE = 0.03
+MIN_IMPROVEMENT_IMBALANCE = 0.0001
 NODE_CAPACITY = 100
 
 K_VALUE = 20 # sliding windows size
@@ -127,7 +127,9 @@ class Sandpiper(controller.LoadBalancer):
     
     def add_migration(self, migration):
         for mig in self.migration_queue:
-            if mig['source'].name == migration['source'].name and mig['target'].name == migration['target'].name and mig['domain'].name == migration['domain'].name and mig['finished'] == False:
+            #if mig['source'].name == migration['source'].name and mig['target'].name == migration['target'].name and mig['domain'].name == migration['domain'].name and mig['finished'] == False:
+                #return
+            if mig['domain'].name == migration['domain'].name:
                 return
         self.migration_queue.append(migration)    
 
@@ -187,14 +189,14 @@ class Sandpiper(controller.LoadBalancer):
         ############################################
         
         # detect hotspots
-        self.hotspot_detector()
+        #self.hotspot_detector()
             
         # calculate and sort nodes by their volume
-        nodes = self.migration_manager()
+        #nodes = self.migration_manager()
         
         # trigger migration
-        self.migration_trigger(nodes, sleep_time, time_now)
-        
+        #self.migration_trigger(nodes, sleep_time, time_now)
+
         
     def migrate_imbalance(self, time_now, sleep_time, k):
         # based on DSR algorithm
@@ -387,7 +389,7 @@ class Sandpiper(controller.LoadBalancer):
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        #self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
+                        self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
                             
             except StopIteration: pass 

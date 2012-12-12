@@ -162,7 +162,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '10_imb_ou_6_18'
+        name = 'test_06_18'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()
