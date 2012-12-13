@@ -955,6 +955,109 @@ def t_test(m1, m2, s1, s2, n1, n2):
     
     return t, test, df
 
+def t_test_response_statistics_all():
+    
+    mixes = ['MIX0', 'MIX1', 'MIX2', 'MIX0M', 'MIX1M', 'MIX2M']
+    controllers = {
+                  'Round Robin' : ['Default'],
+                  'Optimization' : ['Underbooking', 'Overbooking', 'Default'],
+                  'Reactive' : ['Default'],
+                  'Proactive' : ['Default']
+                  }
+    runs = [0, 1, 2]
+
+    class Hold:
+        def __init__(self):
+            self.samples = 1
+            self.sum_rtime = 0
+            self.sum_std = 0
+        
+        def accept(self, samples, rtime, std):
+            self.samples += samples
+            self.sum_rtime += samples * rtime
+            self.sum_std += samples * std
+            
+        def average(self):
+            self.sum_rtime /= self.samples
+            self.sum_std /= self.samples
+            
+    def handle(mix, control0, type0, control1, type1):
+        # Aggregate date
+        r1 = Hold()
+        r2 = Hold()
+        
+        # Aggregate all data across all runs
+        for run in runs:
+            file0 = '%s_%s_%s_%i' % (control0, mix, type0, run)
+            file1 = '%s_%s_%s_%i' % (control1, mix, type1, run)
+            
+            if file0 == file1:
+                # Do not compare the same files
+                raise StopIteration()
+            try:
+                set0 = __load_response_times(file0)
+                set1 = __load_response_times(file1)
+            except:
+                # File was not found - not important
+                raise StopIteration()
+
+            # Operations in the set are incompatible            
+            if len(set0) != len(set1):
+                __warn('Skipping invalid length %s' % (file0 + ' x ' + file1))
+                raise StopIteration()
+            
+            # Iterate over all operations
+            for i in xrange(len(set0)):
+                operation0 = set0[i]
+                operation1 = set1[i]
+                
+                # Samples
+                n1 = float(operation0[1])
+                n2 = float(operation1[1])
+                
+                # Sample mean
+                m1 = float(operation0[2])
+                m2 = float(operation1[2])
+                
+                # Sample std
+                s1 = float(operation0[3])
+                s2 = float(operation1[3])
+                
+                # Accumulate results
+                r1.accept(n1, m1, s1)
+                r2.accept(n2, m2, s2)
+                
+        # Compare controllers over all runs
+        try:
+            r1.average()
+            r2.average()
+            t, test, df = t_test(r1.sum_rtime, r2.sum_rtime, r1.sum_std, r1.sum_std,
+                                 r1.samples, r2.samples)
+            sig = t > test
+            if not sig:
+                report = '%s.%s to %s.%s (%s) $p(%i)=%0.02f,p<0.05$' % (control0, type0, control1, type1, mix, df, t)
+                print '%s.%s x %s.%s (%s) -> %i, t=%0.2f test=%0.2f df=%0.2f [%s]' % (control0, type0, control1, type1, mix, sig, t, test, df, report)
+        except:
+            __warn('%s.%s x %s.%s -> %s' % (control0, type0, control1, type1, 'FAIL'))
+
+    # For all mixes    
+    for mix in mixes:
+        
+        # Each controller type
+        for control0 in controllers.keys():
+            for type0 in controllers[control0]:
+                
+                # With each other controller type
+                for control1 in controllers.keys():
+                    try:
+                        for type1 in controllers[control1]:
+                            handle(mix, control0, type0, control1, type1)
+                    except StopIteration:
+                        pass
+                        
+    __dump_warns()
+          
+
 def t_test_response_statistics():
     
     mixes = ['MIX0', 'MIX1', 'MIX2', 'MIX0M', 'MIX1M', 'MIX2M']
@@ -969,91 +1072,98 @@ def t_test_response_statistics():
     ops = ['']
     runs = [0, 1, 2]
     
-    samples_total = 0
-    sum_std = 0
-    sum_rtime = 0
+    def handle(run, mix, control0, type0, control1, type1):
+        file0 = '%s_%s_%s_%i' % (control0, mix, type0, run)
+        file1 = '%s_%s_%s_%i' % (control1, mix, type1, run)
+        
+        if file0 == file1:
+            raise StopIteration()
+        
+        try:
+            set0 = __load_response_times(file0)
+            set1 = __load_response_times(file1)
+        except:
+            row = [file0 + ' x ' + file1]
+            __warn('Skipping error %s' % (row))
+            raise StopIteration()
+        
+        if len(set0) != len(set1):
+            row = [file0 + ' x ' + file1]
+            __warn('Skipping invalid length %s' % (row))
+            raise StopIteration()
+        
+        # t-test for all operations
+        ts = []
+        ops = ['Mix', 'Control', 'Type', 'Control', 'Type', 'Name']
+        line_found = False
+        
+        for i in xrange(len(set0)):
+            line0 = set0[i]
+            line1 = set1[i]
+            
+            if line0[0] != line1[0]:
+                print 'skip line number' 
+                break
+            
+            # Samples
+            n1 = float(line0[1])
+            n2 = float(line1[1])
+            
+            # Sample mean
+            m1 = float(line0[2])
+            m2 = float(line1[2])
+            
+            # Sample stdev
+            s1 = float(line0[3])
+            s2 = float(line1[3])
+            
+            # Welch's t-test
+            t, test, df = t_test(m1, m2, s1, s2, n1, n2)
+            
+            if t > test:
+                operation = line0[0]
+                ops.append(operation)
+                ops.append('df')
+                ops.append('sig')
+                line_found = True
+                
+                # print 'Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
+                ts.append('%0.2f' % t)
+                ts.append('%i' % df)
+                ts.append('*')
+            else:
+                operation = line0[0]
+                ops.append(operation)
+                ops.append('df')
+                ops.append('sig')
+                line_found = True
+                
+                # print '!Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
+                ts.append('%0.2f' % t)
+                ts.append('%i' % df)
+                ts.append('')
+               
+        if line_found: 
+            row = [mix, control0, type0, control1, type1, file0 + ' x ' + file1]
+            row.extend(ts)
+            rows.append(row)
     
-    for run in runs:
-        for mix in mixes:
+    # For all mixes    
+    for mix in mixes:
+        
+        for run in runs:
+        
+            # Each controller type
             for control0 in controllers.keys():
                 for type0 in controllers[control0]:
+                    
+                    # With each other controller type
                     for control1 in controllers.keys():
-                        for type1 in controllers[control1]:
-                            
-                            file0 = '%s_%s_%s_%i' % (control0, mix, type0, run)
-                            file1 = '%s_%s_%s_%i' % (control1, mix, type1, run)
-                            
-                            if file0 == file1:
-                                continue
-                            
-                            try:
-                                set0 = __load_response_times(file0)
-                                set1 = __load_response_times(file1)
-                            except:
-                                row = [file0 + ' x ' + file1]
-                                __warn('Skipping error %s' % (row))
-                                continue
-                            
-                            if len(set0) != len(set1):
-                                row = [file0 + ' x ' + file1]
-                                __warn('Skipping invalid length %s' % (row))
-                                continue
-                            
-                            # t-test for all operations
-                            ts = []
-                            ops = ['Mix', 'Control', 'Type', 'Control', 'Type', 'Name']
-                            line_found = False
-                            
-                            for i in xrange(len(set0)):
-                                line0 = set0[i]
-                                line1 = set1[i]
-                                
-                                if line0[0] != line1[0]:
-                                    print 'skip line number' 
-                                    break
-                                
-                                # Samples
-                                n1 = float(line0[1])
-                                n2 = float(line1[1])
-                                
-                                # Sample mean
-                                m1 = float(line0[2])
-                                m2 = float(line1[2])
-                                
-                                # Sample stdev
-                                s1 = float(line0[3])
-                                s2 = float(line1[3])
-                                
-                                # Welch's t-test
-                                t, test, df = t_test(m1, m2, s1, s2, n1, n2)
-                                
-                                if t > test:
-                                    operation = line0[0]
-                                    ops.append(operation)
-                                    ops.append('df')
-                                    ops.append('sig')
-                                    line_found = True
-                                    
-                                    # print 'Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
-                                    ts.append('%0.2f' % t)
-                                    ts.append('%i' % df)
-                                    ts.append('*')
-                                else:
-                                    operation = line0[0]
-                                    ops.append(operation)
-                                    ops.append('df')
-                                    ops.append('sig')
-                                    line_found = True
-                                    
-                                    # print '!Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
-                                    ts.append('%0.2f' % t)
-                                    ts.append('%i' % df)
-                                    ts.append('')
-                                   
-                            if line_found: 
-                                row = [mix, control0, type0, control1, type1, file0 + ' x ' + file1]
-                                row.extend(ts)
-                                rows.append(row)
+                        try:
+                            for type1 in controllers[control1]:
+                                handle(run, mix, control0, type0, control1, type1)
+                        except StopIteration:
+                            pass
                             
         import csv
         with open('C:/temp/result_%i.csv' % run, 'wb') as csvfile:
@@ -1061,7 +1171,7 @@ def t_test_response_statistics():
             spamwriter.writerow(ops)
             spamwriter.writerows(rows)
             
-        # __dump_warns()
+        __dump_warns()
           
         
 def load_migration_times(connection):
@@ -1496,7 +1606,8 @@ if __name__ == '__main__':
         # load_migration_times(connection)
         
         # load_response_statistics(connection)
-        t_test_response_statistics()
+        # t_test_response_statistics()
+        t_test_response_statistics_all()
         # load_response_times(connection)
     except:
         traceback.print_exc(file=sys.stdout)
