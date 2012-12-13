@@ -31,7 +31,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '27/11/2012 22:40:00    28/11/2012 05:30:00'
+RAW = '13/12/2012 09:30:01    13/12/2012 16:45:01'
 ##########################
 
 warns = []
@@ -1034,7 +1034,7 @@ def t_test_response_statistics_all():
             t, test, df = t_test(r1.sum_rtime, r2.sum_rtime, r1.sum_std, r1.sum_std,
                                  r1.samples, r2.samples)
             sig = t > test
-            if not sig:
+            if sig:
                 report = '%s.%s to %s.%s (%s) $p(%i)=%0.02f,p<0.05$' % (control0, type0, control1, type1, mix, df, t)
                 print '%s.%s x %s.%s (%s) -> %i, t=%0.2f test=%0.2f df=%0.2f [%s]' % (control0, type0, control1, type1, mix, sig, t, test, df, report)
         except:
