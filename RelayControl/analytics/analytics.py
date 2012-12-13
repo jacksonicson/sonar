@@ -31,7 +31,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '12/12/2012 10:00:01    12/12/2012 16:50:01'
+RAW = '27/11/2012 22:40:00    28/11/2012 05:30:00'
 ##########################
 
 warns = []
@@ -945,11 +945,11 @@ def __load_response_times(file):
     return lines
 
 def t_test(m1, m2, s1, s2, n1, n2):
-    t = abs(m1 - m2) / math.sqrt( (math.pow(s1, 2) / n1) + (math.pow(s2, 2) / n2) )
+    t = abs(m1 - m2) / math.sqrt((math.pow(s1, 2) / n1) + (math.pow(s2, 2) / n2))
     
     s12 = math.pow(s1, 2)
     s22 = math.pow(s2, 2)
-    df = math.pow((s12 / n1 + s22 / n2), 2) / ( (math.pow(s12 / n1, 2) / (n1 - 1)) + (math.pow(s22 / n2, 2) / (n2 - 1)) )
+    df = math.pow((s12 / n1 + s22 / n2), 2) / ((math.pow(s12 / n1, 2) / (n1 - 1)) + (math.pow(s22 / n2, 2) / (n2 - 1)))
     
     test = sps.t.ppf(0.975, df)
     
@@ -959,6 +959,7 @@ def t_test_response_statistics():
     
     mixes = ['MIX0', 'MIX1', 'MIX2', 'MIX0M', 'MIX1M', 'MIX2M']
     controllers = {
+                  'Round Robin' : ['Default'],
                   'Optimization' : ['Underbooking', 'Overbooking', 'Default'],
                   'Reactive' : ['Default'],
                   'Proactive' : ['Default']
@@ -966,96 +967,101 @@ def t_test_response_statistics():
     
     rows = []
     ops = ['']
+    runs = [0, 1, 2]
     
-    for mix in mixes:
-        for control0 in controllers.keys():
-            for type0 in controllers[control0]:
-                for control1 in controllers.keys():
-                    for type1 in controllers[control1]:
-                        
-                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 2)
-                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 2)
-                        
-                        if file0 == file1:
-                            continue
-                        
-                        try:
-                            set0 = __load_response_times(file0)
-                            set1 = __load_response_times(file1)
-                        except:
-                            row = [file0 + ' x ' + file1]
-                            # rows.append(row)
-                            continue
-                        
-                        if len(set0) != len(set1):
-                            row = [file0 + ' x ' + file1]
-                            # rows.append(row)
-                            continue
-                        
-                        # t-test for all operations
-                        ts = []
-                        ops = ['Mix', 'Control','Type', 'Control', 'Type', 'Name']
-                        line_found = False
-                        
-                        for i in xrange(len(set0)):
-                            line0 = set0[i]
-                            line1 = set1[i]
+    samples_total = 0
+    sum_std = 0
+    sum_rtime = 0
+    
+    for run in runs:
+        for mix in mixes:
+            for control0 in controllers.keys():
+                for type0 in controllers[control0]:
+                    for control1 in controllers.keys():
+                        for type1 in controllers[control1]:
                             
-                            if line0[0] != line1[0]:
-                                print 'skip line number' 
-                                break
+                            file0 = '%s_%s_%s_%i' % (control0, mix, type0, run)
+                            file1 = '%s_%s_%s_%i' % (control1, mix, type1, run)
                             
-                            # Samples
-                            n1 = float(line0[1])
-                            n2 = float(line1[1])
+                            if file0 == file1:
+                                continue
                             
-                            # Sample mean
-                            m1 = float(line0[2])
-                            m2 = float(line1[2])
+                            try:
+                                set0 = __load_response_times(file0)
+                                set1 = __load_response_times(file1)
+                            except:
+                                row = [file0 + ' x ' + file1]
+                                __warn('Skipping error %s' % (row))
+                                continue
                             
-                            # Sample stdev
-                            s1 = float(line0[3])
-                            s2 = float(line1[3])
+                            if len(set0) != len(set1):
+                                row = [file0 + ' x ' + file1]
+                                __warn('Skipping invalid length %s' % (row))
+                                continue
                             
-                            # Welch's t-test
-                            t, test, df = t_test(m1, m2, s1, s2, n1, n2)
+                            # t-test for all operations
+                            ts = []
+                            ops = ['Mix', 'Control', 'Type', 'Control', 'Type', 'Name']
+                            line_found = False
                             
-                            if t > test:
-                                operation = line0[0]
-                                ops.append(operation)
-                                ops.append('df')
-                                ops.append('sig')
-                                line_found = True
+                            for i in xrange(len(set0)):
+                                line0 = set0[i]
+                                line1 = set1[i]
                                 
-                                print 'Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
-                                ts.append('%0.2f' % t)
-                                ts.append('%i' % df)
-                                ts.append('*')
-                            else:
-                                operation = line0[0]
-                                ops.append(operation)
-                                ops.append('df')
-                                ops.append('sig')
-                                line_found = True
+                                if line0[0] != line1[0]:
+                                    print 'skip line number' 
+                                    break
                                 
-                                print '!Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
-                                ts.append('%0.2f' % t)
-                                ts.append('%i' % df)
-                                ts.append('')
-                               
-                        if line_found: 
-                            row = [mix, control0, type0, control1, type1, file0 + ' x ' + file1]
-                            row.extend(ts)
-                            rows.append(row)
-                        
-                        
-                        
-                                                    
-    import csv
-    with open('C:/temp/result.csv', 'wb') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter='\t')
-        spamwriter.writerow(ops)
-        spamwriter.writerows(rows)
+                                # Samples
+                                n1 = float(line0[1])
+                                n2 = float(line1[1])
+                                
+                                # Sample mean
+                                m1 = float(line0[2])
+                                m2 = float(line1[2])
+                                
+                                # Sample stdev
+                                s1 = float(line0[3])
+                                s2 = float(line1[3])
+                                
+                                # Welch's t-test
+                                t, test, df = t_test(m1, m2, s1, s2, n1, n2)
+                                
+                                if t > test:
+                                    operation = line0[0]
+                                    ops.append(operation)
+                                    ops.append('df')
+                                    ops.append('sig')
+                                    line_found = True
+                                    
+                                    # print 'Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
+                                    ts.append('%0.2f' % t)
+                                    ts.append('%i' % df)
+                                    ts.append('*')
+                                else:
+                                    operation = line0[0]
+                                    ops.append(operation)
+                                    ops.append('df')
+                                    ops.append('sig')
+                                    line_found = True
+                                    
+                                    # print '!Significant t(%i) = %0.2f, p>0.05 -- %s: %s x %s' % (df, t, operation, file0, file1)
+                                    ts.append('%0.2f' % t)
+                                    ts.append('%i' % df)
+                                    ts.append('')
+                                   
+                            if line_found: 
+                                row = [mix, control0, type0, control1, type1, file0 + ' x ' + file1]
+                                row.extend(ts)
+                                rows.append(row)
+                            
+        import csv
+        with open('C:/temp/result_%i.csv' % run, 'wb') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter='\t')
+            spamwriter.writerow(ops)
+            spamwriter.writerows(rows)
+            
+        # __dump_warns()
           
         
 def load_migration_times(connection):
@@ -1216,7 +1222,7 @@ def load_response_times(connection):
 def load_response_statistics(connection):
     # Load experiments database
     counter = 0
-    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
+    for entry in __load_experiment_db('C:/temp/experiments.csv'):
         global START, END, RAW
         RAW = entry[0]
         START, END = RAW.split('    ')
@@ -1240,7 +1246,7 @@ def load_response_statistics(connection):
         
         # Estimate sync markers if no sync markers where found
         if sync_markers[0] is None:
-            __warn('Sync marker not found')
+            __warn('Sync marker not found for %s %s' % (START, END))
             sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
             
         _schedules = []
@@ -1278,6 +1284,9 @@ def load_response_statistics(connection):
                 for o in op:
                     spamwriter.writerow((o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev']))
                     print '%s \t %i \t %d \t %d' % (o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev'])
+                    
+    # Dump all warnings
+    __dump_warns()
         
 
 def connect_sonar(connection):
