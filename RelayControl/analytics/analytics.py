@@ -519,51 +519,33 @@ def __processing_generate_profiles(domain_workload_map, cpu):
  
 def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful):
     for domain in domain_track_map.keys():
+        # New figure
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_xlabel('Time in seconds')
         ax.set_ylabel('Response time in milliseconds')
-        
+
+        # Plot response times        
         for track in domain_track_map[domain]:
-            print 'plotting'
             res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
             ax.plot(res_time, res_resp)
             
         # Add annotations to the trace
-        print 'domain: %s' % domain
         for mig in migrations_triggered:
-            print 'test: %s' % mig[1]['domain']
             if mig[1]['domain'] == domain:
-                ax.axvline(mig[0] + 20, color='r')
+                ax.axvline(mig[0] + CONTROLLER_TIME_SHIFT, color='r')
        
         for mig in migrations_successful:
             if mig[1]['domain'] == domain: 
-                ax.axvline(mig[0] + 20, color='g')
-            
-        def to_hour(ts):
-            dt = datetime.fromtimestamp(ts)
-            return '%i' % (dt.second)
-        
-        for mig in migrations_successful:
-            if mig[1]['domain'] == domain:
-                ax.set_xlim([mig[0] - 120, mig[0] + 120])
-                
-                xt = [t for t in xrange(mig[0] - 120, mig[0] + 120, 30)]
-                xl = [t * 30 for t in xrange(0, len(xt))]
-                ax.set_xticks(xt)
-                ax.set_xticklabels(xl)
-                
-                break
-            
-        plt.savefig(configuration.path('migration_%s' % domain, 'pdf'))
-        
+                ax.axvline(mig[0] + CONTROLLER_TIME_SHIFT, color='g')
+
+        plt.show()            
+        # plt.savefig(configuration.path('migration_%s' % domain, 'pdf'))
             
  
 def __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains):
     loads = []
-    
-    delta = data_frame[1] - data_frame[0]
-    delta = 60 # delta / 50
+    delta = 60 # (data_frame[1] - data_frame[0]) / 50
     for t in xrange(data_frame[0], data_frame[1], delta):
         ss = 0
         for node in nodes.NODES:
@@ -650,7 +632,6 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains):
     handles1.extend(handles2)
     labels1.extend(labels2)
     ax2.legend(handles1, labels1, prop={'size':10})
-    
     
     # plt.savefig(configuration.path('servers_load', 'pdf'))
     plt.show()
@@ -1560,8 +1541,8 @@ def connect_sonar(connection):
     print '## MIGRATIONS ##'
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
-        __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
-        # __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains)
+        # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
+        ## __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
         # __analytics_migration_overheads(data_frame, cpu, migrations_successful)
     else:

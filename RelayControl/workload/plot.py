@@ -42,7 +42,7 @@ def rstyle(ax):
         lg.get_frame().set_linewidth(0)
         lg.get_frame().set_alpha(0.5)
         
-        
+
 def rhist(ax, data, **keywords):
     """Creates a histogram with default style parameters to look like ggplot2
     Is equivalent to calling ax.hist and accepts the same keyword parameters.
