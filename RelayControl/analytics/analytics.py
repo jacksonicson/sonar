@@ -10,6 +10,7 @@ from times import ttypes as times_ttypes
 from virtual import nodes
 from workload import profiles, util
 import configuration
+import csv
 import json
 import math
 import matplotlib.pyplot as plt
@@ -17,6 +18,11 @@ import numpy as np
 import sys
 import time
 import traceback
+
+'''
+For some experiments time between Andreas-PC was 32 sec behind the
+infrastructure time.   
+'''
 
 ##########################
 ## Configuration        ##
@@ -27,6 +33,7 @@ LOGGING_PORT = 7921
 DEBUG = False
 TRACE_EXTRACT = False
 DRIVERS = 2
+EXPERIMENT_DB = 'C:/temp/experiments.csv'
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
@@ -516,8 +523,6 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         ax.set_xlabel('Time in seconds')
         ax.set_ylabel('Response time in milliseconds')
         
-        
-        
         for track in domain_track_map[domain]:
             print 'plotting'
             res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
@@ -691,39 +696,44 @@ def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
         plt.show()
    
    
+'''
+Extracts CPU usage before migration and during migration
+'''
 def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful):
+    # Iterate over all migrations
     for migration in migrations_successful:
-        
         # time shift
         time_shift = 30
-        end_time = migration[0] + time_shift 
-        start_time = migration[0] - migration[1]['duration'] + time_shift
+        time_migration_end = time_shift + migration[0]
+        time_migration_start = time_shift + migration[0] - migration[1]['duration']
         
-        from_server = migration[1]['from']
-        to_server = migration[1]['to']
-        
-        from_cpu = cpu[from_server]
-        to_cpu = cpu[to_server]
-
-        before_cpu = []
-        during_cpu = []
-        after_cpu = []        
-        for i in xrange(len(from_cpu[1])):
-            time = from_cpu[1][i]
-            if time > start_time and time < end_time:
-                during_cpu.append(from_cpu[0][i])
-            elif time > (start_time - 60) and time < start_time:
-                before_cpu.append(from_cpu[0][i])
-            elif time > end_time and time < (end_time + 60):
-                after_cpu.append(from_cpu[0][i])
+        def extract_cpu(cpu_load):
+            readings_before, readings_during = [], []
             
-#        print before_cpu
-#        print during_cpu
-        print '%d - %d - %d' % (np.mean(before_cpu), np.mean(during_cpu), np.mean(after_cpu))
-        if np.mean(before_cpu) > np.mean(during_cpu):
-            print '--'
-        else:
-            print '++'
+            for i in xrange(len(cpu_load[0])):
+                time = cpu_load[0][i]
+                load = cpu_load[1][i]
+                
+                if time > time_migration_start and time < time_migration_end:
+                    readings_during.append(load)
+                    
+                elif time > (time_migration_start - 60) and time < time_migration_start:
+                    readings_before.append(load)
+                    
+            return readings_before, readings_during 
+
+
+        source_server = migration[1]['from']
+        target_server = migration[1]['to']
+        cpu_load_source = cpu[source_server]
+        cpu_load_target = cpu[target_server]
+        
+        before_cpu_source, during_cpu_source = extract_cpu(cpu_load_source)
+        before_cpu_target, during_cpu_target = extract_cpu(cpu_load_target)
+        
+        result = (np.mean(before_cpu_source), np.mean(during_cpu_source), 
+                 np.mean(before_cpu_target), np.mean(during_cpu_target))
+        print 'source: before=%0.2f during=%0.2f    target: before=%0.2f duringr=%0.2f' % result
         
  
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
@@ -749,7 +759,6 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     # Server active flags mark changes in server active count
     # Wrap server active flags with start and end flag at the beginning and end of experiment
     # Each state is a tuple with: 
-    # (timestamp, TODO!!!!!!!!!!!!!!!!!! 
     _server_active = []
     _server_active.append((data_frame[0], server_active_flags[0][1], server_active_flags[0][2]))
     _server_active.extend(server_active_flags)
@@ -875,6 +884,7 @@ def __analytics_server_utilization(cpu, mem):
     
     return _cpu, _mem, _violations
  
+ 
 def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count,
                                    migration_count, min_nodes, max_nodes, srv_cpu_violations):
     global_metric_aggregation = {}
@@ -934,16 +944,15 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
             print 'Error in %s' % element
     __dump_elements(tuple(data), dump, separator='\t')   
 
-def __load_experiment_db(file):
-    import csv
+def __load_experiment_db(db_file):
     experiments = []
     header = False
-    with open(file, 'r') as file:
-        dbreader = csv.reader(file, delimiter='\t')
+    with open(file, 'r') as db_file:
+        dbreader = csv.reader(db_file, delimiter='\t')
         
         controller = None
         mix = None
-        type = None
+        experiment_type = None
         crt = 0
         
         for row in dbreader:
@@ -960,26 +969,27 @@ def __load_experiment_db(file):
                 
             if row[1] != '':
                 crt = 0
-                type = row[1]
+                experiment_type = row[1]
             
             if row[5] != 'OK':
                 continue
             
             if row[3] != '' and row[4] != '':
                 date = row[3] + '    ' + row[4]
-                experiments.append((date, controller, mix, type, crt))
+                experiments.append((date, controller, mix, experiment_type, crt))
                 crt += 1
                 
     return experiments
 
-def __load_response_times(file):
-    import csv
+
+def __load_response_times(resp_times_file):
     lines = []
-    with open('C:/temp/%s.csv' % file, 'rb') as file:
-        dbreader = csv.reader(file, delimiter='\t')
+    with open(configuration.path('%s' % resp_times_file, 'csv'), 'rb') as resp_times_file:
+        dbreader = csv.reader(resp_times_file, delimiter='\t')
         for line in dbreader:
             lines.append(line)
     return lines
+
 
 def t_test(m1, m2, s1, s2, n1, n2):
     t = abs(m1 - m2) / math.sqrt((math.pow(s1, 2) / n1) + (math.pow(s2, 2) / n2))
@@ -991,6 +1001,7 @@ def t_test(m1, m2, s1, s2, n1, n2):
     test = sps.t.ppf(0.975, df)
     
     return t, test, df
+
 
 def t_test_response_statistics_all():
     
@@ -1211,165 +1222,78 @@ def t_test_response_statistics():
         __dump_warns()
           
         
-def load_migration_times(connection):
-    # Load experiments database
-    counter = 0
+def extract_migration_times(connection):
+    # List of migration times
     times = []
-    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
-        global START, END, RAW
-        RAW = entry[0]
-        START, END = RAW.split('    ')
     
-        if counter > 3000:
-            break
-        counter += 1    
-    
-        # Dump the configuration
-        __dump_configuration()
+    def handle(entry):
+        # Refine markers
+        raw_frame, _ = __refine_markers(connection)
         
-        # Configure experiment
-        start = __to_timestamp(START)
-        stop = __to_timestamp(END)
-        raw_frame = (start, stop)
-        
-        # Get sync markers from control (start of driving load)
-        sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
-        # print '## SYNC MARKERS ##'
-        __dump_elements(sync_markers)
-        
-        # Estimate sync markers if no sync markers where found
-        if sync_markers[0] is None:
-            __warn('Sync marker not found')
-            sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
-        
+        # Fetch migrations
         successful, _, _, _ = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
+        
+        # Get timestamps from successful migration times
         for end in successful:
             times.append((end[1]['duration'],))
-            
-    import csv
-    with open('C:/temp/migrations.csv', 'wb') as csvfile:
+
+    __process_from_experiment_schedule(handle)
+
+    # Write migration data to CSV file 
+    with open(configuration.path('migrations', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
         spamwriter.writerows(times)
 
 
-def load_response_times(connection):
-    # Load experiments database
-    counter = 0
-    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
+def extract_response_times(connection):
+    def handler(entry):
         try:
-            global START, END, RAW
-            RAW = entry[0]
-            START, END = RAW.split('    ')
-        
-            if counter > 3000:
-                break
-            counter += 1
-        
-            # Dump the configuration
-            __dump_configuration()
+            # Refine markers
+            raw_frame, _ = __refine_markers(connection)
             
-            # Configure experiment
-            start = __to_timestamp(START)
-            stop = __to_timestamp(END)
-            raw_frame = (start, stop)
+            # Load Rain results
+            rain_results = __load_rain_results(connection, raw_frame)
+            _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors = rain_results
             
-            # Get sync markers from control (start of driving load)
-            sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
-            # print '## SYNC MARKERS ##'
-            __dump_elements(sync_markers)
-            
-            # Estimate sync markers if no sync markers where found
-            if sync_markers[0] is None:
-                __warn('Sync marker not found')
-                sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
+            # Refine data frame
+            data_frame = __refine_data_frame(_schedules)
                 
-            _schedules = []
-            _track_configs = []
-            _global_metrics = []
-            _rain_metrics = []
-            _track_metrics = []
-            _spec_metrics = []
-            _errors = []
+            # Load workload maps
+            _, domain_track_map, _ = __domain_workload_map(_track_configs)
             
-            # Fetch rain data
-            for host in DRIVER_NODES:
-                # print 'Fetching driver node: %s ...' % host
-                rain_data = __fetch_rain_data(connection, host, raw_frame)
-                schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
-                
-                if schedule is not None: _schedules.append(schedule)
-                if track_config is not None: _track_configs.append((track_config, host))
-                if global_metrics is not None: _global_metrics.append(global_metrics)
-                if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
-                if track_metrics is not None: _track_metrics.extend(track_metrics)
-                if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
-                
-            print '## SCHEDULE ##'
-            # Each rain driver logs an execution schedule which defines the timestamp to start the
-            # steady state phase and to end it
-            schedule_starts = []
-            schedule_ends = []
-            for schedule in _schedules:
-                schedule_starts.append(schedule[0])
-                schedule_ends.append(schedule[1])
-                __dump_elements(schedule)
-               
-            # refine data raw_frame with schedules
-            print '## REFINED TIME FRAME ##'
-            data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
-            __dump_elements(data_frame)
-            duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
-            print 'Frame duration is: %f hours' % (duration)
-                
-            print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
-            # Results
-            domains = []
-            domain_track_map = {}
-            domain_workload_map = {}
-            
-            for track_config, source_host in _track_configs:
-                for track in track_config:
-                    host = track_config[track]['target']['hostname']
-                    workload = track_config[track]['loadScheduleCreatorParameters']['profile']
-                    
-                    if host not in domains:
-                        domains.append(host)
-                    
-                    if domain_track_map.has_key(host) == False:
-                        domain_track_map[host] = []
-                    domain_track_map[host].append((source_host, track))
-            
-                    if domain_workload_map.has_key(host) == False:
-                        domain_workload_map[host] = workload
-                    else:
-                        if domain_workload_map[host] != workload:
-                            print 'WARN: Multiple load profiles on the same target'
-                            
-            # print 'domain track map: %s' % domain_track_map
-            # print 'domain workload map: %s' % domain_workload_map
-        
-            print '## RESPONSE TIME AGGREGATION ###'
-            # Fetch track response time and calculate average
+            print '## RESPONSE TIME EXTRACTION ###'
+            # Buffer for all response times 
             agg_resp_time = []
+            
+            # Fetch track response time and calculate average
             for key in domain_track_map.keys():
+                # For all tracks
                 for track in domain_track_map[key]:
+                    # Load and buffer response response time readings
                     res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
                     agg_resp_time.extend(res_resp)
+                    
             print 'Average response time: %i, samples: %i' % (np.mean(agg_resp_time), len(agg_resp_time))
                
-            import csv
-            with open('C:/temp/rtime_%s_%s_%s_%i.csv' % (entry[1:]), 'wb') as csvfile:
+            # Write response times to CSV file
+            with open(configuration.path('rtime_%s_%s_%s_%i' % (entry[1:]), 'csv'), 'wb') as csvfile:
                 spamwriter = csv.writer(csvfile, delimiter='\t') 
                 spamwriter.writerows((time,) for time in agg_resp_time)
+                
         except:
-            print 'error in %s' % entry[1] 
-            continue
+            print 'Error while processing %s' % entry[1] 
+    
+    __process_from_experiment_schedule(handler)
 
      
+'''
+Calls the callback handler for each experiment registered
+in the experiment database. 
+'''
 def __process_from_experiment_schedule(callback_handler, limit=300):
     # Load experiments database
     count = 0
-    for entry in __load_experiment_db('C:/temp/experiments.csv'):
+    for entry in __load_experiment_db(EXPERIMENT_DB):
         global START, END, RAW
         RAW = entry[0]
         START, END = RAW.split('    ')
@@ -1384,13 +1308,12 @@ def __process_from_experiment_schedule(callback_handler, limit=300):
         
         callback_handler(entry)
         
-        
             
 '''
 Creates a CSV file for each experiment. It contains the Rain operation response time
 metrics for all drivers. 
 '''
-def load_response_statistics(connection):
+def extract_response_statistics(connection):
     
     def handler(entry):
         # Refine markers
@@ -1400,7 +1323,6 @@ def load_response_statistics(connection):
         rain_results = __load_rain_results(connection, raw_frame)
         _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors = rain_results
         
-        import csv
         with open(configuration.path('%s_%s_%s_%i' % (entry[1:]), 'csv'), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             print '### Operation Sampling Table ###'
@@ -1629,9 +1551,9 @@ def connect_sonar(connection):
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
-        __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains)
+        # __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
-        # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
+        __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
         print 'No migrations'
     
@@ -1647,12 +1569,12 @@ if __name__ == '__main__':
     connection = __connect()
     try:
         connect_sonar(connection)
-        # load_migration_times(connection)
+        # extract_migration_times(connection)
         
-        # load_response_statistics(connection)
+        # extract_response_statistics(connection)
         # t_test_response_statistics()
         # t_test_response_statistics_all()
-        # load_response_times(connection)
+        # extract_response_times(connection)
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
