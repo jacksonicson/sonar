@@ -8,7 +8,6 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 from times import ttypes as times_ttypes
 from virtual import nodes
-from control import domains
 from workload import profiles, util
 import configuration
 import json
@@ -558,7 +557,7 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains):
     loads = []
     
     delta = data_frame[1] - data_frame[0]
-    delta =  60 # delta / 50
+    delta = 60 # delta / 50
     for t in xrange(data_frame[0], data_frame[1], delta):
         ss = 0
         for node in nodes.NODES:
@@ -655,7 +654,6 @@ def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
     for node in nodes.NODES:
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        
         
         cc = mem[node]  
         ax.axis([min(cc[1]), max(cc[1]), 0, 100])
@@ -1438,10 +1436,7 @@ def load_response_statistics(connection):
     __dump_warns()
         
 
-def connect_sonar(connection):
-    # Dump the configuration
-    __dump_configuration()
-    
+def __refine_markers(connection):
     # Configure experiment
     start = __to_timestamp(START)
     stop = __to_timestamp(END)
@@ -1457,21 +1452,9 @@ def connect_sonar(connection):
         __warn('Sync marker not found')
         sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
     
-    #####################################################################################################################################
-    ### Reading Allocation ##############################################################################################################
-    #####################################################################################################################################
-    allocation_frame = (sync_markers[0], raw_frame[1])
-    servers, assignment, migrations, placement, matrix = __fetch_allocation_config(connection, CONTROLLER_NODE, allocation_frame)
-    print '## ALLOCATION ##'
-    print 'Placement Strategy: %s' % placement
-    print 'Number of servers %i' % servers
-    print 'Assignment: %s' % assignment
-    print 'Migrations: %s' % migrations
-    print 'Service matrix: %s' % matrix
-    
-    #####################################################################################################################################
-    ### Reading Results from Rain #######################################################################################################
-    #####################################################################################################################################
+    return raw_frame, sync_markers
+  
+def __load_rain_results(connection, raw_frame):
     _schedules = []
     _track_configs = []
     _global_metrics = []
@@ -1494,49 +1477,38 @@ def connect_sonar(connection):
         if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
         if errors is not None: _errors.extend(errors)
         
-    # Print metrics
-    __dump_metrics(_global_metrics, _rain_metrics, _track_metrics, _spec_metrics)
-        
     # Consistency checks
     if len(_global_metrics) < DRIVERS:
         __warn('Not each driver logged a global metric. Usually one driver exited with an error in this case')
         
-    print '## ERRORS ##'
-    for error in _errors:
-        if error == 'Audit failed: Incorrect value for steadyState, should be 3600':
-            # print 'expected> ', error
-            pass
-        elif error.find('Oops: Uncaught exception caused thread:') != -1:
-            print 'critical> ', error
-            __warn(error)
-        else:
-            if len(error) < 100: print error
-            else: print error[0:100]
-        
-    print '## SCHEDULE ##'
+    return _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors
+
+
+def __refine_data_frame(rain_schedules):
     # Each rain driver logs an execution schedule which defines the timestamp to start the
     # steady state phase and to end it
     schedule_starts = []
     schedule_ends = []
-    for schedule in _schedules:
+    for schedule in rain_schedules:
         schedule_starts.append(schedule[0])
         schedule_ends.append(schedule[1])
         __dump_elements(schedule)
        
     # refine data raw_frame with schedules
-    print '## REFINED TIME FRAME ##'
     data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
     __dump_elements(data_frame)
     duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
     print 'Frame duration is: %f hours' % (duration)
     
-    print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
+    return data_frame
+    
+def __domain_workload_map(rain_track_configs):
     # Results
     domains = []
     domain_track_map = {}
     domain_workload_map = {}
     
-    for track_config, source_host in _track_configs:
+    for track_config, source_host in rain_track_configs:
         for track in track_config:
             host = track_config[track]['target']['hostname']
             workload = track_config[track]['loadScheduleCreatorParameters']['profile']
@@ -1554,11 +1526,10 @@ def connect_sonar(connection):
                 if domain_workload_map[host] != workload:
                     print 'WARN: Multiple load profiles on the same target'
                     
-    # print 'domain track map: %s' % domain_track_map
-    # print 'domain workload map: %s' % domain_workload_map
+    return domains, domain_track_map, domain_workload_map
 
-    print '## RESPONSE TIME THRESHOLD CHECK ###'
-    # Fetch track response time and calculate average
+
+def __sla_failes(data_frame, domain_track_map):
     sla_fail_count = 0
     for key in domain_track_map.keys():
         for track in domain_track_map[key]:
@@ -1568,21 +1539,9 @@ def connect_sonar(connection):
             cond = res_resp > 3000 
             ext = np.extract(cond, res_resp)
             sla_fail_count += len(ext)
-    print 'SLA fail count: %i' % sla_fail_count
-    
-    #####################################################################################################################################
-    ### Reading Migrations ##############################################################################################################
-    #####################################################################################################################################
-    migrations_successful, migrations_failed, server_active_flags, migrations_triggered = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
-    
-    print '## MIGRATIONS ##'
-    print 'Successful: %i' % len(migrations_successful)
-    print 'Failed: %i' % len(migrations_failed)
-    
-    #####################################################################################################################################
-    ### Resource Readings ###############################################################################################################
-    #####################################################################################################################################
-    
+    return sla_fail_count
+
+def __load_traces(data_frame, domains):
     # Results
     cpu = {}
     mem = {}
@@ -1600,13 +1559,78 @@ def connect_sonar(connection):
         res_mem, tim_mem = __fetch_timeseries(connection, domain, 'psutilmem.phymem', data_frame)
         cpu[domain] = (res_cpu, tim_cpu)
         mem[domain] = (res_mem, tim_mem)
+        
+    return cpu, mem
     
+
+def connect_sonar(connection):
+    # Refine markers
+    raw_frame, sync_markers = __refine_markers(connection)
+    
+    #####################################################################################################################################
+    ### Reading Allocation ##############################################################################################################
+    #####################################################################################################################################
+    allocation_frame = (sync_markers[0], raw_frame[1])
+    servers, assignment, migrations, placement, matrix = __fetch_allocation_config(connection, CONTROLLER_NODE, allocation_frame)
+    print '## ALLOCATION ##'
+    print 'Placement Strategy: %s' % placement
+    print 'Number of servers %i' % servers
+    print 'Assignment: %s' % assignment
+    print 'Migrations: %s' % migrations
+    print 'Service matrix: %s' % matrix
+    
+    #####################################################################################################################################
+    ### Reading Results from Rain #######################################################################################################
+    #####################################################################################################################################
+    rain_results = __load_rain_results(connection, raw_frame)
+    _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors = rain_results 
+        
+    # Print metrics
+    __dump_metrics(_global_metrics, _rain_metrics, _track_metrics, _spec_metrics)
+        
+    print '## ERRORS ##'
+    for error in _errors:
+        if error == 'Audit failed: Incorrect value for steadyState, should be 3600':
+            pass
+        elif error.find('Oops: Uncaught exception caused thread:') != -1:
+            print 'critical> ', error
+            __warn(error)
+        else:
+            if len(error) < 100: print error
+            else: print error[0:100]
+        
+    print '## REFINED TIME FRAME ##'
+    # refine data raw_frame with schedules
+    data_frame = __refine_data_frame(_schedules)
+    
+    print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
+    domains, domain_track_map, domain_workload_map = __domain_workload_map(_track_configs) 
+
+    print '## RESPONSE TIME THRESHOLD CHECK ###'
+    # Fetch track response time and calculate average
+    sla_fail_count = __sla_failes(data_frame, domain_track_map)
+    print 'SLA fail count: %i' % sla_fail_count
+    
+    #####################################################################################################################################
+    ### Reading Migrations ##############################################################################################################
+    #####################################################################################################################################
+    migrations = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
+    migrations_successful, migrations_failed, server_active_flags, migrations_triggered = migrations
+    print '## MIGRATIONS ##'
+    print 'Successful: %i' % len(migrations_successful)
+    print 'Failed: %i' % len(migrations_failed)
+    
+    #####################################################################################################################################
+    ### Resource Readings ###############################################################################################################
+    #####################################################################################################################################
+    cpu, mem = __load_traces(data_frame, domains)
+      
     # Generate and write CPU profiles to Times
     print '## GENERATING CPU LOAD PROFILES ##'
     if TRACE_EXTRACT:
         raw_input('Press a key to continue generating profiles:')
         __processing_generate_profiles(domain_workload_map, cpu)
-        
+    
     #####################################################################################################################################
     ### Analysis ########################################################################################################################
     #####################################################################################################################################
@@ -1633,12 +1657,11 @@ def connect_sonar(connection):
     __analytics_global_aggregation(_global_metrics, servers, avg_cpu, avg_mem,
                                    sla_fail_count, len(migrations_successful), min_nodes, max_nodes, violations)
     
-    
-    # Dump all warnings
-    __dump_warns()
-
 
 if __name__ == '__main__':
+    # Dump the configuration
+    __dump_configuration()
+    
     connection = __connect()
     try:
         connect_sonar(connection)
@@ -1651,3 +1674,6 @@ if __name__ == '__main__':
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
+    
+    # Dump all warnings that occured
+    __dump_warns()
