@@ -658,14 +658,21 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains):
  
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
     for node in nodes.NODES:
+        # Node memory consumption
+        node_memory = mem[node]
+        node_cpu = cpu[node]
+        
+        # Plot node memory        
         fig = plt.figure()
         ax = fig.add_subplot(111)
         
-        cc = mem[node]  
-        ax.axis([min(cc[1]), max(cc[1]), 0, 100])
-        ax.plot(cc[1], cc[0])
+        ax2 = ax.twinx()
+        ax2.plot(node_cpu[1], node_cpu[0], c='gray', linewidth=0.05)
+        
+        ax.axis([min(node_memory[1]), max(node_memory[1]), 0, 100])
+        ax.plot(node_memory[1], node_memory[0])
                 
-        # Add annotations to the trace
+        # Plot migration start
         for mig in migrations_triggered:
             if mig[1]['from'] == node:
                 ax.axvline(mig[0] + 40, color='r')
@@ -673,34 +680,38 @@ def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
             if mig[1]['to'] == node:
                 ax.axvline(mig[0] + 40, color='c')
        
-        offset = 10
+       
+        # Plot migration end and annotations
+        annotation_offset = 10
         for mig in migrations_successful: 
+            annotation_offset = (annotation_offset + 10) % 90
+            
             if mig[1]['from'] == node:
-                ax.axvline(mig[0] + 40, color='g')
-                ax.annotate('from=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
+                ax.axvline(mig[0] + 40, color='r')
+                
+                ax.annotate('%is' % mig[1]['duration'], xy=(mig[0], annotation_offset), xycoords='data',
                 xytext=(-50, -30), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->",
                                 connectionstyle="arc3,rad=.2"),
                 )
-                offset = (offset + 10) % 90
                 
             if mig[1]['to'] == node:
-                ax.axvline(mig[0] + 40, color='m')
+                ax.axvline(mig[0] + 40, color='c')
                 
-                ax.annotate('to=%is' % mig[1]['duration'], xy=(mig[0], offset), xycoords='data',
+                ax.annotate('%is' % mig[1]['duration'], xy=(mig[0], annotation_offset), xycoords='data',
                 xytext=(-50, -30), textcoords='offset points',
                 arrowprops=dict(arrowstyle="->",
                                 connectionstyle="arc3,rad=.2"),
                 )
-                offset = (offset + 10) % 90
-        
+
+        # Show plot        
         plt.show()
    
    
 '''
-Extracts CPU usage before migration and during migration
+Extracts CPU usage before and during each successful migration
 '''
-def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful):
+def __analytics_migration_overheads(data_frame, cpu, migrations_successful):
     # Iterate over all migrations
     for migration in migrations_successful:
         # time shift
@@ -850,7 +861,6 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     
     # Return analytical results
     return avg_servers, avg_cpu, avg_mem, min_servers, max_servers
-    
     
  
 def __analytics_server_utilization(cpu, mem):
@@ -1550,10 +1560,10 @@ def connect_sonar(connection):
     print '## MIGRATIONS ##'
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
-        # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
+        __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
         # __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
-        __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
+        # __analytics_migration_overheads(data_frame, cpu, migrations_successful)
     else:
         print 'No migrations'
     
