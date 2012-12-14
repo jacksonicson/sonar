@@ -39,6 +39,7 @@ CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
 RAW = '13/12/2012 17:00:01    13/12/2012 23:55:01'
+CONTROLLER_TIME_SHIFT = 0
 ##########################
 
 warns = []
@@ -703,16 +704,15 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     # Iterate over all migrations
     for migration in migrations_successful:
         # time shift
-        time_shift = 30
-        time_migration_end = time_shift + migration[0]
-        time_migration_start = time_shift + migration[0] - migration[1]['duration']
+        time_migration_end = CONTROLLER_TIME_SHIFT + migration[0]
+        time_migration_start = CONTROLLER_TIME_SHIFT + migration[0] - migration[1]['duration']
         
         def extract_cpu(cpu_load):
             readings_before, readings_during = [], []
             
             for i in xrange(len(cpu_load[0])):
-                time = cpu_load[0][i]
-                load = cpu_load[1][i]
+                time = cpu_load[1][i]
+                load = cpu_load[0][i]
                 
                 if time > time_migration_start and time < time_migration_end:
                     readings_during.append(load)
@@ -731,9 +731,9 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
         before_cpu_source, during_cpu_source = extract_cpu(cpu_load_source)
         before_cpu_target, during_cpu_target = extract_cpu(cpu_load_target)
         
-        result = (np.mean(before_cpu_source), np.mean(during_cpu_source), 
+        result = (np.mean(before_cpu_source), np.mean(during_cpu_source),
                  np.mean(before_cpu_target), np.mean(during_cpu_target))
-        print 'source: before=%0.2f during=%0.2f    target: before=%0.2f duringr=%0.2f' % result
+        print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f' % result
         
  
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
