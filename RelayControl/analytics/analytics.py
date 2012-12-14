@@ -603,7 +603,7 @@ def __plot_load_vs_servers(data_frame, cpu, mem, server_active_flags, domains):
     for i, t in enumerate(xrange(data_frame[0], data_frame[1], delta)):
         times.append(t)
         data.append(math.ceil(sum_cpu_loads[i] / 100))
-    ax2.step(times, data, color='black', ls='dashed', label='Lower Bound')
+    # ax2.step(times, data, color='black', ls='dashed', label='Lower Bound')
     
     
     # Plot SSAP optimized (5 minutes)
