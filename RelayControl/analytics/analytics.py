@@ -8,6 +8,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import TSocket, TTransport
 from times import ttypes as times_ttypes
 from virtual import nodes
+from control import domains
 from workload import profiles, util
 import configuration
 import json
@@ -31,7 +32,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '13/12/2012 17:00:01    14/12/2012 23:55:01'
+RAW = '13/12/2012 17:00:01    13/12/2012 23:55:01'
 ##########################
 
 warns = []
@@ -553,11 +554,11 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         
             
  
-def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
+def __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains):
     loads = []
     
     delta = data_frame[1] - data_frame[0]
-    delta /= 100
+    delta =  60 # delta / 50
     for t in xrange(data_frame[0], data_frame[1], delta):
         ss = 0
         for node in nodes.NODES:
@@ -567,7 +568,7 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
                 ld = cpu[node][0][i]
                 if tim > t and tim < (t + delta):
                     ni.append(ld)
-            ss += np.mean(ni) 
+            ss += np.max(ni) 
         loads.append(ss)
     
     fig = plt.figure()
@@ -586,8 +587,7 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
     xl = [to_hour(t) for t in xrange(data_frame[0], data_frame[1], td)]
     ax.set_xticks(xt)
     ax.set_xticklabels(xl)
-    
-    ax.plot(range(data_frame[0], data_frame[1], delta), loads)
+    ax.plot(range(data_frame[0], data_frame[1], delta), loads, label='Server Load')
     
     times = []
     data = []
@@ -600,16 +600,55 @@ def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
     times.append(data_frame[1])
     data.append(data[-1])
         
+    optimal_times = []
+    optimal_data = []
+    for i, t in enumerate(xrange(data_frame[0], data_frame[1], delta)):
+        optimal_times.append(t)
+        optimal_data.append(math.ceil(loads[i] / 100))
+     
+        
+    # SSAP calculation
+    real_times = xrange(data_frame[0], data_frame[1], delta)
+    real_data = []
+    for t in xrange(data_frame[0], data_frame[1], delta):
+        dloads = []
+        for domain in domains:
+            ni = []
+            for i in xrange(len(cpu[domain][1])):
+                tim = cpu[domain][1][i]
+                ld = cpu[domain][0][i]
+                if tim > t and tim < (t + delta):
+                    ni.append(ld)
+            dloads.append(np.mean(ni))
+            
+        # Solve
+        from ipmodels import ssap
+        _, count = ssap.solve(6, 200, dloads)
+        real_data.append(count)
+
+        
+        
     ax2 = ax.twinx()
     ax2.set_ylabel('Number of active servers')
     ax2.set_ylim([0, len(nodes.NODES) + 1])
     ax2.set_xlim(data_frame)
-    ax2.step(times, data, color='red', ls='-'); 
+    
+    ax2.step(times, data, color='red', ls='solid', label='Controller')
+    ax2.step(real_times, real_data, ls='dashed', label='Minutely SSAP') 
+    ax2.step(optimal_times, optimal_data, ls='dotted', label='Lower Bound')
     
     ax2.set_xticks(xt)
     ax2.set_xticklabels(xl)
     
-    plt.savefig(configuration.path('servers_load', 'pdf'))
+    handles1, labels1 = ax.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    handles1.extend(handles2)
+    labels1.extend(labels2)
+    ax2.legend(handles1, labels1, prop={'size':10})
+    
+    
+    # plt.savefig(configuration.path('servers_load', 'pdf'))
+    plt.show()
 
  
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
@@ -1584,7 +1623,7 @@ def connect_sonar(connection):
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
-        # __plot_load_servers(data_frame, cpu, mem, server_active_flags)
+        __plot_load_servers(data_frame, cpu, mem, server_active_flags, domains)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
         # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
