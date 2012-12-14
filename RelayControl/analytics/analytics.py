@@ -1364,64 +1364,46 @@ def load_response_times(connection):
         except:
             print 'error in %s' % entry[1] 
             continue
-            
 
-def load_response_statistics(connection):
+     
+def __process_from_experiment_schedule(callback_handler, limit=300):
     # Load experiments database
-    counter = 0
+    count = 0
     for entry in __load_experiment_db('C:/temp/experiments.csv'):
         global START, END, RAW
         RAW = entry[0]
         START, END = RAW.split('    ')
     
-        if counter > 300:
+        # Upate limit counter
+        if count > limit:
             break
-        counter += 1
+        count += 1
     
         # Dump the configuration
         __dump_configuration()
         
-        # Configure experiment
-        start = __to_timestamp(START)
-        stop = __to_timestamp(END)
-        raw_frame = (start, stop)
+        callback_handler(entry)
         
-        # Get sync markers from control (start of driving load)
-        sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
-        # print '## SYNC MARKERS ##'
-        __dump_elements(sync_markers)
         
-        # Estimate sync markers if no sync markers where found
-        if sync_markers[0] is None:
-            __warn('Sync marker not found for %s %s' % (START, END))
-            sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
             
-        _schedules = []
-        _track_configs = []
-        _global_metrics = []
-        _rain_metrics = []
-        _track_metrics = []
-        _spec_metrics = []
-        _errors = []
+'''
+Creates a CSV file for each experiment. It contains the Rain operation response time
+metrics for all drivers. 
+'''
+def load_response_statistics(connection):
+    
+    def handler(entry):
+        # Refine markers
+        raw_frame, _ = __refine_markers(connection)
         
-        # Fetch rain data
-        for host in DRIVER_NODES:
-            # print 'Fetching driver node: %s ...' % host
-            rain_data = __fetch_rain_data(connection, host, raw_frame)
-            schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
-            
-            if schedule is not None: _schedules.append(schedule)
-            if track_config is not None: _track_configs.append((track_config, host))
-            if global_metrics is not None: _global_metrics.append(global_metrics)
-            if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
-            if track_metrics is not None: _track_metrics.extend(track_metrics)
-            if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
+        # Read Rain results
+        rain_results = __load_rain_results(connection, raw_frame)
+        _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors = rain_results
         
         import csv
-        with open('C:/temp/%s_%s_%s_%i.csv' % (entry[1:]), 'wb') as csvfile:
+        with open(configuration.path('%s_%s_%s_%i' % (entry[1:]), 'csv'), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             print '### Operation Sampling Table ###'
-            
             if len(_global_metrics) < 2:
                 print 'error only one global metric found' 
                 pass
@@ -1432,9 +1414,9 @@ def load_response_statistics(connection):
                     spamwriter.writerow((o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev']))
                     print '%s \t %i \t %d \t %d' % (o['operation_name'], o['samples_seen'], o['sample_mean'], o['sample_stdev'])
                     
-    # Dump all warnings
-    __dump_warns()
-        
+    # For all experiments
+    __process_from_experiment_schedule(handler)
+
 
 def __refine_markers(connection):
     # Configure experiment
