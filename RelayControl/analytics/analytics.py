@@ -38,7 +38,7 @@ EXPERIMENT_DB = 'C:/temp/experiments.csv'
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '13/12/2012 17:00:01    13/12/2012 23:55:01'
+RAW = '12/12/2012 00:15:01    12/12/2012 07:15:01'
 CONTROLLER_TIME_SHIFT = 0
 ##########################
 
@@ -1540,7 +1540,7 @@ def connect_sonar(connection):
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
-        __plot_load_vs_servers(data_frame, cpu, mem, server_active_flags, domains)
+        # __plot_load_vs_servers(data_frame, cpu, mem, server_active_flags, domains)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
         # __analytics_migration_overheads(data_frame, cpu, migrations_successful)
     else:
