@@ -38,7 +38,7 @@ EXPERIMENT_DB = 'C:/temp/experiments.csv'
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '12/12/2012 00:15:01    12/12/2012 07:15:01'
+RAW = '15/12/2012 17:00:01    16/12/2012 00:30:01'
 CONTROLLER_TIME_SHIFT = 0
 ##########################
 
@@ -936,7 +936,7 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
 def __load_experiment_db(db_file):
     experiments = []
     header = False
-    with open(file, 'r') as db_file:
+    with open(db_file, 'rb') as db_file:
         dbreader = csv.reader(db_file, delimiter='\t')
         
         controller = None
@@ -965,7 +965,8 @@ def __load_experiment_db(db_file):
             
             if row[3] != '' and row[4] != '':
                 date = row[3] + '    ' + row[4]
-                experiments.append((date, controller, mix, experiment_type, crt))
+                experiments.append((date, controller, mix, experiment_type, crt, row[6:]))
+                
                 crt += 1
                 
     return experiments
@@ -1297,7 +1298,34 @@ def __process_from_experiment_schedule(callback_handler, limit=300):
         
         callback_handler(entry)
         
-            
+    
+'''
+Creates a CSV file for the regression analysis
+'''
+def extract_regression_data(connection):
+    header = ['Controller', 'Mix', 'Servers', 'RTime', 'MaxRTime', 'Migrations']
+    rows = []
+    def handler(entry):
+        controller = entry[1]
+        mix = entry[2]
+        
+        data = entry[5]
+        servers = float(data[0])
+        rtime = float(data[5])
+        maxrtime = float(data[6].replace(',', ''))
+        migrations = float(data[10])
+        
+        row = [controller, mix, servers, rtime, maxrtime, migrations]
+        rows.append(row)
+                    
+    # For all experiments
+    __process_from_experiment_schedule(handler)
+    
+    with open(configuration.path('regression', 'csv'), 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter='\t')
+        spamwriter.writerow(header)
+        spamwriter.writerows(rows)
+        
 '''
 Creates a CSV file for each experiment. It contains the Rain operation response time
 metrics for all drivers. 
@@ -1557,9 +1585,9 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        connect_sonar(connection)
+        # connect_sonar(connection)
         # extract_migration_times(connection)
-        
+        extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
         # t_test_response_statistics_all()
