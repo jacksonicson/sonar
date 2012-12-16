@@ -38,7 +38,7 @@ EXPERIMENT_DB = 'C:/temp/experiments.csv'
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '15/12/2012 17:00:01    16/12/2012 00:30:01'
+RAW = '16/12/2012 12:00:01    16/12/2012 19:30:01'
 CONTROLLER_TIME_SHIFT = 0
 ##########################
 
@@ -1585,9 +1585,9 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        # connect_sonar(connection)
+        connect_sonar(connection)
         # extract_migration_times(connection)
-        extract_regression_data(connection)
+        # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
         # t_test_response_statistics_all()
