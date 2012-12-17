@@ -38,7 +38,7 @@ EXPERIMENT_DB = 'C:/temp/experiments.csv'
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '16/12/2012 12:00:01    16/12/2012 19:30:01'
+RAW = '16/12/2012 20:05:01    17/12/2012 02:40:01'
 CONTROLLER_TIME_SHIFT = 0
 ##########################
 
@@ -1303,19 +1303,23 @@ def __process_from_experiment_schedule(callback_handler, limit=300):
 Creates a CSV file for the regression analysis
 '''
 def extract_regression_data(connection):
-    header = ['Controller', 'Mix', 'Servers', 'RTime', 'MaxRTime', 'Migrations']
+    header = ['Controller', 'Mix', 'Servers', 'RTime', 'MaxRTime', 'Migrations', 'SrvLoad', 'MemLoad', 'FailOP', 'Violations']
     rows = []
     def handler(entry):
         controller = entry[1]
         mix = entry[2]
         
         data = entry[5]
-        servers = float(data[0])
-        rtime = float(data[5])
+        servers = float(data[0].replace(',', ''))
+        rtime = float(data[5].replace(',', ''))
         maxrtime = float(data[6].replace(',', ''))
-        migrations = float(data[10])
+        migrations = float(data[10].replace(',', ''))
+        srvload = float(data[1].replace(',', ''))
+        memload = float(data[2].replace(',', ''))
+        failop = float(data[4].replace(',', ''))
+        violations = float(data[9].replace(',', ''))
         
-        row = [controller, mix, servers, rtime, maxrtime, migrations]
+        row = [controller, mix, servers, rtime, maxrtime, migrations, srvload, memload, failop, violations]
         rows.append(row)
                     
     # For all experiments
@@ -1585,9 +1589,9 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        connect_sonar(connection)
+        # connect_sonar(connection)
         # extract_migration_times(connection)
-        # extract_regression_data(connection)
+        extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
         # t_test_response_statistics_all()
