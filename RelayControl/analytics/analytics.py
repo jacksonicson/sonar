@@ -18,6 +18,7 @@ import numpy as np
 import sys
 import time
 import traceback
+from configuration import SONAR_LOGGING
 
 '''
 For some experiments time between Andreas-PC was 32 sec behind the
@@ -39,7 +40,8 @@ CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
 RAW = '16/12/2012 20:05:01    17/12/2012 02:40:01'
-CONTROLLER_TIME_SHIFT = 0
+CONTROLLER_TIME_SHIFT = 32
+CONTROLLER_TIME_SHIFT_TIME = int(time.mktime(time.strptime('1/12/2012', '%d/%m/%Y'))) 
 ##########################
 
 warns = []
@@ -271,6 +273,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     schedule = None
     track_config = None
     stopped = False
+    scenario_start = None
     
     # Metrics
     global_metrics = None
@@ -341,6 +344,12 @@ def __fetch_rain_data(connection, load_host, timeframe):
             data = json.loads(msg)
             spec_metrics.append(data) 
         
+        # Read scenario start 
+        STR_START_SCENARIO = 'Starting scenario (threads)'
+        if log.logMessage.startswith(STR_START_SCENARIO):
+            msg = log.logMessage[len(STR_START_SCENARIO):]
+            scenario_start = log.timestamp
+        
         # Read MFG metrics
         STOP = 'Rain stopped'
         if log.logMessage.startswith(STOP):
@@ -354,7 +363,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     if stopped == False:
         __warn('Missing "Rain Stopped" message')
         
-    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors 
+    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors, scenario_start 
 
 
 '''
@@ -1215,6 +1224,7 @@ def t_test_response_statistics():
 def extract_migration_times(connection):
     # List of migration times
     times = []
+    info = []
     
     def handle(entry):
         # Refine markers
@@ -1222,16 +1232,23 @@ def extract_migration_times(connection):
         
         # Fetch migrations
         successful, _, _, _ = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
+        _, release, _ = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
+        _, _, _, _, _, _, _, scenario_start0 = __fetch_rain_data(connection, 'load0', raw_frame)
+        _, _, _, _, _, _, _, scenario_start1 = __fetch_rain_data(connection, 'load1', raw_frame)
         
+        delta = release - scenario_start0
+
         # Get timestamps from successful migration times
         for end in successful:
             times.append((end[1]['duration'],))
             
+            correction = delta
+            
             # Load server load during migration
             node_from = end[1]['from']
             node_to = end[1]['to']
-            timeframe = (float(end[1]['start']), float(end[1]['end']))
-            fetchframe = (float(end[1]['start']) - 100, float(end[1]['end']) + 100)
+            timeframe = (float(end[1]['start']) - correction, float(end[1]['end']) - correction)
+            fetchframe = (timeframe[0] - 100, timeframe[1] + 100)
             load_from = __fetch_timeseries(connection, node_from, 'psutilcpu', fetchframe)
             load_to = __fetch_timeseries(connection, node_to, 'psutilcpu', fetchframe)
             
@@ -1254,15 +1271,21 @@ def extract_migration_times(connection):
             before_cpu_target, during_cpu_target = extract_cpu(load_to)
             result = (np.mean(before_cpu_source), np.mean(during_cpu_source),
                  np.mean(before_cpu_target), np.mean(during_cpu_target), float(end[1]['duration']))
-            print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result 
+            print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
+            info.append(result) 
             
 
     __process_from_experiment_schedule(handle)
 
     # Write migration data to CSV file 
-    with open(configuration.path('migrations', 'csv'), 'wb') as csvfile:
+    with open(configuration.path('migration-times', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
+        spamwriter.writerow(('duration',))
         spamwriter.writerows(times)
+    with open(configuration.path('migration-data', 'csv'), 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter='\t')
+        spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'duration'))
+        spamwriter.writerows(info)
 
 
 def extract_response_times(connection):
@@ -1422,7 +1445,7 @@ def __load_rain_results(connection, raw_frame):
     for host in DRIVER_NODES:
         print 'Fetching driver node: %s ...' % host
         rain_data = __fetch_rain_data(connection, host, raw_frame)
-        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
+        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors, _ = rain_data
         
         if schedule is not None: _schedules.append(schedule)
         if track_config is not None: _track_configs.append((track_config, host))
