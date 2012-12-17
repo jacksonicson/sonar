@@ -579,7 +579,6 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     for migration in migrations_successful:
         
         # time shift
-        time_shift = 30
         end_time = migration[0] + time_shift 
         start_time = migration[0] - migration[1]['duration'] + time_shift
         
@@ -589,9 +588,9 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
         from_cpu = cpu[from_server]
         to_cpu = cpu[to_server]
 
-        before_cpu = []
-        during_cpu = []
-        after_cpu = []        
+        before_cpu = [0]
+        during_cpu = [0]
+        after_cpu = [0]        
         for i in xrange(len(from_cpu[1])):
             time = from_cpu[1][i]
             if time > start_time and time < end_time:
@@ -603,7 +602,7 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
             
 #        print before_cpu
 #        print during_cpu
-        print '%d - %d - %d' % (np.mean(before_cpu), np.mean(during_cpu), np.mean(after_cpu))
+        print 'from %d - %d - %d' % (np.max(before_cpu), np.max(during_cpu), np.max(after_cpu))
         if np.mean(before_cpu) > np.mean(during_cpu):
             print '--'
         else:
@@ -1252,7 +1251,7 @@ def connect_sonar(connection):
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
-        # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
+        __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
         print 'No migrations'
     
@@ -1268,9 +1267,9 @@ def connect_sonar(connection):
 if __name__ == '__main__':
     connection = __connect()
     try:
-        # connect_sonar(connection)
+        connect_sonar(connection)
         # load_response_statistics(connection)
-        load_migration_times(connection)
+        # load_migration_times(connection)
         # t_test_response_statistics()
     except:
         traceback.print_exc(file=sys.stdout)
