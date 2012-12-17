@@ -276,7 +276,7 @@ class DSAPPlacement(Placement):
             mapping = domains.domain_profile_mapping[service_index]
             
             # Important: Load the trace of the workload profile
-            service = profiles.get_traced_cpu_profile(mapping.profileId)
+            service = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
             print 'loading service: %s' % (service)
             service_log += service + '; '
