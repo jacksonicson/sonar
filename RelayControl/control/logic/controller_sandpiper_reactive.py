@@ -2,12 +2,15 @@ from logs import sonarlog
 from model import types
 import controller
 import json
+import placement
+from virtual import nodes
+from control import domains
 
 ######################
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120
-INTERVAL = 30
+INTERVAL = 300
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
@@ -22,7 +25,7 @@ logger = sonarlog.getLogger('controller')
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL)
+        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
@@ -35,6 +38,14 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'k_value' :K_VALUE,
                                                                  'm_value' : M_VALUE
                                                                  }))
+    
+    def initial_placement_sim(self):
+        nodecount = len(nodes.HOSTS)
+        splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute()
+        self.build_internal_model(migrations)       
+            
+        return migrations
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:

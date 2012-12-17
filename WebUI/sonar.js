@@ -552,7 +552,7 @@ function logdbHandler(req, resp){
 	if (req.method == 'GET') {
         var jsonObj = [];
         var ss = JSON.stringify(jsonObj);
-        console.log(ss);
+        // console.log(ss);
         resp.end(ss);
 
         return;
@@ -597,7 +597,7 @@ function logdbHandler(req, resp){
         // Execute the query
         client.queryLogs(query, function (err, logMessages) {
 			var ss = JSON.stringify(logMessages);
-            console.log(ss);
+            // console.log(ss);
             resp.end(ss);
         });
     });
@@ -611,7 +611,7 @@ function tsdbHandler(req, resp) {
     if (req.method == 'GET') {
         var jsonObj = [];
         var ss = JSON.stringify(jsonObj);
-        console.log(ss);
+        // console.log(ss);
         resp.end(ss);
 
         return;
@@ -731,7 +731,7 @@ function sensorNamesHandler(req, resp){
                 sensorData.push(sensorInfo);
             }
             var ss = JSON.stringify(sensorData);
-            console.log(ss);
+            // console.log(ss);
             resp.end(ss);
 
             // connection.connection.emit('close');

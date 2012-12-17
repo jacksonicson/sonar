@@ -13,10 +13,11 @@ class pq(object):
     def __contains__(self, item):
         return item in self.item_f
 
-    def put(self, item, priority):
+    def put(self, item, priority, heap=True):
         entry = [priority, item]
         self.inner.append(entry)
-        heapify(self.inner)
+        if heap:
+            heapify(self.inner)
         self.item_f[item] = entry
 
     def top_one(self):
@@ -30,41 +31,80 @@ class pq(object):
             if not item in self.item_f: continue
             entry = self.item_f[item]
             entry[0] = prioritizer(entry[0])
+    
+    def heap(self):
         heapify(self.inner)
 
 class ANode(object):
-    def __init__(self, nodes=None, domains=None):
+    def __init__(self, nodeload, domains, domainload):
         self.predecessor = None
         self.g = 99999
         
-        self.nodes = nodes
+        self.nodeload = nodeload
+        self.domainload = domainload
         self.domains = domains
+        
+        self.successors = None
+        self.costs = None
+        
+        self.hash = None
+        self.tmp = None
      
     def dump(self):
         print self.nodes
         print self.domains
         
-    def get_successors(self, mesh):
+        
+    def get_successors(self, mesh, target):
         # generates _all_ successors
         # The heuristic will not go into all of them
         
         # for all migration possibilities create a new state
         # state heuristics is determined by f_heuristics function 
         
+        if not self.successors is None:
+            print 'REAL'
+            return self.successors, self.costs 
+        
         successors = []
         costs = []
         
         # each domain to each node except its own 
         for d in xrange(len(self.domains)): 
-            for node in xrange(len(self.nodes)): 
-                nodes = list(self.nodes)
+            for node in xrange(len(self.nodeload)): 
+                nodes = list(self.nodeload)
                 domains = list(self.domains)
                 
                 if domains[d] == node:
                     continue
                 
+                # remove from source node
+                currnode = domains[d]
+                nodes[currnode] -= self.domainload[d]
+                # add to target node
+                nodes[node] += self.domainload[d]
+                # Change node of domain
                 domains[d] = node
-                new = ANode(nodes, domains)
+                
+                # Check overload constraint
+                if nodes[node] > 100:
+                    continue 
+                
+                cost = 1
+                # cost += 0.5 * (nodes[node] / 100.0) # increases expansions 
+                if target.domains[d] == self.domains[d]: # decreases expansions
+                    cost += 3
+                elif target.domains[d] == domains[d]:
+                    cost -= 1
+                elif nodes[node] == 0:
+                    cost -= 1
+                elif nodes[node] > 80:
+                    cost += 1
+                    
+                new = ANode(nodes, domains, self.domainload)
+                
+                # Check constraints
+                                
                 # check if node is in mesh already
                 test = mesh.find(new)
                 if test:
@@ -74,17 +114,24 @@ class ANode(object):
                     mesh.put(new)
                     
                 successors.append(new)
-                costs.append(1)
+                costs.append(cost)
         
+        self.successors = successors
+        self.costs = costs
         return (successors, costs)
        
     def __eq__(self, another):
         return self.domains == another.domains
     
     def __hash__(self):
+        if self.hash:
+            return self.hash
+        
         h = 0
         for i, v in enumerate(self.domains):
-            h += (i+1) * v
+            h += (i + 1) * v
+            
+        self.hash = h 
         return h
         
     def f_heuristics(self, target):
@@ -93,8 +140,9 @@ class ANode(object):
             if target.domains[i] != self.domains[i]:
                 counter += 1
                 
-        return counter
         
+                
+        return counter
 
 
 class AStar(object):
@@ -109,19 +157,25 @@ class AStar(object):
         # Add start node to the open list
         start.g = 0
         self.openlist.put(start, 0)
-        
+        expansions = 0
         try:
             while True:
                 # sys.stdout.write('.') 
                 value = self.openlist.top_one()
                 if value is None:
                     print 'nothing found again'
+                    print 'expansions %i' % expansions
                     return
                 
                 if value == end:
                     print 'END FOUND.... run backtracking now'
+                    print 'expansions %i' % expansions
                     return end
                 
+                if (expansions % 50) == 0:
+                    print 'expansions %i' % expansions
+                
+                expansions += 1
                 self.expand(value)
                 self.closelist.add(value)  
                 
@@ -132,7 +186,7 @@ class AStar(object):
         
     
     def expand(self, current):
-        successors, costs = current.get_successors(self.mesh)
+        successors, costs = current.get_successors(self.mesh, self.end)
         for i in xrange(len(successors)):
             successor = successors[i] 
             if successor in self.closelist:
@@ -140,7 +194,6 @@ class AStar(object):
             
             # Relaxion on costs
             new_g = current.g + costs[i]
-            # TODO1
             if successor in self.openlist and new_g >= successor.g:
                 continue
             
@@ -153,30 +206,66 @@ class AStar(object):
             if successor in self.openlist:
                 self.openlist.re_prioritize((successor,), lambda x: f)
             else:
-                self.openlist.put(successor, f) 
+                self.openlist.put(successor, f, False)
+        
+        self.openlist.heap() 
 
 def main():
     # Create initial state
-    nodes = [0 for _ in xrange(0, 3)]
-    domains = [0 for _ in xrange(0, 10)]
-    node_index = 0
-    for d in xrange(0, 10):
-        domains[d] = node_index
-        node_index = (node_index + 1) % len(nodes)
+    nodes = 50
+    domainc = 50
+    
+    domains = []
+    domainl = []
+    nodel = [0 for _ in xrange(nodes)]
+    
+    for i in xrange(domainc):
+        while True: 
+            import random
+            node = random.randint(0, nodes-1)
+            load = abs(random.randint(0, 50-1))
+            if (nodel[node] + load) > 100:
+                continue
+            domains.append(node)
+            domainl.append(load)
+            nodel[node] += load
+            break
+        
+    nodel.append(0)
+    
+#    nodes = 6
+#    domains = [1,2,2,3,4,5]
+#    target = [2,1,2,3,5,4]
+#    domainl = [90,20,00,0,90,20]
+#    nodel = [0 for _ in xrange(nodes)]
+#    for i in xrange(len(domains)):
+#        nodel[domains[i]] += domainl[i]
+    
+    print domains
+    print domainl
+    print nodel
+    print 'A*'
         
     # Create target state
     target = list(domains)
-#    target[0] = 2
-
-    target[1] = 2
     target[3] = 1
-    target[4] = 2
+    
+    
+    # Validate overload
+    targetl = [0 for _ in xrange(nodes)]
+    for i, v in enumerate(target):
+        targetl[v] += domainl[i]
+        
+    for i in targetl:
+        if i > 100:
+            print 'INVALID TARGET STATE' 
+            return
+    
         
     # Create target and end node
-    start = ANode(nodes, domains)
-    target = ANode(nodes, target)
-    
-    print start.domains
+    print list(nodel)
+    start = ANode(nodel, domains, domainl)
+    target = ANode(nodel, target, domainl)
     
     # Create a new mesh
     mesh = Mesh()
@@ -211,13 +300,18 @@ class Mesh(object):
 def testNode():
     # Create initial state
     nodes = [0 for _ in xrange(3)] # the load of a node
-    domains = [0 for _ in xrange(10)] # domain - node mapping
+    domainload = [0 for _ in xrange(10)]
     
-    node_index = 0
-    for d in xrange(0, 10):
-        domains[d] = node_index
-        node_index = (node_index + 1) % len(nodes)
+    domains = [0, 1, 2, 1, 2, 1]
+    domainl = [10, 20, 30, 10, 40, 20]
+    
+    for i, domain in enumerate(domains):
+        nodes[domain] += domainl[i]
         
+    print nodes
+    
+    # Calc initial node load
+    
     # Create target and end node
     start = ANode(nodes, domains)
     
@@ -256,8 +350,9 @@ def testNode():
 #        print i.domains  
 
 if __name__ == '__main__':
-    testNode()
-    main()
+    # testNode()
+    for i in xrange(1):
+        main()
     
         
         

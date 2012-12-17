@@ -68,6 +68,7 @@ HOSTNAME = gethostname()
 LISTENING_PORT = 9876
 LISTENING_INTERFACE_IPV4 = '192.168.96.6'
 PUMP_SPEEDUP = 1
+MIGRATION_DOWNTIME = 15000
 
 ##########################
 ## FILESE               ##

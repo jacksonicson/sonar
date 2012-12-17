@@ -1,3 +1,5 @@
+import sys
+
 # Recorded whenever the number of active servers changes
 class ActiveServerInfo(object):
     def __init__(self, timestamp, servercount):
@@ -22,6 +24,9 @@ class Scoreboard(object):
         self.active_server_infos = []
         self.cpu_violations = 0
         self.cpu_accumulated = 0
+        
+        self.min_servers = sys.maxint
+        self.max_servers = 0
     
     def close(self):
         self.closed = True
@@ -35,8 +40,10 @@ class Scoreboard(object):
             self.cpu_accumulated += load
     
     def add_active_info(self, servercount, timestamp):
-        # if not self.closed:
-        self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
+        if not self.closed:
+            self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
+            self.min_servers = min(self.min_servers, servercount)
+            self.max_servers = max(self.max_servers, servercount)
 
     def analytics_average_server_count(self, pump):
         if not self.active_server_infos:
@@ -67,12 +74,19 @@ class Scoreboard(object):
         return avg_count
        
     def get_results(self, pump):
-        return (len(self.active_server_infos), self.analytics_average_server_count(pump), 
-                self.cpu_violations, self.cpu_accumulated)
+        # Tuple contains
+        # count of active server infos
+        # average server count
+        # cpu violations
+        # accumulated cpu load
+        # min server
+        # max servers
+        return (len(self.active_server_infos), self.analytics_average_server_count(pump),
+                self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers)
     
     def get_result_line(self, pump):
         res = self.get_results(pump)
-        return '%f \t %f \t %i \t %i' % res
+        return '%f \t %f \t %i \t %i \t %i \t %i' % res
     
     def dump(self, pump):
         print 'Records %i' % len(self.active_server_infos)
