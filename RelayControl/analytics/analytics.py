@@ -607,7 +607,7 @@ def __plot_load_vs_servers(data_frame, cpu, mem, server_active_flags, domains):
     
     
     # Plot SSAP optimized (5 minutes)
-    delta = 5*60
+    delta = 5 * 60
     times = xrange(data_frame[0], data_frame[1], delta)
     data = []
     # Aggregate load for all time frames
@@ -722,8 +722,8 @@ def __analytics_migration_overheads(data_frame, cpu, migrations_successful):
         before_cpu_target, during_cpu_target = extract_cpu(cpu_load_target)
         
         result = (np.mean(before_cpu_source), np.mean(during_cpu_source),
-                 np.mean(before_cpu_target), np.mean(during_cpu_target))
-        print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f' % result
+                 np.mean(before_cpu_target), np.mean(during_cpu_target), float(migration[1]['duration']))
+        print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
         
  
 def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags):
@@ -1226,6 +1226,36 @@ def extract_migration_times(connection):
         # Get timestamps from successful migration times
         for end in successful:
             times.append((end[1]['duration'],))
+            
+            # Load server load during migration
+            node_from = end[1]['from']
+            node_to = end[1]['to']
+            timeframe = (float(end[1]['start']), float(end[1]['end']))
+            fetchframe = (float(end[1]['start']) - 100, float(end[1]['end']) + 100)
+            load_from = __fetch_timeseries(connection, node_from, 'psutilcpu', fetchframe)
+            load_to = __fetch_timeseries(connection, node_to, 'psutilcpu', fetchframe)
+            
+            def extract_cpu(cpu_load):
+                readings_before, readings_during = [], []
+                
+                for i in xrange(len(cpu_load[0])):
+                    time = cpu_load[1][i]
+                    load = cpu_load[0][i]
+                    
+                    if time > timeframe[0] and time < timeframe[1]:
+                        readings_during.append(load)
+                        
+                    elif time > (timeframe[0] - 60) and time < timeframe[0]:
+                        readings_before.append(load)
+                        
+                return readings_before, readings_during 
+
+            before_cpu_source, during_cpu_source = extract_cpu(load_from)
+            before_cpu_target, during_cpu_target = extract_cpu(load_to)
+            result = (np.mean(before_cpu_source), np.mean(during_cpu_source),
+                 np.mean(before_cpu_target), np.mean(during_cpu_target), float(end[1]['duration']))
+            print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result 
+            
 
     __process_from_experiment_schedule(handle)
 
@@ -1590,8 +1620,8 @@ if __name__ == '__main__':
     connection = __connect()
     try:
         # connect_sonar(connection)
-        # extract_migration_times(connection)
-        extract_regression_data(connection)
+        extract_migration_times(connection)
+        # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
         # t_test_response_statistics_all()
