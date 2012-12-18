@@ -281,6 +281,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     track_metrics = []
     spec_metrics = []
     errors = []
+    error_data= []
      
     # Build query
     query = ttypes.LogsQuery()
@@ -358,12 +359,13 @@ def __fetch_rain_data(connection, load_host, timeframe):
            
         # Extract errors
         if log.logLevel == 40000:
-            errors.append(log.logMessage)   
+            errors.append(log.logMessage)
+            error_data.append(log)   
         
     if stopped == False:
         __warn('Missing "Rain Stopped" message')
         
-    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors, scenario_start 
+    return schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors, scenario_start, error_data 
 
 
 '''
@@ -1233,8 +1235,8 @@ def extract_migration_times(connection):
         # Fetch migrations
         successful, _, _, _ = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
         _, release, _ = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
-        _, _, _, _, _, _, _, scenario_start0 = __fetch_rain_data(connection, 'load0', raw_frame)
-        _, _, _, _, _, _, _, scenario_start1 = __fetch_rain_data(connection, 'load1', raw_frame)
+        _, _, _, _, _, _, _, scenario_start0, errordata0 = __fetch_rain_data(connection, 'load0', raw_frame)
+        _, _, _, _, _, _, _, scenario_start1, errordata1 = __fetch_rain_data(connection, 'load1', raw_frame)
         
         delta = release - scenario_start0
 
@@ -1249,8 +1251,22 @@ def extract_migration_times(connection):
             node_to = end[1]['to']
             timeframe = (float(end[1]['start']) - correction, float(end[1]['end']) - correction)
             fetchframe = (timeframe[0] - 100, timeframe[1] + 100)
-            load_from = __fetch_timeseries(connection, node_from, 'psutilcpu', fetchframe)
-            load_to = __fetch_timeseries(connection, node_to, 'psutilcpu', fetchframe)
+            
+            cpu_load_from = __fetch_timeseries(connection, node_from, 'psutilcpu', fetchframe)
+            cpu_load_to = __fetch_timeseries(connection, node_to, 'psutilcpu', fetchframe)
+            
+            net_load_from = __fetch_timeseries(connection, node_from, 'psutilnet.br0.sent', fetchframe)
+            net_load_to = __fetch_timeseries(connection, node_to, 'psutilnet.br0.recv', fetchframe)
+            
+            def extract_errors(logs):
+                errors = 0
+                for log in logs:
+                    time = log.timestamp
+                    
+                    if time > timeframe[0] and time < (timeframe[1] + 60):
+                        errors += 1
+                        
+                return errors
             
             def extract_cpu(cpu_load):
                 readings_before, readings_during = [], []
@@ -1267,11 +1283,22 @@ def extract_migration_times(connection):
                         
                 return readings_before, readings_during 
 
-            before_cpu_source, during_cpu_source = extract_cpu(load_from)
-            before_cpu_target, during_cpu_target = extract_cpu(load_to)
+            before_cpu_source, during_cpu_source = extract_cpu(cpu_load_from)
+            before_cpu_target, during_cpu_target = extract_cpu(cpu_load_to)
+            
+            before_net_source, during_net_source = extract_cpu(net_load_from)
+            before_net_target, during_net_target = extract_cpu(net_load_to)
+            
+            errors = extract_errors(errordata0)
+            errors += extract_errors(errordata1)
+            
             result = (np.mean(before_cpu_source), np.mean(during_cpu_source),
-                 np.mean(before_cpu_target), np.mean(during_cpu_target), float(end[1]['duration']))
-            print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
+                 np.mean(before_cpu_target), np.mean(during_cpu_target),
+                 np.mean(before_net_source), np.mean(during_net_source),
+                 np.mean(before_net_target), np.mean(during_net_target),
+                 errors, float(end[1]['duration'])) 
+            
+            # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
             info.append(result) 
             
 
@@ -1284,7 +1311,8 @@ def extract_migration_times(connection):
         spamwriter.writerows(times)
     with open(configuration.path('migration-data', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
-        spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'duration'))
+        spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'source-net-before', 
+                             'source-net-during', 'target-net-before', 'target-net-during', 'errors', 'duration'))
         spamwriter.writerows(info)
 
 
@@ -1445,7 +1473,7 @@ def __load_rain_results(connection, raw_frame):
     for host in DRIVER_NODES:
         print 'Fetching driver node: %s ...' % host
         rain_data = __fetch_rain_data(connection, host, raw_frame)
-        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors, _ = rain_data
+        schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors, _, _ = rain_data
         
         if schedule is not None: _schedules.append(schedule)
         if track_config is not None: _track_configs.append((track_config, host))
