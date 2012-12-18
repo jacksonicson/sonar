@@ -13,7 +13,7 @@ from virtual import nodes
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120
-INTERVAL = 30
+INTERVAL = 300
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
@@ -165,11 +165,11 @@ class Sandpiper(controller.LoadBalancer):
         ## IMBALANCE MIGRATION #####################
         ############################################
         
-        self.migrate_imbalance(time_now, sleep_time, K_VALUE)
-        
-        if len(self.migration_queue) != 0:
-            # if imbalance algorithm triggered migration, no further migrations will be executed
-            return
+#        self.migrate_imbalance(time_now, sleep_time, K_VALUE)
+#        
+#        if len(self.migration_queue) != 0:
+#            # if imbalance algorithm triggered migration, no further migrations will be executed
+#            return
         
         
         ############################################
@@ -330,14 +330,14 @@ class Sandpiper(controller.LoadBalancer):
                 if reading < THRESHOLD_UNDERLOAD: underload += 1
 
             m = M_VALUE
-            forecast = self.forecast(readings[-k:])        
+            #forecast = self.forecast(readings[-k:])        
             overloaded = True
             overloaded &= (overload >= m)
-            overloaded &= (forecast > THRESHOLD_OVERLOAD)
+            #overloaded &= (forecast > THRESHOLD_OVERLOAD)
         
             underloaded = True
             underloaded &= (underload >= m)
-            underloaded &= (forecast < THRESHOLD_UNDERLOAD)
+            #underloaded &= (forecast < THRESHOLD_UNDERLOAD)
              
             if overloaded:
                 print 'Overload in %s - %s' % (node.name, readings[-k:])  
