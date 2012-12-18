@@ -10,7 +10,7 @@ from control import domains
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120
-INTERVAL = 30
+INTERVAL = 300
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0

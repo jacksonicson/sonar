@@ -9,7 +9,7 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120 
-INTERVAL = 5*60
+INTERVAL = 300
 
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40

@@ -9,13 +9,12 @@ from times import ttypes as times_ttypes
 from virtual import nodes
 from workload import profiles, util
 import json
-import math
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import time
 import traceback
-import configuration
+import math
 
 ##########################
 ## Configuration        ##
@@ -30,7 +29,7 @@ DRIVERS = 2
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '03/12/2012 22:25:01    04/12/2012 05:15:01'
+RAW = '02/12/2012 14:05:01    02/12/2012 20:40:01'
 ##########################
 
 warns = []
@@ -512,14 +511,11 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
     for domain in domain_track_map.keys():
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.set_xlabel('Time in seconds')
-        ax.set_ylabel('Response time in milliseconds')
-        
-        
         
         for track in domain_track_map[domain]:
             print 'plotting'
             res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            
             ax.plot(res_time, res_resp)
             
         # Add annotations to the trace
@@ -527,89 +523,15 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         for mig in migrations_triggered:
             print 'test: %s' % mig[1]['domain']
             if mig[1]['domain'] == domain:
-                ax.axvline(mig[0] + 20, color='r')
+                ax.axvline(mig[0] + 40, color='r')
        
         for mig in migrations_successful:
             if mig[1]['domain'] == domain: 
-                ax.axvline(mig[0] + 20, color='g')
+                ax.axvline(mig[0] + 40, color='g')
             
-        def to_hour(ts):
-            dt = datetime.fromtimestamp(ts)
-            return '%i' % (dt.second)
-        
-        for mig in migrations_successful:
-            if mig[1]['domain'] == domain:
-                ax.set_xlim([mig[0] - 120, mig[0] + 120])
-                
-                xt = [t for t in xrange(mig[0] - 120, mig[0] + 120, 30)]
-                xl = [t*30 for t in xrange(0, len(xt))]
-                ax.set_xticks(xt)
-                ax.set_xticklabels(xl)
-                
-                break
             
-        plt.savefig(configuration.path('migration_%s' % domain, 'pdf'))
-        
+        plt.show()
             
- 
-def __plot_load_servers(data_frame, cpu, mem, server_active_flags):
-    loads = []
-    
-    delta = data_frame[1] - data_frame[0]
-    delta /= 100
-    for t in xrange(data_frame[0], data_frame[1], delta):
-        ss = 0
-        for node in nodes.NODES:
-            ni = []
-            for i in xrange(len(cpu[node][1])):
-                tim = cpu[node][1][i]
-                ld = cpu[node][0][i]
-                if tim > t and tim < (t + delta):
-                    ni.append(ld)
-            ss += np.mean(ni) 
-        loads.append(ss)
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_xlim(data_frame)
-    ax.set_ylabel('Accumulated server load')
-    ax.set_xlabel('Time in hour:minute')
-    
-    def to_hour(ts):
-        dt = datetime.fromtimestamp(ts)
-        return '%i:%i' % (dt.hour, dt.minute)
-    
-    td = data_frame[1] - data_frame[0]
-    td /= 10
-    xt = [t for t in xrange(data_frame[0], data_frame[1], td)]
-    xl = [to_hour(t) for t in xrange(data_frame[0], data_frame[1], td)]
-    ax.set_xticks(xt)
-    ax.set_xticklabels(xl)
-    
-    ax.plot(range(data_frame[0], data_frame[1], delta), loads)
-    
-    times = []
-    data = []
-    times.append(data_frame[0])
-    data.append(len(nodes.NODES))
-    for mig in server_active_flags:
-        times.append(mig[0])
-        data.append(mig[1])
-        print mig[1]
-    times.append(data_frame[1])
-    data.append(data[-1])
-        
-    ax2 = ax.twinx()
-    ax2.set_ylabel('Number of active servers')
-    ax2.set_ylim([0, len(nodes.NODES) + 1])
-    ax2.set_xlim(data_frame)
-    ax2.step(times, data, color='red', ls='-'); 
-    
-    ax2.set_xticks(xt)
-    ax2.set_xticklabels(xl)
-    
-    plt.savefig(configuration.path('servers_load', 'pdf'))
-
  
 def __plot_migrations(cpu, mem, migrations_triggered, migrations_successful):
     for node in nodes.NODES:
@@ -657,7 +579,6 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     for migration in migrations_successful:
         
         # time shift
-        time_shift = 30
         end_time = migration[0] + time_shift 
         start_time = migration[0] - migration[1]['duration'] + time_shift
         
@@ -667,9 +588,9 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
         from_cpu = cpu[from_server]
         to_cpu = cpu[to_server]
 
-        before_cpu = []
-        during_cpu = []
-        after_cpu = []        
+        before_cpu = [0]
+        during_cpu = [0]
+        after_cpu = [0]        
         for i in xrange(len(from_cpu[1])):
             time = from_cpu[1][i]
             if time > start_time and time < end_time:
@@ -681,7 +602,7 @@ def __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
             
 #        print before_cpu
 #        print during_cpu
-        print '%d - %d - %d' % (np.mean(before_cpu), np.mean(during_cpu), np.mean(after_cpu))
+        print 'from %d - %d - %d' % (np.max(before_cpu), np.max(during_cpu), np.max(after_cpu))
         if np.mean(before_cpu) > np.mean(during_cpu):
             print '--'
         else:
@@ -814,7 +735,6 @@ def __analytics_server_utilization(cpu, mem):
     
     _total_cpu = []
     _total_mem = []
-    _violations = 0
     for srv in nodes.NODES: 
         _cpu = np.mean(cpu[srv][0])
         _mem = np.mean(mem[srv][0])
@@ -826,19 +746,15 @@ def __analytics_server_utilization(cpu, mem):
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
         
-        _violations += len(cpu[srv][0][cpu[srv][0] > 99])
-         
-        
     _cpu = np.mean(_total_cpu) # are updated by migration analytics
     _mem = np.mean(_total_mem) # are updated by migration analytics
     
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
     
-    return _cpu, _mem, _violations
+    return _cpu, _mem
  
-def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count,
-                                   migration_count, min_nodes, max_nodes, srv_cpu_violations):
+def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count, migration_count, min_nodes, max_nodes):
     global_metric_aggregation = {}
     
     # Define the elements to aggregate and the aggregation function
@@ -882,11 +798,10 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
     global_metric_aggregation['migrations_successful'] = (migration_count, 0)
     global_metric_aggregation['min_nodes'] = (min_nodes, 0)
     global_metric_aggregation['max_nodes'] = (max_nodes, 0)
-    global_metric_aggregation['srv_cpu_violations'] = (srv_cpu_violations, 0)
 
     dump = ('server_count', 'cpu_load', 'mem_load', 'total_ops_successful', 'total_operations_failed', 'average_response_time',
              'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold',
-             'migrations_successful', 'min_nodes', 'max_nodes', 'srv_cpu_violations')
+             'migrations_successful', 'min_nodes', 'max_nodes')
     data = []
     for element in dump:
         try:
@@ -960,8 +875,8 @@ def t_test_response_statistics():
             for type0 in controllers[control0]:
                 for control1 in controllers.keys():
                     for type1 in controllers[control1]:
-                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 2)
-                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 2)
+                        file0 = '%s_%s_%s_%i' % (control0, mix, type0, 0)
+                        file1 = '%s_%s_%s_%i' % (control1, mix, type1, 0)
                         try:
                             set0 = __load_response_times(file0)
                             set1 = __load_response_times(file1)
@@ -1010,8 +925,7 @@ def t_test_response_statistics():
                             sum_s0 += s0 * n0
                             sum_s1 += s1 * n1
                             
-                            # Welch's t-test
-                            t_val = abs(m0 - m1) / math.sqrt((math.pow(s0, 2) / n0) + (math.pow(s1, 2) / n1))
+                            t_val = abs(m0 - m1) / math.sqrt( (math.pow(s0,2) / n0) + (math.pow(s1,2) / n1) )
                             ts.append(t_val)
                         
                         if sum_n0 == 0 or sum_n1 == 0:
@@ -1025,7 +939,7 @@ def t_test_response_statistics():
                         sum_s0 /= sum_n0
                         sum_s1 /= sum_n1
                         
-                        t_val = abs(sum_m0 - sum_m1) / math.sqrt((math.pow(sum_s0, 2) / sum_n0) + (math.pow(sum_s1, 2) / sum_n1))
+                        t_val = abs(sum_m0 - sum_m1) / math.sqrt( (math.pow(sum_s0,2) / sum_n0) + (math.pow(sum_s1,2) / sum_n1) )
                         ops.append('all')
                         ts.append(t_val)
                             
@@ -1083,113 +997,6 @@ def load_migration_times(connection):
         spamwriter = csv.writer(csvfile, delimiter='\t')
         spamwriter.writerows(times)
 
-
-def load_response_times(connection):
-    # Load experiments database
-    counter = 0
-    for entry in __load_experiment_db('C:/temp/exp_db.txt'):
-        global START, END, RAW
-        RAW = entry[0]
-        START, END = RAW.split('    ')
-    
-        if counter > 300:
-            break
-        counter += 1
-    
-        # Dump the configuration
-        __dump_configuration()
-        
-        # Configure experiment
-        start = __to_timestamp(START)
-        stop = __to_timestamp(END)
-        raw_frame = (start, stop)
-        
-        # Get sync markers from control (start of driving load)
-        sync_markers = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
-        # print '## SYNC MARKERS ##'
-        __dump_elements(sync_markers)
-        
-        # Estimate sync markers if no sync markers where found
-        if sync_markers[0] is None:
-            __warn('Sync marker not found')
-            sync_markers = (raw_frame[0], sync_markers[1], sync_markers[2])
-            
-        _schedules = []
-        _track_configs = []
-        _global_metrics = []
-        _rain_metrics = []
-        _track_metrics = []
-        _spec_metrics = []
-        _errors = []
-        
-        # Fetch rain data
-        for host in DRIVER_NODES:
-            # print 'Fetching driver node: %s ...' % host
-            rain_data = __fetch_rain_data(connection, host, raw_frame)
-            schedule, track_config, global_metrics, rain_metrics, track_metrics, spec_metrics, errors = rain_data
-            
-            if schedule is not None: _schedules.append(schedule)
-            if track_config is not None: _track_configs.append((track_config, host))
-            if global_metrics is not None: _global_metrics.append(global_metrics)
-            if rain_metrics is not None: _rain_metrics.extend(rain_metrics)
-            if track_metrics is not None: _track_metrics.extend(track_metrics)
-            if spec_metrics is not None: _spec_metrics.extend(spec_metrics)
-            
-        print '## SCHEDULE ##'
-        # Each rain driver logs an execution schedule which defines the timestamp to start the
-        # steady state phase and to end it
-        schedule_starts = []
-        schedule_ends = []
-        for schedule in _schedules:
-            schedule_starts.append(schedule[0])
-            schedule_ends.append(schedule[1])
-            __dump_elements(schedule)
-           
-        # refine data raw_frame with schedules
-        print '## REFINED TIME FRAME ##'
-        data_frame = (max(schedule_starts) / 1000, min(schedule_ends) / 1000)
-        __dump_elements(data_frame)
-        duration = float(data_frame[1] - data_frame[0]) / 60.0 / 60.0
-        print 'Frame duration is: %f hours' % (duration)
-            
-        print '## DOMAIN WORKLOAD MAPS (TRACK CONFIGURATION) ##'
-        # Results
-        domains = []
-        domain_track_map = {}
-        domain_workload_map = {}
-        
-        for track_config, source_host in _track_configs:
-            for track in track_config:
-                host = track_config[track]['target']['hostname']
-                workload = track_config[track]['loadScheduleCreatorParameters']['profile']
-                
-                if host not in domains:
-                    domains.append(host)
-                
-                if domain_track_map.has_key(host) == False:
-                    domain_track_map[host] = []
-                domain_track_map[host].append((source_host, track))
-        
-                if domain_workload_map.has_key(host) == False:
-                    domain_workload_map[host] = workload
-                else:
-                    if domain_workload_map[host] != workload:
-                        print 'WARN: Multiple load profiles on the same target'
-                        
-        # print 'domain track map: %s' % domain_track_map
-        # print 'domain workload map: %s' % domain_workload_map
-    
-        print '## RESPONSE TIME AGGREGATION ###'
-        # Fetch track response time and calculate average
-        agg_resp_time = []
-        for key in domain_track_map.keys():
-            for track in domain_track_map[key]:
-                res_resp, _ = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
-                sum.extend(res_resp)
-        print 'Average response time: %i, samples: %i' % (np.mean(agg_resp_time), len(agg_resp_time))
-        
-        break
-            
 
 def load_response_statistics(connection):
     # Load experiments database
@@ -1436,22 +1243,21 @@ def connect_sonar(connection):
     print '## AVG CPU,MEM LOAD ##'
     # This approach does only work for static allocations. For dynamic allocations 
     # the _cpu and _mem values are updated by the migration analytics!
-    avg_cpu, avg_mem, violations = __analytics_server_utilization(cpu, mem)
+    avg_cpu, avg_mem = __analytics_server_utilization(cpu, mem)
     min_nodes, max_nodes = '', ''
     
     print '## MIGRATIONS ##'
     if migrations_successful: 
         servers, avg_cpu, avg_mem, min_nodes, max_nodes = __analytics_migrations(data_frame, cpu, mem, migrations_successful, server_active_flags)
         # __plot_migrations(cpu, mem, migrations_triggered, migrations_successful)
-        # __plot_load_servers(data_frame, cpu, mem, server_active_flags)
         # __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_triggered, migrations_successful)
-        # __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
+        __analytics_migration_overheads(data_frame, cpu, mem, migrations_successful)
     else:
         print 'No migrations'
     
     print '## GLOBAL METRIC AGGREGATION ###'
     __analytics_global_aggregation(_global_metrics, servers, avg_cpu, avg_mem,
-                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes, violations)
+                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes)
     
     
     # Dump all warnings
@@ -1461,12 +1267,10 @@ def connect_sonar(connection):
 if __name__ == '__main__':
     connection = __connect()
     try:
-        # connect_sonar(connection)
-        # load_migration_times(connection)
-        
+        connect_sonar(connection)
         # load_response_statistics(connection)
+        # load_migration_times(connection)
         # t_test_response_statistics()
-        load_response_times(connection)
     except:
         traceback.print_exc(file=sys.stdout)
     __disconnect()
