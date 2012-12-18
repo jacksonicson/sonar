@@ -11,9 +11,10 @@ params = fitdistr(y, densfun="log-normal")
 summary(params)
 print(params)
 x = seq(0,100)
-hist(y, main=NULL, xlab="Migration duration", ylab="Frequency")
+hist(y, main=NULL, xlab="Migration duration", ylab="Probability", prob=TRUE)
+# lines(density(y))
 hx = dlnorm(x=x, meanlog=3.3, sdlog=0.27)
-lines(x, hx*7000, col='red', lwd=3)
+lines(x, hx, col='red', lwd=3)
 
 
 # Data
