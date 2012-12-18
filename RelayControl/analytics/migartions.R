@@ -8,11 +8,13 @@ hist(data$duration)
 library('MASS')
 y = data$duration
 params = fitdistr(y, densfun="log-normal")
+summary(params)
 print(params)
 x = seq(0,100)
-hist(y, main=NULL, ylab=NULL, xlab=NULL)
+hist(y, main=NULL, xlab="Migration duration", ylab="Frequency")
 hx = dlnorm(x=x, meanlog=3.3, sdlog=0.27)
-lines(x, hx*5500, col='red')
+lines(x, hx*7000, col='red', lwd=3)
+
 
 # Data
 data = read.csv('C:/temp/migration-data.csv', sep='\t')
