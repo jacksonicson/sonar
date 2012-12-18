@@ -17,6 +17,9 @@ lines(x, hx*5500, col='red')
 # Data
 data = read.csv('C:/temp/migration-data.csv', sep='\t')
 
+# Migration duration
+plot(data$duration, log(data$domain.cpu.before))
+
 # Migration failures
 mean(data$errors)
 errors.none = length(data$errors[data$errors == 0])

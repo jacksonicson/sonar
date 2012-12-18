@@ -1249,11 +1249,13 @@ def extract_migration_times(connection):
             # Load server load during migration
             node_from = end[1]['from']
             node_to = end[1]['to']
+            domain = end[1]['domain']
             timeframe = (float(end[1]['start']) - correction, float(end[1]['end']) - correction)
             fetchframe = (timeframe[0] - 100, timeframe[1] + 100)
             
             cpu_load_from = __fetch_timeseries(connection, node_from, 'psutilcpu', fetchframe)
             cpu_load_to = __fetch_timeseries(connection, node_to, 'psutilcpu', fetchframe)
+            cpu_load_domain = __fetch_timeseries(connection, domain, 'psutilcpu', fetchframe)
             
             net_load_from = __fetch_timeseries(connection, node_from, 'psutilnet.br0.sent', fetchframe)
             net_load_to = __fetch_timeseries(connection, node_to, 'psutilnet.br0.recv', fetchframe)
@@ -1285,7 +1287,8 @@ def extract_migration_times(connection):
 
             before_cpu_source, during_cpu_source = extract_cpu(cpu_load_from)
             before_cpu_target, during_cpu_target = extract_cpu(cpu_load_to)
-            
+            before_cpu_domain, during_cpu_domain = extract_cpu(cpu_load_domain)
+                        
             before_net_source, during_net_source = extract_cpu(net_load_from)
             before_net_target, during_net_target = extract_cpu(net_load_to)
             
@@ -1296,6 +1299,7 @@ def extract_migration_times(connection):
                  np.mean(before_cpu_target), np.mean(during_cpu_target),
                  np.mean(before_net_source), np.mean(during_net_source),
                  np.mean(before_net_target), np.mean(during_net_target),
+                 np.mean(before_cpu_domain), np.mean(during_cpu_domain),
                  errors, float(end[1]['duration'])) 
             
             # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
@@ -1312,7 +1316,8 @@ def extract_migration_times(connection):
     with open(configuration.path('migration-data', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
         spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'source-net-before', 
-                             'source-net-during', 'target-net-before', 'target-net-during', 'errors', 'duration'))
+                             'source-net-during', 'target-net-before', 'target-net-during', 
+                             'domain-cpu-before', 'domain-cpu-during', 'errors', 'duration'))
         spamwriter.writerows(info)
 
 
