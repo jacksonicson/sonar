@@ -21,8 +21,6 @@ import traceback
 from configuration import SONAR_LOGGING
 
 '''
-For some experiments time between Andreas-PC was 32 sec behind the
-infrastructure time.   
 '''
 
 ##########################
@@ -40,8 +38,6 @@ CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
 RAW = '17/12/2012 23:40:01    18/12/2012 06:30:01'
-CONTROLLER_TIME_SHIFT = 32
-CONTROLLER_TIME_SHIFT_TIME = int(time.mktime(time.strptime('1/12/2012', '%d/%m/%Y'))) 
 ##########################
 
 warns = []
@@ -544,11 +540,11 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         # Add annotations to the trace
         for mig in migrations_triggered:
             if mig[1]['domain'] == domain:
-                ax.axvline(mig[0] + CONTROLLER_TIME_SHIFT, color='r')
+                ax.axvline(mig[0], color='r')
        
         for mig in migrations_successful:
             if mig[1]['domain'] == domain: 
-                ax.axvline(mig[0] + CONTROLLER_TIME_SHIFT, color='g')
+                ax.axvline(mig[0], color='g')
 
         plt.show()            
         # plt.savefig(configuration.path('migration_%s' % domain, 'pdf'))
@@ -595,7 +591,7 @@ def __plot_load_vs_servers(data_frame, cpu, mem, server_active_flags, domains):
     data.append(len(nodes.NODES))
     # Server active flags
     for mig in server_active_flags:
-        times.append(mig[0] + CONTROLLER_TIME_SHIFT)
+        times.append(mig[0])
         data.append(mig[1])
     # Final
     times.append(data_frame[1])
@@ -705,8 +701,8 @@ def __analytics_migration_overheads(data_frame, cpu, migrations_successful):
     # Iterate over all migrations
     for migration in migrations_successful:
         # time shift
-        time_migration_end = CONTROLLER_TIME_SHIFT + migration[0]
-        time_migration_start = CONTROLLER_TIME_SHIFT + migration[0] - migration[1]['duration']
+        time_migration_end = migration[0]
+        time_migration_start = migration[0] - migration[1]['duration']
         
         def extract_cpu(cpu_load):
             readings_before, readings_during = [], []
