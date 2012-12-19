@@ -80,12 +80,12 @@ cat("CPU - target server: ", "mean = ", round(target.mean, digits=2), " median =
 # Migration Model ###################
 #####################################
 data = read.csv('C:/temp/migration-data.csv', sep='\t')
-overhead = (data$source.during - data$source.before) / data$duration
+overhead = (data$source.during - data$source.before)
 domainload = data$domain.cpu.before
-overhead = overhead[data$domain.cpu.before < 90]
-domainload = domainload[data$domain.cpu.before < 90]
+
 
 plot(domainload, overhead)
+
 fit = lm(overhead ~ domainload)
 abline(fit, col='red')
 #hist(residuals(fit))

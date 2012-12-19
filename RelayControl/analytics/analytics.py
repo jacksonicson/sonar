@@ -1306,7 +1306,7 @@ def extract_migration_times(connection):
             errors = extract_errors(errordata0)
             errors += extract_errors(errordata1)
             
-            p = 99
+            p = 100
             
             try:
                 result = (np.percentile(before_cpu_source,p), np.percentile(during_cpu_source,p),
