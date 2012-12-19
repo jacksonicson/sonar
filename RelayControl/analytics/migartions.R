@@ -1,23 +1,28 @@
-# Times
-data = read.csv('C:/temp/migration-times.csv', sep='\t')
-length(data$duration)
-mean(data$duration)
-quantile(data$duration)
-hist(data$duration)
-
 library('MASS')
+
+########################################
+## Duration ############################
+########################################
+data = read.csv('C:/temp/migration-times.csv', sep='\t')
+times.elements = length(data$duration)
+times.duration = mean(data$duration)
+times.quantiles = quantile(data$duration)
+
 y = data$duration
 params = fitdistr(y, densfun="log-normal")
-summary(params)
-print(params)
+
 x = seq(0,100)
 hist(y, main=NULL, xlab="Migration duration", ylab="Probability", prob=TRUE)
-# lines(density(y))
 hx = dlnorm(x=x, meanlog=3.3, sdlog=0.27)
 lines(x, hx, col='red', lwd=3)
 
+cat('length:', times.elements, ' mean duration:', times.duration, ' quantiles:', times.quantiles)
+print('Log normal distribution params:')
+print(params)
 
-# Data
+########################################
+## Migration Data ######################
+########################################
 data = read.csv('C:/temp/migration-data.csv', sep='\t')
 
 # Migration duration
@@ -30,9 +35,9 @@ errors.count = length(data$errors)
 errors.per = errors.none / errors.count
 print(errors.per)
 
-quantile(errors.count, c(.99))
+quantile(data$errors, c(.95))
 
-mean(errors.count)
+
 
 
 # NET Overhead ######################
