@@ -60,6 +60,7 @@ cat("Network - target server: ", "mean = ", round(target.mean, digits=2), " medi
 #####################################
 # CPU Overhad #######################
 #####################################
+data = read.csv('C:/temp/migration-data.csv', sep='\t')
 source.diff = data$source.during - data$source.before
 hist(source.diff, main='CPU Source Server', xlab='Load increase before - during migration')
 
@@ -103,8 +104,6 @@ hist(residuals(fit2))
 
 
 plot(domainload, data$duration)
-
-
 
 fit = lm(data$duration ~ domainload)
 
