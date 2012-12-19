@@ -18,9 +18,11 @@ import numpy as np
 import sys
 import time
 import traceback
-from configuration import SONAR_LOGGING
 
 '''
+Additional R-Scripts:
+linearModel.R
+migrationAnalysis.R
 '''
 
 ##########################
@@ -32,7 +34,7 @@ LOGGING_PORT = 7921
 DEBUG = False
 TRACE_EXTRACT = False
 DRIVERS = 2
-EXPERIMENT_DB = 'C:/temp/experiments.csv'
+EXPERIMENT_DB = configuration.path('experiments', 'csv')
 
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
