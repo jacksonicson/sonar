@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '17/12/2012 23:40:01    18/12/2012 06:30:01'
+RAW = '19/12/2012 12:32:55    19/12/2012 19:20:55'
 ##########################
 
 warns = []
@@ -1701,8 +1701,8 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        # connect_sonar(connection)
-        extract_migration_times(connection)
+        connect_sonar(connection)
+        # extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
