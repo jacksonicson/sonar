@@ -281,7 +281,7 @@ def __fetch_rain_data(connection, load_host, timeframe):
     track_metrics = []
     spec_metrics = []
     errors = []
-    error_data= []
+    error_data = []
      
     # Build query
     query = ttypes.LogsQuery()
@@ -1260,6 +1260,17 @@ def extract_migration_times(connection):
             net_load_from = __fetch_timeseries(connection, node_from, 'psutilnet.br0.sent', fetchframe)
             net_load_to = __fetch_timeseries(connection, node_to, 'psutilnet.br0.recv', fetchframe)
             
+#            # New plot
+#            fig = plt.figure()
+#            
+#            # Plot accumulated CPU load
+#            ax = fig.add_subplot(111)
+#            ax.set_ylabel('Accumulated server load')
+#            ax.set_xlabel('Time hour:minutes')
+#            ax.plot(cpu_load_from[1], cpu_load_from[0], label='Server Load')
+#            ax.axvline(timeframe[0], color='r')
+#            ax.axvline(timeframe[1], color='r')
+#            
             def extract_errors(logs):
                 errors = 0
                 for log in logs:
@@ -1295,15 +1306,32 @@ def extract_migration_times(connection):
             errors = extract_errors(errordata0)
             errors += extract_errors(errordata1)
             
-            result = (np.mean(before_cpu_source), np.mean(during_cpu_source),
-                 np.mean(before_cpu_target), np.mean(during_cpu_target),
-                 np.mean(before_net_source), np.mean(during_net_source),
-                 np.mean(before_net_target), np.mean(during_net_target),
-                 np.mean(before_cpu_domain), np.mean(during_cpu_domain),
-                 errors, float(end[1]['duration'])) 
+            p = 99
             
-            # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
-            info.append(result) 
+            try:
+                result = (np.percentile(before_cpu_source,p), np.percentile(during_cpu_source,p),
+                     np.percentile(before_cpu_target,p), np.percentile(during_cpu_target,p),
+                     np.percentile(before_net_source,p), np.percentile(during_net_source,p),
+                     np.percentile(before_net_target,p), np.percentile(during_net_target,p),
+                     np.percentile(before_cpu_domain,p), np.percentile(during_cpu_domain,p),
+                     errors, float(end[1]['duration']))
+                
+                # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
+                info.append(result) 
+            except:
+                print 'except'
+                print before_cpu_source
+                print during_cpu_source
+                print before_cpu_target
+                print during_cpu_target
+                print before_net_source
+                print during_net_source
+                print before_cpu_domain
+                print during_cpu_domain
+                
+                pass 
+            
+            
             
 
     __process_from_experiment_schedule(handle)
@@ -1315,8 +1343,8 @@ def extract_migration_times(connection):
         spamwriter.writerows(times)
     with open(configuration.path('migration-data', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
-        spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'source-net-before', 
-                             'source-net-during', 'target-net-before', 'target-net-during', 
+        spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'source-net-before',
+                             'source-net-during', 'target-net-before', 'target-net-during',
                              'domain-cpu-before', 'domain-cpu-during', 'errors', 'duration'))
         spamwriter.writerows(info)
 
@@ -1675,8 +1703,8 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        connect_sonar(connection)
-        # extract_migration_times(connection)
+        # connect_sonar(connection)
+        extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
