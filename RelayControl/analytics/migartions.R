@@ -30,17 +30,9 @@ errors.count = length(data$errors)
 errors.per = errors.none / errors.count
 print(errors.per)
 
-errors.data = data[data$errors > 0,]
-print(errors.data)
-plot(errors.data$source.during, errors.data$errors)
-plot(errors.data$target.during, errors.data$errors)
+quantile(errors.count, c(.99))
 
-summary(lm(errors.data$target.during ~ errors.data$errors))
-
-
-errors.data$source.during
-errors.data$target.during
-
+mean(errors.count)
 
 
 # NET Overhead ######################
