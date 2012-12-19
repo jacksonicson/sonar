@@ -1304,8 +1304,7 @@ def extract_migration_times(connection):
             errors = extract_errors(errordata0)
             errors += extract_errors(errordata1)
             
-            p = 100
-            
+            p = 99
             try:
                 result = (np.percentile(before_cpu_source,p), np.percentile(during_cpu_source,p),
                      np.percentile(before_cpu_target,p), np.percentile(during_cpu_target,p),
@@ -1317,7 +1316,8 @@ def extract_migration_times(connection):
                 # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
                 info.append(result) 
             except:
-                print 'except'
+                __warn('Error extracting migration infos')
+                print 'Error: Could not extract migration infos'
                 print before_cpu_source
                 print during_cpu_source
                 print before_cpu_target
