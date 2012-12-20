@@ -5,12 +5,16 @@ data = read.csv('C:/temp/regression.csv', sep='\t')
 
 # Various linear models 
 summary(lm(data$Server ~ data$Mix + data$Controller))
+summary(lm(data$RTime ~ data$Servers + data$Violations))
+
+summary(lm(data$RTime ~ data$Servers + data$Violations))
+summary(lm(data$Violations ~ data$Servers + data$RTime + data$Controller))
+
+summary(lm(data$Servers ~ data$Mix + data$Controller))
 
 summary(lm(data$RTime ~ data$Controller + data$Mix + data$Servers))
 summary(lm(data$RTime ~ data$Controller + data$Mix + data$Servers+ data$MaxRTime + data$Migrations))
 summary(lm(data$MaxRTime ~ data$Migrations + data$Mix + data$Servers))
-summary(lm(data$RTime ~ data$Servers + data$Violations))
-summary(lm(data$Violations ~ data$Servers + data$RTime + data$Controller))
-summary(lm(data$Servers ~ data$Mix + data$Controller))
+
 
 

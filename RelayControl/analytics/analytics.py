@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '19/12/2012 12:32:55    19/12/2012 19:20:55'
+RAW = '19/12/2012 23:00:00    20/12/2012 5:50:00'
 ##########################
 
 warns = []
@@ -1304,13 +1304,16 @@ def extract_migration_times(connection):
             errors = extract_errors(errordata0)
             errors += extract_errors(errordata1)
             
-            p = 99
             try:
-                result = (np.percentile(before_cpu_source,p), np.percentile(during_cpu_source,p),
-                     np.percentile(before_cpu_target,p), np.percentile(during_cpu_target,p),
-                     np.percentile(before_net_source,p), np.percentile(during_net_source,p),
-                     np.percentile(before_net_target,p), np.percentile(during_net_target,p),
-                     np.percentile(before_cpu_domain,p), np.percentile(during_cpu_domain,p),
+                def agg(values):
+                    # p = 95
+                    return np.mean(values)
+                
+                result = (agg(before_cpu_source), agg(during_cpu_source),
+                     agg(before_cpu_target), agg(during_cpu_target),
+                     agg(before_net_source), agg(during_net_source),
+                     agg(before_net_target), agg(during_net_target),
+                     agg(before_cpu_domain), agg(during_cpu_domain),
                      errors, float(end[1]['duration']))
                 
                 # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
@@ -1701,8 +1704,8 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        connect_sonar(connection)
-        # extract_migration_times(connection)
+        # connect_sonar(connection)
+        extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()

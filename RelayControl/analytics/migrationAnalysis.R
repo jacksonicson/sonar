@@ -70,12 +70,19 @@ source.median = median(source.diff)
 cat("CPU - source server: ", "mean = ", round(source.mean, digits=2), " median = ", round(source.median, digits=2), sep='')
 
 target.diff = (data$target.during - data$target.before) 
-hist(target.diff, main='CPU Target Server', xlab='Load increase before - during migration')
+hist(target.diff, main='CPU Target Server', xlab='Load increase before - during migration', prob=TRUE)
 
 target.diff = target.diff[is.finite(target.diff)]
 target.mean = mean(target.diff)
 target.median = median(target.diff)
 cat("CPU - target server: ", "mean = ", round(target.mean, digits=2), " median = ", round(target.median, digits=2), sep='')
+
+source.dist = fitdistr(target.diff, densfun="normal")
+print(source.dist)
+x = seq(-100,100)
+hx = dnorm(x=x, sd=18.8, mean=15.7)
+lines(x, hx, col='red', lwd=2, )
+
 
 #####################################
 # Migration Model ###################
