@@ -85,12 +85,19 @@ def solve(_server_count, _server_capacity, _demand):
     setupConstraints(model) 
     setupObjective(model)
     model.optimize()
-
-    assignment = getAssignment()
-    print assignment
     
-    server_count = getServerCount()
-    print server_count
+    try:
+        assignment = getAssignment()
+        print assignment
+        
+        server_count = getServerCount()
+        print server_count
+        
+        return assignment, server_count
+    except:
+        # Model infeasible
+        return None, _server_count
+    
 
 # Test program
 if __name__ == '__main__':

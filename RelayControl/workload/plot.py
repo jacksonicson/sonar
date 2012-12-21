@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
 from pylab import *
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 def rstyle(ax): 
     """Styles an axes to appear like ggplot2
@@ -12,8 +13,8 @@ def rstyle(ax):
     ax.set_axisbelow(True)
     
     #set minor tick spacing to 1/2 of the major ticks
-    ax.xaxis.set_minor_locator(MultipleLocator( (plt.xticks()[0][1]-plt.xticks()[0][0]) / 2.0 ))
-    ax.yaxis.set_minor_locator(MultipleLocator( (plt.yticks()[0][1]-plt.yticks()[0][0]) / 2.0 ))
+    ax.xaxis.set_minor_locator(MultipleLocator((plt.xticks()[0][1] - plt.xticks()[0][0]) / 2.0))
+    ax.yaxis.set_minor_locator(MultipleLocator((plt.yticks()[0][1] - plt.yticks()[0][0]) / 2.0))
     
     #remove axis border
     for child in ax.get_children():
@@ -41,8 +42,20 @@ def rstyle(ax):
         lg = ax.legend_
         lg.get_frame().set_linewidth(0)
         lg.get_frame().set_alpha(0.5)
-        
-        
+ 
+ 
+def to_hour(ts):
+    dt = datetime.fromtimestamp(ts)
+    return '%i:%i' % (dt.hour, dt.minute)    
+     
+def ticks(axis, converter_handler, min, max, tick_count=15):
+    delta = (max - min) / 15
+    xt = [t for t in xrange(min, max, delta)]
+    xl = [converter_handler(t) for t in xrange(min, max, delta)]
+    
+    axis.set_xticks(xt)
+    axis.set_xticklabels(xl)
+
 def rhist(ax, data, **keywords):
     """Creates a histogram with default style parameters to look like ggplot2
     Is equivalent to calling ax.hist and accepts the same keyword parameters.

@@ -36,6 +36,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  void setSensorConfiguration(string sensor, SensorConfiguration configuration)'
   print '  SensorConfiguration getSensorConfiguration(string sensor)'
   print '   getSensorNames()'
+  print '  void updateSensorConfiguration(string sensor, SensorConfiguration configuration,  labels)'
   print '  void addHost(string hostname)'
   print '  void addHostExtension(string hostname, string virtualHostName)'
   print '  string getHostExtension(string hostname)'
@@ -174,6 +175,12 @@ elif cmd == 'getSensorNames':
     print 'getSensorNames requires 0 args'
     sys.exit(1)
   pp.pprint(client.getSensorNames())
+
+elif cmd == 'updateSensorConfiguration':
+  if len(args) != 3:
+    print 'updateSensorConfiguration requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.updateSensorConfiguration(args[0],eval(args[1]),eval(args[2]),))
 
 elif cmd == 'addHost':
   if len(args) != 1:

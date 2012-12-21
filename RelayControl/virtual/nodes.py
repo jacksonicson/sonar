@@ -19,6 +19,9 @@ NODE_CPU = 230 # Has space for two dual core VMs
 def get_node_name(index):
     return NODES[index]
 
+def cpu_factor():
+    return NODE_CPU_CORES / DOMAIN_CPU_CORES
+
 def dump(logger):
     logger.info('NODES = HOSTS = %s' % NODES)
     logger.info('NODE_MEM = %i' % NODE_MEM)
@@ -27,3 +30,8 @@ def dump(logger):
     
 def to_node_load(domain_load):
     return domain_load / (NODE_CPU_CORES / DOMAIN_CPU_CORES)
+
+
+def count():
+    return len(NODES)
+    
