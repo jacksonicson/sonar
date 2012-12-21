@@ -30,7 +30,7 @@ class ProfileSet:
 SET_O2_BUSINESS = ProfileSet(0, hour(1), None)
 SET_O2_RETAIL = ProfileSet(1, hour(1), None)
 SET_SIS = ProfileSet(2, minu(5), 3000)
-SET_SIS_SIM = ProfileSet(4, minu(5), 2500)
+SET_SIS_SIM = ProfileSet(4, minu(5))
 
 # List of profile days
 SET_SIS_D3 = ProfileSet(3, minu(5), 3000, day=3)
@@ -306,19 +306,4 @@ for i in xrange(1, 420):
     desc = Desc('SIS_%i_cpu' % i, SET_SIS_SIM)
     mix_sim2.append(desc)
     
-mix_sim2.extend([
-    Desc('O2_business_ADDORDER', SET_O2_BUSINESS, modifier.MOD8, (1.2, 1), minu(10), 20),
-    Desc('O2_business_ADDLINEORDER', SET_O2_BUSINESS),
-    Desc('O2_business_CONTRACTEXT', SET_O2_BUSINESS),
-    Desc('O2_business_SENDMSG', SET_O2_BUSINESS),
-    Desc('O2_business_UPDATEACCOUNT', SET_O2_BUSINESS),
-    Desc('O2_business_UPDATEDSS', SET_O2_BUSINESS),
-    
-    Desc('O2_retail_ADDORDER', SET_O2_RETAIL),
-    Desc('O2_retail_CONTRACTEXT', SET_O2_RETAIL),
-    Desc('O2_retail_ADDUCP', SET_O2_RETAIL),
-    Desc('O2_retail_SENDMSG', SET_O2_RETAIL),
-    Desc('O2_retail_UPDATEACCOUNT', SET_O2_RETAIL),
-    Desc('O2_retail_UPDATEDSS', SET_O2_RETAIL)
-    ])
 
