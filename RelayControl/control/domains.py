@@ -1,4 +1,5 @@
 from workload import profiles
+import random 
 
 '''
 Maps domains to profiles
@@ -11,8 +12,10 @@ class Domain:
         self.rain_target = rain_target
 
 domain_profile_mapping = []
-for i in xrange(18):
-    domain_profile_mapping.append(Domain('target%i' % i, i, True))
+for i in xrange(90):
+    index = random.randint(0, len(profiles.selected) - 1)
+    print 'Random index %i' % index
+    domain_profile_mapping.append(Domain('target%i' % i, index, True))
 
 ###############################################################################
 ###############################################################################

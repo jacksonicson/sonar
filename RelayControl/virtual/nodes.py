@@ -3,7 +3,7 @@ List of all hosts/nodes in the infrastructure
 '''
 
 NODES = []
-for i in xrange(6):
+for i in xrange(30):
     NODES.append('srv%i' % i)
 HOSTS = NODES
     
@@ -11,7 +11,7 @@ NODE_CPU_CORES = 4
 DOMAIN_CPU_CORES = 2
 NODE_MEM = 15 * 1024 # MByte (available memory of the node estimated)
 DOMAIN_MEM = 2048 + 100 # MByte (domain memory  + KVM overhead estimated)
-NODE_CPU = 230 # Has space for two dual core VMs
+NODE_CPU = 200 # Has space for two dual core VMs
 
 ###############################################################################
 ###############################################################################

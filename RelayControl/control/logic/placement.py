@@ -99,10 +99,13 @@ class FirstFitPlacement(Placement):
         
         # For each node there is one bucket
         buckets = []
+        buckets_mem = []
+        
         migrations = []
         assignment = {}
         for _ in xrange(len(nodes.HOSTS)):
             buckets.append([0, nodes.NODE_CPU, []])
+            buckets_mem.append([0, nodes.NODE_MEM, []])
         
         # Service which gets mapped
         for service_index in xrange(service_count):
@@ -124,16 +127,20 @@ class FirstFitPlacement(Placement):
             try:
                 for node_index in xrange(len(buckets)):
                     bucket = buckets[node_index]
-                    if (bucket[0] + max_value) < bucket[1]:
+                    bucket_mem = buckets_mem[node_index]
+                    if (bucket[0] + max_value) < bucket[1] and (bucket_mem[0] + nodes.DOMAIN_MEM) < bucket_mem[1]:
                         bin_found = True
                         
-                        bucket[0] = bucket[0] + max_value
                         bucket[2].append(service)
+                        
+                        bucket[0] = bucket[0] + max_value
+                        bucket_mem[0] = bucket_mem[0] + nodes.DOMAIN_MEM
                         
                         migrations.append((mapping.domain, node_index))
                         assignment[service_index] = node_index
                         
                         raise StopIteration()
+                print 'Error no target!'
             except StopIteration:
                 if bin_found == False:
                     print 'WARN: Could not assign domain to a node!'

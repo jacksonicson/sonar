@@ -484,7 +484,7 @@ def plot_overlay_mix():
 #    plot_mix = mix0
     
     plot_mix = []
-    for i in xrange(200, 300):
+    for i in xrange(300, 400):
         print selected[i].name
         plot_mix.append(selected[i].name)
     
@@ -567,10 +567,10 @@ def dump_user_profile_maxes():
 # Builds the profiles and saves them in Times
 def main():
     # dump_user_profile_maxes()
-    # build_all_profiles_for_mix(selected, True)
+    build_all_profiles_for_mix(selected, True)
     # build_modified_profiles(selected, False)
-    # plot_overlay_mix()
-    dump_to_csv()
+    plot_overlay_mix()
+    # dump_to_csv()
     pass
 
 if __name__ == '__main__':
