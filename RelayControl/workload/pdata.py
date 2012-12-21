@@ -301,7 +301,8 @@ mix_sim = [
 
 
 mix_sim2 = []
-for i in xrange(1, 400):
+# Starts at 1 because there is no SIS_0_cpu...
+for i in xrange(1, 420):
     desc = Desc('SIS_%i_cpu' % i, SET_SIS_SIM)
     mix_sim2.append(desc)
     

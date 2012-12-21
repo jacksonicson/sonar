@@ -450,7 +450,7 @@ def dump_to_csv():
         demands.append((desc.name, demand))
         
     import csv
-    with open('C:/temp/traces.csv', 'wb') as csvfile:
+    with open(configuration.path('traces', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
         
         row = []
@@ -569,7 +569,7 @@ def main():
     # dump_user_profile_maxes()
     # build_all_profiles_for_mix(selected, True)
     # build_modified_profiles(selected, False)
-    plot_overlay_mix()
+    # plot_overlay_mix()
     dump_to_csv()
     pass
 
