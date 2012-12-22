@@ -1,11 +1,11 @@
+from control import domains
 from logs import sonarlog
 import configuration as config
 import json
 import model
+import msgpump
 import scoreboard
 import time
-import msgpump
-from control import domains 
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -114,7 +114,7 @@ def build_initial_model(controller):
 def heartbeat(pump):
     print 'Message pump started'
 
-def main():
+def main(controller):
     # Flush scoreboard
     scoreboard.Scoreboard().flush()
     
@@ -128,9 +128,12 @@ def main():
     import controller_rr #@UnusedImport
     
     # ### CONTROLLER ##############################################
-    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
-    # controller = controller_sandpiper_proactive.Sandpiper(pump, model)
-    # controller = controller_ssapv.Sandpiper(pump, model)
+    if controller == 'reactive': 
+        controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    elif controller == 'proactive':
+        controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    else:
+        controller = controller_ssapv.Sandpiper(pump, model)
     # #############################################################
     
     # Build internal infrastructure representation
@@ -167,11 +170,12 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = 'reactive small'
+        controller = 'reactive'
+        name = '%s middle' % controller
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             domains.mapping()
-            pump = main()
+            pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)
             t.write('%s\n' % res)

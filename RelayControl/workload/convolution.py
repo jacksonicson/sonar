@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import util
 from timeutil import * #@UnusedWildImport
+from analytics import forecasting
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -27,6 +28,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     tv = np.vectorize(to_weekday)
     time = tv(time)
     indices = np.where(time < 5)
+    
     time = np.take(time, indices)
     signal = np.ravel(np.take(signal, indices))
     
@@ -63,8 +65,8 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
         np.reshape(bucket, (signal.shape[0] * elements_per_bucket, 1))
         
         
-        # value = np.mean(bucket)
-        value = np.percentile(bucket, 90)
+        value = np.mean(bucket)
+        # value = np.percentile(bucket, 90)
         
         bucket_array[i] = value
         i += 1
@@ -89,7 +91,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
         bucket = buckets[i]
         variance = np.apply_along_axis(np.std, 1, bucket)
         variance = np.median(np.ravel(variance))
-        variance_array_2[i] = variance / 2
+        variance_array_2[i] = variance / 6 # 2
     variance_array_2 = np.ravel(variance_array)
     
     # Increase signal resolution
@@ -99,6 +101,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     
     # Smooth
     smooth_profile = simple_moving_average(noise_profile, 7)
+    _, smooth_profile, _ = forecasting.single_exponential_smoother(noise_profile, 0.3)
     
     # Create noise
     noise_array = np.array(0, np.float32)
@@ -113,10 +116,10 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
             noise_array = np.hstack((noise_array, noise))
     
     # Apply noise
-    smooth_profile = smooth_profile + noise_array
+    smooth_profile = smooth_profile[:len(noise_array)] + noise_array
         
     tv = np.vectorize(to_positive)
-    smooth_profile = tv(smooth_profile)
+    smooth_profile = np.log(tv(smooth_profile)) / np.log(1.001)
 
     # Frequency of result signal
     frequency = cycle_time / len(smooth_profile)

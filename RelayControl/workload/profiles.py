@@ -482,9 +482,10 @@ def plot_overlay_mix():
 #    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
 #    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
 #    plot_mix = mix0
+    a = 350
     
     plot_mix = []
-    for i in xrange(300, 400):
+    for i in xrange(a, a+30):
         print selected[i].name
         plot_mix.append(selected[i].name)
     
@@ -503,8 +504,9 @@ def plot_overlay_mix():
     ax.set_xlabel('Time x5 minutes')
     ax.set_ylabel('Load in number of users')
     
-    plt.savefig(configuration.path('overlay', 'png'))
-    plt.savefig(configuration.path('overlay', 'pdf'))
+    plt.show()
+#    plt.savefig(configuration.path('overlay', 'png'))
+#    plt.savefig(configuration.path('overlay', 'pdf'))
     
     # Close times connection
     times_client.close()

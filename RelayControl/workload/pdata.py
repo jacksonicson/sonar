@@ -30,7 +30,7 @@ class ProfileSet:
 SET_O2_BUSINESS = ProfileSet(0, hour(1), None)
 SET_O2_RETAIL = ProfileSet(1, hour(1), None)
 SET_SIS = ProfileSet(2, minu(5), 3000)
-SET_SIS_SIM = ProfileSet(4, minu(5), 3000)
+SET_SIS_SIM = ProfileSet(4, minu(5)) # 500
 
 # List of profile days
 SET_SIS_D3 = ProfileSet(3, minu(5), 3000, day=3)
