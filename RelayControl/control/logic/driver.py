@@ -63,6 +63,7 @@ class Driver:
             if NOISE:
                 # random = np.random.lognormal(mean=NOISE_MEAN, sigma=NOISE_SIGMA, size=len(ts))
                 random = np.random.normal(loc=NOISE_MEAN, scale=NOISE_SIGMA, size=len(ts))
+                print random
                 ts += random
                 ts[ts > 100] = 100
                 ts[ts < 0] = 0

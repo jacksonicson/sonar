@@ -366,7 +366,7 @@ def __get_and_apply_set_max(mix):
         if set_max.has_key(pset.id) == False:
             set_max[pset.id] = 0
             
-        max_value = np.percentile(profile_ts, 90)
+        max_value = np.percentile(profile_ts, 95)
         set_max[pset.id] = max(max_value, set_max[pset.id])
         if pset.cap:
             set_max[pset.id] = min(pset.cap, set_max[pset.id])

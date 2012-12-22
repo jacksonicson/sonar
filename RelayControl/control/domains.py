@@ -12,10 +12,15 @@ class Domain:
         self.rain_target = rain_target
 
 domain_profile_mapping = []
-for i in xrange(90):
-    index = random.randint(0, len(profiles.selected) - 1)
-    print 'Random index %i' % index
-    domain_profile_mapping.append(Domain('target%i' % i, index, True))
+def mapping():
+    global domain_profile_mapping
+    domain_profile_mapping = []
+    for i in xrange(90):
+        index = random.randint(0, len(profiles.selected) - 1)
+        index = i
+        print 'Random index %i' % index
+        domain_profile_mapping.append(Domain('target%i' % i, index, True))
+mapping()
 
 ###############################################################################
 ###############################################################################

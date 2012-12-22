@@ -5,6 +5,7 @@ import model
 import scoreboard
 import time
 import msgpump
+from control import domains 
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -126,9 +127,11 @@ def main():
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
     
-    # controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    # ### CONTROLLER ##############################################
+    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
     # controller = controller_sandpiper_proactive.Sandpiper(pump, model)
-    controller = controller_ssapv.Sandpiper(pump, model)
+    # controller = controller_ssapv.Sandpiper(pump, model)
+    # #############################################################
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -164,9 +167,10 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = 'optimization middle'
+        name = 'reactive small'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
+            domains.mapping()
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)

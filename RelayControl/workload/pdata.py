@@ -30,7 +30,7 @@ class ProfileSet:
 SET_O2_BUSINESS = ProfileSet(0, hour(1), None)
 SET_O2_RETAIL = ProfileSet(1, hour(1), None)
 SET_SIS = ProfileSet(2, minu(5), 3000)
-SET_SIS_SIM = ProfileSet(4, minu(5))
+SET_SIS_SIM = ProfileSet(4, minu(5), 3000)
 
 # List of profile days
 SET_SIS_D3 = ProfileSet(3, minu(5), 3000, day=3)
@@ -306,4 +306,3 @@ for i in xrange(1, 420):
     desc = Desc('SIS_%i_cpu' % i, SET_SIS_SIM)
     mix_sim2.append(desc)
     
-

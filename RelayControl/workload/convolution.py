@@ -64,7 +64,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
         
         
         # value = np.mean(bucket)
-        value = np.percentile(bucket, 95)
+        value = np.percentile(bucket, 90)
         
         bucket_array[i] = value
         i += 1
