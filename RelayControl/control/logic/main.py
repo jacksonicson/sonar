@@ -173,7 +173,7 @@ if __name__ == '__main__':
         controller = 'reactive'
         name = '%s middle' % controller
         t = open(config.path(name), 'w')
-        for i in xrange(0, 30):
+        for i in xrange(0, 10):
             domains.mapping()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)
