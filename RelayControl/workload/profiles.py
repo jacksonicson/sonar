@@ -41,6 +41,7 @@ config = mixsim2
 ##############################
 
 ##############################
+# Backward compatibility - gets extracted from config
 selected_profile = config.prefix    # Prefix for picking TS from Times
 selected_name = config.name         # Just for logging
 selected = config.data              # Selected workload mix
@@ -485,7 +486,7 @@ def plot_overlay_mix():
     a = 0
     
     plot_mix = []
-    for i in xrange(a, a+100):
+    for i in xrange(a, a + 100):
         print selected[i].name
         plot_mix.append(selected[i].name)
     

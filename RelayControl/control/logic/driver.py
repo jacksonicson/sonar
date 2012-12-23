@@ -1,17 +1,15 @@
 from collector import ttypes
-from control import domains
 from service import times_client
 from virtual import nodes
 from workload import profiles, util as wutil
 from workload.timeutil import * #@UnusedWildImport
-import control.domains as domains
+from control import domains
 import numpy as np
 import scoreboard
 import sys
 
 ##########################
 ## CONFIGURATION        ##
-TRACE = True
 BASE_LOAD = 10
 NOISE = True
 NOISE_MEAN = 0.0
@@ -46,11 +44,7 @@ class Driver:
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            if TRACE: 
-                load = profiles.get_cpu_profile_for_initial_placement(domains.index_of(domain.name))
-            else:
-                load = domains.cpu_profile_by_name(domain.name)
-            print 'Driver is loading service for replay: %s ' % (load)
+            load = profiles.get_cpu_profile_for_initial_placement(domains.index_of(domain.name))
             
             ts = connection.load(load)
             

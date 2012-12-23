@@ -1,5 +1,6 @@
 from control import domains
 from logs import sonarlog
+from workload import profiles
 import configuration as config
 import json
 import model
@@ -132,7 +133,7 @@ def main(controller):
         controller = controller_sandpiper_reactive.Sandpiper(pump, model)
     elif controller == 'proactive':
         controller = controller_sandpiper_proactive.Sandpiper(pump, model)
-    else:
+    else: 
         controller = controller_ssapv.Sandpiper(pump, model)
     # #############################################################
     
@@ -170,10 +171,12 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        controller = 'reactive'
-        name = '%s middle' % controller
+        mix = profiles.config.name
+        controller = 'overbooking'
+        ctype = 'large'
+        name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
-        for i in xrange(0, 10):
+        for i in xrange(0, 30):
             domains.mapping()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)

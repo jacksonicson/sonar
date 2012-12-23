@@ -1,5 +1,5 @@
 from workload import profiles
-import random 
+import random
 
 '''
 Maps domains to profiles
@@ -15,9 +15,9 @@ domain_profile_mapping = []
 def mapping():
     global domain_profile_mapping
     domain_profile_mapping = []
-    for i in xrange(90):
-        index = random.randint(0, 400)
-        print 'Random index %i' % index
+    for i in xrange(180):
+        index = random.randint(0, len(profiles.selected) - 1)
+        # index = i
         domain_profile_mapping.append(Domain('target%i' % i, index, True))
 mapping()
 

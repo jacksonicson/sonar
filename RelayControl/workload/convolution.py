@@ -101,10 +101,12 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     
     # Smooth
     # smooth_profile = simple_moving_average(noise_profile, 7)
-    _, smooth_profile, _ = forecasting.single_exponential_smoother(noise_profile, 0.2)
+    # Smoothing contains the forecasted value - so remove the last value
+    _, smooth_profile, _ = forecasting.single_exponential_smoother(noise_profile, 0.2)[:-1]
     
     # Create noise
     noise_array = np.array(0, np.float32)
+    
     for i in xrange(0, len(noise_profile), resolution_factor):
         j = i / resolution_factor
         variance = variance_array[j]
@@ -129,7 +131,6 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     
     # Plotting
     # if plot: _plot(name, smooth_profile, org_signal, variance_array_2)   
-        
         
     return smooth_profile, frequency
     
