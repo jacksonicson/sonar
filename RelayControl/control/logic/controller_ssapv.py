@@ -7,7 +7,7 @@ import placement
 ######################
 ## CONFIGURATION    ##
 ######################
-AGGREGATION = 48
+AGGREGATION = 24
 ######################
 
 # Setup logging

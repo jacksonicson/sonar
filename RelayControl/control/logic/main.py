@@ -133,6 +133,8 @@ def main(controller):
         controller = controller_sandpiper_reactive.Sandpiper(pump, model)
     elif controller == 'proactive':
         controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    elif controller == 'round':
+        controller = controller_rr.Sandpiper(pump, model)
     else: 
         controller = controller_ssapv.Sandpiper(pump, model)
     # #############################################################
@@ -172,11 +174,11 @@ if __name__ == '__main__':
         main()
     else:
         mix = profiles.config.name
-        controller = 'overbooking'
-        ctype = 'large'
+        controller = 'optimization'
+        ctype = 'super large'
         name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
-        for i in xrange(0, 30):
+        for i in xrange(0, 10):
             domains.mapping()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)

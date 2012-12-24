@@ -35,9 +35,6 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
     
-    # Buffer original signal
-    org_signal = signal
-        
     # TODO: Filter extreme values > the 95th percentile
         
     # Remove the remainder elements
@@ -102,7 +99,8 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     # Smooth
     # smooth_profile = simple_moving_average(noise_profile, 7)
     # Smoothing contains the forecasted value - so remove the last value
-    _, smooth_profile, _ = forecasting.single_exponential_smoother(noise_profile, 0.2)[:-1]
+    _, smooth_profile, _ = forecasting.single_exponential_smoother(noise_profile, 0.2)
+    smooth_profile = smooth_profile[:-1]
     
     # Create noise
     noise_array = np.array(0, np.float32)
@@ -118,7 +116,7 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
             noise_array = np.hstack((noise_array, noise))
     
     # Apply noise
-    smooth_profile = smooth_profile[:len(noise_array)] + noise_array
+    smooth_profile = smooth_profile + noise_array[:len(smooth_profile)]
     
     # Normalize
     tv = np.vectorize(to_positive)
