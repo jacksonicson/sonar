@@ -37,7 +37,7 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mix0
+config = mixsim2
 ##############################
 
 ##############################
@@ -124,12 +124,11 @@ def get_cpu_profile_for_initial_placement(index):
     Gets a traced CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-#    if traces_exist:
-#        desc = __by_index(index)
-#        name = __times_name(True, desc.name, POSTFIX_TRACE)
-#    else:
-#        name = get_current_cpu_profile(index)
-    name = get_current_cpu_profile(index)
+    if traces_exist:
+        desc = __by_index(index)
+        name = __times_name(True, desc.name, POSTFIX_TRACE)
+    else:
+        name = get_current_cpu_profile(index)
     
     print 'Selected CPU profile for initial placement: %s' % name
     return name
@@ -571,10 +570,10 @@ def dump_user_profile_maxes():
 # Builds the profiles and saves them in Times
 def main():
     # dump_user_profile_maxes()
-    build_all_profiles_for_mix(selected, True)
+    # build_all_profiles_for_mix(selected, True)
     # build_modified_profiles(selected, False)
-    plot_overlay_mix()
-    # dump_to_csv()
+    # plot_overlay_mix()
+    dump_to_csv()
     pass
 
 if __name__ == '__main__':

@@ -175,10 +175,10 @@ if __name__ == '__main__':
     else:
         mix = profiles.config.name
         controller = 'optimization'
-        ctype = 'experiment'
+        ctype = 'very large'
         name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
-        for i in xrange(0, 1):
+        for i in xrange(0, 15):
             domains.mapping()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)

@@ -7,7 +7,7 @@ import placement
 ######################
 ## CONFIGURATION    ##
 ######################
-AGGREGATION = None
+AGGREGATION = 12
 ######################
 
 # Setup logging
@@ -22,13 +22,17 @@ class Sandpiper(controller.LoadBalancer):
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'SSAPv',
-    
+                                                                 'aggregation' : AGGREGATION,
                                                                  }))
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
         nodecount = len(nodes.HOSTS)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute(aggregation=False)
+        
+        if AGGREGATION == None:
+            migrations, _ = splace.execute(aggregation=False)
+        else:
+            migrations, _ = splace.execute(aggregation=True, bucketCount=AGGREGATION)
             
         self.build_internal_model(migrations)
         return migrations
