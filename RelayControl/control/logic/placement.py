@@ -164,7 +164,7 @@ class FirstFitPlacement(Placement):
     
 class SSAPvPlacement(Placement):
     
-    def execute(self, aggregation=True, bucketCount=24):
+    def execute(self, aggregation=False, bucketCount=24):
         # Execute super code
         super(SSAPvPlacement, self).execute()
         
@@ -184,8 +184,8 @@ class SSAPvPlacement(Placement):
         service_log = ''
         for service_index in xrange(service_count):
             mapping = domains.domain_profile_mapping[service_index]
-            
             service = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
+                
             print 'loading service: %s' % (service)
             service_log += service + '; '
             

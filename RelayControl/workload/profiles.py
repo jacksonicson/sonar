@@ -37,7 +37,7 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mixsim2
+config = mix0
 ##############################
 
 ##############################
@@ -124,11 +124,12 @@ def get_cpu_profile_for_initial_placement(index):
     Gets a traced CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
     '''
-    if traces_exist:
-        desc = __by_index(index)
-        name = __times_name(True, desc.name, POSTFIX_TRACE)
-    else:
-        name = get_current_cpu_profile(index)
+#    if traces_exist:
+#        desc = __by_index(index)
+#        name = __times_name(True, desc.name, POSTFIX_TRACE)
+#    else:
+#        name = get_current_cpu_profile(index)
+    name = get_current_cpu_profile(index)
     
     print 'Selected CPU profile for initial placement: %s' % name
     return name
