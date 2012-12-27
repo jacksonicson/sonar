@@ -1704,8 +1704,8 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        connect_sonar(connection)
-        # extract_migration_times(connection)
+        # connect_sonar(connection)
+        extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
