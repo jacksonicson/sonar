@@ -1,12 +1,13 @@
 from logs import sonarlog
+from virtual import nodes
 import controller
 import json
-from virtual import nodes
 import placement
 
 ######################
 ## CONFIGURATION    ##
 ######################
+AGGREGATION = 12
 ######################
 
 # Setup logging
@@ -21,16 +22,22 @@ class Sandpiper(controller.LoadBalancer):
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'SSAPv',
-    
+                                                                 'aggregation' : AGGREGATION,
                                                                  }))
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
         nodecount = len(nodes.HOSTS)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute(aggregation=True , bucketCount=24)
+        
+        if AGGREGATION == None:
+            migrations, _ = splace.execute(aggregation=False)
+        else:
+            migrations, _ = splace.execute(aggregation=True, bucketCount=AGGREGATION)
+            
         self.build_internal_model(migrations)
         return migrations
     
     def balance(self):
-        print 'SSAPv static - not controlling'
+        # print 'SSAPv static - not controlling'
+        pass
     

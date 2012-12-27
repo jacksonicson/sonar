@@ -1,10 +1,12 @@
+from control import domains
 from logs import sonarlog
+from workload import profiles
 import configuration as config
 import json
 import model
+import msgpump
 import scoreboard
 import time
-import msgpump
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -113,7 +115,7 @@ def build_initial_model(controller):
 def heartbeat(pump):
     print 'Message pump started'
 
-def main():
+def main(controller):
     # Flush scoreboard
     scoreboard.Scoreboard().flush()
     
@@ -125,8 +127,17 @@ def main():
     import controller_sandpiper_reactive #@UnusedImport
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
-    import sandpiper_standard
-    controller = sandpiper_standard.Sandpiper(pump, model)
+    
+    # ### CONTROLLER ##############################################
+    if controller == 'reactive': 
+        controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    elif controller == 'proactive':
+        controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    elif controller == 'round':
+        controller = controller_rr.Sandpiper(pump, model)
+    else: 
+        controller = controller_ssapv.Sandpiper(pump, model)
+    # #############################################################
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -162,10 +173,14 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = 'reactive_mixsim_30_90'
+        mix = profiles.config.name
+        controller = 'optimization'
+        ctype = 'very large'
+        name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
-        for i in xrange(0, 30):
-            pump = main()
+        for i in xrange(0, 15):
+            domains.mapping()
+            pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)
             t.write('%s\n' % res)

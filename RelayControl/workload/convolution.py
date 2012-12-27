@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import util
 from timeutil import * #@UnusedWildImport
+from analytics import forecasting
 
 def simple_moving_average(array, window=5):
     weights = np.repeat(1.0, window) / window
@@ -27,15 +28,13 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     tv = np.vectorize(to_weekday)
     time = tv(time)
     indices = np.where(time < 5)
+    
     time = np.take(time, indices)
     signal = np.ravel(np.take(signal, indices))
     
     elements_per_cycle = cycle_time / sampling_frequency
     cycle_count = len(signal) / elements_per_cycle
     
-    # Buffer original signal
-    org_signal = signal
-        
     # TODO: Filter extreme values > the 95th percentile
         
     # Remove the remainder elements
@@ -61,7 +60,11 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
 #        bucket = np.reshape(bucket, (signal.shape[0], 1))
 #        bucket_array = np.hstack((bucket_array, bucket))
         np.reshape(bucket, (signal.shape[0] * elements_per_bucket, 1))
+        
+        
         value = np.mean(bucket)
+        # value = np.percentile(bucket, 90)
+        
         bucket_array[i] = value
         i += 1
 
@@ -76,17 +79,17 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
         bucket = buckets[i]
         bucket = np.ravel(bucket)
         var = np.std(bucket)
-        variance_array[i] = var / 30
+        variance_array[i] = var / 40
     variance_array = np.ravel(variance_array)
     
-    # Variance calculation two
-    variance_array_2 = np.empty(len(buckets), np.float32) # per bucket averaged variance
-    for i in range(0, len(buckets)):
-        bucket = buckets[i]
-        variance = np.apply_along_axis(np.std, 1, bucket)
-        variance = np.median(np.ravel(variance))
-        variance_array_2[i] = variance / 2
-    variance_array_2 = np.ravel(variance_array)
+#    # Variance calculation two
+#    variance_array_2 = np.empty(len(buckets), np.float32) # per bucket averaged variance
+#    for i in range(0, len(buckets)):
+#        bucket = buckets[i]
+#        variance = np.apply_along_axis(np.std, 1, bucket)
+#        variance = np.median(np.ravel(variance))
+#        variance_array_2[i] = variance /  4 #2
+#    variance_array_2 = np.ravel(variance_array)
     
     # Increase signal resolution
     target_bucket_count = cycle_time / minu(5)
@@ -94,10 +97,14 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
     noise_profile = np.ravel(np.array(zip(*[raw_profile for _ in xrange(resolution_factor)])))
     
     # Smooth
-    smooth_profile = simple_moving_average(noise_profile, 7)
+    # smooth_profile = simple_moving_average(noise_profile, 7)
+    # Smoothing contains the forecasted value - so remove the last value
+    _, smooth_profile, _ = forecasting.single_exponential_smoother(noise_profile, 0.2)
+    smooth_profile = smooth_profile[:-1]
     
     # Create noise
     noise_array = np.array(0, np.float32)
+    
     for i in xrange(0, len(noise_profile), resolution_factor):
         j = i / resolution_factor
         variance = variance_array[j]
@@ -109,18 +116,19 @@ def extract_profile(name, time, signal, sampling_frequency, cycle_time=hour(24),
             noise_array = np.hstack((noise_array, noise))
     
     # Apply noise
-    smooth_profile = smooth_profile + noise_array
-        
+    smooth_profile = smooth_profile + noise_array[:len(smooth_profile)]
+    
+    # Normalize
     tv = np.vectorize(to_positive)
-    smooth_profile = tv(smooth_profile)
+    x = 100 / np.percentile(signal, 99) # np.max(smooth_profile)
+    smooth_profile *= x
+    smooth_profile[smooth_profile > 100] = 100
 
     # Frequency of result signal
     frequency = cycle_time / len(smooth_profile)
     
-
     # Plotting
-    if plot: _plot(name, smooth_profile, org_signal, variance_array_2)   
-        
+    # if plot: _plot(name, smooth_profile, org_signal, variance_array_2)   
         
     return smooth_profile, frequency
     

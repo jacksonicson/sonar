@@ -32,15 +32,17 @@ mix1m = Config(None, 'mix_1', pdata.mix_1, True, True)
 mix2m = Config(None, 'mix_2', pdata.mix_2, True, True)
 
 mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
+mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mixsim
+config = mixsim2
 ##############################
 
 ##############################
-selected_profile = config.prefix   # Prefix for picking TS from Times
+# Backward compatibility - gets extracted from config
+selected_profile = config.prefix    # Prefix for picking TS from Times
 selected_name = config.name         # Just for logging
 selected = config.data              # Selected workload mix
 modified = config.modified          # Modified version of the workload mix
@@ -152,6 +154,8 @@ def __times_name(prefixed, *args):
             name = ''
         else:
             name = selected_profile + '_'
+    else:
+        name = ''
              
     name += '_'.join(args)
     return name
@@ -164,7 +168,7 @@ def __by_index(index):
     return selected[index]
 
 
-def __write_profile(connection, name, profile_ts, interval, overwrite=False, noprefix=False):
+def __write_profile(connection, name, profile_ts, interval, overwrite=True, noprefix=False):
     '''
     Saves a TS in the Times service.
     
@@ -237,6 +241,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     maxval = float(set_max[pset.id])
     profile /= maxval
     norm_profile = np.array(profile)
+    norm_profile[norm_profile > 1] = 1
     norm_profile *= 100 # Times does not support float values
     if save:
         __write_profile(connection, __times_name(True, desc.name, POSTFIX_NORM), norm_profile, interval)
@@ -256,7 +261,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
         __write_profile(connection, __times_name(True, desc.name, POSTFIX_USER), user_profile, interval)
     
     # Plotting    
-    util.plot(user_profile, desc.name + '.png', MAX_USERS)
+    # util.plot(user_profile, desc.name + '.png', MAX_USERS)
 
 
 def __build_sample_day(mix, save):
@@ -362,7 +367,7 @@ def __get_and_apply_set_max(mix):
         if set_max.has_key(pset.id) == False:
             set_max[pset.id] = 0
             
-        max_value = np.max(profile_ts)
+        max_value = np.percentile(profile_ts, 95)
         set_max[pset.id] = max(max_value, set_max[pset.id])
         if pset.cap:
             set_max[pset.id] = min(pset.cap, set_max[pset.id])
@@ -436,6 +441,38 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
         __write_profile(connection, __times_name(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
         times_client.close()
     
+def dump_to_csv():
+    connection = times_client.connect()
+    
+    demands = []
+    for desc in selected:
+        timeSeries = connection.load(__times_name(True, desc.name, POSTFIX_NORM))
+        _, demand = util.to_array(timeSeries)
+        demands.append((desc.name, demand))
+        
+    import csv
+    with open(configuration.path('traces', 'csv'), 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter='\t')
+        
+        row = []
+        for demand in demands:
+            row.append(demand[0])
+        spamwriter.writerow(row)
+        
+        l = len(demands[0][1])
+        for i in xrange(0, l):
+            row = []
+            for demand in demands:
+                if i < len(demand[1]): 
+                    row.append(demand[1][i])
+                else:
+                    print 'warn'
+                    row.append(0)
+                    
+            spamwriter.writerow(row)
+        
+    times_client.close()
+    
 def plot_overlay_mix():
     '''
     Plots all TS of a mix in a single axis graph
@@ -443,9 +480,15 @@ def plot_overlay_mix():
     # Connect with times
     connection = times_client.connect()
     
-    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
-    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
-    plot_mix = mix0
+#    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
+#    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
+#    plot_mix = mix0
+    a = 0
+    
+    plot_mix = []
+    for i in xrange(a, a + 100):
+        print selected[i].name
+        plot_mix.append(selected[i].name)
     
     fig = plt.figure()
     
@@ -453,17 +496,18 @@ def plot_overlay_mix():
     ax.set_xlim([0, 300])
     
     for name in plot_mix:
-        timeSeries = connection.load(__times_name(True, name, POSTFIX_USER))
+        timeSeries = connection.load(__times_name(True, name, POSTFIX_NORM))
         _, demand = util.to_array(timeSeries)
         
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
 
     
-    ax.set_xlabel('Time in seconds')
+    ax.set_xlabel('Time x5 minutes')
     ax.set_ylabel('Load in number of users')
     
-    plt.savefig(configuration.path('overlay', 'png'))
-    plt.savefig(configuration.path('overlay', 'pdf'))
+    plt.show()
+#    plt.savefig(configuration.path('overlay', 'png'))
+#    plt.savefig(configuration.path('overlay', 'pdf'))
     
     # Close times connection
     times_client.close()
@@ -527,8 +571,9 @@ def dump_user_profile_maxes():
 def main():
     # dump_user_profile_maxes()
     # build_all_profiles_for_mix(selected, True)
-    # build_modified_profiles(selected, True)
-    plot_overlay_mix()
+    # build_modified_profiles(selected, False)
+    # plot_overlay_mix()
+    dump_to_csv()
     pass
 
 if __name__ == '__main__':
