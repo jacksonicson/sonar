@@ -174,8 +174,8 @@ if __name__ == '__main__':
         main()
     else:
         mix = profiles.config.name
-        controller = 'optimization'
-        ctype = 'very large'
+        controller = 'overbooking'
+        ctype = 'experiment'
         name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
         for i in xrange(0, 15):
