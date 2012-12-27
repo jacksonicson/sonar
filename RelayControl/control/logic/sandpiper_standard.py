@@ -36,24 +36,12 @@ class Sandpiper(controller.LoadBalancer):
         super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.migration_queue = []
         
-    def forecast(self, data):
-        # TODO double exponential smoothing (holt winter)
-        import statsmodels.api as sm
-        import statsmodels as sm2
-        model = sm2.tsa.ar_model.AR(data).fit()
-        try:
-            value = model.predict(len(data), len(data) + 1)
-            return value[0]
-        except:
-            return data[-1]
-        
         
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:
             # Release block
-            time_now = self.pump.sim_time()
-            node_from.blocked = time_now
-            node_to.blocked = time_now
+            node_from.blocked = end_time
+            node_to.blocked = end_time
             
             # Reset CPU consumption: Necessary because the old CPU readings
             # may trigger another migrations as they do not represent the load
@@ -158,7 +146,7 @@ class Sandpiper(controller.LoadBalancer):
     
     def balance(self):
         
-        sleep_time = 10
+        sleep_time = 60
         time_now = self.pump.sim_time()
         
         ############################################
@@ -312,11 +300,9 @@ class Sandpiper(controller.LoadBalancer):
 
         
     def hotspot_detector(self):
-        
         ############################################
         ## HOTSPOT DETECTOR ########################
-        ############################################
-        
+        ############################################ 
         for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
@@ -329,26 +315,19 @@ class Sandpiper(controller.LoadBalancer):
                 if reading > THRESHOLD_OVERLOAD: overload += 1
                 if reading < THRESHOLD_UNDERLOAD: underload += 1
 
-            m = M_VALUE
-            #forecast = self.forecast(readings[-k:])        
-            overloaded = True
-            overloaded &= (overload >= m)
-            #overloaded &= (forecast > THRESHOLD_OVERLOAD)
-        
-            underloaded = True
-            underloaded &= (underload >= m)
-            #underloaded &= (forecast < THRESHOLD_UNDERLOAD)
+            m = M_VALUE   
+            overload = (overload >= m)
+            underload = (underload >= m)
              
-            if overloaded:
+            if overload:
                 print 'Overload in %s - %s' % (node.name, readings[-k:])  
              
             # Update overload                                
-            node.overloaded = overloaded
-            node.underloaded = underloaded
+            node.overloaded = overload
+            node.underloaded = underload
         
     
     def migration_manager(self):
-        
         ############################################
         ## MIGRATION MANAGER #######################
         ############################################
@@ -371,11 +350,9 @@ class Sandpiper(controller.LoadBalancer):
     
     
     def migration_trigger(self, nodes, sleep_time, time_now):
-        
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
-        
         for node in nodes:
             node.dump()
             
@@ -388,7 +365,7 @@ class Sandpiper(controller.LoadBalancer):
                     # Sort domains by their VSR value in decreasing order 
                     node_domains = []
                     node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int((b.volume_size - a.volume_size) * 100000))
+                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
@@ -407,7 +384,7 @@ class Sandpiper(controller.LoadBalancer):
                     # Sort domains by their VSR value in decreasing order 
                     node_domains = []
                     node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int((b.volume_size - a.volume_size) * 100000))
+                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:

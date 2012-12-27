@@ -162,7 +162,7 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = 'ou_mixsim_6_18_test'
+        name = 'reactive_mixsim_30_90'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             pump = main()

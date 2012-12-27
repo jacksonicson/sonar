@@ -11,7 +11,7 @@ class Domain:
         self.rain_target = rain_target
 
 domain_profile_mapping = []
-for i in xrange(18):
+for i in xrange(90):
     domain_profile_mapping.append(Domain('target%i' % i, i, True))
 
 ###############################################################################
