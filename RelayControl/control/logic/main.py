@@ -127,6 +127,7 @@ def main(controller):
     import controller_sandpiper_reactive #@UnusedImport
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
+    import sandpiper_standard #@UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
@@ -135,6 +136,8 @@ def main(controller):
         controller = controller_sandpiper_proactive.Sandpiper(pump, model)
     elif controller == 'round':
         controller = controller_rr.Sandpiper(pump, model)
+    elif controller == 'johannes':
+        controller = sandpiper_standard.Sandpiper(pump, model)
     else: 
         controller = controller_ssapv.Sandpiper(pump, model)
     # #############################################################
@@ -174,11 +177,11 @@ if __name__ == '__main__':
         main()
     else:
         mix = profiles.config.name
-        controller = 'optimization'
+        controller = 'johannes'
         ctype = 'very large'
         name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
-        for i in xrange(0, 15):
+        for i in xrange(0, 30):
             domains.mapping()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)

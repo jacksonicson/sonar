@@ -15,7 +15,7 @@ domain_profile_mapping = []
 def mapping():
     global domain_profile_mapping
     domain_profile_mapping = []
-    for i in xrange(360):
+    for i in xrange(18):
         index = random.randint(0, len(profiles.selected) - 1)
         # index = i
         domain_profile_mapping.append(Domain('target%i' % i, index, True))
