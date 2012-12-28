@@ -17,12 +17,18 @@ INTERVAL = 300
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 0.04
-MIN_IMPROVEMENT_IMBALANCE = 0.001
+THRESHOLD_IMBALANCE = 0.12
+MIN_IMPROVEMENT_IMBALANCE = 0.01
 NODE_CAPACITY = 100
 
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
+
+# first or second controller can be 'imbalance' or 'reactive' or 'off'
+FIRST_CONTROLLER = 'imbalance'
+SECOND_CONTROLLER = 'off'
+# 'SWAP' can be turned 'on' or 'off'
+SWAP = 'off'
 ######################
 
 # Setup logging
@@ -35,7 +41,14 @@ class Sandpiper(controller.LoadBalancer):
     def __init__(self, pump, model):
         super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.migration_queue = []
-        
+    
+    def initial_placement_sim(self):
+        nodecount = len(nodes.HOSTS)
+        splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = splace.execute()
+        self.build_internal_model(migrations)       
+            
+        return migrations
         
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:
@@ -72,7 +85,6 @@ class Sandpiper(controller.LoadBalancer):
             node_from.blocked = time_now
             node_to.blocked = time_now
         
-        
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
@@ -85,99 +97,42 @@ class Sandpiper(controller.LoadBalancer):
                                                                  'm_value' : M_VALUE
                                                                  }))    
     
-    
-    def initial_placement_sim(self):
-        nodecount = len(nodes.HOSTS)
-        splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute()
-        self.build_internal_model(migrations)       
-            
-        return migrations
-
-   
-    def migration(self, domain, source, target, migration_type):
-        return {
-                'domain' : domain,
-                'source' : source,
-                'target' : target,
-                'migration_type' : migration_type,
-                'triggered' : False,
-                'finished' : False
-                }
-
-    
-    def add_migration(self, migration):
-        for mig in self.migration_queue:
-            #if mig['source'].name == migration['source'].name and mig['target'].name == migration['target'].name and mig['domain'].name == migration['domain'].name and mig['finished'] == False:
-                #return
-            if mig['domain'].name == migration['domain'].name:
-                return
-        self.migration_queue.append(migration)    
-
-  
-    def volume(self, node, k):
-        # Calculates volume for node and return node
-        volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
-        node.volume = volume
-        node.volume_size = volume / 8.0 # 8 GByte
-        
-        return node    
-
-            
-    def normalized_cpu(self, node, k):
-                
-        load = 0
-        for domain in node['domains'].itervalues():
-            load += domain['cpu']
-        
-        return load / NODE_CAPACITY
-            
-                
-    def imbalance(self, nodes, k):
-        # Based on DRS     
-        normalized_cpus = []
-        
-        for node in nodes.itervalues():
-            if len(node['domains']) != 0:
-                normalized_cpus.append(node['normalized_cpu'])
-
-        return math.fabs(numpy.std(normalized_cpus))
-    
-    
     def balance(self):
-        
         sleep_time = 60
         time_now = self.pump.sim_time()
         
         ############################################
         ## IMBALANCE MIGRATION #####################
         ############################################
-        
-#        self.migrate_imbalance(time_now, sleep_time, K_VALUE)
-#        
-#        if len(self.migration_queue) != 0:
-#            # if imbalance algorithm triggered migration, no further migrations will be executed
-#            return
-        
+        if FIRST_CONTROLLER == 'imbalance':
+            self.migrate_imbalance(time_now, sleep_time, K_VALUE)
+            
+            if len(self.migration_queue) != 0:
+                # if imbalance algorithm triggered migration, no further migrations will be executed
+                return
         
         ############################################
         ## OVERLOAD/UNDERLOAD/SWAP MIGRATION #######
         ############################################
-        
-        # detect hotspots
-        self.hotspot_detector()
+        if FIRST_CONTROLLER == 'reactive' or SECOND_CONTROLLER == 'reactive':
+            # detect hotspots
+            self.hotspot_detector()
+                
+            # calculate and sort nodes by their volume
+            nodes = self.migration_manager()
             
-        # calculate and sort nodes by their volume
-        nodes = self.migration_manager()
-        
-        # trigger migration
-        self.migration_trigger(nodes, sleep_time, time_now)
+            # trigger migration
+            self.migration_trigger(nodes, sleep_time, time_now)
+            
+            if len(self.migration_queue) != 0:
+                # if overload/underload/swap triggered migration, no further migrations will be executed
+                return
 
-#        if len(self.migration_queue) != 0:
-#            # if imbalance algorithm triggered migration, no further migrations will be executed
-#            return
-#        
-#        self.migrate_imbalance(time_now, sleep_time, K_VALUE)
+        ############################################
+        ## IMBALANCE MIGRATION #####################
+        ############################################
+        if SECOND_CONTROLLER == 'imbalance':
+            self.migrate_imbalance(time_now, sleep_time, K_VALUE)
         
     def migrate_imbalance(self, time_now, sleep_time, k):
         # based on DSR algorithm
@@ -222,8 +177,11 @@ class Sandpiper(controller.LoadBalancer):
                 # save parent node extra
                 source = tmp_nodes[domain['source']]
                 source_node = self.model.get_host(source['name'])
-
                 
+                if len(source_node.domains) == 1:
+                    # don't consider domains, which are alone on one node
+                    continue
+          
                 for node in tmp_nodes.itervalues():
                     # consider every node as new parent for domain
                     
@@ -271,8 +229,7 @@ class Sandpiper(controller.LoadBalancer):
                     source['normalized_cpu'] = old_normalized_cpu_source
                     del node['domains'][domain['name']]
                     node['normalized_cpu'] = old_normalized_cpu_node
-                    
-            
+                                
             if best_migration is None:
                 break
             
@@ -285,8 +242,7 @@ class Sandpiper(controller.LoadBalancer):
             del best_source['domains'][best_domain['name']]
             best_source['normalized_cpu'] = self.normalized_cpu(best_source, k)
             num_migrations += 1
-
-        
+      
         # migrate domains that improve imbalance
         for migration in migrations.itervalues():
             domain = self.model.get_host(migration['domain'])
@@ -297,8 +253,7 @@ class Sandpiper(controller.LoadBalancer):
             self.add_migration(migration)
         
         self.migration_scheduler()
-
-        
+      
     def hotspot_detector(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
@@ -325,8 +280,7 @@ class Sandpiper(controller.LoadBalancer):
             # Update overload                                
             node.overloaded = overload
             node.underloaded = underload
-        
-    
+          
     def migration_manager(self):
         ############################################
         ## MIGRATION MANAGER #######################
@@ -346,8 +300,7 @@ class Sandpiper(controller.LoadBalancer):
         # Multiplication with a big value to shift post comma digits to the front (integer)
         nodes.sort(lambda a, b: int((b.volume - a.volume) * 100000))
         
-        return nodes
-    
+        return nodes 
     
     def migration_trigger(self, nodes, sleep_time, time_now):
         ############################################
@@ -370,7 +323,8 @@ class Sandpiper(controller.LoadBalancer):
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        #self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
+                        if SWAP == 'on':
+                            self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
                             
             except StopIteration: pass 
@@ -393,7 +347,6 @@ class Sandpiper(controller.LoadBalancer):
                         
             except StopIteration: pass
     
-
     def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)
         for target in reversed(range(nodes.index(node) + 1, len(nodes))):
@@ -415,7 +368,6 @@ class Sandpiper(controller.LoadBalancer):
                 self.migration_scheduler()
                 raise StopIteration()
         
-
     def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration
         for target in range(nodes.index(node) - 1):
@@ -431,14 +383,12 @@ class Sandpiper(controller.LoadBalancer):
             test &= (time_now - source.blocked) > sleep_time
             
             if test: 
-                #self.migrate(domain, source, target, K_VALUE)   
                 migration_type = 'Underload (Empty=%s)' % (empty)
                 migration = self.migration(domain, source, target, migration_type) 
                 self.add_migration(migration)    
                 self.migration_scheduler()                            
                 raise StopIteration()
     
-
     def swap(self, node, nodes, source, domain, time_now, sleep_time, k):
         # Try all targets for swapping
         for target_node in reversed(range(nodes.index(node) + 1, len(nodes))):
@@ -469,7 +419,6 @@ class Sandpiper(controller.LoadBalancer):
                     new_target_node_load -= util.domain_to_server_cpu(target_node, target_domain, tmp_load)
                     new_source_node_load += util.domain_to_server_cpu(node, target_domain, tmp_load)                              
                 
-
                 #Test if swap violates rules
                 test = True
                 test &= new_target_node_load < THRESHOLD_OVERLOAD
@@ -489,7 +438,6 @@ class Sandpiper(controller.LoadBalancer):
                     self.migration_scheduler()
                     raise StopIteration() 
 
-        
     def migration_scheduler(self):
         print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(self.migration_queue))
         for migration in self.migration_queue:
@@ -527,4 +475,45 @@ class Sandpiper(controller.LoadBalancer):
             migration['triggered'] = True
             self.migrate(domain, source, target, K_VALUE) 
             
+    def migration(self, domain, source, target, migration_type):
+        return {
+                'domain' : domain,
+                'source' : source,
+                'target' : target,
+                'migration_type' : migration_type,
+                'triggered' : False,
+                'finished' : False
+                }
+
+    def add_migration(self, migration):
+        # check if there is already a migration in the queue that wants to migrate the same domain
+        for mig in self.migration_queue:
+            if mig['domain'].name == migration['domain'].name:
+                return
+        self.migration_queue.append(migration)    
+
+    def volume(self, node, k):
+        # Calculates volume for node and return node
+        volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
+        node.volume = volume
+        node.volume_size = volume / 8.0 # 8 GByte
+        
+        return node    
+  
+    def normalized_cpu(self, node, k):
+        # Calculate normalized cpu of a node        
+        load = 0
+        for domain in node['domains'].itervalues():
+            load += domain['cpu']
+        
+        return load / NODE_CAPACITY
             
+                
+    def imbalance(self, nodes, k):
+        # Based on DRS     
+        normalized_cpus = []
+        for node in nodes.itervalues():
+            if len(node['domains']) != 0:
+                normalized_cpus.append(node['normalized_cpu'])
+
+        return math.fabs(numpy.std(normalized_cpus))            
