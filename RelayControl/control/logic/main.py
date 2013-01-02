@@ -1,14 +1,12 @@
+from control import domains
 from logs import sonarlog
+from workload import profiles
 import configuration as config
 import json
 import model
-import controller_sandpiper_proactive
-import controller_sandpiper_reactive
-import controller_rr
-import controller_ssapv
+import msgpump
 import scoreboard
 import time
-import msgpump
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -117,7 +115,7 @@ def build_initial_model(controller):
 def heartbeat(pump):
     print 'Message pump started'
 
-def main():
+def main(controller):
     # Flush scoreboard
     scoreboard.Scoreboard().flush()
     
@@ -125,7 +123,21 @@ def main():
     pump = msgpump.Pump(heartbeat)
     
     # New controller
-    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    import controller_ssapv #@UnusedImport
+    import controller_sandpiper_reactive #@UnusedImport
+    import controller_sandpiper_proactive #@UnusedImport
+    import controller_rr #@UnusedImport
+    
+    # ### CONTROLLER ##############################################
+    if controller == 'reactive': 
+        controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    elif controller == 'proactive':
+        controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    elif controller == 'round':
+        controller = controller_rr.Sandpiper(pump, model)
+    else: 
+        controller = controller_ssapv.Sandpiper(pump, model)
+    # #############################################################
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -161,11 +173,16 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = '60nodes_mix_sim'
+        mix = profiles.config.name
+        controller = 'overbooking'
+        ctype = 'experiment'
+        name = '%s - %s - %s' % (mix, controller, ctype)
         t = open(config.path(name), 'w')
-        for i in xrange(0, 30):
-            pump = main()
+        for i in xrange(0, 15):
+            domains.mapping()
+            pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)
+            scoreboard.Scoreboard().dump(pump)
             t.write('%s\n' % res)
             t.flush()
         t.close()

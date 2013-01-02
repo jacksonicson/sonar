@@ -6,7 +6,7 @@ import numpy as np
 
 ################################
 ## Configuration              ##
-WINDOW = 1000
+WINDOW = 7000
 ################################
 
 # Holds an internal list of all hosts

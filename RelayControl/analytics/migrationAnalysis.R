@@ -62,7 +62,8 @@ cat("Network - target server: ", "mean = ", round(target.mean, digits=2), " medi
 #####################################
 data = read.csv('C:/temp/migration-data.csv', sep='\t')
 source.diff = data$source.during - data$source.before
-hist(source.diff, main='CPU Source Server', xlab='Load increase before - during migration')
+# CPU Source Server
+hist(source.diff, main=NULL, xlab='Load increase before - during migration', ylab='Frequency')
 
 source.diff = source.diff[is.finite(source.diff)] # Filter NaN
 source.mean = mean(source.diff)
@@ -70,7 +71,8 @@ source.median = median(source.diff)
 cat("CPU - source server: ", "mean = ", round(source.mean, digits=2), " median = ", round(source.median, digits=2), sep='')
 
 target.diff = (data$target.during - data$target.before) 
-hist(target.diff, main='CPU Target Server', xlab='Load increase before - during migration', prob=TRUE)
+# CPU Target Server
+hist(target.diff, main=NULL, xlab='Load increase before - during migration', , ylab='Frequency')
 
 target.diff = target.diff[is.finite(target.diff)]
 target.mean = mean(target.diff)

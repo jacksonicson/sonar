@@ -1,4 +1,5 @@
 from workload import profiles
+import random
 
 '''
 Maps domains to profiles

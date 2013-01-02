@@ -23,13 +23,13 @@ class Config(object):
         self.modified = modified
         self.traces = traces
 
-mix0 = Config(None, 'mix_0', pdata.mix_0, False)
-mix1 = Config(None, 'mix_1', pdata.mix_1, False)
-mix2 = Config(None, 'mix_2', pdata.mix_2, False)
+mix0 = Config(None, 'mix_0', pdata.mix_0, False, True)
+mix1 = Config(None, 'mix_1', pdata.mix_1, False, True)
+mix2 = Config(None, 'mix_2', pdata.mix_2, False, True)
 
-mix0m = Config(None, 'mix_0', pdata.mix_0, True)
-mix1m = Config(None, 'mix_1', pdata.mix_1, True)
-mix2m = Config(None, 'mix_2', pdata.mix_2, True)
+mix0m = Config(None, 'mix_0', pdata.mix_0, True, True)
+mix1m = Config(None, 'mix_1', pdata.mix_1, True, True)
+mix2m = Config(None, 'mix_2', pdata.mix_2, True, True)
 
 mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
 mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
@@ -37,10 +37,11 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mixsim2
+config = mix1
 ##############################
 
 ##############################
+# Backward compatibility - gets extracted from config
 selected_profile = config.prefix    # Prefix for picking TS from Times
 selected_name = config.name         # Just for logging
 selected = config.data              # Selected workload mix
@@ -366,7 +367,7 @@ def __get_and_apply_set_max(mix):
         if set_max.has_key(pset.id) == False:
             set_max[pset.id] = 0
             
-        max_value = np.percentile(profile_ts, 90)
+        max_value = np.percentile(profile_ts, 95)
         set_max[pset.id] = max(max_value, set_max[pset.id])
         if pset.cap:
             set_max[pset.id] = min(pset.cap, set_max[pset.id])
@@ -482,9 +483,10 @@ def plot_overlay_mix():
 #    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
 #    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
 #    plot_mix = mix0
+    a = 0
     
     plot_mix = []
-    for i in xrange(200, 300):
+    for i in xrange(a, a + 100):
         print selected[i].name
         plot_mix.append(selected[i].name)
     
@@ -503,8 +505,9 @@ def plot_overlay_mix():
     ax.set_xlabel('Time x5 minutes')
     ax.set_ylabel('Load in number of users')
     
-    plt.savefig(configuration.path('overlay', 'png'))
-    plt.savefig(configuration.path('overlay', 'pdf'))
+    plt.show()
+#    plt.savefig(configuration.path('overlay', 'png'))
+#    plt.savefig(configuration.path('overlay', 'pdf'))
     
     # Close times connection
     times_client.close()

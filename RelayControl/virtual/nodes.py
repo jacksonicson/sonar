@@ -23,8 +23,14 @@ def dump(logger):
     logger.info('NODE_MEM = %i' % NODE_MEM)
     logger.info('DOMAIN_MEM = %i' % DOMAIN_MEM)
     logger.info('NODE_CPU = %i' % NODE_CPU)
+    logger.info('NODE_CPU_COURES = %i' % NODE_CPU_CORES)
+    logger.info('DOMAIN_CPU_COURES = %i' % DOMAIN_CPU_CORES)
+    
+    
+def to_node_load(domain_load):
+    return domain_load / (NODE_CPU_CORES / DOMAIN_CPU_CORES)
+
 
 def count():
     return len(NODES)
-
-
+    
