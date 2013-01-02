@@ -20,15 +20,16 @@ PERCENTILE = 80.0
 THRESHOLD_IMBALANCE = 0.12
 MIN_IMPROVEMENT_IMBALANCE = 0.01
 NODE_CAPACITY = 100
-
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
 
-# first or second controller can be 'imbalance' or 'reactive' or 'off'
+# MIXED CONTROLLER SETTINGS
+# Values can be 'imbalance', 'reactive', 'swap' or ''
+# Notice: Swap cannot be executed before 'reactive'
 FIRST_CONTROLLER = 'imbalance'
-SECOND_CONTROLLER = 'off'
-# 'SWAP' can be turned 'on' or 'off'
-SWAP = 'off'
+SECOND_CONTROLLER = 'reactive'
+THIRD_CONTROLLER = ''
+
 ######################
 
 # Setup logging
@@ -41,7 +42,20 @@ class Sandpiper(controller.LoadBalancer):
     def __init__(self, pump, model):
         super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.migration_queue = []
-    
+        
+        if FIRST_CONTROLLER == 'imbalance' or SECOND_CONTROLLER == 'imbalance' or THIRD_CONTROLLER == 'imbalance':
+            self.imbalance_controller = True
+        else:
+            self.imbalance_controller = False
+        if FIRST_CONTROLLER == 'reactive' or SECOND_CONTROLLER == 'reactive' or THIRD_CONTROLLER == 'reactive':    
+            self.reactive_controller = True
+        else:
+            self.reactive_controller = False
+        if FIRST_CONTROLLER == 'swap' or SECOND_CONTROLLER == 'swap' or THIRD_CONTROLLER == 'swap':
+            self.swap_controller = True
+        else:
+            self.swap_controller = False
+            
     def initial_placement_sim(self):
         nodecount = len(nodes.HOSTS)
         splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
@@ -101,20 +115,21 @@ class Sandpiper(controller.LoadBalancer):
         sleep_time = 60
         time_now = self.pump.sim_time()
         
-        ############################################
-        ## IMBALANCE MIGRATION #####################
-        ############################################
         if FIRST_CONTROLLER == 'imbalance':
+            ############################################
+            ## IMBALANCE MIGRATION #####################
+            ############################################
             self.migrate_imbalance(time_now, sleep_time, K_VALUE)
             
             if len(self.migration_queue) != 0:
                 # if imbalance algorithm triggered migration, no further migrations will be executed
                 return
         
-        ############################################
-        ## OVERLOAD/UNDERLOAD/SWAP MIGRATION #######
-        ############################################
-        if FIRST_CONTROLLER == 'reactive' or SECOND_CONTROLLER == 'reactive':
+        
+        if self.reactive_controller or self.swap_controller:
+            ############################################
+            ## OVERLOAD/UNDERLOAD/SWAP MIGRATION #######
+            ############################################
             # detect hotspots
             self.hotspot_detector()
                 
@@ -127,11 +142,11 @@ class Sandpiper(controller.LoadBalancer):
             if len(self.migration_queue) != 0:
                 # if overload/underload/swap triggered migration, no further migrations will be executed
                 return
-
-        ############################################
-        ## IMBALANCE MIGRATION #####################
-        ############################################
-        if SECOND_CONTROLLER == 'imbalance':
+        
+        if FIRST_CONTROLLER != 'imbalance' and self.imbalance_controller:
+            ############################################
+            ## IMBALANCE MIGRATION #####################
+            ############################################
             self.migrate_imbalance(time_now, sleep_time, K_VALUE)
         
     def migrate_imbalance(self, time_now, sleep_time, k):
@@ -178,7 +193,7 @@ class Sandpiper(controller.LoadBalancer):
                 source = tmp_nodes[domain['source']]
                 source_node = self.model.get_host(source['name'])
                 
-                if len(source_node.domains) == 1:
+                if len(source['domains']) == 1:
                     # don't consider domains, which are alone on one node
                     continue
           
@@ -322,30 +337,33 @@ class Sandpiper(controller.LoadBalancer):
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
-                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        if SWAP == 'on':
+                        if self.reactive_controller:
+                            self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
+                        if self.swap_controller:
                             self.swap(node, nodes, source, domain, time_now, sleep_time, K_VALUE)
-                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
+                        if self.reactive_controller:
+                            self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
                             
             except StopIteration: pass 
             
-            # Underload situation
-            try:
-                if node.underloaded:
-                    # Source node to migrate from 
-                    source = node
-                    
-                    # Sort domains by their VSR value in decreasing order 
-                    node_domains = []
-                    node_domains.extend(node.domains.values())
-                    node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
-                    
-                    # Try to migrate all domains by decreasing VSR value
-                    for domain in node_domains:
-                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
+            if self.reactive_controller:
+                # Underload situation
+                try:
+                    if node.underloaded:
+                        # Source node to migrate from 
+                        source = node
                         
-            except StopIteration: pass
+                        # Sort domains by their VSR value in decreasing order 
+                        node_domains = []
+                        node_domains.extend(node.domains.values())
+                        node_domains.sort(lambda a, b: int(b.volume_size - a.volume_size))
+                        
+                        # Try to migrate all domains by decreasing VSR value
+                        for domain in node_domains:
+                            self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
+                            self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
+                            
+                except StopIteration: pass
     
     def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)

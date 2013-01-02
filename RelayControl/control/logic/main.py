@@ -179,7 +179,7 @@ if __name__ == '__main__':
         mix = profiles.config.name
         controller = 'johannes'
         ctype = 'experiment'
-        name = 'test_imb_mix0'
+        name = 'test'
         t = open(config.path(name), 'w')
         for i in xrange(0, 30):
             domains.mapping()
