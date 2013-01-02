@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '23/12/2012 23:50:00    24/12/2012 06:40:00'
+RAW = '30/12/2012 03:00:00    30/12/2012 10:00:00'
 ##########################
 
 warns = []
