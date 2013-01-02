@@ -2,6 +2,7 @@ from control import domains
 from logs import sonarlog
 from workload import profiles
 import configuration as config
+import controller_sandpiper_reactive
 import json
 import model
 import msgpump

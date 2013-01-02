@@ -15,8 +15,8 @@ THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
 
-K_VALUE = 20 # sliding windows size
-M_VALUE = 17 # m values out of the window k must be above or below the threshold
+K_VALUE = 50 # sliding windows size
+M_VALUE = 45 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging

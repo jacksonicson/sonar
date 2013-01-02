@@ -33,7 +33,7 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-    # print 'No controller used'
+#    print 'No controller used'
     print 'starting controller'
     logger.info('loading controller')
     import logic.main as controller

@@ -35,7 +35,7 @@
     	},
     	
     	"sonarServer" : "monitor0",
-    	"meanResponseTimeSamplingInterval" : 60,
+    	"meanResponseTimeSamplingInterval" : 50,
     
     	"tracks": [
     	
