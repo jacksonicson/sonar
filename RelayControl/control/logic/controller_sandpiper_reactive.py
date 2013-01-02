@@ -7,13 +7,13 @@ import json
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120
-INTERVAL = 30
+INTERVAL = 300
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
 
-K_VALUE = 20 # sliding windows size
-M_VALUE = 17 # m values out of the window k must be above or below the threshold
+K_VALUE = 50 # sliding windows size
+M_VALUE = 45 # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
@@ -22,7 +22,7 @@ logger = sonarlog.getLogger('controller')
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL)
+        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'

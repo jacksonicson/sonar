@@ -9,7 +9,7 @@ import numpy as np
 ## CONFIGURATION    ##
 ######################
 START_WAIT = 120 
-INTERVAL = 5*60
+INTERVAL = 300
 
 THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
@@ -147,19 +147,15 @@ class Sandpiper(controller.LoadBalancer):
             readings = node.get_readings()
             
             # Calculate percentile on the data
+            
+#            forecast = smoother.single_exponential_smoother(slc)[0]
+#            forecast = node.forecast()
+#            forecast = np.mean(slc)
+#            forecast = smoother.double_exponential_smoother(slc)[0]
+            
             slc = readings[-k:]
-            
-            forecast = smoother.single_exponential_smoother(slc)[0]
-            forecast = node.forecast()
             forecast = smoother.ar_forecast(slc)
-            forecast = np.mean(slc)
-            forecast = smoother.double_exponential_smoother(slc)[0]
             
-#            percentile = np.percentile(slc, THR_PERCENTILE)
-#            percentile_ = np.percentile(slc, 1 - THR_PERCENTILE)
-#            overload = (percentile > THRESHOLD_OVERLOAD)
-#            underload = (percentile_ < THRESHOLD_UNDERLOAD)
-
             k = K_VALUE
             overload = 0
             underload = 0

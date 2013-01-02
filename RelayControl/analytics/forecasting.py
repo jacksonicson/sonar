@@ -57,7 +57,7 @@ def single_exponential_smoother(data, alpha=0.3):
     return f_t, smoothed, errors
 
 
-def continuouse_double_exponential_smoothed(c_t, T_t, data_t, alpha=0.2, beta=0.1):
+def continuouse_double_exponential_smoothed(c_t, T_t, data_t, alpha=0.5, beta=0.1):
     # Backup current c_t
     c_tp = c_t
     
@@ -72,7 +72,7 @@ def continuouse_double_exponential_smoothed(c_t, T_t, data_t, alpha=0.2, beta=0.
     return f_t, c_t, T_t
 
 
-def double_exponential_smoother(data, periods=1,alpha=0.2, beta=0.1):
+def double_exponential_smoother(data, periods=1,alpha=0.5, beta=0.1):
     if len(data) < 2:
         return 50 # neutral cpu value
     

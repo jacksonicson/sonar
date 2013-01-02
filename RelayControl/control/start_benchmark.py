@@ -33,11 +33,11 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-    print 'No controller used'
-#    print 'starting controller'
-#    logger.info('loading controller')
-#    import logic.main as controller
-#    controller.main()
+#    print 'No controller used'
+    print 'starting controller'
+    logger.info('loading controller')
+    import logic.main as controller
+    controller.main()
 
 
 def ram_up_finished(rain_clients, client_list):
