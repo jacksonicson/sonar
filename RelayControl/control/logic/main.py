@@ -8,6 +8,18 @@ import msgpump
 import scoreboard
 import time
 
+'''
+Conducting Simulations: 
+* main() - configure the appropriate controller
+* controller - configure the controller 
+* nodes.py - configure the infrastructure settings (node size, domain size, ..)
+* domains.py - configure the number of domains
+* profiles.py - select the workload mix
+
+Optional:
+* driver.py - configure the workload simulation settings
+'''
+
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
