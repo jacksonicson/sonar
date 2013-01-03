@@ -41,47 +41,6 @@ def build_from_current_allocation():
         for domain in allocation[host]:
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
-
-def build_test_allocation():
-    import placement
-    from virtual import nodes
-    from control import domains 
-    
-    nodecount = len(nodes.HOSTS)
-    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-    migrations, _ = splace.execute()
-    
-    _nodes = []
-    for node in nodes.NODES: 
-        mnode = model.Node(node, nodes.NODE_CPU_CORES)
-        _nodes.append(mnode)
-        
-    _domains = {}
-    for domain in domains.domain_profile_mapping:
-        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-        _domains[domain.domain] = dom
-        
-    for migration in migrations:
-        print migration 
-        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
-    
- 
-def build_debug_allocation():    
-    # Build internal infrastructure representation
-    node = model.Node('srv0', 4)
-    node.add_domain(model.Domain('target0', 2))
-    node.add_domain(model.Domain('target1', 2))
-    
-    node = model.Node('srv1', 4)
-    node.add_domain(model.Domain('target2', 2))
-    node.add_domain(model.Domain('target3', 2))
-    node.add_domain(model.Domain('target4', 2))
-    node.add_domain(model.Domain('target5', 2))
-    
-    node = model.Node('srv2', 4)
-    node = model.Node('srv3', 4)
-    
-
 def build_initial_model(controller):
     # Flush model
     model.flush()
