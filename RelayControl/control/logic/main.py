@@ -146,8 +146,9 @@ if __name__ == '__main__':
     else:
         mix = profiles.config.name
         controller = 'overbooking'
-        ctype = 'experiment'
-        name = '%s - %s - %s' % (mix, controller, ctype)
+        postfix = 'experiment'
+        
+        name = '%s - %s - %s' % (mix, controller, postfix)
         t = open(config.path(name), 'w')
         for i in xrange(0, 15):
             domains.print_mapping()
