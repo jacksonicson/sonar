@@ -1,10 +1,9 @@
 from control import domains
 from logs import sonarlog
-from virtual import nodes
+from virtual import nodes, placement
 import configuration
 import json
 import numpy as np
-import placement
 import scoreboard
 
 # Setup Sonar logging

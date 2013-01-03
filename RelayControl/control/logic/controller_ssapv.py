@@ -1,8 +1,7 @@
 from logs import sonarlog
-from virtual import nodes
+from virtual import nodes, placement
 import controller
 import json
-import placement
 
 ######################
 ## CONFIGURATION    ##

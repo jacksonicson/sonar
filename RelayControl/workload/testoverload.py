@@ -1,4 +1,4 @@
-from control.logic import placement
+from virtual import placement
 from virtual import nodes
 from service import times_client
 from workload import profiles, util as wutil
