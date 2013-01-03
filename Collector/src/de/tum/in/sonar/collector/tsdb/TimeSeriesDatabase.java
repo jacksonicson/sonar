@@ -409,6 +409,9 @@ public class TimeSeriesDatabase extends Thread {
 
 			table = this.tsdbTablePool.getTable(Const.TABLE_UID);
 			Scan scan = new Scan();
+			scan.addColumn(Bytes.toBytes(Const.FAMILY_UID_FORWARD), Bytes.toBytes("sensor"));
+			scan.setMaxVersions(1);
+			
 			ResultScanner scanner = table.getScanner(scan);
 
 			Iterator<Result> it = scanner.iterator();
