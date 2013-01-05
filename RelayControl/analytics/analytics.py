@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '30/12/2012 03:00:00    30/12/2012 10:00:00'
+RAW = '04/01/2013 17:15:00    05/01/2013 00:10:00'
 ##########################
 
 warns = []
@@ -1231,7 +1231,7 @@ def extract_migration_times(connection):
         raw_frame, _ = __refine_markers(connection)
         
         # Fetch migrations
-        successful, _, _, _ = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
+        successful, failed, actives, triggered = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
         _, release, _ = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
         _, _, _, _, _, _, _, scenario_start0, errordata0 = __fetch_rain_data(connection, 'load0', raw_frame)
         _, _, _, _, _, _, _, scenario_start1, errordata1 = __fetch_rain_data(connection, 'load1', raw_frame)
@@ -1239,7 +1239,7 @@ def extract_migration_times(connection):
         delta = release - scenario_start0
 
         # Get timestamps from successful migration times
-        for end in successful:
+        for i, end in enumerate(successful):
             times.append((end[1]['duration'],))
             
             correction = delta

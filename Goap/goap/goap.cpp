@@ -164,10 +164,11 @@ ANode* runAstar(ANode* start, ANode* end)
 
 pair<ANode*, ANode*> buildTestConfig()
 {
-	int lenDomains = 10; 
-	int lenNodes = 8; 
-	int mapping[] = {0,  1,  2,  2,  3,  4,  5,  6,  6,  7};
-	int volume[] =  {90, 30, 70, 10, 75, 90, 30, 70, 10, 75};
+	// Configure initial allocation
+	int lenDomains = 3; 
+	int lenNodes = 3; 
+	int mapping[] = {0,  1,  2};
+	int volume[] =  {30, 80, 20};
 	
 	int* mapping0 = new int[lenDomains];
 	int* volume0 = new int[lenDomains];
@@ -178,13 +179,12 @@ pair<ANode*, ANode*> buildTestConfig()
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
-	mapping2[0] = 1;
-	mapping2[1] = 0;
-	mapping2[5] = 5;
-	mapping2[6] = 4;
-
-	ANode* start = new ANode(mapping0, volume0, lenDomains, lenNodes);
-	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes); 
+	// Configure changes
+	mapping2[0] = 0;
+	mapping2[2] = 0;
+	
+	ANode* start = new ANode(mapping0, volume0, lenDomains, lenNodes, -1, -1);
+	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes, -1, -1); 
 
 	return pair<ANode*, ANode*>(start, end);
 }
@@ -193,13 +193,14 @@ pair<ANode*, ANode*> buildRandConfig()
 {
 	srand((unsigned)time(NULL));
 
-	int lenDomains = 25; 
-	int lenNodes = 6; 
+	// Configure number of domains and nodes 
+	int lenDomains = 500; 
+	int lenNodes = 100; 
 	int* mapping = new int[lenDomains];
 	int* volume = new int[lenDomains];
 
 	int* buffer = new int[lenNodes];
-	for(int i=0; i<lenNodes; i++)
+	for(int i=0; i<lenNodes; i++)  
 		buffer[i] = 0;
 
 	for(int i=0; i<lenDomains; i++)
@@ -221,6 +222,7 @@ pair<ANode*, ANode*> buildRandConfig()
 	memcpy(mapping2, mapping, lenDomains * sizeof(int)); 
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
+	// Configure number of changes
 	for(int i=0; i<5; i++)
 	{
 		while(true)
@@ -239,15 +241,16 @@ pair<ANode*, ANode*> buildRandConfig()
 		}
 	}
 
-	ANode* start = new ANode(mapping, volume, lenDomains, lenNodes);
-	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes); 
+	ANode* start = new ANode(mapping, volume, lenDomains, lenNodes, -1, -1);
+	ANode* end = new ANode(mapping2, volume2, lenDomains, lenNodes, -1, -1); 
 
 	return pair<ANode*, ANode*>(start, end);
 }
 
 int main()
 {
-	pair<ANode*, ANode*> nodes = buildTestConfig(); 
+	// pair<ANode*, ANode*> nodes = buildTestConfig(); 
+	pair<ANode*, ANode*> nodes = buildRandConfig(); 
 	ANode* start = nodes.first; 
 	ANode* end = nodes.second; 
 	
@@ -266,7 +269,8 @@ int main()
 	end->dump();
 
 	// Execute A* search
-	ANode* found = runAstar(start, end); 
+	cout << "Starting A*" << endl; 
+ 	ANode* found = runAstar(start, end); 
 
 	// Print results
 	if(found != NULL)
