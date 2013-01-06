@@ -98,6 +98,7 @@ def main(controller):
     import controller_sandpiper_reactive #@UnusedImport
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
+    import controller_file #@UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
@@ -106,6 +107,8 @@ def main(controller):
         controller = controller_sandpiper_proactive.Sandpiper(pump, model)
     elif controller == 'round':
         controller = controller_rr.Sandpiper(pump, model)
+    elif controller =='file':
+        controller = controller_file.Sandpiper(pump, model)
     else: 
         controller = controller_ssapv.Sandpiper(pump, model)
     # #############################################################
