@@ -154,6 +154,10 @@ class Node(__Host):
         # Type of this object
         self.type = types.NODE
         
+        # Migrations
+        self.active_migrations_out = 0
+        self.active_migrations_in = 0
+        
         # Holds a mapping of domains
         self.domains = {}
     

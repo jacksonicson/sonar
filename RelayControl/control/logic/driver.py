@@ -14,6 +14,8 @@ BASE_LOAD = 10
 NOISE = True
 NOISE_MEAN = 0.0
 NOISE_SIGMA = 1.0
+MIGRATION_SOURCE = 13 
+MIGRATION_TARGET = 17
 ##########################
 
 class Driver:
@@ -124,6 +126,14 @@ class Driver:
             # Add hypervisor load to the aggregated load
             # For the SSAPv this causes service level violations
             aggregated_load += BASE_LOAD
+            
+            # Add Migration overheads
+            if host.active_migrations_out: 
+                aggregated_load += MIGRATION_SOURCE
+            
+            if host.active_migrations_in:
+                aggregated_load += MIGRATION_TARGET 
+            
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter
