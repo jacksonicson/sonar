@@ -252,7 +252,7 @@ class SSAPvPlacement(Placement):
   
 class DSAPPlacement(Placement):
 
-    def execute(self):
+    def execute(self, num_buckets):
         from workload import util
                 
         # Execute super code
@@ -265,11 +265,11 @@ class DSAPPlacement(Placement):
         # Loading services to combine the dmain_service_mapping with    
         service_count = len(domains.domain_profile_mapping)
     
-        # downsampling ratio
-        target_ratio = 1 * 60 * 60 # one bucket per hour (measured in seconds)
-            
-        _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target_ratio / 60)      # conversion ratio from TS to #buckets
-        service_matrix = np.zeros((service_count, _numBuckets), dtype=float)
+        # old downsampling ratio        
+#        target_ratio = 1 * 60 * 60 # one bucket per hour (measured in seconds)
+#        _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target_ratio / 60)      # conversion ratio from TS to #buckets
+        
+        service_matrix = np.zeros((service_count, num_buckets), dtype=float)
         
         service_log = ''
         for service_index in xrange(service_count):
@@ -290,9 +290,13 @@ class DSAPPlacement(Placement):
             data = data[0:profiles.PROFILE_INTERVAL_COUNT]
             
             # Downsampling TS (service_matrix)
-            elements = target_ratio / ts.frequency
+            self.experiment_length = ts_len * ts.frequency  # length of the experiment measured in seconds
+            bucket_width = self.experiment_length / num_buckets # in sec
+            
+            #elements = bucket_width / ts.frequency
+            elements = ts_len / num_buckets
             buckets = []
-            for i in xrange(ts_len / elements):
+            for i in xrange(num_buckets):
                 start = i * elements
                 end = min(ts_len, (i+1) * elements) 
                 tmp = data[start : end]
@@ -313,9 +317,7 @@ class DSAPPlacement(Placement):
         # Close Times connection
         times_client.close()
         
-        self.buckets_len = len(buckets)
-        
-        print "Downsampling: ",ts_len-1," to ",self.buckets_len," (ratio =",profiles.PROFILE_INTERVAL_COUNT ,"* 5 /",target_ratio/60,")"
+        print "Downsampling-Ratio:",ts_len,"elements TO",num_buckets,"buckets (freq=",ts.frequency,", placement.experiment_length=",self.experiment_length,", profiles.experiment_duration",profiles.EXPERIMENT_DURATION,")"
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')

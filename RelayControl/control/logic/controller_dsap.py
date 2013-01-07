@@ -22,7 +22,8 @@ import math
 START_WAIT = 0
 INTERVAL = 60
 KVALUE = 10                                     # value given by Andreas
-BUCKET_LENGTH = profiles.EXPERIMENT_DURATION    # 6 hours
+#BUCKET_LENGTH = profiles.EXPERIMENT_DURATION
+NUM_BUCKETS = 3
 ######################
 
 # Setup logging
@@ -32,7 +33,7 @@ class DSAP(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(DSAP, self).__init__(pump, model, INTERVAL, START_WAIT)
-        print "INIT DSAP",BUCKET_LENGTH
+        print "INIT DSAP (length of experiment",profiles.EXPERIMENT_DURATION,", num_buckets=",NUM_BUCKETS,")"
         self.var = []
 
         
@@ -46,12 +47,10 @@ class DSAP(controller.LoadBalancer):
     def initial_placement_sim(self):
         import placement as plcmt
         from control import domains 
-        
-       
 
         nodecount = len(nodes.HOSTS)
         self.placement = plcmt.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = self.placement.execute()
+        migrations, _ = self.placement.execute(NUM_BUCKETS)
         
         _nodes = []
         for node in nodes.NODES: 
@@ -69,7 +68,11 @@ class DSAP(controller.LoadBalancer):
             
             
         # initialize values for balance()
-        self.time_per_bucket = BUCKET_LENGTH / self.placement.buckets_len     # delta for duration per bucket (balance())
+        #self.time_per_bucket = profiles.EXPERIMENT_DURATION / self.placement.buckets_len     # delta for duration per bucket (balance())
+            # TODO UMSCHREIBEN!!! fehlerhaft
+            
+        self.time_per_bucket = self.placement.experiment_length / NUM_BUCKETS
+            
         self.time_init = self.pump.sim_time()                                   # time_now synched to beginning of migration
             
         return migrations 
@@ -86,11 +89,12 @@ class DSAP(controller.LoadBalancer):
 
                 
         # calculate current bucket-index from system time
-        bucket_index = int((time_now - self.time_init) / self.time_per_bucket)
+        bucket_index = int((time_now - self.time_init) / self.time_per_bucket) # = allocation index
         
         print 'BUCKET # %i' % bucket_index
         
-        if bucket_index >= BUCKET_LENGTH/60/60:
+        # TODO / umschreiben / fehlerhaft (haengt nicht von EXPERIMENT_DURATION ab)
+        if bucket_index >= NUM_BUCKETS:      #profiles.EXPERIMENT_DURATION /60/60:
             print "End of Bucket"
             return
 
