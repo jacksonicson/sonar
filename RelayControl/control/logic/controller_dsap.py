@@ -21,8 +21,8 @@ import math
 ######################
 START_WAIT = 0
 INTERVAL = 60
-KVALUE = 10             # value given by Andreas
-
+KVALUE = 10                                     # value given by Andreas
+BUCKET_LENGTH = profiles.EXPERIMENT_DURATION    # 6 hours
 ######################
 
 # Setup logging
@@ -32,7 +32,7 @@ class DSAP(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(DSAP, self).__init__(pump, model, INTERVAL, START_WAIT)
-        print "INIT DSAP"
+        print "INIT DSAP",BUCKET_LENGTH
         self.var = []
 
         
@@ -47,11 +47,11 @@ class DSAP(controller.LoadBalancer):
         import placement as plcmt
         from control import domains 
         
-        global placement
+       
 
         nodecount = len(nodes.HOSTS)
-        placement = plcmt.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = placement.execute()
+        self.placement = plcmt.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        migrations, _ = self.placement.execute()
         
         _nodes = []
         for node in nodes.NODES: 
@@ -69,8 +69,7 @@ class DSAP(controller.LoadBalancer):
             
             
         # initialize values for balance()
-        _total_bucket_length = 6 * 60 * 60
-        self.time_per_bucket = _total_bucket_length / placement.buckets_len     # delta for duration per bucket (balance())
+        self.time_per_bucket = BUCKET_LENGTH / self.placement.buckets_len     # delta for duration per bucket (balance())
         self.time_init = self.pump.sim_time()                                   # time_now synched to beginning of migration
             
         return migrations 
@@ -82,23 +81,27 @@ class DSAP(controller.LoadBalancer):
 
         time_now = self.pump.sim_time()     # current system time
         
-        placement.assignment_list
-        placement.server_list
+        self.placement.assignment_list
+        self.placement.server_list
 
                 
         # calculate current bucket-index from system time
         bucket_index = int((time_now - self.time_init) / self.time_per_bucket)
         
         print 'BUCKET # %i' % bucket_index
+        
+        if bucket_index >= BUCKET_LENGTH/60/60:
+            print "End of Bucket"
+            return
 
             
-        for _service in placement.assignment_list[ bucket_index ]:
-            _server = placement.assignment_list[ bucket_index ][ _service ]
+        for _service in self.placement.assignment_list[ bucket_index ]:
+            _server = self.placement.assignment_list[ bucket_index ][ _service ]
 
             _domain = domains.domain_profile_mapping[ _service ].domain
             
             # domain name for domain ID
-            source = placement.assignment_list[ bucket_index-1 ] [ _service ]
+            source = self.placement.assignment_list[ bucket_index-1 ] [ _service ]
             target = _server
 
             _source_node = nodes.get_node_name(source)

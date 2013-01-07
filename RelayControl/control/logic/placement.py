@@ -266,7 +266,7 @@ class DSAPPlacement(Placement):
         service_count = len(domains.domain_profile_mapping)
     
         # downsampling ratio
-        target_ratio = 4 * 60 * 60 # one bucket per hour (measured in seconds)
+        target_ratio = 1 * 60 * 60 # one bucket per hour (measured in seconds)
             
         _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target_ratio / 60)      # conversion ratio from TS to #buckets
         service_matrix = np.zeros((service_count, _numBuckets), dtype=float)

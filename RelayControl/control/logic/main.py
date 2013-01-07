@@ -163,9 +163,9 @@ if __name__ == '__main__':
         # Controller is executed in production
         main()
     else:
-        name = 'dsap'
+        name = 'mix0'
         t = open(config.path(name), 'w')
-        for i in xrange(0, 30):
+        for i in xrange(0, 1):
             pump = main()
             res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)

@@ -102,7 +102,7 @@ class Driver:
         sim_time = self.pump.sim_time() 
         tindex = (sim_time / self.freq)
         if tindex >= self.min_ts_length:
-            print 'Driver exited!'
+            print 'Driver exited! %i' % sim_time
             print 'Shutting down simulation...'
             scoreboard.Scoreboard().close() 
             self.pump.stop()
