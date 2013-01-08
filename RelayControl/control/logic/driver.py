@@ -10,7 +10,7 @@ import sys
 
 ##########################
 ## CONFIGURATION        ##
-BASE_LOAD = 10
+BASE_LOAD = 0
 NOISE = False
 NOISE_MEAN = 0.0
 NOISE_SIGMA = 1.0

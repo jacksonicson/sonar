@@ -8,7 +8,7 @@ import json
 ######################
 ## CONFIGURATION    ##
 ######################
-ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_90_ts90-179_cpu230', 'csv')
+ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_180_I_181_bis_360_cap_230', 'csv')
 ######################
 
 # Setup logging

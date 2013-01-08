@@ -4,7 +4,7 @@ List of all hosts/nodes in the infrastructure
 
 # NODES = HOSTS = ['srv0', 'srv1', 'srv2', 'srv3', 'srv4', 'srv5']
 NODES = HOSTS = []
-for i in xrange(120):
+for i in xrange(6):
     NODES.append('srv%i' % i)
 
 NODE_CPU_CORES = 4
