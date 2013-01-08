@@ -37,7 +37,7 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mix0
+config = mixsim2
 ##############################
 
 ##############################

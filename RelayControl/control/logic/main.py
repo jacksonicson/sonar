@@ -148,7 +148,7 @@ if __name__ == '__main__':
         main()
     else:
         mix = profiles.config.name
-        controller = 'reactive'
+        controller = 'file'
         postfix = 'experiment'
         
         name = '%s - %s - %s' % (mix, controller, postfix)

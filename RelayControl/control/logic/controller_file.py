@@ -8,7 +8,7 @@ import configuration
 ######################
 ## CONFIGURATION    ##
 ######################
-ALLOCATION_MATRIX_FILE = configuration.path('allocation360', 'txt')
+ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_ 90 ', 'csv')
 ######################
 
 # Setup logging
@@ -35,20 +35,29 @@ class Sandpiper(controller.LoadBalancer):
         lines = handle.readlines()
         handle.close()
         
-        matrix = [[0 in xrange(domaincount)] in xrange(nodecount)]
+        # Rows are servers
+        # Columns are domains
+        matrix = [[0 for _ in xrange(domaincount)] for _ in xrange(nodecount)]
         for x, line in enumerate(lines):
             elements = line.split(',')
             for y, element in enumerate(elements):
                 matrix[x][y] = int(element)
                 
+        # Log matrix
+        print matrix
+                
         # Convert allocation matrix to a migration list
+        print len(matrix)
         migrations = []
-        for y in xrange(len(matrix)):
-            for x in xrange(len(matrix[x])):
-                if x > 0:
-                    mapping = domains.domain_profile_mapping[x]
-                    migration = (mapping.domain, y)
+        for inode in xrange(len(matrix)):
+            for idomain in xrange(len(matrix[inode])):
+                if matrix[inode][idomain]> 0:
+                    mapping = domains.domain_profile_mapping[idomain]
+                    migration = (mapping.domain, inode)
                     migrations.append(migration)
+
+        # Log migrations
+        print migrations
         
         # Build internal model 
         self.build_internal_model(migrations)
