@@ -1,14 +1,14 @@
+from control import domains
 from logs import sonarlog
 from virtual import nodes, placement
-from control import domains
+import configuration
 import controller
 import json
-import configuration
 
 ######################
 ## CONFIGURATION    ##
 ######################
-ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_ 90 ', 'csv')
+ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_90_ts90-179_cpu230', 'csv')
 ######################
 
 # Setup logging
@@ -47,7 +47,7 @@ class Sandpiper(controller.LoadBalancer):
         migrations = []
         for inode in xrange(len(matrix)):
             for idomain in xrange(len(matrix[inode])):
-                if matrix[inode][idomain]> 0:
+                if matrix[inode][idomain] > 0:
                     mapping = domains.domain_profile_mapping[idomain]
                     migration = (mapping.domain, inode)
                     migrations.append(migration)

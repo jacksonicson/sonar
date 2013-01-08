@@ -13,10 +13,16 @@ class Domain:
 
 domain_profile_mapping = []
 
-for i in xrange(90):
-    offset = 0
-    target_index = offset + i
-    domain_profile_mapping.append(Domain('target%i' % i, target_index, True))
+def recreate():
+    global domain_profile_mapping
+    domain_profile_mapping = []
+    for i in xrange(360):
+        offset = 90
+        target_index = offset + i
+        target_index = random.randint(0, 400)
+        domain_profile_mapping.append(Domain('target%i' % i, target_index, True))
+        
+recreate()
 
 ###############################################################################
 ###############################################################################

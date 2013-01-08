@@ -148,13 +148,13 @@ if __name__ == '__main__':
         main()
     else:
         mix = profiles.config.name
-        controller = 'file'
-        postfix = 'experiment'
+        controller = 'reactive'
+        postfix = 'experiment_360'
         
         name = '%s - %s - %s' % (mix, controller, postfix)
         t = open(config.path(name), 'w')
         for i in xrange(0, 15):
-            # domains.print_mapping()
+            domains.recreate()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)

@@ -11,7 +11,7 @@ import sys
 ##########################
 ## CONFIGURATION        ##
 BASE_LOAD = 10
-NOISE = True
+NOISE = False
 NOISE_MEAN = 0.0
 NOISE_SIGMA = 1.0
 MIGRATION_SOURCE = 13 
@@ -46,7 +46,9 @@ class Driver:
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            load = profiles.get_cpu_profile_for_initial_placement(domains.index_of(domain.name))
+            index = domains.index_of(domain.name)
+            mapping = domains.domain_profile_mapping[index]
+            load = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
             ts = connection.load(load)
             
