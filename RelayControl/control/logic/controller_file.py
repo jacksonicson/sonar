@@ -43,11 +43,7 @@ class Sandpiper(controller.LoadBalancer):
             for y, element in enumerate(elements):
                 matrix[x][y] = int(element)
                 
-        # Log matrix
-        print matrix
-                
         # Convert allocation matrix to a migration list
-        print len(matrix)
         migrations = []
         for inode in xrange(len(matrix)):
             for idomain in xrange(len(matrix[inode])):
@@ -57,7 +53,7 @@ class Sandpiper(controller.LoadBalancer):
                     migrations.append(migration)
 
         # Log migrations
-        print migrations
+        print 'Migrations: %s' % migrations
         
         # Build internal model 
         self.build_internal_model(migrations)
