@@ -23,7 +23,7 @@ START_WAIT = 0
 INTERVAL = 60
 KVALUE = 10                                     # value given by Andreas
 #BUCKET_LENGTH = profiles.EXPERIMENT_DURATION
-NUM_BUCKETS = 3
+NUM_BUCKETS = 6
 ######################
 
 # Setup logging
@@ -93,15 +93,17 @@ class DSAP(controller.LoadBalancer):
         
         print 'BUCKET # %i' % bucket_index
         
-        # TODO / umschreiben / fehlerhaft (haengt nicht von EXPERIMENT_DURATION ab)
-        if bucket_index >= NUM_BUCKETS:      #profiles.EXPERIMENT_DURATION /60/60:
+        if bucket_index == 0:
+            return
+        
+        if bucket_index >= NUM_BUCKETS:      #old: profiles.EXPERIMENT_DURATION /60/60:
             print "End of Bucket"
             return
 
+        _blocked_migrations = 0
             
         for _service in self.placement.assignment_list[ bucket_index ]:
             _server = self.placement.assignment_list[ bucket_index ][ _service ]
-
             _domain = domains.domain_profile_mapping[ _service ].domain
             
             # domain name for domain ID
@@ -118,14 +120,19 @@ class DSAP(controller.LoadBalancer):
             # prevent parallel migrations (check for blocked servers)
             if time_now < target_node.blocked or time_now < source_node.blocked:
                 print "Server locked, for migration:",source_node.name,"->",target_node.name
+                _blocked_migrations += 1
                 continue
             
             if target_node.domains.has_key(domain.name): #  or not source_node.domains.has_key(_domain):
                 continue
-            
             # migrate
             self.migrate(domain, source_node, target_node, KVALUE)
-
+            
+        # call test_allocation
+        if _blocked_migrations < 1:
+            self.test_allocation(bucket_index)
+        else:
+            print "blocked migrations",_blocked_migrations
             
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         node_from.blocked = self.pump.sim_time() -1
@@ -135,3 +142,22 @@ class DSAP(controller.LoadBalancer):
         else:
             print "MIGRATION FAILED (post_migrate_hook)"
             
+    def test_allocation(self, bucket_index):
+        
+        calculated_allocation = self.placement.assignment_list[ bucket_index ]
+        #print "Calculated Allocation:\n",calculated_allocation
+                       
+        print "Real Allocation:"
+        for _service in calculated_allocation:
+            
+            #retrieve service identifier (targetX)
+            _domain = domains.domain_profile_mapping[ _service ].domain     # domain = target
+            _server = calculated_allocation[_service]
+            server = nodes.get_node_name(_server)
+            
+            # check if calculated allocation == real allocation
+            if _domain in self.model.hosts[server].domains:
+                print _domain,"in",server
+            else:
+                print _domain,"NOT in",server, "[FALSE] !"
+        
