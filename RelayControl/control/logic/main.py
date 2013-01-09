@@ -154,7 +154,7 @@ if __name__ == '__main__':
         name = '%s - %s - %s' % (mix, controller, postfix)
         t = open(config.path(name), 'w')
         buffer = []
-        for i in xrange(0, 5):
+        for i in xrange(0, 15):
             domains.recreate()
             pump = main(controller)
             res = scoreboard.Scoreboard().get_result_line(pump)
