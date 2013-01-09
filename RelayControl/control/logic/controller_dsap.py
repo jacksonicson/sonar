@@ -129,10 +129,11 @@ class DSAP(controller.LoadBalancer):
             self.migrate(domain, source_node, target_node, KVALUE)
             
         # call test_allocation
-        if _blocked_migrations < 1:
-            self.test_allocation(bucket_index)
-        else:
-            print "blocked migrations",_blocked_migrations
+        self.test_allocation(bucket_index)
+#        if _blocked_migrations < 1:
+#            self.test_allocation(bucket_index)
+#        else:
+#            print "blocked migrations",_blocked_migrations
             
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         node_from.blocked = self.pump.sim_time() -1
@@ -159,5 +160,5 @@ class DSAP(controller.LoadBalancer):
             if _domain in self.model.hosts[server].domains:
                 print _domain,"in",server
             else:
-                print _domain,"NOT in",server, "[FALSE] !"
+                print _domain,"NOT in",server, "[ALLOCATION FAILURE] !"
         
