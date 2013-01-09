@@ -5,6 +5,16 @@ import random
 Maps domains to profiles
 '''
 
+
+######################
+## CONFIGURATION    ##
+######################
+DOMAINS = 18
+WORKLOAD_OFFSET = 0
+WORKLOAD_RANDOM = False
+WORKLOAD_MAX_RANDOM = 400
+######################
+
 class Domain:
     def __init__(self, domain, profileId, rain_target=False):
         self.domain = domain
@@ -16,10 +26,13 @@ domain_profile_mapping = []
 def recreate():
     global domain_profile_mapping
     domain_profile_mapping = []
-    for i in xrange(18):
-        offset = 0
-        target_index = offset + i
-        # target_index = random.randint(0, 400)
+    for i in xrange(DOMAINS):
+        if WORKLOAD_RANDOM:
+            target_index = random.randint(0, WORKLOAD_MAX_RANDOM)
+        else:
+            offset = WORKLOAD_OFFSET
+            target_index = offset + i
+            
         domain_profile_mapping.append(Domain('target%i' % i, target_index, True))
         
 recreate()
