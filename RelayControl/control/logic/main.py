@@ -10,15 +10,20 @@ import time
 
 '''
 Conducting Simulations: 
-* main() - configure the appropriate controller
-* controller - configure the controller 
+* main.py - configure the appropriate controller
+* [controller].py - configure the controller 
 * nodes.py - configure the infrastructure settings (node size, domain size, ..)
 * domains.py - configure the number of domains
 * profiles.py - select the workload mix
-
-Optional:
 * driver.py - configure the workload simulation settings
 '''
+
+######################
+## CONFIGURATION    ##
+######################
+CONTROLLER = 'reactive'
+SIM_ITERATIONS = 5
+######################
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -145,26 +150,22 @@ def main(controller):
 if __name__ == '__main__':
     if config.PRODUCTION:
         # Controller is executed in production
-        main()
+        main(CONTROLLER)
     else:
-        mix = profiles.config.name
-        controller = 'reactive'
-        postfix = 'experiment'
-        
-        name = '%s - %s - %s' % (mix, controller, postfix)
-        t = open(config.path(name), 'w')
-        buffer = []
-        for i in xrange(0, 15):
+        name = '%s - %s' % (profiles.config.name, CONTROLLER)
+        lines = []
+        for i in xrange(0, SIM_ITERATIONS):
             domains.recreate()
-            pump = main(controller)
+            
+            pump = main(CONTROLLER)
             res = scoreboard.Scoreboard().get_result_line(pump)
+            
             scoreboard.Scoreboard().dump(pump)
-            t.write('%s\n' % res)
-            buffer.append(res)
-            t.flush()
-        t.close()
-        
-        for b in buffer:
-            print b
+            lines.append(res)
+            print res
+
+        print 'Results: %s' % name        
+        for line in lines:
+            print line
     
 

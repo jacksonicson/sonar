@@ -10,10 +10,12 @@ import sys
 
 ##########################
 ## CONFIGURATION        ##
-BASE_LOAD = 0
+BASE_LOAD = 10
+
 NOISE = False
 NOISE_MEAN = 0.0
 NOISE_SIGMA = 1.0
+
 MIGRATION_SOURCE = 13 
 MIGRATION_TARGET = 17
 ##########################

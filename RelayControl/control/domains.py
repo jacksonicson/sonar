@@ -5,7 +5,6 @@ import random
 Maps domains to profiles
 '''
 
-
 ######################
 ## CONFIGURATION    ##
 ######################
