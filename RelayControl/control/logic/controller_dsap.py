@@ -10,8 +10,8 @@ from workload import profiles
 from virtual import nodes
 import control.domains as domains
 import sys
-from control.logic.placement import Placement
-from control.logic import placement
+from virtual.placement import Placement
+from virtual import placement
 import service
 import math
 
@@ -45,7 +45,7 @@ class DSAP(controller.LoadBalancer):
                                                                  }))
         
     def initial_placement_sim(self):
-        import placement as plcmt
+        import virtual.placement as plcmt
         from control import domains 
 
         nodecount = len(nodes.HOSTS)

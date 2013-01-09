@@ -21,8 +21,8 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'reactive'
-SIM_ITERATIONS = 5
+CONTROLLER = 'dsap'
+SIM_ITERATIONS = 1
 ######################
 
 # Setup logging
@@ -104,6 +104,7 @@ def main(controller):
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
     import controller_file #@UnusedImport
+    import controller_dsap #@UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
@@ -114,6 +115,8 @@ def main(controller):
         controller = controller_rr.Sandpiper(pump, model)
     elif controller =='file':
         controller = controller_file.Sandpiper(pump, model)
+    elif controller =='dsap':
+        controller = controller_dsap.DSAP(pump, model)
     else: 
         controller = controller_ssapv.Sandpiper(pump, model)
     # #############################################################

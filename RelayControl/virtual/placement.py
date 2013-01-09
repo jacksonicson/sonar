@@ -307,7 +307,7 @@ class DSAPPlacement(Placement):
                 start = i * elements
                 end = min(ts_len, (i+1) * elements) 
                 tmp = data[start : end]
-                buckets.append(np.max(tmp))
+                buckets.append(np.mean(tmp))
     
             service_matrix[service_index] = buckets
             # print data
