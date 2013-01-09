@@ -2,9 +2,13 @@
 #include <vector>
 #include <map>
 
+int* pooled();
+
 class ANode
 {
+	
 public:
+	static int* load; 
 	int* mapping; 
 	int* volume;
 	int nodeLength; 
@@ -14,10 +18,11 @@ public:
 	bool root; 
 	ANode* pred;
 
+	int modify_index; 
+	int modify_value; 
+
 public:
-	ANode();
-	ANode(int* mapping, int* volume, int domLength, int nodeLength);
-	ANode(int* mapping, int* volume, int domLength, int nodeLength, bool root);
+	ANode(int* mapping, int* volume, int domLength, int nodeLength, int modifyIndex, int modifyValue);
 	
 	bool valid();
 	unsigned hash();
@@ -28,5 +33,7 @@ public:
 	std::pair<std::vector<ANode*>, std::vector<int>> childs(ANode*, std::multimap<int, ANode*>&);
 	void dump();
 	int h(ANode* end);
+
+	int value(int index); 
 };
 

@@ -2,8 +2,7 @@ from logs import sonarlog
 from model import types
 import controller
 import json
-import placement
-from virtual import nodes
+from virtual import nodes, placement
 from control import domains
 
 ######################

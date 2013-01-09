@@ -6,7 +6,7 @@ import numpy as np
 
 ################################
 ## Configuration              ##
-WINDOW = 1000
+WINDOW = 7000
 ################################
 
 # Holds an internal list of all hosts
@@ -84,7 +84,6 @@ class __Host(object):
         
         # Calculates double exponential smoothing
         if self.globalCounter == 2:
-            print 'Initializing smoothed parameters...'
             self.c_t = float(self.readings[0]) 
             self.T_t = float(self.readings[1] - self.readings[0])
             self.f_t = self.c_t + self.T_t
@@ -153,6 +152,10 @@ class Node(__Host):
         
         # Type of this object
         self.type = types.NODE
+        
+        # Migrations
+        self.active_migrations_out = 0
+        self.active_migrations_in = 0
         
         # Holds a mapping of domains
         self.domains = {}

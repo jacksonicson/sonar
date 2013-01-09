@@ -10,12 +10,14 @@
     
     "usePipe": false,
     "useThrift": true,
-    
+    "sonarHost" : "monitor0",
     
     "### Track generators #########":"##",
     
     "profilesCreatorClass": "de.tum.in.dss.specj.generator.SpecjProfileCreator",
     "profilesCreatorClassParams": {
+    	"meanResponseTimeSamplingInterval" : 60,
+    
     	"behavior" : {
     		"default" : [
         		[0.0,  0.0],
@@ -33,10 +35,7 @@
 		    "itemsPerTxRate":100,
 		    "parallelism":10
     	},
-    	
-    	"sonarServer" : "monitor0",
-    	"meanResponseTimeSamplingInterval" : 60,
-    
+    	    
     	"tracks": [
     	
 % for target in targets:

@@ -42,7 +42,7 @@ class Sandpiper(controller.LoadBalancer):
                                                                  }))
     
     def initial_placement_sim(self):
-        import placement
+        from virtual import placement
         from virtual import nodes
         from control import domains 
         

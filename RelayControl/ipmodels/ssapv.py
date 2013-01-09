@@ -1,5 +1,6 @@
 from gurobipy import *
 from numpy import empty, random
+import random
 
 ###############################
 ### Configuration            ##
@@ -49,11 +50,13 @@ def setupConstraints(model):
     # Capacity constraint
     for d in xrange(demand_duration):
         for i in xrange(server_count):
+            delta =  random.random()
+            
             server_load = quicksum((demand(j, CPU, d) * var_allocation[i, j]) for j in xrange(0, service_count))
-            model.addConstr(server_load <= (var_server_active[i] * server_capacity_CPU))
+            model.addConstr(server_load <= (var_server_active[i] * (server_capacity_CPU + delta)))
             
             server_load = quicksum((demand(j, MEM, d) * var_allocation[i, j]) for j in xrange(0, service_count))
-            model.addConstr(server_load <= (var_server_active[i] * server_capacity_MEM))
+            model.addConstr(server_load <= (var_server_active[i] * (server_capacity_MEM + delta)))
         
     model.update()
 
@@ -107,7 +110,7 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     setupConstraints(model) 
     setupObjective(model)
     model.setParam('OutputFlag', False)
-    model.setParam('TimeLimit', 15 * 60)
+    model.setParam('TimeLimit', 20 * 60)
     model.optimize()
     
     if model.getAttr(GRB.attr.SolCount) > 0:

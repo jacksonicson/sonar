@@ -1,10 +1,29 @@
+from control import domains
 from logs import sonarlog
+from workload import profiles
 import configuration as config
 import json
 import model
+import msgpump
 import scoreboard
 import time
-import msgpump
+
+'''
+Conducting Simulations: 
+* main.py - configure the appropriate controller
+* [controller].py - configure the controller 
+* nodes.py - configure the infrastructure settings (node size, domain size, ..)
+* domains.py - configure the number of domains
+* profiles.py - select the workload mix
+* driver.py - configure the workload simulation settings
+'''
+
+######################
+## CONFIGURATION    ##
+######################
+CONTROLLER = 'reactive'
+SIM_ITERATIONS = 5
+######################
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -39,47 +58,6 @@ def build_from_current_allocation():
         for domain in allocation[host]:
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
-
-def build_test_allocation():
-    import placement
-    from virtual import nodes
-    from control import domains 
-    
-    nodecount = len(nodes.HOSTS)
-    splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-    migrations, _ = splace.execute()
-    
-    _nodes = []
-    for node in nodes.NODES: 
-        mnode = model.Node(node, nodes.NODE_CPU_CORES)
-        _nodes.append(mnode)
-        
-    _domains = {}
-    for domain in domains.domain_profile_mapping:
-        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-        _domains[domain.domain] = dom
-        
-    for migration in migrations:
-        print migration 
-        _nodes[migration[1]].add_domain(_domains[migration[0]]) 
-    
- 
-def build_debug_allocation():    
-    # Build internal infrastructure representation
-    node = model.Node('srv0', 4)
-    node.add_domain(model.Domain('target0', 2))
-    node.add_domain(model.Domain('target1', 2))
-    
-    node = model.Node('srv1', 4)
-    node.add_domain(model.Domain('target2', 2))
-    node.add_domain(model.Domain('target3', 2))
-    node.add_domain(model.Domain('target4', 2))
-    node.add_domain(model.Domain('target5', 2))
-    
-    node = model.Node('srv2', 4)
-    node = model.Node('srv3', 4)
-    
-
 def build_initial_model(controller):
     # Flush model
     model.flush()
@@ -113,7 +91,7 @@ def build_initial_model(controller):
 def heartbeat(pump):
     print 'Message pump started'
 
-def main():
+def main(controller):
     # Flush scoreboard
     scoreboard.Scoreboard().flush()
     
@@ -125,9 +103,20 @@ def main():
     import controller_sandpiper_reactive #@UnusedImport
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
-    import controller_dsap #@UnusedImport
-#    controller = controller_sandpiper_reactive.Sandpiper(pump, model)
-    controller = controller_dsap.DSAP(pump, model)
+    import controller_file #@UnusedImport
+    
+    # ### CONTROLLER ##############################################
+    if controller == 'reactive': 
+        controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+    elif controller == 'proactive':
+        controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+    elif controller == 'round':
+        controller = controller_rr.Sandpiper(pump, model)
+    elif controller =='file':
+        controller = controller_file.Sandpiper(pump, model)
+    else: 
+        controller = controller_ssapv.Sandpiper(pump, model)
+    # #############################################################
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -161,16 +150,22 @@ def main():
 if __name__ == '__main__':
     if config.PRODUCTION:
         # Controller is executed in production
-        main()
+        main(CONTROLLER)
     else:
-        name = 'mix0'
-        t = open(config.path(name), 'w')
-        for i in xrange(0, 1):
-            pump = main()
+        name = '%s - %s' % (profiles.config.name, CONTROLLER)
+        lines = []
+        for i in xrange(0, SIM_ITERATIONS):
+            domains.recreate()
+            
+            pump = main(CONTROLLER)
             res = scoreboard.Scoreboard().get_result_line(pump)
+            
             scoreboard.Scoreboard().dump(pump)
-            t.write('%s\n' % res)
-            t.flush()
-            scoreboard.Scoreboard().dump(pump)
-        t.close()
+            lines.append(res)
+            print res
+
+        print 'Results: %s' % name        
+        for line in lines:
+            print line
     
+

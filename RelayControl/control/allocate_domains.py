@@ -1,4 +1,4 @@
-from logic import placement
+from virtual import placement
 from logs import sonarlog
 from virtual import allocation as virt, nodes
 import time

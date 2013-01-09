@@ -1,21 +1,23 @@
 from collector import ttypes
-from control import domains
 from service import times_client
 from virtual import nodes
 from workload import profiles, util as wutil
 from workload.timeutil import * #@UnusedWildImport
-import control.domains as domains
+from control import domains
 import numpy as np
 import scoreboard
 import sys
 
 ##########################
 ## CONFIGURATION        ##
-TRACE = True
 BASE_LOAD = 10
-NOISE = True
+
+NOISE = False
 NOISE_MEAN = 0.0
 NOISE_SIGMA = 1.0
+
+MIGRATION_SOURCE = 13 
+MIGRATION_TARGET = 17
 ##########################
 
 class Driver:
@@ -46,11 +48,9 @@ class Driver:
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            if TRACE: 
-                load = profiles.get_cpu_profile_for_initial_placement(domains.index_of(domain.name))
-            else:
-                load = domains.cpu_profile_by_name(domain.name)
-            print 'Driver is loading service for replay: %s ' % (load)
+            index = domains.index_of(domain.name)
+            mapping = domains.domain_profile_mapping[index]
+            load = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
             ts = connection.load(load)
             
@@ -129,6 +129,14 @@ class Driver:
             # Add hypervisor load to the aggregated load
             # For the SSAPv this causes service level violations
             aggregated_load += BASE_LOAD
+            
+            # Add Migration overheads
+            if host.active_migrations_out: 
+                aggregated_load += MIGRATION_SOURCE
+            
+            if host.active_migrations_in:
+                aggregated_load += MIGRATION_TARGET 
+            
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter
