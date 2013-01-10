@@ -25,9 +25,9 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 # MIXED CONTROLLER SETTINGS
 # Values can be 'imbalance', 'reactive', 'swap' or ''
 CONTROLLER_SETTINGS = {
-'first_controller' : 'reactive',
-'second_controller' : '',
-'third_controller' : ''
+'first_controller' : 'imbalance',
+'second_controller' : 'reactive',
+'third_controller' : 'swap'
 }
 
 ######################
@@ -113,7 +113,7 @@ class Sandpiper(controller.LoadBalancer):
 
     def imbalance_controller(self, time_now, sleep_time, k):
         imbalance_controller = controller_imbalance.Imbalance(self, PERCENTILE, THRESHOLD_IMBALANCE, MIN_IMPROVEMENT_IMBALANCE, THRESHOLD_OVERLOAD, NODE_CAPACITY)
-        imbalance_controller.migrate_imbalance(time_now, sleep_time, k)(time_now, sleep_time, k)
+        imbalance_controller.migrate_imbalance(time_now, sleep_time, k)
 
     
     def reactive_controller(self, time_now, sleep_time, K_VALUE):
