@@ -22,6 +22,7 @@ if [ -d $SHARE ]; then
 	rm -rf $SHARE
 	mkdir $SHARE
 else
+	umount $SHARE
 	mkdir $SHARE
 fi
 
