@@ -47,15 +47,16 @@ class migration():
             finished = migration['finished']
             
             skip = False           
-            for another_migration in self.migration_queue:
-                target2 = another_migration['target']
-                triggered2 = another_migration['triggered']
-                finished2 = another_migration['finished']
+            for migration2 in self.migration_queue:
+                source2 = migration2['source']
+                target2 = migration2['target']
+                triggered2 = migration2['triggered']
+                finished2 = migration2['finished']
                 
-                if migration != another_migration and target.name == target2.name and finished2 == False and triggered2 == True:
-                    # There is another migration with same target node that is already triggered but not finished yet 
+                if (migration != migration2 and finished2 == False and triggered2 == True and (target.name == target2.name or source.name == source2.name)):
+                    # There is another migration with same target node or same source node that is already triggered but not finished yet 
                     skip = True
-     
+
             if skip == True or triggered == True:
                 continue
             
