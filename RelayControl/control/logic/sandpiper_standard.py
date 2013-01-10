@@ -7,6 +7,7 @@ import math
 import util
 import scoreboard
 import placement
+import migration_scheduler
 from virtual import nodes
 
 ######################
@@ -19,7 +20,7 @@ THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
 THRESHOLD_IMBALANCE = 0.12
 MIN_IMPROVEMENT_IMBALANCE = 0.01
-NODE_CAPACITY = 100
+NODE_CAPACITY = 100 #to be checked
 K_VALUE = 20 # sliding windows size
 M_VALUE = 17 # m values out of the window k must be above or below the threshold
 
@@ -28,20 +29,19 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 # Notice: Swap cannot be executed before 'reactive'
 FIRST_CONTROLLER = 'imbalance'
 SECOND_CONTROLLER = 'reactive'
-THIRD_CONTROLLER = ''
+THIRD_CONTROLLER = 'swap'
 
 ######################
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-# Migration Queue
-
 class Sandpiper(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
-        self.migration_queue = []
+        self.migration_scheduler = migration_scheduler.migration(self, K_VALUE)
+        self.migration_triggered = False
         
         if FIRST_CONTROLLER == 'imbalance' or SECOND_CONTROLLER == 'imbalance' or THIRD_CONTROLLER == 'imbalance':
             self.imbalance_controller = True
@@ -76,25 +76,12 @@ class Sandpiper(controller.LoadBalancer):
             node_from.flush(50)
             node_to.flush(50)
             
-            # Set finished status True
-            for migration in self.migration_queue:
-                domain2 = migration['domain']
-                source2 = migration['source']
-                target2 = migration['target']
-                
-                if domain.name == domain2.name and source2.name == node_from.name and target2.name == node_to.name:
-                    migration['finished'] = True
-                    self.migration_scheduler()
+            # Remove migration from queue
+            self.migration_scheduler.finish_migration(success, domain, node_from, node_to)
         else:
-            # Remove failed migration from queue
-            for migration in self.migration_queue:
-                domain2 = migration['domain']
-                source2 = migration['source']
-                target2 = migration['target']
-                
-                if domain.name == domain2.name and source2.name == node_from.name and target2.name == node_to.name:
-                    self.migration_queue.remove(migration)
-            
+            # Remove migration from queue
+            self.migration_scheduler.finish_migration(success, domain, node_from, node_to)
+
             time_now = self.pump.sim_time()
             node_from.blocked = time_now
             node_to.blocked = time_now
@@ -114,6 +101,7 @@ class Sandpiper(controller.LoadBalancer):
     def balance(self):
         sleep_time = 60
         time_now = self.pump.sim_time()
+        self.migration_triggered = False
         
         if FIRST_CONTROLLER == 'imbalance':
             ############################################
@@ -121,7 +109,7 @@ class Sandpiper(controller.LoadBalancer):
             ############################################
             self.migrate_imbalance(time_now, sleep_time, K_VALUE)
             
-            if len(self.migration_queue) != 0:
+            if self.migration_triggered:
                 # if imbalance algorithm triggered migration, no further migrations will be executed
                 return
         
@@ -139,7 +127,7 @@ class Sandpiper(controller.LoadBalancer):
             # trigger migration
             self.migration_trigger(nodes, sleep_time, time_now)
             
-            if len(self.migration_queue) != 0:
+            if self.migration_triggered:
                 # if overload/underload/swap triggered migration, no further migrations will be executed
                 return
         
@@ -263,12 +251,10 @@ class Sandpiper(controller.LoadBalancer):
             domain = self.model.get_host(migration['domain'])
             source = self.model.get_host(migration['source'])
             target = self.model.get_host(migration['target'])
-
-            migration = self.migration(domain, source, target, 'Imbalance') 
-            self.add_migration(migration)
-        
-        self.migration_scheduler()
-      
+            
+            self.migration_scheduler.add_migration(domain, source, target, 'Imbalance') 
+            self.migration_triggered = True
+            
     def hotspot_detector(self):
         ############################################
         ## HOTSPOT DETECTOR ########################
@@ -381,9 +367,8 @@ class Sandpiper(controller.LoadBalancer):
                             
             if test: 
                 migration_type = 'Overload (Empty=%s)' % (empty)
-                migration = self.migration(domain, source, target, migration_type) 
-                self.add_migration(migration)
-                self.migration_scheduler()
+                self.migration_scheduler.add_migration(domain, source, target, migration_type) 
+                self.migration_triggered = True
                 raise StopIteration()
         
     def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
@@ -402,9 +387,8 @@ class Sandpiper(controller.LoadBalancer):
             
             if test: 
                 migration_type = 'Underload (Empty=%s)' % (empty)
-                migration = self.migration(domain, source, target, migration_type) 
-                self.add_migration(migration)    
-                self.migration_scheduler()                            
+                self.migration_scheduler.add_migration(domain, source, target, migration_type)                          
+                self.migration_triggered = True
                 raise StopIteration()
     
     def swap(self, node, nodes, source, domain, time_now, sleep_time, k):
@@ -446,69 +430,12 @@ class Sandpiper(controller.LoadBalancer):
                 test &= (time_now - source.blocked) > sleep_time
                 
                 if test:
-                    migration = self.migration(domain, source, target_node, 'Swap Part 1')
-                    self.add_migration(migration)
- 
+                    self.migration_scheduler.add_migration(domain, source, target_node, 'Swap Part 1')
+                    self.migration_triggered = True
                     for target_domain in targets:
-                        migration = self.migration(target_domain, target_node, source, 'Swap Part 2')
-                        self.add_migration(migration)
+                        self.migration_scheduler.add_migration(target_domain, target_node, source, 'Swap Part 2')
                     
-                    self.migration_scheduler()
                     raise StopIteration() 
-
-    def migration_scheduler(self):
-        print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(self.migration_queue))
-        for migration in self.migration_queue:
-            print 'domain: %s; source: %s; target: %s; migration_type: %s; triggered: %s; finished: %s' % (migration['domain'].name, migration['source'].name, migration['target'].name, migration['migration_type'], migration['triggered'], migration['finished'])
-        
-        for migration in self.migration_queue:
-            
-            domain = migration['domain']
-            source = migration['source']
-            target = migration['target']
-            migration_type = migration['migration_type']
-            triggered = migration['triggered']
-            finished = migration['finished']
-            
-            if finished == True:
-                # remove finished migrations from queue
-                scoreboard.Scoreboard().add_migration_type(migration_type)
-                self.migration_queue.remove(migration)
-                continue
-            
-            skip = False           
-            for another_migration in self.migration_queue:
-                target2 = another_migration['target']
-                triggered2 = another_migration['triggered']
-                finished2 = another_migration['finished']
-                
-                if migration != another_migration and target.name == target2.name and finished2 == False and triggered2 == True:
-                    # There is another migration with same target node that is already triggered but not finished yet 
-                    skip = True
-     
-            if skip == True or triggered == True:
-                continue
-            
-            print '%s migration: %s from %s to %s' % (migration_type, domain.name, source.name, target.name)
-            migration['triggered'] = True
-            self.migrate(domain, source, target, K_VALUE) 
-            
-    def migration(self, domain, source, target, migration_type):
-        return {
-                'domain' : domain,
-                'source' : source,
-                'target' : target,
-                'migration_type' : migration_type,
-                'triggered' : False,
-                'finished' : False
-                }
-
-    def add_migration(self, migration):
-        # check if there is already a migration in the queue that wants to migrate the same domain
-        for mig in self.migration_queue:
-            if mig['domain'].name == migration['domain'].name:
-                return
-        self.migration_queue.append(migration)    
 
     def volume(self, node, k):
         # Calculates volume for node and return node
