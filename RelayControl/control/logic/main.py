@@ -21,8 +21,8 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'reactive'
-SIM_ITERATIONS = 5
+CONTROLLER = 'optimization'
+SIM_ITERATIONS = 1
 ######################
 
 # Setup logging

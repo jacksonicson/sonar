@@ -11,7 +11,7 @@ Maps domains to profiles
 DOMAINS = 18
 WORKLOAD_OFFSET = 0
 WORKLOAD_RANDOM = False
-WORKLOAD_MAX_RANDOM = 400
+WORKLOAD_MAX_RANDOM = 200
 ######################
 
 class Domain:

@@ -10,7 +10,7 @@ import sys
 
 ##########################
 ## CONFIGURATION        ##
-BASE_LOAD = 10
+BASE_LOAD = 0
 
 NOISE = False
 NOISE_MEAN = 0.0
@@ -108,6 +108,9 @@ class Driver:
             self.pump.stop()
             return
         
+        # Update slot count in scoreboard
+        scoreboard.Scoreboard().update_slot_count()
+        
         # For all nodes update their domains and aggregate the load for the node
         for host in self.model.get_hosts(self.model.types.NODE):
             # Reset aggregated server load
@@ -142,6 +145,7 @@ class Driver:
             # Update overload counter
             if aggregated_load > 100:
                 scoreboard.Scoreboard().add_cpu_violations(1)
+                
         
         # Whole simulation might run accelerated
         self.pump.callLater(self.report_rate, self.run) 
