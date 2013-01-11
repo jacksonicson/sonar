@@ -1,43 +1,36 @@
-from model import types
-import util
+from control.logic.model import types
+from control.logic import util
+import configuration_advanced
 
 class Reactive():
     
-    def __init__(self, controller, threshold_overload, threshold_underload, percentile, k_value, m_value):
-        self.controller = controller
+    def __init__(self, model, migration_scheduler):
+        self.model = model
+        self.migration_scheduler = migration_scheduler
         
-        global THRESHOLD_OVERLOAD 
-        THRESHOLD_OVERLOAD = threshold_overload
-                
-        global THRESHOLD_UNDERLOAD
-        THRESHOLD_UNDERLOAD = threshold_underload
-        
-        global PERCENTILE 
-        PERCENTILE = percentile
-        
-        global K_VALUE
-        K_VALUE = k_value
-        
-        global M_VALUE
-        M_VALUE = m_value
+        self.THRESHOLD_OVERLOAD = configuration_advanced.THRESHOLD_OVERLOAD
+        self.THRESHOLD_UNDERLOAD = configuration_advanced.THRESHOLD_UNDERLOAD
+        self.PERCENTILE = configuration_advanced.PERCENTILE
+        self.K_VALUE = configuration_advanced.K_VALUE
+        self.M_VALUE = configuration_advanced.M_VALUE
         
     def migrate_reactive(self, time_now, sleep_time):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
-        for node in self.controller.model.get_hosts(types.NODE):
+        for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
             
             # m out of the k last measurements are used to detect overloads 
-            k = K_VALUE
+            k = self.K_VALUE
             overload = 0
             underload = 0
             for reading in readings[-k:]:
-                if reading > THRESHOLD_OVERLOAD: overload += 1
-                if reading < THRESHOLD_UNDERLOAD: underload += 1
+                if reading > self.THRESHOLD_OVERLOAD: overload += 1
+                if reading < self.THRESHOLD_UNDERLOAD: underload += 1
 
-            m = M_VALUE
+            m = self.M_VALUE
             overload = (overload >= m)
             underload = (underload >= m)
              
@@ -55,8 +48,8 @@ class Reactive():
         # Calculate volumes of each node
         nodes = []
         domains = []
-        for node in self.controller.model.get_hosts():
-            volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
+        for node in self.model.get_hosts():
+            volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(self.PERCENTILE, k)) / 100.0)
             node.volume = volume
             node.volume_size = volume / 8.0 # 8 GByte
             
@@ -89,8 +82,8 @@ class Reactive():
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains: 
-                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
+                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, False)
+                        self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, True)
                             
             except StopIteration: pass 
             
@@ -107,12 +100,15 @@ class Reactive():
                     
                     # Try to migrate all domains by decreasing VSR value
                     for domain in node_domains:
-                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, False)
-                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, K_VALUE, True)
+                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, False)
+                        self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, True)
                        
             except StopIteration: pass
+        
+        #TODO
+        return True
   
-    def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
+    def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)
         for target in reversed(range(nodes.index(node) + 1, len(nodes))):
             target = nodes[target]
@@ -121,18 +117,19 @@ class Reactive():
                 continue
                              
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(self.PERCENTILE, self.K_VALUE) + util.domain_to_server_cpu(target, domain, domain.percentile_load(self.PERCENTILE, self.K_VALUE))) < self.THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
                             
             if test: 
                 migration_type = 'Overload (Empty=%s)' % (empty)
-                self.controller.migration_scheduler.add_migration(domain, source, target, migration_type) 
-                self.controller.migration_triggered = True
+                self.migration_scheduler.add_migration(domain, source, target, migration_type) 
+                #TODO
+                self.migration_triggered = True
                 raise StopIteration()
         
-    def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, k, empty):
+    def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, empty):
         # Try all targets for the migration
         for target in range(nodes.index(node) - 1):
             target = nodes[target]
@@ -141,13 +138,13 @@ class Reactive():
                 continue
             
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(self.PERCENTILE, self.K_VALUE) + util.domain_to_server_cpu(target, domain, domain.percentile_load(self.PERCENTILE, self.K_VALUE))) < self.THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
             
             if test: 
                 migration_type = 'Underload (Empty=%s)' % (empty)
-                self.controller.migration_scheduler.add_migration(domain, source, target, migration_type)                          
-                self.controller.migration_triggered = True
+                self.migration_scheduler.add_migration(domain, source, target, migration_type)                          
+                self.migration_triggered = True
                 raise StopIteration()

@@ -127,7 +127,7 @@ def main(controller):
     import controller_sandpiper_reactive #@UnusedImport
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
-    import sandpiper_standard #@UnusedImport
+    from sandpiper_advanced import sandpiper_standard #@UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
