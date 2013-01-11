@@ -1,6 +1,6 @@
 from logs import sonarlog
-from model import types
-import controller
+from balancer.model import types
+from balancer import controller
 import json
 from virtual import nodes, placement
 from control import domains

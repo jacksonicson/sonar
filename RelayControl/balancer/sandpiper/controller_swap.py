@@ -1,5 +1,4 @@
-from model import types
-from virtual import nodes
+from balancer.model import types
 
 class Swap():
     

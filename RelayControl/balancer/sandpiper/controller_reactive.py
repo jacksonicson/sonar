@@ -1,4 +1,4 @@
-from model import types
+from balancer.model import types
 from virtual import nodes
 
 class Reactive():
