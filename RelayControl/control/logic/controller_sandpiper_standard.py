@@ -1,7 +1,7 @@
 from logs import sonarlog
 import json
 import controller
-import placement
+from virtual import placement
 import migration_scheduler
 import controller_imbalance
 import controller_reactive
