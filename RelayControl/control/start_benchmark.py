@@ -36,7 +36,7 @@ def finished(done, client_list):
     print 'No controller used'
 #    print 'starting controller'
 #    logger.info('loading controller')
-#    import logic.main as controller
+#    import balancer.main as controller
 #    controller.main()
 
 

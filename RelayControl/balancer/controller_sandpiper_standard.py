@@ -35,10 +35,10 @@ CONTROLLER_SETTINGS = {
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
+        super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.migration_scheduler = migration_scheduler.migration(self, K_VALUE)
         self.migration_triggered = False
         self.controller_setup = {}
