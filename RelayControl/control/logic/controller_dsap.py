@@ -41,11 +41,12 @@ class DSAP(controller.LoadBalancer):
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'DSAP-Controller',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
+                                                                 'k_value' : KVALUE,
+                                                                 'num_bucketsl' : NUM_BUCKETS,
                                                                  }))
         
     def initial_placement_sim(self):
         import virtual.placement as plcmt
-        from control import domains 
 
         nodecount = len(nodes.HOSTS)
         self.placement = plcmt.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
@@ -65,16 +66,15 @@ class DSAP(controller.LoadBalancer):
             print migration 
             _nodes[migration[1]].add_domain(_domains[migration[0]])
             
+        # TODO DOKUMENTIEREN
         self.time_per_bucket = self.placement.experiment_length / NUM_BUCKETS
-            
+        # TODO DOKUMENTIEREN
         self.time_init = self.pump.sim_time()
             
         return migrations 
     
     
     def balance(self):
-        print 'DSAP-Controller - Balancing'
-
         time_now = self.pump.sim_time()     # current system time
         
         self.placement.assignment_list
@@ -94,6 +94,7 @@ class DSAP(controller.LoadBalancer):
 
         _blocked_migrations = 0
             
+        # TODO: Muss in eigene Methode calc_migrations(current_allocation, next_allocation) - returns list of migrations
         for _service in self.placement.assignment_list[ bucket_index ]:
             _server = self.placement.assignment_list[ bucket_index ][ _service ]
             _domain = domains.domain_profile_mapping[ _service ].domain
@@ -109,6 +110,7 @@ class DSAP(controller.LoadBalancer):
             source_node = self.model.get_host(_source_node)
             target_node = self.model.get_host(_target_node)
             
+            # TODO: Iterate over all migrations and fil them to migration queue
             # prevent parallel migrations (check for blocked servers)
             if time_now < target_node.blocked or time_now < source_node.blocked:
                 print "Server locked, for migration:",source_node.name,"->",target_node.name
@@ -117,6 +119,8 @@ class DSAP(controller.LoadBalancer):
             
             if target_node.domains.has_key(domain.name):
                 continue
+            
+            # TODO implement migration queue (von Johannes)
             
             # migrate
             self.migrate(domain, source_node, target_node, KVALUE)
@@ -131,10 +135,8 @@ class DSAP(controller.LoadBalancer):
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         node_from.blocked = self.pump.sim_time() -1
         node_to.blocked = self.pump.sim_time()-1
-        if success:
-            pass
-        else:
-            print "MIGRATION FAILED (post_migrate_hook)"
+        
+        # TODO ueberpruefen ob die Migration Queue die blocks schon setzt / aufhebt
     
     
     def test_allocation(self, bucket_index):        

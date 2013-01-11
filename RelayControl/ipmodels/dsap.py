@@ -124,11 +124,6 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     model.optimize()
 
     assignment_list = getAssignment()
-    i = 0
-    print "# Gurobi output commented in code (dsap.py line 128)"
-    for interval in assignment_list: 
-#        print '%i: %s' % (i, interval)
-        i += 1
     
     server_counts = getServerCounts()
     print 'Servers per interval: %s' % server_counts
@@ -149,13 +144,7 @@ if __name__ == '__main__':
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    demand_mem = [[] for _ in xrange(len(demand_raw))]
-    for i in xrange(len(demand_raw)):
-        demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
-        
+    # VM memory demand is constant
     demand_mem=5
-    
-    # B) Fill demand values with data from monitor0.dfg (TimeSteps)
-    ## >> see controller_dsap.py / placement.py
     
     solve(12, 100, 100, demand_raw, demand_mem)
