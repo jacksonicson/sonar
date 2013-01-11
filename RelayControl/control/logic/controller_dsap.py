@@ -14,14 +14,15 @@ from virtual.placement import Placement
 from virtual import placement
 import service
 import math
+from migration_scheduler import migration
 
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 START_WAIT = 0
 INTERVAL = 60
-KVALUE = 10                 # value given by Andreas
+KVALUE = 10  # value given by Andreas
 NUM_BUCKETS = 6
 ######################
 
@@ -32,8 +33,9 @@ class DSAP(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(DSAP, self).__init__(pump, model, INTERVAL, START_WAIT)
-        print "INIT DSAP (length of experiment",profiles.EXPERIMENT_DURATION,", num_buckets=",NUM_BUCKETS,")"
+        print "INIT DSAP (length of experiment", profiles.EXPERIMENT_DURATION, ", num_buckets=", NUM_BUCKETS, ")"
         self.var = []
+        self.migration_queue = migration(self, KVALUE)
 
         
     def dump(self):
@@ -75,32 +77,31 @@ class DSAP(controller.LoadBalancer):
     
     
     def balance(self):
-        time_now = self.pump.sim_time()     # current system time
+        time_now = self.pump.sim_time()  # current system time
         
         self.placement.assignment_list
         self.placement.server_list
 
         # calculate current bucket-index from system time
-        bucket_index = int((time_now - self.time_init) / self.time_per_bucket) # = allocation index
+        bucket_index = int((time_now - self.time_init) / self.time_per_bucket)  # = allocation index
         
         print 'BUCKET # %i' % bucket_index
-        
         if bucket_index == 0:
             return
-        
         if bucket_index >= NUM_BUCKETS:
             print "End of Bucket"
             return
+        
+        if not self.migration_queue.empty():
+            return
 
-        _blocked_migrations = 0
-            
         # TODO: Muss in eigene Methode calc_migrations(current_allocation, next_allocation) - returns list of migrations
         for _service in self.placement.assignment_list[ bucket_index ]:
             _server = self.placement.assignment_list[ bucket_index ][ _service ]
             _domain = domains.domain_profile_mapping[ _service ].domain
             
             # domain name for domain ID
-            source = self.placement.assignment_list[ bucket_index-1 ] [ _service ]
+            source = self.placement.assignment_list[ bucket_index - 1 ] [ _service ]
             target = _server
 
             _source_node = nodes.get_node_name(source)
@@ -111,32 +112,16 @@ class DSAP(controller.LoadBalancer):
             target_node = self.model.get_host(_target_node)
             
             # TODO: Iterate over all migrations and fil them to migration queue
-            # prevent parallel migrations (check for blocked servers)
-            if time_now < target_node.blocked or time_now < source_node.blocked:
-                print "Server locked, for migration:",source_node.name,"->",target_node.name
-                _blocked_migrations += 1
-                continue
+            self.migration_queue.add_migration(domain, source_node, target_node, 'null')
             
-            if target_node.domains.has_key(domain.name):
-                continue
-            
-            # TODO implement migration queue (von Johannes)
-            
-            # migrate
-            self.migrate(domain, source_node, target_node, KVALUE)
-            
-        # check if allocation is correct
-        if _blocked_migrations < 1:
-            self.test_allocation(bucket_index)
-        else:
-            print "blocked migrations",_blocked_migrations
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
-        node_from.blocked = self.pump.sim_time() -1
-        node_to.blocked = self.pump.sim_time()-1
+        node_from.blocked = self.pump.sim_time() - 1
+        node_to.blocked = self.pump.sim_time() - 1
         
         # TODO ueberpruefen ob die Migration Queue die blocks schon setzt / aufhebt
+        self.migration_queue.finish_migration(success, domain, node_from, node_to)
     
     
     def test_allocation(self, bucket_index):        
@@ -145,14 +130,14 @@ class DSAP(controller.LoadBalancer):
         print "Allocation check:"
         for _service in calculated_allocation:
             
-            #retrieve service identifier (targetX)
-            _domain = domains.domain_profile_mapping[ _service ].domain     # domain = service = target
-            _node = calculated_allocation[_service]                         # node = server
+            # retrieve service identifier (targetX)
+            _domain = domains.domain_profile_mapping[ _service ].domain  # domain = service = target
+            _node = calculated_allocation[_service]  # node = server
             node = nodes.get_node_name(_node)
             
             # check if calculated allocation == real allocation
             if _domain in self.model.hosts[node].domains:
-                print _domain,"in",node
+                print _domain, "in", node
             else:
-                print _domain,"NOT in",node, "[ALLOCATION FAILURE] !"
+                print _domain, "NOT in", node, "[ALLOCATION FAILURE] !"
         

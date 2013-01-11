@@ -27,10 +27,15 @@ class migration():
     def finish_migration(self, success, domain, source, target):
         for mig in self.migration_queue:
             if domain == mig['domain'] and source == mig['source'] and target == mig['target']:
-                if success == True:
-                    scoreboard.Scoreboard().add_migration_type(mig['migration_type'])
+#                if success == True:
+#                    scoreboard.Scoreboard().add_migration_type(mig['migration_type'])
                 self.migration_queue.remove(mig)
                 self.migration_scheduler()   
+                break
+      
+    def empty(self):
+        return len(self.migration_queue) == 0
+        
         
     def migration_scheduler(self):
         print 'START SCHEDULER; %s MIGRATIONS TO DO' % (len(self.migration_queue))
@@ -62,4 +67,6 @@ class migration():
             
             print '%s migration: %s from %s to %s' % (migration_type, domain.name, source.name, target.name)
             migration['triggered'] = True
-            self.controller.migrate(domain, source, target, self.K_VALUE) 
+            self.controller.migrate(domain, source, target, self.K_VALUE)
+            
+             
