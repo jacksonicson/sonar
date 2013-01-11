@@ -1023,11 +1023,16 @@ def t_test_response_statistics_all():
             self.samples = 1
             self.sum_rtime = 0
             self.sum_std = 0
+            self.rtime = []
         
         def accept(self, samples, rtime, std):
             self.samples += samples
             self.sum_rtime += samples * rtime
             self.sum_std += samples * std
+            self.rtime.append(rtime)
+            
+        def sd_rtime(self):
+            return np.var(self.rtime)
             
         def average(self):
             self.sum_rtime /= self.samples
@@ -1085,6 +1090,12 @@ def t_test_response_statistics_all():
             r2.average()
             t, test, df = t_test(r1.sum_rtime, r2.sum_rtime, r1.sum_std, r1.sum_std,
                                  r1.samples, r2.samples)
+            
+            if r1.sd_rtime() < r2.sd_rtime():
+                print r1.sd_rtime() / r2.sd_rtime()
+            else:
+                print r2.sd_rtime() / r1.sd_rtime()
+            
             sig = t > test
             if sig:
                 report = '%s.%s to %s.%s (%s) $p(%i)=%0.02f,p<0.05$' % (control0, type0, control1, type1, mix, df, t)
