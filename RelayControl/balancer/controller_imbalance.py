@@ -1,7 +1,7 @@
 from model import types
+from virtual import nodes
 import math
 import numpy
-import util
 
 class Imbalance():
     
@@ -37,7 +37,7 @@ class Imbalance():
             for domain in node.domains.values():            
                 new_domain = {}
                 new_domain['name'] = domain.name
-                new_domain['cpu'] = util.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
+                new_domain['cpu'] = nodes.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
                 new_domain['source'] = node.name
                 node_domains[domain.name] = new_domain
                 domains[domain.name] = new_domain
@@ -78,7 +78,7 @@ class Imbalance():
                     target_node = self.controller.model.get_host(node['name'])
                     target_domain = self.controller.model.get_host(domain['name'])
                     node_cpu = node['cpu']
-                    new_domain_cpu = util.domain_to_server_cpu(target_node, target_domain, target_domain.percentile_load(PERCENTILE, k))
+                    new_domain_cpu = nodes.domain_to_server_cpu(target_node, target_domain, target_domain.percentile_load(PERCENTILE, k))
                     old_domain_cpu = domain['cpu']
                     domain['cpu'] = new_domain_cpu
                     target_threshold = node_cpu + new_domain_cpu

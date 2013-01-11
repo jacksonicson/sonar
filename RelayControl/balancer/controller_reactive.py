@@ -1,5 +1,5 @@
 from model import types
-import util
+from virtual import nodes
 
 class Reactive():
     
@@ -121,7 +121,7 @@ class Reactive():
                 continue
                              
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + nodes.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -141,7 +141,7 @@ class Reactive():
                 continue
             
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + nodes.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time

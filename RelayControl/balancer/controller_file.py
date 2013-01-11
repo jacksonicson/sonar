@@ -1,6 +1,6 @@
 from control import domains
 from logs import sonarlog
-from virtual import nodes, placement
+from virtual import nodes
 import configuration
 import controller
 import json
