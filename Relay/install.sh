@@ -10,6 +10,7 @@ yum install unzip
 yum install twisted
 yum install python-setuptools
 yum install python-zope-interface 
+yum install thrift
 
 # Copy relay to opt dir
 rm -rf /opt/relay
@@ -21,18 +22,8 @@ cd ../thrift-0.8.0/lib/py
 python setup.py install
 
 # Is now installed by yum
-# cd ../zope.interface-4.0.1
+#cd ../zope.interface-4.0.1
 # python setup.py install
-
-# Install development tools
-# yum groupinstall development-tools
-
-# Is now installed by yum
-# Install psutil
-# cd ../psutil-0.6.1
-# python setup.py install 
-
-yum install python-psutil
 
 # TARGET DIR
 cd /opt/relay
