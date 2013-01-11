@@ -270,33 +270,28 @@ class DSAPPlacement(Placement):
         connection = times_client.connect()
         
         # Loading services to combine the dmain_service_mapping with    
-        service_count = len(domains.domain_profile_mapping)
-    
-        # old downsampling ratio        
-#        target_ratio = 1 * 60 * 60 # one bucket per hour (measured in seconds)
-#        _numBuckets = profiles.PROFILE_INTERVAL_COUNT * 5 / (target_ratio / 60)      # conversion ratio from TS to #buckets
+        domain_count = len(domains.domain_profile_mapping)
+        domain_matrix = np.zeros((domain_count, num_buckets), dtype=float)
         
-        service_matrix = np.zeros((service_count, num_buckets), dtype=float)
-        
-        service_log = ''
-        for service_index in xrange(service_count):
-            mapping = domains.domain_profile_mapping[service_index]
+        domain_log = ''
+        for domain_index in xrange(domain_count):
+            mapping = domains.domain_profile_mapping[domain_index]
             
             # Important: Load the trace of the workload profile
-            service = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
+            domain = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
-            print 'loading service: %s' % (service)
-            service_log += service + '; '
+            print 'loading domain: %s' % (domain)
+            domain_log += domain + '; '
             
-            ts = connection.load(service)
+            ts = connection.load(domain)
             ts_len = len(ts.elements)
         
-            # put TS into service matrix
+            # put TS into domain matrix
             _time, data = util.to_array(ts)
             
             data = data[0:profiles.PROFILE_INTERVAL_COUNT]
             
-            # Downsampling TS (service_matrix)
+            # Downsampling TS (domain_matrix)
             self.experiment_length = ts_len * ts.frequency  # length of the experiment measured in seconds
             bucket_width = self.experiment_length / num_buckets # in sec
             
@@ -309,17 +304,17 @@ class DSAPPlacement(Placement):
                 tmp = data[start : end]
                 buckets.append(np.mean(tmp))
     
-            service_matrix[service_index] = buckets
+            domain_matrix[domain_index] = buckets
             # print data
     
         # Log services
         logger.info('Selected profile: %s' % profiles.selected_name)
-        logger.info('Loading services: %s' % service_log)
+        logger.info('Loading services: %s' % domain_log)
     
         # Dumpservice_matrix
-        print 'Logging service matrix...'
+        print 'Logging domain matrix...'
         np.set_printoptions(linewidth=200, threshold=99999999)
-        logger.info('Service matrix: %s' % service_matrix)
+        logger.info('Service matrix: %s' % domain_matrix)
     
         # Close Times connection
         times_client.close()
@@ -328,7 +323,7 @@ class DSAPPlacement(Placement):
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')
-        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, service_matrix, self.domain_demand_mem)
+        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, domain_matrix, self.domain_demand_mem)
                 
         # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
         self.assignment_list = assignment_list
@@ -350,7 +345,6 @@ class DSAPPlacement(Placement):
                 mapping = domains.domain_profile_mapping[key]
                 migration = (mapping.domain, initial_placement[key])
                 migrations.append(migration)
-            
             
             print 'Migrations: %s' % migrations
             logger.info('Migrations: %s' % migrations)

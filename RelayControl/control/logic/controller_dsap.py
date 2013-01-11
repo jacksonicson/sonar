@@ -21,8 +21,7 @@ import math
 ######################
 START_WAIT = 0
 INTERVAL = 60
-KVALUE = 10                                     # value given by Andreas
-#BUCKET_LENGTH = profiles.EXPERIMENT_DURATION
+KVALUE = 10                 # value given by Andreas
 NUM_BUCKETS = 6
 ######################
 
@@ -66,28 +65,21 @@ class DSAP(controller.LoadBalancer):
             print migration 
             _nodes[migration[1]].add_domain(_domains[migration[0]])
             
-            
-        # initialize values for balance()
-        #self.time_per_bucket = profiles.EXPERIMENT_DURATION / self.placement.buckets_len     # delta for duration per bucket (balance())
-            # TODO UMSCHREIBEN!!! fehlerhaft
-            
         self.time_per_bucket = self.placement.experiment_length / NUM_BUCKETS
             
-        self.time_init = self.pump.sim_time()                                   # time_now synched to beginning of migration
+        self.time_init = self.pump.sim_time()
             
         return migrations 
     
     
     def balance(self):
         print 'DSAP-Controller - Balancing'
-#        sleep_time = 60                    # TODO later
 
         time_now = self.pump.sim_time()     # current system time
         
         self.placement.assignment_list
         self.placement.server_list
 
-                
         # calculate current bucket-index from system time
         bucket_index = int((time_now - self.time_init) / self.time_per_bucket) # = allocation index
         
@@ -96,7 +88,7 @@ class DSAP(controller.LoadBalancer):
         if bucket_index == 0:
             return
         
-        if bucket_index >= NUM_BUCKETS:      #old: profiles.EXPERIMENT_DURATION /60/60:
+        if bucket_index >= NUM_BUCKETS:
             print "End of Bucket"
             return
 
@@ -123,18 +115,19 @@ class DSAP(controller.LoadBalancer):
                 _blocked_migrations += 1
                 continue
             
-            if target_node.domains.has_key(domain.name): #  or not source_node.domains.has_key(_domain):
+            if target_node.domains.has_key(domain.name):
                 continue
+            
             # migrate
             self.migrate(domain, source_node, target_node, KVALUE)
             
-        # call test_allocation
-        self.test_allocation(bucket_index)
-#        if _blocked_migrations < 1:
-#            self.test_allocation(bucket_index)
-#        else:
-#            print "blocked migrations",_blocked_migrations
-            
+        # check if allocation is correct
+        if _blocked_migrations < 1:
+            self.test_allocation(bucket_index)
+        else:
+            print "blocked migrations",_blocked_migrations
+    
+    
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         node_from.blocked = self.pump.sim_time() -1
         node_to.blocked = self.pump.sim_time()-1
@@ -142,23 +135,22 @@ class DSAP(controller.LoadBalancer):
             pass
         else:
             print "MIGRATION FAILED (post_migrate_hook)"
-            
-    def test_allocation(self, bucket_index):
-        
+    
+    
+    def test_allocation(self, bucket_index):        
         calculated_allocation = self.placement.assignment_list[ bucket_index ]
-        #print "Calculated Allocation:\n",calculated_allocation
                        
-        print "Real Allocation:"
+        print "Allocation check:"
         for _service in calculated_allocation:
             
             #retrieve service identifier (targetX)
-            _domain = domains.domain_profile_mapping[ _service ].domain     # domain = target
-            _server = calculated_allocation[_service]
-            server = nodes.get_node_name(_server)
+            _domain = domains.domain_profile_mapping[ _service ].domain     # domain = service = target
+            _node = calculated_allocation[_service]                         # node = server
+            node = nodes.get_node_name(_node)
             
             # check if calculated allocation == real allocation
-            if _domain in self.model.hosts[server].domains:
-                print _domain,"in",server
+            if _domain in self.model.hosts[node].domains:
+                print _domain,"in",node
             else:
-                print _domain,"NOT in",server, "[ALLOCATION FAILURE] !"
+                print _domain,"NOT in",node, "[ALLOCATION FAILURE] !"
         
