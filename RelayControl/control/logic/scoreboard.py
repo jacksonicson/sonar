@@ -26,6 +26,12 @@ class Scoreboard(object):
         self.cpu_violations = 0
         self.cpu_accumulated = 0
         
+
+        self.imbalance_migrations = 0
+        self.overload_migrations = 0
+        self.underload_migrations = 0
+        self.swaps = 0
+
         self.min_servers = sys.maxint
         self.max_servers = 0
         
@@ -33,6 +39,25 @@ class Scoreboard(object):
     
     def close(self):
         self.closed = True
+    
+    def add_migration_type(self, migration_type):
+        if migration_type == 'Imbalance':
+            self.imbalance_migrations += 1
+            return
+        if migration_type == 'Overload (Empty=False)':
+            self.overload_migrations +=1
+            return
+        if migration_type == 'Overload (Empty=True)':
+            self.overload_migrations +=1
+            return
+        if migration_type == 'Underload (Empty=False)':
+            self.underload_migrations +=1
+            return
+        if migration_type == 'Underload (Empty=True)':
+            self.underload_migrations +=1
+            return
+        if migration_type == 'Swap Part 1':
+            self.swaps +=1           
     
     def add_cpu_violations(self, violations):
         if not self.closed:
