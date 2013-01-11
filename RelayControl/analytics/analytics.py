@@ -17,6 +17,7 @@ import numpy as np
 import sys
 import time
 import traceback
+import math
 
 '''
 Additional R-Scripts:
@@ -1088,7 +1089,8 @@ def t_test_response_statistics_all():
             if sig:
                 report = '%s.%s to %s.%s (%s) $p(%i)=%0.02f,p<0.05$' % (control0, type0, control1, type1, mix, df, t)
                 print '%s.%s x %s.%s (%s) -> %i, t=%0.2f test=%0.2f df=%0.2f [%s]' % (control0, type0, control1, type1, mix, sig, t, test, df, report)
-        except:
+        except Exception as inst:
+            print inst
             __warn('%s.%s x %s.%s -> %s' % (control0, type0, control1, type1, 'FAIL'))
 
     # For all mixes    
@@ -1216,7 +1218,6 @@ def t_test_response_statistics():
                         except StopIteration:
                             pass
                             
-        import csv
         with open('C:/temp/result_%i.csv' % run, 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             spamwriter.writerow(ops)
@@ -1457,6 +1458,7 @@ def __process_from_experiment_schedule(callback_handler, limit=300):
     # Load experiments database
     count = 0
     for entry in __load_experiment_db(EXPERIMENT_DB):
+        print entry
         global START, END, RAW
         RAW = entry[0]
         START, END = RAW.split('    ')
@@ -1517,7 +1519,7 @@ def extract_response_statistics(connection):
         rain_results = __load_rain_results(connection, raw_frame)
         _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors = rain_results
         
-        with open(configuration.path('%s_%s_%s_%i' % (entry[1:]), 'csv'), 'wb') as csvfile:
+        with open(configuration.path('%s_%s_%s_%i' % (entry[1:5]), 'csv'), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             print '### Operation Sampling Table ###'
             if len(_global_metrics) < 2:
@@ -1763,11 +1765,11 @@ if __name__ == '__main__':
     connection = __connect()
     try:
         # connect_sonar(connection)
-        extract_migration_times(connection)
+        # extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
-        # t_test_response_statistics_all()
+        t_test_response_statistics_all()
         # extract_response_times(connection)
     except:
         traceback.print_exc(file=sys.stdout)
