@@ -14,10 +14,10 @@ ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_180_compliance0.9962
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10 * 60, 120)
+        super(Controller, self).__init__(pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):

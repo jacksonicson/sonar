@@ -4,9 +4,8 @@ import json
 import controller
 import numpy
 import math
-import util
 import scoreboard
-import placement
+from virtual import placement
 from virtual import nodes
 
 ######################
@@ -37,10 +36,10 @@ logger = sonarlog.getLogger('controller')
 
 # Migration Queue
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
+        super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
         self.migration_queue = []
         
         if FIRST_CONTROLLER == 'imbalance' or SECOND_CONTROLLER == 'imbalance' or THIRD_CONTROLLER == 'imbalance':
@@ -163,7 +162,7 @@ class Sandpiper(controller.LoadBalancer):
             for domain in node.domains.values():            
                 new_domain = {}
                 new_domain['name'] = domain.name
-                new_domain['cpu'] = util.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
+                new_domain['cpu'] = nodes.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
                 new_domain['source'] = node.name
                 node_domains[domain.name] = new_domain
                 domains[domain.name] = new_domain
@@ -204,7 +203,7 @@ class Sandpiper(controller.LoadBalancer):
                     target_node = self.model.get_host(node['name'])
                     target_domain = self.model.get_host(domain['name'])
                     node_cpu = node['cpu']
-                    new_domain_cpu = util.domain_to_server_cpu(target_node, target_domain, target_domain.percentile_load(PERCENTILE, k))
+                    new_domain_cpu = nodes.domain_to_server_cpu(target_node, target_domain, target_domain.percentile_load(PERCENTILE, k))
                     old_domain_cpu = domain['cpu']
                     domain['cpu'] = new_domain_cpu
                     target_threshold = node_cpu + new_domain_cpu
@@ -374,7 +373,7 @@ class Sandpiper(controller.LoadBalancer):
                 continue
                              
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + nodes.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -395,7 +394,7 @@ class Sandpiper(controller.LoadBalancer):
                 continue
             
             test = True
-            test &= (target.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(PERCENTILE, k) + nodes.domain_to_server_cpu(target, domain, domain.percentile_load(PERCENTILE, k))) < THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -429,13 +428,13 @@ class Sandpiper(controller.LoadBalancer):
                     targets.append(target_domains[i])                
 
                 # Calculate new loads
-                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + util.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
-                new_source_node_load = node.percentile_load(PERCENTILE, k) - util.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
+                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + nodes.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
+                new_source_node_load = node.percentile_load(PERCENTILE, k) - nodes.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
               
                 for target_domain in targets:
                     tmp_load = target_domain.percentile_load(PERCENTILE, k)
-                    new_target_node_load -= util.domain_to_server_cpu(target_node, target_domain, tmp_load)
-                    new_source_node_load += util.domain_to_server_cpu(node, target_domain, tmp_load)                              
+                    new_target_node_load -= nodes.domain_to_server_cpu(target_node, target_domain, tmp_load)
+                    new_source_node_load += nodes.domain_to_server_cpu(node, target_domain, tmp_load)                              
                 
                 #Test if swap violates rules
                 test = True

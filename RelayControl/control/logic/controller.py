@@ -67,7 +67,7 @@ class LoadBalancer(object):
         # Migration id counter
         self.migration_id_counter = 0
         
-        
+     
     # Abstract load balancing method
     def balance(self):
         pass

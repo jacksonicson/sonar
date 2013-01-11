@@ -14,10 +14,10 @@ import numpy as np
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10*60, 120)
+        super(Controller, self).__init__(pump, model, 10*60, 120)
         self.var = []
         
     def dump(self):
