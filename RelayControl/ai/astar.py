@@ -212,34 +212,36 @@ class AStar(object):
 
 def main():
     # Create initial state
-    nodes = 50
-    domainc = 50
-    
-    domains = []
-    domainl = []
-    nodel = [0 for _ in xrange(nodes)]
-    
-    for i in xrange(domainc):
-        while True: 
-            import random
-            node = random.randint(0, nodes-1)
-            load = abs(random.randint(0, 50-1))
-            if (nodel[node] + load) > 100:
-                continue
-            domains.append(node)
-            domainl.append(load)
-            nodel[node] += load
-            break
-        
-    nodel.append(0)
-    
-#    nodes = 6
-#    domains = [1,2,2,3,4,5]
-#    target = [2,1,2,3,5,4]
-#    domainl = [90,20,00,0,90,20]
+#    nodes = 50
+#    domainc = 50
+#    
+#    domains = []
+#    domainl = []
 #    nodel = [0 for _ in xrange(nodes)]
-#    for i in xrange(len(domains)):
-#        nodel[domains[i]] += domainl[i]
+#    
+#    for i in xrange(domainc):
+#        while True: 
+#            import random
+#            node = random.randint(0, nodes-1)
+#            load = abs(random.randint(0, 50-1))
+#            if (nodel[node] + load) > 100:
+#                continue
+#            domains.append(node)
+#            domainl.append(load)
+#            nodel[node] += load
+#            break
+#        
+#    nodel.append(0)
+    
+    nodes = 6
+    domains = [1,2,2,3,4,5]
+    target = [2,1,2,3,5,4]
+    
+    domainl = [90,20,00,0,90,20]
+    
+    nodel = [0 for _ in xrange(nodes)]
+    for i in xrange(len(domains)):
+        nodel[domains[i]] += domainl[i]
     
     print domains
     print domainl
@@ -247,8 +249,8 @@ def main():
     print 'A*'
         
     # Create target state
-    target = list(domains)
-    target[3] = 1
+#    target = list(domains)
+#    target[3] = 1
     
     
     # Validate overload

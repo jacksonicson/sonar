@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'dsap'
+CONTROLLER = 'file'
 SIM_ITERATIONS = 1
 ######################
 
@@ -104,21 +104,24 @@ def main(controller):
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
     import controller_file #@UnusedImport
-    import controller_dsap #@UnusedImport
+    from sandpiper import controller_sandpiper_standard #@UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
-        controller = controller_sandpiper_reactive.Sandpiper(pump, model)
+        controller = controller_sandpiper_reactive.Controller(pump, model)
     elif controller == 'proactive':
-        controller = controller_sandpiper_proactive.Sandpiper(pump, model)
+        controller = controller_sandpiper_proactive.Controller(pump, model)
     elif controller == 'round':
-        controller = controller_rr.Sandpiper(pump, model)
-    elif controller =='file':
-        controller = controller_file.Sandpiper(pump, model)
-    elif controller =='dsap':
-        controller = controller_dsap.DSAP(pump, model)
-    else: 
-        controller = controller_ssapv.Sandpiper(pump, model)
+        controller = controller_rr.Controller(pump, model)
+    elif controller == 'file':
+        controller = controller_file.Controller(pump, model)
+    elif controller == 'sandpiper':
+        controller = controller_sandpiper_standard.Controller(pump, model)
+    elif controller == 'ssapv': 
+        controller = controller_ssapv.Controller(pump, model)
+    else:
+        print 'No controller defined'
+        return
     # #############################################################
     
     # Build internal infrastructure representation

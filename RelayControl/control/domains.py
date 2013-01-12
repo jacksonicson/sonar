@@ -8,10 +8,10 @@ Maps domains to profiles
 ######################
 ## CONFIGURATION    ##
 ######################
-DOMAINS = 18
+DOMAINS = 180
 WORKLOAD_OFFSET = 0
 WORKLOAD_RANDOM = False
-WORKLOAD_MAX_RANDOM = 400
+WORKLOAD_MAX_RANDOM = 200
 ######################
 
 class Domain:

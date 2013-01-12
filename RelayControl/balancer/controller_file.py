@@ -1,6 +1,6 @@
 from control import domains
 from logs import sonarlog
-from virtual import nodes, placement
+from virtual import nodes
 import configuration
 import controller
 import json
@@ -8,16 +8,16 @@ import json
 ######################
 ## CONFIGURATION    ##
 ######################
-ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_180_I_181_bis_360_cap_230', 'csv')
+ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_180_I_1_bis_180_cap_200', 'csv')
 ######################
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10 * 60, 120)
+        super(Controller, self).__init__(pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):
