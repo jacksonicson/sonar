@@ -1,17 +1,22 @@
 import scoreboard
 
 class Entry(object):
-    def __init__(self, domain, source_node, target_node, description=None):
+    def __init__(self, domain, source_node, target_node, depends=None, description=None):
         self.domain = domain
         self.source = source_node
         self.target = target_node
         self.description = description
+        self.depends = depends
         
     def __eq__(self, other):
+        if other == None:
+            return False
+        
         test = True
         test &= self.domain == other.domain
         test &= self.source == other.source
         test &= self.target == other.target
+        test &= self.depends == other.depends
         return test
         
 
@@ -25,12 +30,15 @@ class MigrationQueue():
         self.waiting = []
         self.running = []
 
-    def add(self, domain, source_node, target_node, description=None):
-        entry = Entry(domain, source_node, target_node, description)
+    def add(self, domain, source_node, target_node, depends=None, description=None):
+        entry = Entry(domain, source_node, target_node, depends, description)
 
         # Schedule
         self.waiting.append(entry)
         self._schedule()
+        
+        # Return entry for dependencies
+        return entry
         
     def finished(self, success, domain, source_node, target_node):
         entry = Entry(domain, source_node, target_node)
@@ -50,7 +58,13 @@ class MigrationQueue():
             # Check if complies with running migrations
             skip = False
             for test in self.running:
+                # One outgoing migration per server
                 skip |= test.source == migration.source
+
+            # Check dependencies
+            if migration.depends != None: 
+                skip |= migration.depends in self.waiting
+                skip |= migration.depends in self.running
                 
             if skip:
                 continue 
@@ -72,9 +86,9 @@ if __name__ == '__main__':
             self.q = MigrationQueue(self)
             
         def test(self):
-            self.q.add('test0', 'node0', 'node1')
-            self.q.add('test2', 'node0', 'node1')
-            self.q.add('test1', 'node1', 'node2')
+            a = self.q.add('test0', 'node0', 'node1')
+            b = self.q.add('test2', 'node0', 'node1', a)
+            c = self.q.add('test1', 'node1', 'node2')
             
         def migration_finished(self, domain, source, target, kvalue):
             self.q.finished(True, domain, source, target)
