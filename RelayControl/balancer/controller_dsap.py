@@ -14,7 +14,7 @@ from virtual.placement import Placement
 from virtual import placement
 import service
 import math
-from migration_scheduler import migration
+from migration_queue import MigrationQueue
 
 
 ######################
@@ -35,7 +35,7 @@ class DSAP(controller.LoadBalancer):
         super(DSAP, self).__init__(pump, model, INTERVAL, START_WAIT)
         print "INIT DSAP (length of experiment", profiles.EXPERIMENT_DURATION, ", num_buckets=", NUM_BUCKETS, ")"
         self.var = []
-        self.migration_queue = migration(self, KVALUE)
+        self.migration_queue = MigrationQueue(self)
 
         
     def dump(self):
