@@ -29,10 +29,10 @@ NUM_BUCKETS = 6
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class DSAP(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(DSAP, self).__init__(pump, model, INTERVAL, START_WAIT)
+        super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
         print "INIT DSAP (length of experiment", profiles.EXPERIMENT_DURATION, ", num_buckets=", NUM_BUCKETS, ")"
         self.var = []
         self.migration_queue = MigrationQueue(self)
