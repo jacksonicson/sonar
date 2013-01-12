@@ -87,8 +87,8 @@ if __name__ == '__main__':
             
         def test(self):
             a = self.q.add('test0', 'node0', 'node1')
-            b = self.q.add('test2', 'node0', 'node1', a)
-            c = self.q.add('test1', 'node1', 'node2')
+            self.q.add('test2', 'node0', 'node1', a)
+            self.q.add('test1', 'node1', 'node2')
             
         def migration_finished(self, domain, source, target, kvalue):
             self.q.finished(True, domain, source, target)
