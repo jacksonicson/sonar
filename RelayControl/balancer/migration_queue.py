@@ -30,11 +30,12 @@ class MigrationQueue():
         self.waiting = []
         self.running = []
 
-    def empty(self):
-        return (len(self.waiting) == 0 and len(self.running) == 0)
- 
     def add(self, domain, source_node, target_node, depends=None, description=None):
         entry = Entry(domain, source_node, target_node, depends, description)
+
+        # Filter unnecessary migrations
+        if source_node == target_node:
+            return None
 
         # Schedule
         self.waiting.append(entry)
@@ -48,36 +49,40 @@ class MigrationQueue():
         for migration in self.running:
             if migration == entry: 
                 self.running.remove(migration)
-                break
+                self._schedule()
+                return
+        print 'ERROR'
         
-        self._schedule()
         
     def _schedule(self):
         print 'Scheduling migrations...'
         
         to_trigger = []
-        for i, migration in enumerate(self.waiting):
+        for migration in self.waiting:
             
             # Check if complies with running migrations
             skip = False
             for test in self.running:
                 # One outgoing migration per server
                 skip |= test.source == migration.source
+                skip |= test.source == migration.target
+                skip |= test.target == migration.source
+                skip |= test.target == migration.target
 
             # Check dependencies
             if migration.depends != None: 
                 skip |= migration.depends in self.waiting
                 skip |= migration.depends in self.running
                 
-            if skip:
-                continue 
+            if not skip:
+                self.running.append(migration)
+                to_trigger.append(migration)
+            else:
+                print 'skipping'
             
-            del self.waiting[i]
-            self.running.append(migration)
-            to_trigger.append(migration)
-                
         # Trigger migrations
         for migration in to_trigger:
+            self.waiting.remove(migration)
             self.controller.migrate(migration.domain, migration.source,
                                     migration.target, 20)
             

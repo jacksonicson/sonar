@@ -2,7 +2,7 @@ from logs import sonarlog
 import json
 from balancer import controller
 from virtual import placement
-from balancer import migration_scheduler
+from balancer import migration_queue
 import controller_imbalance
 import controller_reactive
 import controller_swap
@@ -39,7 +39,7 @@ class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
-        self.migration_scheduler = migration_scheduler.migration(self, K_VALUE)
+        self.migration_scheduler = migration_queue.MigrationQueue(self)
         self.migration_triggered = False
         self.controller_setup = {}
         

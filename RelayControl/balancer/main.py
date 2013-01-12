@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'file'
+CONTROLLER = 'dsap'
 SIM_ITERATIONS = 1
 ######################
 

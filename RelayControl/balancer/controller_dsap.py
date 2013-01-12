@@ -22,8 +22,9 @@ from migration_queue import MigrationQueue
 ######################
 START_WAIT = 0
 INTERVAL = 60
-KVALUE = 10  # value given by Andreas
-NUM_BUCKETS = 6
+
+KVALUE = 10  
+NUM_BUCKETS = 12
 ######################
 
 # Setup logging
@@ -36,7 +37,7 @@ class Controller(controller.LoadBalancer):
         print "INIT DSAP (length of experiment", profiles.EXPERIMENT_DURATION, ", num_buckets=", NUM_BUCKETS, ")"
         self.var = []
         self.migration_queue = MigrationQueue(self)
-
+        self.curr_bucket = 0
         
     def dump(self):
         print 'DSAP controller - Dump configuration...'
@@ -92,9 +93,10 @@ class Controller(controller.LoadBalancer):
             print "End of Bucket"
             return
         
-        if not self.migration_queue.empty():
+        if self.curr_bucket >= bucket_index:
             return
-
+        self.curr_bucket = bucket_index
+        
         # TODO: Muss in eigene Methode calc_migrations(current_allocation, next_allocation) - returns list of migrations
         for _service in self.placement.assignment_list[ bucket_index ]:
             _server = self.placement.assignment_list[ bucket_index ][ _service ]
@@ -112,17 +114,14 @@ class Controller(controller.LoadBalancer):
             target_node = self.model.get_host(_target_node)
             
             # TODO: Iterate over all migrations and fil them to migration queue
-            self.migration_queue.add_migration(domain, source_node, target_node, 'null')
+            self.migration_queue.add(domain, source_node, target_node)
             
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         node_from.blocked = self.pump.sim_time() - 1
         node_to.blocked = self.pump.sim_time() - 1
-        
-        # TODO ueberpruefen ob die Migration Queue die blocks schon setzt / aufhebt
-        self.migration_queue.finish_migration(success, domain, node_from, node_to)
-    
+        self.migration_queue.finished(success, domain, node_from, node_to)
     
     def test_allocation(self, bucket_index):        
         calculated_allocation = self.placement.assignment_list[ bucket_index ]
