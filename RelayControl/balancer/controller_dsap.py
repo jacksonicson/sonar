@@ -52,8 +52,8 @@ class Controller(controller.LoadBalancer):
         self.build_internal_model(self.initial_migrations)
         return self.initial_migrations 
     
+    
     def __run_migrations(self, bucket_index):
-        print bucket_index
         # Assignment
         curr_assignment = self.placement.assignment_list[bucket_index]
         
@@ -66,11 +66,15 @@ class Controller(controller.LoadBalancer):
             source_node = nodes.get_node_name(prev_assignment[index_domain])
             target_node = nodes.get_node_name(curr_assignment[index_domain])
             
+            # Find current node for domain
+            source_node = self.model.get_host_for_domain(domain_name).name
+            
             # Trigger migration
             model_domain = self.model.get_host(domain_name)
             model_source = self.model.get_host(source_node)
             model_target = self.model.get_host(target_node)
             self.migration_queue.add(model_domain, model_source, model_target)
+    
     
     def balance(self):
         # Current bucket index
@@ -81,6 +85,8 @@ class Controller(controller.LoadBalancer):
 
         # Schedule migrations only once per bucket
         if self.curr_bucket == bucket_index:
+            if self.migration_queue.empty():
+                self.__run_migrations(self.curr_bucket)
             return
         
         # Update current bucket status
@@ -95,22 +101,3 @@ class Controller(controller.LoadBalancer):
         node_to.blocked = self.pump.sim_time() - 1
         self.migration_queue.finished(success, domain, node_from, node_to)
     
-    
-    # TODO: Rewrite this stuff so that it fits with the refactored dsap controller above
-    def test_allocation(self, bucket_index):        
-        calculated_allocation = self.placement.assignment_list[ bucket_index ]
-                       
-        print "Allocation check:"
-        for _service in calculated_allocation:
-            
-            # retrieve service identifier (targetX)
-            _domain = domains.domain_profile_mapping[ _service ].domain  # domain = service = target
-            _node = calculated_allocation[_service]  # node = server
-            node = nodes.get_node_name(_node)
-            
-            # check if calculated allocation == real allocation
-            if _domain in self.model.hosts[node].domains:
-                print _domain, "in", node
-            else:
-                print _domain, "NOT in", node, "[ALLOCATION FAILURE] !"
-        

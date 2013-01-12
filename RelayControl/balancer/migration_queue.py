@@ -28,6 +28,9 @@ class MigrationQueue():
         self.waiting = []
         self.running = []
 
+    def empty(self):
+        return len(self.waiting) == 0 and len(self.running) == 0
+
     def add(self, domain, source_node, target_node, depends=None, description=None):
         entry = Entry(domain, source_node, target_node, depends, description)
 

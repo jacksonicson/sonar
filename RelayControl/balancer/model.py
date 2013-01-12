@@ -41,6 +41,11 @@ def get_host(hostname):
         return hosts[hostname]
     return None
 
+def get_host_for_domain(domain):
+    for host in get_hosts(types.NODE):
+        if host.has_domain(domain):
+            return host
+    return None
 
 def server_active_info():
     active_count = 0
@@ -162,6 +167,9 @@ class Node(__Host):
     
     def add_domain(self, domain):
         self.domains[domain.name] = domain
+        
+    def has_domain(self, domain):
+        return self.domains.has_key(domain)
         
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')
