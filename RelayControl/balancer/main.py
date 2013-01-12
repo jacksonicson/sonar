@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'optimization'
+CONTROLLER = 'file'
 SIM_ITERATIONS = 1
 ######################
 
@@ -104,7 +104,7 @@ def main(controller):
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
     import controller_file #@UnusedImport
-    import controller_sandpiper_standard #@UnusedImport
+    from sandpiper import controller_sandpiper_standard #@UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
