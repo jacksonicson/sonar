@@ -104,6 +104,7 @@ def main(controller):
     import controller_sandpiper_proactive #@UnusedImport
     import controller_rr #@UnusedImport
     import controller_file #@UnusedImport
+    import controller_dsap #@UnusedImport
     from sandpiper import controller_sandpiper_standard #@UnusedImport
     
     # ### CONTROLLER ##############################################
@@ -119,6 +120,8 @@ def main(controller):
         controller = controller_sandpiper_standard.Controller(pump, model)
     elif controller == 'ssapv': 
         controller = controller_ssapv.Controller(pump, model)
+    elif controller == 'dsap':
+        controller = controller_dsap.Controller(pump, model)
     else:
         print 'No controller defined'
         return

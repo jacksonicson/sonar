@@ -30,6 +30,9 @@ class MigrationQueue():
         self.waiting = []
         self.running = []
 
+    def empty(self):
+        return (len(self.waiting) == 0 and len(self.running) == 0)
+ 
     def add(self, domain, source_node, target_node, depends=None, description=None):
         entry = Entry(domain, source_node, target_node, depends, description)
 
@@ -95,7 +98,7 @@ if __name__ == '__main__':
         
         def migrate(self, domain, source, target, kvalue):
             print 'migrate: %s' % domain
-            self.migration_finished(domain, source,target,kvalue)
+            self.migration_finished(domain, source, target, kvalue)
         
     c = MockController()
     c.test()
