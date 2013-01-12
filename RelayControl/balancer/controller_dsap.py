@@ -1,10 +1,10 @@
 from logs import sonarlog
-import controller
-import json
+from migration_queue import MigrationQueue
 from virtual import nodes
 import control.domains as domains
-from migration_queue import MigrationQueue
-
+import controller
+import json
+import virtual.placement as placement
 
 ######################
 # # CONFIGURATION    ##
@@ -22,8 +22,23 @@ class Controller(controller.LoadBalancer):
     def __init__(self, pump, model):
         super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
         
+        # Setup migration queue
         self.migration_queue = MigrationQueue(self)
+        
+        # Build allocations
+        nodecount = len(nodes.NODES)
+        self.placement = placement.DSAPPlacement(nodecount, nodes.NODE_CPU,
+                                                 nodes.NODE_MEM, nodes.DOMAIN_MEM)
+        self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS)
+            
+        # Current bucket
         self.curr_bucket = 0
+        
+        # Allocation cycle duration
+        self.time_per_bucket = self.placement.experiment_length / NUM_BUCKETS
+        
+        # Initialization time
+        self.time_init = self.pump.sim_time()
         
     def dump(self):
         print 'DSAP controller - Dump configuration...'
@@ -34,73 +49,45 @@ class Controller(controller.LoadBalancer):
                                                                  }))
         
     def initial_placement_sim(self):
-        import virtual.placement as plcmt
-
-        nodecount = len(nodes.HOSTS)
-        self.placement = plcmt.DSAPPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = self.placement.execute(NUM_BUCKETS)
-        
-        _nodes = []
-        for node in nodes.NODES: 
-            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
-            _nodes.append(mnode)
-            
-        _domains = {}
-        for domain in domains.domain_profile_mapping:
-            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-            _domains[domain.domain] = dom
-            
-        for migration in migrations:
-            print migration 
-            _nodes[migration[1]].add_domain(_domains[migration[0]])
-            
-        # TODO DOKUMENTIEREN
-        self.time_per_bucket = self.placement.experiment_length / NUM_BUCKETS
-        # TODO DOKUMENTIEREN
-        self.time_init = self.pump.sim_time()
-            
-        return migrations 
+        self.build_internal_model(self.initial_migrations)
+        return self.initial_migrations 
     
+    def __run_migrations(self, bucket_index):
+        print bucket_index
+        # Assignment
+        curr_assignment = self.placement.assignment_list[bucket_index]
+        
+        # Previous assignment
+        prev_assignment = self.placement.assignment_list[(bucket_index - 1) % NUM_BUCKETS]
+        
+        for index_domain in curr_assignment.keys():
+            # Get data
+            domain_name = domains.domain_profile_mapping[index_domain].domain
+            source_node = nodes.get_node_name(prev_assignment[index_domain])
+            target_node = nodes.get_node_name(curr_assignment[index_domain])
+            
+            # Trigger migration
+            model_domain = self.model.get_host(domain_name)
+            model_source = self.model.get_host(source_node)
+            model_target = self.model.get_host(target_node)
+            self.migration_queue.add(model_domain, model_source, model_target)
     
     def balance(self):
-        time_now = self.pump.sim_time()  # current system time
-        
-        self.placement.assignment_list
-        self.placement.server_list
-
-        # calculate current bucket-index from system time
-        bucket_index = int((time_now - self.time_init) / self.time_per_bucket)  # = allocation index
-        
-        print 'BUCKET # %i' % bucket_index
-        if bucket_index == 0:
-            return
+        # Current bucket index
+        bucket_index = int((self.pump.sim_time() - self.time_init) / self.time_per_bucket)
+        #bucket_index %= NUM_BUCKETS
         if bucket_index >= NUM_BUCKETS:
-            print "End of Bucket"
+            return
+
+        # Schedule migrations only once per bucket
+        if self.curr_bucket == bucket_index:
             return
         
-        if self.curr_bucket >= bucket_index:
-            return
+        # Update current bucket status
         self.curr_bucket = bucket_index
         
-        # TODO: Muss in eigene Methode calc_migrations(current_allocation, next_allocation) - returns list of migrations
-        for _service in self.placement.assignment_list[ bucket_index ]:
-            _server = self.placement.assignment_list[ bucket_index ][ _service ]
-            _domain = domains.domain_profile_mapping[ _service ].domain
-            
-            # domain name for domain ID
-            source = self.placement.assignment_list[ bucket_index - 1 ] [ _service ]
-            target = _server
-
-            _source_node = nodes.get_node_name(source)
-            _target_node = nodes.get_node_name(target)
-
-            domain = self.model.get_host(_domain)
-            source_node = self.model.get_host(_source_node)
-            target_node = self.model.get_host(_target_node)
-            
-            # TODO: Iterate over all migrations and fil them to migration queue
-            self.migration_queue.add(domain, source_node, target_node)
-            
+        # Trigger migrations to get new bucket allocation
+        self.__run_migrations(self.curr_bucket)
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
@@ -108,6 +95,8 @@ class Controller(controller.LoadBalancer):
         node_to.blocked = self.pump.sim_time() - 1
         self.migration_queue.finished(success, domain, node_from, node_to)
     
+    
+    # TODO: Rewrite this stuff so that it fits with the refactored dsap controller above
     def test_allocation(self, bucket_index):        
         calculated_allocation = self.placement.assignment_list[ bucket_index ]
                        
