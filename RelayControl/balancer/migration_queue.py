@@ -34,12 +34,12 @@ class MigrationQueue():
         entry = Entry(domain, source_node, target_node, depends, description)
 
         # Filter unnecessary migrations
-        if source_node == target_node:
-            return None
+        append = (source_node != target_node)
 
-        # Schedule
-        self.waiting.append(entry)
-        self._schedule()
+        # Schedule if valid entry
+        if append:
+            self.waiting.append(entry)
+            self._schedule()
         
         # Return entry for dependencies
         return entry
@@ -65,9 +65,6 @@ class MigrationQueue():
             for test in self.running:
                 # One outgoing migration per server
                 skip |= test.source == migration.source
-                skip |= test.source == migration.target
-                skip |= test.target == migration.source
-                skip |= test.target == migration.target
 
             # Check dependencies
             if migration.depends != None: 
