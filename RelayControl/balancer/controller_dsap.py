@@ -1,19 +1,8 @@
 from logs import sonarlog
 import controller
 import json
-import numpy as np
-from ipmodels import dsap
-from numpy import empty, random
-from service import times_client
-from workload import util as wutil
-from workload import profiles
 from virtual import nodes
 import control.domains as domains
-import sys
-from virtual.placement import Placement
-from virtual import placement
-import service
-import math
 from migration_queue import MigrationQueue
 
 
@@ -22,8 +11,6 @@ from migration_queue import MigrationQueue
 ######################
 START_WAIT = 0
 INTERVAL = 60
-
-KVALUE = 10  
 NUM_BUCKETS = 12
 ######################
 
@@ -34,8 +21,7 @@ class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
         super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
-        print "INIT DSAP (length of experiment", profiles.EXPERIMENT_DURATION, ", num_buckets=", NUM_BUCKETS, ")"
-        self.var = []
+        
         self.migration_queue = MigrationQueue(self)
         self.curr_bucket = 0
         
@@ -44,7 +30,6 @@ class Controller(controller.LoadBalancer):
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'DSAP-Controller',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
-                                                                 'k_value' : KVALUE,
                                                                  'num_bucketsl' : NUM_BUCKETS,
                                                                  }))
         
