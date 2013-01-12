@@ -67,10 +67,10 @@ class LoadBalancer(object):
         # Migration id counter
         self.migration_id_counter = 0
         
-     
     # Abstract load balancing method
     def balance(self):
-        pass
+        for handler in self.migration_callback_handlers:
+            handler()
     
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
