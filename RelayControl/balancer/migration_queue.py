@@ -1,5 +1,3 @@
-import scoreboard
-
 class Entry(object):
     def __init__(self, domain, source_node, target_node, depends=None, description=None):
         self.domain = domain
