@@ -1,21 +1,20 @@
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-#import statsmodels as sm2
-#import statsmodels.api as sm
+import statsmodels as sm2
+import statsmodels.api as sm
     
 def ar_forecast(data, smoothing=False):
-#    if smoothing:
-#        # Smoothen data
-#        data = double_exponential_smoother(data)[1]
-#    
-#    try:
-#        model = sm2.tsa.ar_model.AR(data).fit()
-#        value = model.predict(len(data), len(data) + 20)
-#        return value[-1]
-#    except:
-#        return data[-1]
-    return double_exponential_smoother(data)[1]
+    if smoothing:
+        # Smoothen data
+        data = double_exponential_smoother(data)[1]
+    
+    try:
+        model = sm2.tsa.ar_model.AR(data).fit()
+        value = model.predict(len(data), len(data) + 20)
+        return value[-1]
+    except:
+        return data[-1]
 
 
 def continous_single_exponential_smoothed(f_t, data_t, alpha):

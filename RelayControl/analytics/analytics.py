@@ -12,7 +12,6 @@ from workload import profiles, util, plot as wplot
 import configuration
 import csv
 import json
-import math
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -547,6 +546,7 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         # Plot response times        
         for track in domain_track_map[domain]:
             res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            
             ax.plot(res_time, res_resp)
             
         # Add annotations to the trace
@@ -869,7 +869,6 @@ def __analytics_server_utilization(cpu, mem):
     
     _total_cpu = []
     _total_mem = []
-    _violations = 0
     for srv in nodes.NODES: 
         _cpu = np.mean(cpu[srv][0])
         _mem = np.mean(mem[srv][0])
@@ -881,16 +880,13 @@ def __analytics_server_utilization(cpu, mem):
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
         
-        _violations += len(cpu[srv][0][cpu[srv][0] > 99])
-         
-        
     _cpu = np.mean(_total_cpu) # are updated by migration analytics
     _mem = np.mean(_total_mem) # are updated by migration analytics
     
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
     
-    return _cpu, _mem, _violations
+    return _cpu, _mem
  
  
 def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count,
@@ -938,11 +934,10 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
     global_metric_aggregation['migrations_successful'] = (migration_count, 0)
     global_metric_aggregation['min_nodes'] = (min_nodes, 0)
     global_metric_aggregation['max_nodes'] = (max_nodes, 0)
-    global_metric_aggregation['srv_cpu_violations'] = (srv_cpu_violations, 0)
 
     dump = ('server_count', 'cpu_load', 'mem_load', 'total_ops_successful', 'total_operations_failed', 'average_response_time',
              'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold',
-             'migrations_successful', 'min_nodes', 'max_nodes', 'srv_cpu_violations')
+             'migrations_successful', 'min_nodes', 'max_nodes')
     data = []
     for element in dump:
         try:
@@ -1756,7 +1751,7 @@ def connect_sonar(connection):
     print '## AVG CPU,MEM LOAD ##'
     # This approach does only work for static allocations. For dynamic allocations 
     # the _cpu and _mem values are updated by the migration analytics!
-    avg_cpu, avg_mem, violations = __analytics_server_utilization(cpu, mem)
+    avg_cpu, avg_mem = __analytics_server_utilization(cpu, mem)
     min_nodes, max_nodes = '', ''
     
     print '## MIGRATIONS ##'
@@ -1771,7 +1766,7 @@ def connect_sonar(connection):
     
     print '## GLOBAL METRIC AGGREGATION ###'
     __analytics_global_aggregation(_global_metrics, servers, avg_cpu, avg_mem,
-                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes, violations)
+                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes)
     
 
 if __name__ == '__main__':
