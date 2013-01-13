@@ -99,9 +99,18 @@ class Controller(controller.LoadBalancer):
                     
         # Schedule migrations
         from ai import astar
-        astar.plan(nodes.NODE_COUNT, as_current, as_next, domain_load)
+        migrations = astar.plan(nodes.NODE_COUNT, as_current, as_next, domain_load)
         
         # Trigger migrations
+        for migration in migrations:
+            domain_name = domains.domain_profile_mapping[migration[0]].domain
+            source_node = nodes.get_node_name(migration[1])
+            target_node = nodes.get_node_name(migration[2])
+            
+            model_domain = self.model.get_host(domain_name)
+            model_source = self.model.get_host(source_node)
+            model_target = self.model.get_host(target_node)
+            self.migration_queue.add(model_domain, model_source, model_target)
         
     
     def balance(self):
@@ -123,8 +132,8 @@ class Controller(controller.LoadBalancer):
         self.curr_bucket = bucket_index
         
         # Trigger migrations to get new bucket allocation
-        # self.__run_migrations(self.curr_bucket)
-        self.__run_optimized_migrations(self.curr_bucket)
+        self.__run_migrations(self.curr_bucket)
+        # self.__run_optimized_migrations(self.curr_bucket)
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):

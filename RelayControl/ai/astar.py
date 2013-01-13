@@ -315,7 +315,7 @@ def plan(node_count, start, target, domain_load):
         
         for domain, server in enumerate(end.domains):
             if predecessor.domains[domain] != server:
-                migration = (domain, predecessor.domains[domain], domain)
+                migration = (domain, predecessor.domains[domain], server)
                 migrations.append(migration)
                 break
         
