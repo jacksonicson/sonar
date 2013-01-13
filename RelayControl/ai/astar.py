@@ -121,6 +121,9 @@ class ANode(object):
         return (successors, costs)
        
     def __eq__(self, another):
+        if another == None:
+            return False
+        
         return self.domains == another.domains
     
     def __hash__(self):
@@ -282,6 +285,44 @@ def main():
         if end.predecessor is None:
             break
         end = end.predecessor
+
+
+def plan(node_count, start, target, domain_load):
+    # Calulate the nodes load for the start allocation
+    nodes_load = [0 for _ in xrange(node_count)]
+    for i in xrange(len(start)):
+        nodes_load[start[i]] += domain_load[i]
+    
+    # Create A* nodes for the search
+    start = ANode(nodes_load, start, domain_load)
+    target = ANode(nodes_load, target, domain_load)
+    
+    # Create a new mesh with start and target nodes
+    mesh = Mesh()
+    mesh.put(start)
+    mesh.put(target)
+    
+    # Run A*
+    s = AStar()
+    end = s.search(mesh, start, target)
+    
+    # Extract migrations from A*
+    migrations = []
+    while True:
+        predecessor = end.predecessor
+        if end.predecessor == None:
+            break
+        
+        for domain, server in enumerate(end.domains):
+            if predecessor.domains[domain] != server:
+                migration = (domain, predecessor.domains[domain], domain)
+                migrations.append(migration)
+                break
+        
+        end = predecessor
+        
+    print migrations
+    return reversed(migrations)
 
 class Mesh(object):
     def __init__(self):

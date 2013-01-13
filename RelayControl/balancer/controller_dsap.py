@@ -12,7 +12,7 @@ import numpy as np
 ######################
 START_WAIT = 0
 INTERVAL = 60
-NUM_BUCKETS = 6
+NUM_BUCKETS = 24
 CYCLE_DURATION = 6 * 60 * 60  
 ######################
 
@@ -75,6 +75,34 @@ class Controller(controller.LoadBalancer):
             model_target = self.model.get_host(target_node)
             self.migration_queue.add(model_domain, model_source, model_target)
     
+    def __run_optimized_migrations(self, bucket_index):
+        # Create allocations lists for GOAP 
+        # Assignment
+        curr_assignment = self.placement.assignment_list[bucket_index]
+        
+        # Previous assignment
+        prev_assignment = self.placement.assignment_list[(bucket_index - 1) % NUM_BUCKETS]
+        
+        as_current = [0 for _ in xrange(domains.DOMAINS)]
+        as_next = [0 for _ in xrange(domains.DOMAINS)]
+        
+        for index_domain in curr_assignment.keys():
+            as_current[index_domain] = prev_assignment[index_domain]
+            as_next[index_domain] = curr_assignment[index_domain]
+                    
+        # Get current domain loads
+        domain_load = []
+        for mapping in domains.domain_profile_mapping:
+            domain_name = mapping.domain
+            load = self.model.get_host(domain_name).mean_load(20) # TODO: KValue
+            domain_load.append(nodes.to_node_load(load))
+                    
+        # Schedule migrations
+        from ai import astar
+        astar.plan(nodes.NODE_COUNT, as_current, as_next, domain_load)
+        
+        # Trigger migrations
+        
     
     def balance(self):
         # Current bucket index
@@ -95,7 +123,8 @@ class Controller(controller.LoadBalancer):
         self.curr_bucket = bucket_index
         
         # Trigger migrations to get new bucket allocation
-        self.__run_migrations(self.curr_bucket)
+        # self.__run_migrations(self.curr_bucket)
+        self.__run_optimized_migrations(self.curr_bucket)
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
