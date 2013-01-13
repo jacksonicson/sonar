@@ -135,6 +135,8 @@ class Imbalance():
             
         if len(migrations) != 0:
             return True
+        
+        return False
             
     def normalized_cpu(self, node):
         # Calculate normalized cpu of a node        

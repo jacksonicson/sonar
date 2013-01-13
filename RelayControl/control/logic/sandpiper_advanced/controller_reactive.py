@@ -66,6 +66,7 @@ class Reactive():
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
+        migration_triggered = False
         for node in nodes:
             node.dump()
             
@@ -85,7 +86,9 @@ class Reactive():
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, False)
                         self.migrate_overload(node, nodes, source, domain, time_now, sleep_time, True)
                             
-            except StopIteration: pass 
+            except StopIteration: 
+                migration_triggered = True
+                pass 
             
             try:
                 # Underload  situation
@@ -103,10 +106,11 @@ class Reactive():
                         self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, False)
                         self.migrate_underload(node, nodes, source, domain, time_now, sleep_time, True)
                        
-            except StopIteration: pass
+            except StopIteration: 
+                migration_triggered = True
+                pass
         
-        #TODO
-        return True
+        return migration_triggered
   
     def migrate_overload(self, node, nodes, source, domain, time_now, sleep_time, empty):
         # Try all targets for the migration (reversed - starting at the BOTTOM)
@@ -125,8 +129,6 @@ class Reactive():
             if test: 
                 migration_type = 'Overload (Empty=%s)' % (empty)
                 self.migration_scheduler.add_migration(domain, source, target, migration_type) 
-                #TODO
-                self.migration_triggered = True
                 raise StopIteration()
         
     def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, empty):
@@ -146,5 +148,4 @@ class Reactive():
             if test: 
                 migration_type = 'Underload (Empty=%s)' % (empty)
                 self.migration_scheduler.add_migration(domain, source, target, migration_type)                          
-                self.migration_triggered = True
                 raise StopIteration()

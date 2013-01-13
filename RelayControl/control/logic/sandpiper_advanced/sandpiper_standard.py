@@ -77,16 +77,15 @@ class Sandpiper(controller.LoadBalancer):
             migration_triggered = handler(time_now, sleep_time)
             if migration_triggered: 
                 return
-        
 
     def imbalance_controller(self, time_now, sleep_time):
         imbalance_controller = controller_imbalance.Imbalance(self.model, self.migration_scheduler)
-        imbalance_controller.migrate_imbalance(time_now, sleep_time)
+        return imbalance_controller.migrate_imbalance(time_now, sleep_time)
     
     def reactive_controller(self, time_now, sleep_time):
         reactive_controller = controller_reactive.Reactive(self.model, self.migration_scheduler)
-        reactive_controller.migrate_reactive(time_now, sleep_time)
+        return reactive_controller.migrate_reactive(time_now, sleep_time)
         
     def swap_controller(self, time_now, sleep_time):
         swap_controller = controller_swap.Swap(self.model, self.migration_scheduler)
-        swap_controller.migrate_swap(time_now, sleep_time)
+        return swap_controller.migrate_swap(time_now, sleep_time)

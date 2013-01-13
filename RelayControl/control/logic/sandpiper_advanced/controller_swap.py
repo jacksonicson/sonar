@@ -66,6 +66,7 @@ class Swap():
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
+        migration_triggered = False
         for node in nodes:
             node.dump()
             
@@ -122,14 +123,13 @@ class Swap():
                                 
                                 if test:
                                     self.migration_scheduler.add_migration(domain, source, target_node, 'Swap Part 1')
-                                    #TODO
-                                    self.migration_triggered = True
                                     for target_domain in targets:
                                         self.migration_scheduler.add_migration(target_domain, target_node, source, 'Swap Part 2')
                                     
                                     raise StopIteration() 
                             
-            except StopIteration: pass 
+            except StopIteration: 
+                migration_triggered = True
+                pass 
         
-        #TODO
-        return True
+        return migration_triggered
