@@ -99,7 +99,11 @@ class __Host(object):
                                                                        reading.value)
         else:
             self.globalCounter += 1
-            
+    
+#    def __eq__(self, other):
+#        if other == None:
+#            return
+#        return other.name == self.name        
     
     def forecast(self):
         return self.f_t

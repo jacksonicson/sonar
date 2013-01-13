@@ -288,6 +288,9 @@ def main():
 
 
 def plan(node_count, start, target, domain_load):
+    print start
+    print target
+    
     # Calulate the nodes load for the start allocation
     nodes_load = [0 for _ in xrange(node_count)]
     for i in xrange(len(start)):

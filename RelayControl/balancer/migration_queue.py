@@ -14,7 +14,6 @@ class Entry(object):
         test &= self.domain == other.domain
         test &= self.source == other.source
         test &= self.target == other.target
-        test &= self.depends == other.depends
         return test
         
 

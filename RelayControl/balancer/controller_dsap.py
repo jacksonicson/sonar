@@ -86,7 +86,7 @@ class Controller(controller.LoadBalancer):
         as_current = [0 for _ in xrange(domains.DOMAINS)]
         as_next = [0 for _ in xrange(domains.DOMAINS)]
         
-        for index_domain in curr_assignment.keys():
+        for index_domain in xrange(domains.DOMAINS):
             as_current[index_domain] = prev_assignment[index_domain]
             as_next[index_domain] = curr_assignment[index_domain]
                     
@@ -102,15 +102,20 @@ class Controller(controller.LoadBalancer):
         migrations = astar.plan(nodes.NODE_COUNT, as_current, as_next, domain_load)
         
         # Trigger migrations
+        dep = None
         for migration in migrations:
             domain_name = domains.domain_profile_mapping[migration[0]].domain
             source_node = nodes.get_node_name(migration[1])
             target_node = nodes.get_node_name(migration[2])
             
+            print 'domain %s - source %s - target %s' % (domain_name, source_node, target_node) 
+            
             model_domain = self.model.get_host(domain_name)
             model_source = self.model.get_host(source_node)
             model_target = self.model.get_host(target_node)
-            self.migration_queue.add(model_domain, model_source, model_target)
+            dep = self.migration_queue.add(model_domain, model_source, model_target, dep)
+        
+        return 
         
     
     def balance(self):
@@ -124,8 +129,8 @@ class Controller(controller.LoadBalancer):
 
         # Schedule migrations only once per bucket
         if self.curr_bucket == bucket_index:
-            if self.migration_queue.empty():
-                self.__run_migrations(self.curr_bucket)
+#            if self.migration_queue.empty():
+#                self.__run_migrations(self.curr_bucket)
             return
         
         # Update current bucket status
