@@ -7,6 +7,7 @@ from control import domains
 import numpy as np
 import scoreboard
 import sys
+from workload.profiles import RAMP_UP
 
 ##########################
 ## CONFIGURATION        ##
@@ -18,6 +19,8 @@ NOISE_SIGMA = 1.0
 
 MIGRATION_SOURCE = 13 
 MIGRATION_TARGET = 17
+
+RAM_UP = 10 * 60
 ##########################
 
 class Driver:
@@ -80,6 +83,9 @@ class Driver:
         # self.freq = (freq * 6.0) / 24.0
         self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
         
+        # Calculate ramp up delete time
+        self.ramp_up = RAMP_UP / self.freq
+        
         # Schedule message pump
         self.pump.callLater(0, self.run)
      
@@ -100,8 +106,8 @@ class Driver:
     def run(self):
         # Index for simulation time
         sim_time = self.pump.sim_time() 
-        tindex = (sim_time / self.freq)
-        if tindex >= self.min_ts_length:
+        tindex = (sim_time / self.freq) + self.ramp_up
+        if tindex >= (self.min_ts_length - self.ramp_up):
             print 'Driver exited!'
             print 'Shutting down simulation...'
             scoreboard.Scoreboard().close() 
@@ -135,10 +141,10 @@ class Driver:
             
             # Add Migration overheads
             if host.active_migrations_out: 
-                aggregated_load += MIGRATION_SOURCE
+                aggregated_load += host.active_migrations_out * MIGRATION_SOURCE
             
             if host.active_migrations_in:
-                aggregated_load += MIGRATION_TARGET 
+                aggregated_load += host.active_migrations_in * MIGRATION_TARGET 
             
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             

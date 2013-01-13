@@ -259,7 +259,7 @@ class SSAPvPlacement(Placement):
   
 class DSAPPlacement(Placement):
 
-    def execute(self, num_buckets):
+    def execute(self, num_buckets, aggregation):
         from workload import util
                 
         # Execute super code
@@ -302,7 +302,7 @@ class DSAPPlacement(Placement):
                 start = i * elements
                 end = min(ts_len, (i+1) * elements) 
                 tmp = data[start : end]
-                buckets.append(np.mean(tmp))
+                buckets.append(aggregation(tmp))
     
             domain_matrix[domain_index] = buckets
             # print data

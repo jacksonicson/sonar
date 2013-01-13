@@ -5,13 +5,15 @@ import control.domains as domains
 import controller
 import json
 import virtual.placement as placement
+import numpy as np
 
 ######################
 # # CONFIGURATION    ##
 ######################
 START_WAIT = 0
 INTERVAL = 60
-NUM_BUCKETS = 12
+NUM_BUCKETS = 6
+CYCLE_DURATION = 6 * 60 * 60  
 ######################
 
 # Setup logging
@@ -29,16 +31,14 @@ class Controller(controller.LoadBalancer):
         nodecount = len(nodes.NODES)
         self.placement = placement.DSAPPlacement(nodecount, nodes.NODE_CPU,
                                                  nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS)
+        self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS, 
+                                                            lambda x: np.percentile(x, 100))
             
         # Current bucket
         self.curr_bucket = 0
         
-        # Allocation cycle duration
-        self.time_per_bucket = self.placement.experiment_length / NUM_BUCKETS
-        
         # Initialization time
-        self.time_init = self.pump.sim_time()
+        self.time_null = self.pump.sim_time()
         
     def dump(self):
         print 'DSAP controller - Dump configuration...'
@@ -78,8 +78,10 @@ class Controller(controller.LoadBalancer):
     
     def balance(self):
         # Current bucket index
-        bucket_index = int((self.pump.sim_time() - self.time_init) / self.time_per_bucket)
+        bucket_duration = CYCLE_DURATION / NUM_BUCKETS
+        bucket_index = int((self.pump.sim_time() - self.time_null) / bucket_duration)
         #bucket_index %= NUM_BUCKETS
+        print 'bucket index %i' % bucket_index
         if bucket_index >= NUM_BUCKETS:
             return
 
