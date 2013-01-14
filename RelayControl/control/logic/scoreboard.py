@@ -55,11 +55,7 @@ class Scoreboard(object):
             self.underload_migrations +=1
             return
         if migration_type == 'Swap Part 1':
-            self.swaps +=1           
-            
-        print migration_type
-        import time
-        time.sleep(3)
+            self.swaps +=1      
     
     def add_cpu_violations(self, violations):
         if not self.closed:

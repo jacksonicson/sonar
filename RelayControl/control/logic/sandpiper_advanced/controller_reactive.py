@@ -41,7 +41,6 @@ class Reactive():
             node.overloaded = overload
             node.underloaded = underload
             
-            
         ############################################
         ## MIGRATION MANAGER #######################
         ############################################
@@ -62,7 +61,6 @@ class Reactive():
         # Multiplication with a big value to shift post comma digits to the front (integer)
         nodes.sort(lambda a, b: int((b.volume - a.volume) * 100000))
        
-        
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################

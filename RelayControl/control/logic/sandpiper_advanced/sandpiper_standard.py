@@ -17,7 +17,6 @@ class Sandpiper(controller.LoadBalancer):
     def __init__(self, pump, model):
         super(Sandpiper, self).__init__(pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
         self.migration_scheduler = migration_scheduler.MigrationScheduler(self)
-        
         self.controller_handlers = []
         for setting in configuration_advanced.CONTROLLER_SEQ:
             if setting == 'imbalance':
