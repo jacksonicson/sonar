@@ -17,11 +17,17 @@ class Entry(object):
         return test
         
 
-class MigrationQueue():
+class MigrationQueue(object):
     
-    def __init__(self, controller):
+    def __init__(self, controller, double=False, restrict=False):
         # Reference to the controller
         self.controller = controller
+        
+        # Restirct double migrations
+        self.double = double
+        
+        # Restirct parallelity
+        self.restrict = restrict
         
         # Migration queue
         self.waiting = []
@@ -58,13 +64,29 @@ class MigrationQueue():
         print 'Scheduling migrations...'
         
         to_trigger = []
-        for migration in self.waiting:
+        for i, migration in enumerate(self.waiting):
             
             # Check if complies with running migrations
             skip = False
-            for test in self.running:
-                # One outgoing migration per server
-                skip |= test.source == migration.source
+            
+            if self.double:
+                for test in self.running:
+                    # One outgoing migration per server
+                    skip |= test.source == migration.source
+
+            # Check if migration intersects with previous migrations
+            if self.restrict:
+                to_check = []
+                to_check.extend(self.waiting[:i])
+                to_check.extend(self.running)
+                for previous in to_check:
+                    test = False
+                    test |= previous.domain == migration.domain
+                    test |= previous.source == migration.source
+                    test |= previous.target == migration.target
+                    
+                    # Update skip 
+                    skip |= test
 
             # Check dependencies
             if migration.depends != None: 
@@ -82,6 +104,9 @@ class MigrationQueue():
             self.waiting.remove(migration)
             self.controller.migrate(migration.domain, migration.source,
                                     migration.target, 20)
+            
+        if len(self.running) > 1:
+            print 'parallel: %i' % len(self.running)
             
   
 if __name__ == '__main__':

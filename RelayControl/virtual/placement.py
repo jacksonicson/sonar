@@ -20,7 +20,7 @@ class Placement(object):
         self.domain_demand_mem = domain_demand_mem
     
     def _count_active_servers(self, assignment):
-        buckets = [True for _ in xrange(len(nodes.HOSTS))]
+        buckets = [True for _ in xrange(len(nodes.NODES))]
         active_servers = 0
         active_server_list = []
         for service in assignment.keys():
