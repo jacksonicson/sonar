@@ -48,10 +48,10 @@ class Controller(controller.LoadBalancer):
             node_to.flush(50)
             
             # Remove migration from queue
-            self.migration_scheduler.finish_migration(success, domain, node_from, node_to)
+            self.migration_scheduler.finished(success, domain, node_from, node_to)
         else:
             # Remove migration from queue
-            self.migration_scheduler.finish_migration(success, domain, node_from, node_to)
+            self.migration_scheduler.finished(success, domain, node_from, node_to)
 
             time_now = self.pump.sim_time()
             node_from.blocked = time_now

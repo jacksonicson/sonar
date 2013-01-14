@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'dsap'
+CONTROLLER = 'reactive'
 SIM_ITERATIONS = 1
 ######################
 

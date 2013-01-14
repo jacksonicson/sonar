@@ -1,5 +1,5 @@
-from control.logic.model import types
-from control.logic import util
+from balancer.model import types
+from virtual import nodes as nodesv
 import math
 import numpy
 import configuration_advanced
@@ -31,7 +31,7 @@ class Imbalance():
             for domain in node.domains.values():            
                 new_domain = Host()
                 new_domain.name = domain.name
-                new_domain.cpu = util.domain_to_server_cpu(node, domain, domain.percentile_load(self.PERCENTILE, self.K_VALUE))
+                new_domain.cpu = nodesv.to_node_load(domain.percentile_load(self.PERCENTILE, self.K_VALUE))
                 new_domain.source = node.name
                 node_domains[domain.name] = new_domain
                 domains[domain.name] = new_domain
@@ -71,7 +71,7 @@ class Imbalance():
                     # calculate new cpu
                     target_node = self.model.get_host(node.name)
                     target_domain = self.model.get_host(domain.name)
-                    new_domain_cpu = util.domain_to_server_cpu(target_node, target_domain, target_domain.percentile_load(self.PERCENTILE, self.K_VALUE))
+                    new_domain_cpu = nodesv.to_node_load(target_domain.percentile_load(self.PERCENTILE, self.K_VALUE))
                     old_domain_cpu = domain.cpu
                     domain.cpu = new_domain_cpu
                     target_threshold = node.cpu + new_domain_cpu
@@ -131,7 +131,7 @@ class Imbalance():
       
         # migrate domains that improve imbalance
         for migration in migrations.itervalues():            
-            self.migration_scheduler.add_migration(migration.domain, migration.source, migration.target, 'Imbalance') 
+            self.migration_scheduler.add(migration.domain, migration.source, migration.target, description='Imbalance') 
             
         if len(migrations) != 0:
             return True

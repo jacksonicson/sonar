@@ -1,6 +1,6 @@
-from control.logic.model import types
-from control.logic import util
+from balancer.model import types
 import configuration_advanced
+from virtual import nodes as nodesv
 
 class Reactive():
     
@@ -119,7 +119,7 @@ class Reactive():
                 continue
                              
             test = True
-            test &= (target.percentile_load(self.PERCENTILE, self.K_VALUE) + util.domain_to_server_cpu(target, domain, domain.percentile_load(self.PERCENTILE, self.K_VALUE))) < self.THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(self.PERCENTILE, self.K_VALUE) + nodesv.to_node_load(domain.percentile_load(self.PERCENTILE, self.K_VALUE))) < self.THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
@@ -138,7 +138,7 @@ class Reactive():
                 continue
             
             test = True
-            test &= (target.percentile_load(self.PERCENTILE, self.K_VALUE) + util.domain_to_server_cpu(target, domain, domain.percentile_load(self.PERCENTILE, self.K_VALUE))) < self.THRESHOLD_OVERLOAD # Overload threshold
+            test &= (target.percentile_load(self.PERCENTILE, self.K_VALUE) + nodesv.to_node_load(domain.percentile_load(self.PERCENTILE, self.K_VALUE))) < self.THRESHOLD_OVERLOAD # Overload threshold
             test &= len(target.domains) < 6
             test &= (time_now - target.blocked) > sleep_time
             test &= (time_now - source.blocked) > sleep_time
