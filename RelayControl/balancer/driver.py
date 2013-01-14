@@ -5,7 +5,6 @@ from workload import profiles, util as wutil
 from workload.timeutil import * #@UnusedWildImport
 from control import domains
 import numpy as np
-import scoreboard
 import sys
 from workload.profiles import RAMP_UP
 
@@ -26,7 +25,10 @@ RAM_UP = 10 * 60
 class Driver:
     
     # The default settings are estimations of the real world infrastructure
-    def __init__(self, pump, model, handler, report_rate=3):
+    def __init__(self, scoreboard, pump, model, handler, report_rate=3):
+        # Reference to scoreboard
+        self.scoreboard = scoreboard 
+        
         # Reference to the message pump
         self.pump = pump
 
@@ -110,12 +112,12 @@ class Driver:
         if tindex >= (self.min_ts_length - self.ramp_up):
             print 'Driver exited!'
             print 'Shutting down simulation...'
-            scoreboard.Scoreboard().close() 
+            self.scoreboard.Scoreboard().close() 
             self.pump.stop()
             return
         
         # Update slot count in scoreboard
-        scoreboard.Scoreboard().update_slot_count()
+        self.scoreboard.Scoreboard().update_slot_count()
         
         # For all nodes update their domains and aggregate the load for the node
         for host in self.model.get_hosts(self.model.types.NODE):
@@ -133,7 +135,7 @@ class Driver:
                 aggregated_load += nodes.to_node_load(load)
                                 
                 # Update aggregated cpu load
-                scoreboard.Scoreboard().add_cpu_load(load)
+                self.scoreboard.Scoreboard().add_cpu_load(load)
 
             # Add hypervisor load to the aggregated load
             # For the SSAPv this causes service level violations
@@ -150,7 +152,7 @@ class Driver:
             
             # Update overload counter
             if aggregated_load > 100:
-                scoreboard.Scoreboard().add_cpu_violations(1)
+                self.scoreboard.Scoreboard().add_cpu_violations(1)
                 
         
         # Whole simulation might run accelerated

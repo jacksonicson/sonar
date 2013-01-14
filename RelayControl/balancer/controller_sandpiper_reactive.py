@@ -22,8 +22,8 @@ logger = sonarlog.getLogger('controller')
 
 class Controller(controller.LoadBalancer):
     
-    def __init__(self, pump, model):
-        super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
+    def __init__(self, scoreboard, pump, model):
+        super(Controller, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'

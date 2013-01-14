@@ -14,8 +14,8 @@ logger = sonarlog.getLogger('controller')
 
 class Controller(controller.LoadBalancer):
     
-    def __init__(self, pump, model):
-        super(Controller, self).__init__(pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
+    def __init__(self, scoreboard, pump, model):
+        super(Controller, self).__init__(scoreboard, pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
         self.migration_scheduler = migration_queue.MigrationQueue(self)
         
         self.controller_handlers = []

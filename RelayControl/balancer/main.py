@@ -106,19 +106,19 @@ def main(controller):
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
-        controller = controller_sandpiper_reactive.Controller(pump, model)
+        controller = controller_sandpiper_reactive.Controller(scoreboard, pump, model)
     elif controller == 'proactive':
-        controller = controller_sandpiper_proactive.Controller(pump, model)
+        controller = controller_sandpiper_proactive.Controller(scoreboard, pump, model)
     elif controller == 'round':
-        controller = controller_rr.Controller(pump, model)
+        controller = controller_rr.Controller(scoreboard, pump, model)
     elif controller == 'file':
-        controller = controller_file.Controller(pump, model)
+        controller = controller_file.Controller(scoreboard, pump, model)
     elif controller == 'sandpiper':
-        controller = controller_sandpiper_standard.Controller(pump, model)
+        controller = controller_sandpiper_standard.Controller(scoreboard, pump, model)
     elif controller == 'ssapv': 
-        controller = controller_ssapv.Controller(pump, model)
+        controller = controller_ssapv.Controller(scoreboard, pump, model)
     elif controller == 'dsap':
-        controller = controller_dsap.Controller(pump, model)
+        controller = controller_dsap.Controller(scoreboard, pump, model)
     else:
         print 'No controller defined'
         return
@@ -141,7 +141,7 @@ def main(controller):
     else:
         # Start the driver thread which simulates Sonar
         import driver
-        driver = driver.Driver(pump, model, handler)
+        driver = driver.Driver(scoreboard, pump, model, handler)
         driver.start()
     
     # Start controller

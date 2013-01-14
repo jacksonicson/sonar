@@ -4,7 +4,6 @@ from virtual import nodes, placement
 import configuration
 import json
 import numpy as np
-from balancer import scoreboard
 
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
@@ -14,6 +13,7 @@ Simulates the wait time for a transaction.
 '''
 class SimulatedMigration:
     def __init__(self, pump, domain, node_from, node_to, migration_callback, info):
+        # Reference to message pump
         self.pump = pump
         
         # Callback handler
@@ -49,8 +49,11 @@ class SimulatedMigration:
         
 
 class LoadBalancer(object):
-    def __init__(self, pump, model, interval, start_wait):
+    def __init__(self, scoreboard, pump, model, interval, start_wait):
         super(LoadBalancer, self).__init__()
+        
+        # Reference to scoreboard
+        self.scoreboard = scoreboard
         
         # Reference to the message pump
         self.pump = pump 
@@ -154,7 +157,7 @@ class LoadBalancer(object):
                                                        'timestamp' : self.pump.sim_time()}))
         
         # Update scoreboard
-        sb = scoreboard.Scoreboard()
+        sb = self.scoreboard.Scoreboard()
         sb.add_active_info(active_server_info[0], self.pump.sim_time())
         
         
@@ -210,7 +213,7 @@ class LoadBalancer(object):
         # Dump scoreboard information 
         if not configuration.PRODUCTION:
             print 'Scoreboard:'      
-            sb = scoreboard.Scoreboard()
+            sb = self.scoreboard.Scoreboard()
             sb.dump(self.pump)
             
         # Wait for next control cycle
