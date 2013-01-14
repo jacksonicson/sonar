@@ -14,7 +14,7 @@ DOMAIN_MEM = 2048 + 100 # MByte (domain memory  + KVM overhead estimated)
 NODE_CPU = 200 # Has space for two dual core VMs
 ######################
 
-NODES = HOSTS = []
+NODES = []
 for i in xrange(NODE_COUNT):
     NODES.append('srv%i' % i)
 
