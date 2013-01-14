@@ -5,7 +5,7 @@ import configuration as config
 import json
 import model
 import msgpump
-import scoreboard
+from balancer import scoreboard
 import time
 
 '''
@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'file'
+CONTROLLER = 'reactive'
 SIM_ITERATIONS = 1
 ######################
 
@@ -92,9 +92,6 @@ def heartbeat(pump):
     print 'Message pump started'
 
 def main(controller):
-    # Flush scoreboard
-    scoreboard.Scoreboard().flush()
-    
     # New message pump
     pump = msgpump.Pump(heartbeat)
     
@@ -164,14 +161,19 @@ if __name__ == '__main__':
         name = '%s - %s' % (profiles.config.name, CONTROLLER)
         lines = []
         for i in xrange(0, SIM_ITERATIONS):
+            # Flush scoreboard
+            scoreboard.Scoreboard().flush()
+            
+            # Recreate domains
             domains.recreate()
             
+            # Run controller
             pump = main(CONTROLLER)
-            res = scoreboard.Scoreboard().get_result_line(pump)
             
+            # Get scoreboard statistics
+            res = scoreboard.Scoreboard().get_result_line(pump)
             scoreboard.Scoreboard().dump(pump)
             lines.append(res)
-            print res
 
         print 'Results: %s' % name        
         for line in lines:

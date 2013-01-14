@@ -4,7 +4,7 @@ from virtual import nodes, placement
 import configuration
 import json
 import numpy as np
-import scoreboard
+from balancer import scoreboard
 
 # Setup Sonar logging
 logger = sonarlog.getLogger('controller')
