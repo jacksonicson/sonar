@@ -1,42 +1,36 @@
-from balancer.model import types
+from control.logic.model import types
+from control.logic import util
+import configuration_advanced
 
 class Swap():
     
-    def __init__(self, controller, threshold_overload, threshold_underload, percentile, k_value, m_value):
-        self.controller = controller
+    def __init__(self, model, migration_scheduler):
+        self.model = model
+        self.migration_scheduler = migration_scheduler
         
-        global THRESHOLD_OVERLOAD 
-        THRESHOLD_OVERLOAD = threshold_overload
-                
-        global THRESHOLD_UNDERLOAD
-        THRESHOLD_UNDERLOAD = threshold_underload
-        
-        global PERCENTILE 
-        PERCENTILE = percentile
-        
-        global K_VALUE
-        K_VALUE = k_value
-        
-        global M_VALUE
-        M_VALUE = m_value
+        self.THRESHOLD_OVERLOAD = configuration_advanced.THRESHOLD_OVERLOAD
+        self.THRESHOLD_UNDERLOAD = configuration_advanced.THRESHOLD_UNDERLOAD
+        self.PERCENTILE = configuration_advanced.PERCENTILE
+        self.K_VALUE = configuration_advanced.K_VALUE
+        self.M_VALUE = configuration_advanced.M_VALUE
         
     def migrate_swap(self, time_now, sleep_time):
         ############################################
         ## HOTSPOT DETECTOR ########################
         ############################################
-        for node in self.controller.model.get_hosts(types.NODE):
+        for node in self.model.get_hosts(types.NODE):
             # Check past readings
             readings = node.get_readings()
             
             # m out of the k last measurements are used to detect overloads 
-            k = K_VALUE
+            k = self.K_VALUE
             overload = 0
             underload = 0
             for reading in readings[-k:]:
-                if reading > THRESHOLD_OVERLOAD: overload += 1
-                if reading < THRESHOLD_UNDERLOAD: underload += 1
+                if reading > self.THRESHOLD_OVERLOAD: overload += 1
+                if reading < self.THRESHOLD_UNDERLOAD: underload += 1
 
-            m = M_VALUE
+            m = self.M_VALUE
             overload = (overload >= m)
             underload = (underload >= m)
              
@@ -54,8 +48,8 @@ class Swap():
         # Calculate volumes of each node
         nodes = []
         domains = []
-        for node in self.controller.model.get_hosts():
-            volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
+        for node in self.model.get_hosts():
+            volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(self.PERCENTILE, k)) / 100.0)
             node.volume = volume
             node.volume_size = volume / 8.0 # 8 GByte
             
@@ -72,6 +66,7 @@ class Swap():
         ############################################
         ## MIGRATION TRIGGER #######################
         ############################################
+        migration_triggered = False
         for node in nodes:
             node.dump()
             
@@ -110,28 +105,31 @@ class Swap():
                                     targets.append(target_domains[i])                
                 
                                 # Calculate new loads
-                                new_target_node_load = target_node.percentile_load(PERCENTILE, k) + nodes.domain_to_server_cpu(target_node, domain, domain.percentile_load(PERCENTILE, k))
-                                new_source_node_load = node.percentile_load(PERCENTILE, k) - nodes.domain_to_server_cpu(node, domain, domain.percentile_load(PERCENTILE, k))
+                                new_target_node_load = target_node.percentile_load(self.PERCENTILE, k) + util.domain_to_server_cpu(target_node, domain, domain.percentile_load(self.PERCENTILE, k))
+                                new_source_node_load = node.percentile_load(self.PERCENTILE, k) - util.domain_to_server_cpu(node, domain, domain.percentile_load(self.PERCENTILE, k))
                               
                                 for target_domain in targets:
-                                    tmp_load = target_domain.percentile_load(PERCENTILE, k)
-                                    new_target_node_load -= nodes.domain_to_server_cpu(target_node, target_domain, tmp_load)
-                                    new_source_node_load += nodes.domain_to_server_cpu(node, target_domain, tmp_load)                              
+                                    tmp_load = target_domain.percentile_load(self.PERCENTILE, k)
+                                    new_target_node_load -= util.domain_to_server_cpu(target_node, target_domain, tmp_load)
+                                    new_source_node_load += util.domain_to_server_cpu(node, target_domain, tmp_load)                              
                                 
                                 #Test if swap violates rules
                                 test = True
-                                test &= new_target_node_load < THRESHOLD_OVERLOAD
-                                test &= new_source_node_load < THRESHOLD_OVERLOAD 
+                                test &= new_target_node_load < self.THRESHOLD_OVERLOAD
+                                test &= new_source_node_load < self.THRESHOLD_OVERLOAD 
                                 test &= len(node.domains) < 6
                                 test &= (time_now - target_node.blocked) > sleep_time
                                 test &= (time_now - source.blocked) > sleep_time
                                 
                                 if test:
-                                    self.controller.migration_scheduler.add_migration(domain, source, target_node, 'Swap Part 1')
-                                    self.controller.migration_triggered = True
+                                    self.migration_scheduler.add_migration(domain, source, target_node, 'Swap Part 1')
                                     for target_domain in targets:
-                                        self.controller.migration_scheduler.add_migration(target_domain, target_node, source, 'Swap Part 2')
+                                        self.migration_scheduler.add_migration(target_domain, target_node, source, 'Swap Part 2')
                                     
                                     raise StopIteration() 
                             
-            except StopIteration: pass 
+            except StopIteration: 
+                migration_triggered = True
+                pass 
+        
+        return migration_triggered

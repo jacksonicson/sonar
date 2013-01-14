@@ -1,36 +1,13 @@
-from logs import sonarlog
-import json
 from balancer import controller
 from virtual import placement
-from balancer import migration_queue
+from logs import sonarlog
+from virtual import nodes
+import configuration_advanced
 import controller_imbalance
 import controller_reactive
 import controller_swap
-from virtual import nodes
-
-######################
-## CONFIGURATION    ##
-######################
-START_WAIT = 120
-INTERVAL = 300
-THRESHOLD_OVERLOAD = 90
-THRESHOLD_UNDERLOAD = 40
-PERCENTILE = 80.0
-THRESHOLD_IMBALANCE = 0.12
-MIN_IMPROVEMENT_IMBALANCE = 0.01
-NODE_CAPACITY = 100 #to be checked
-K_VALUE = 20 # sliding windows size
-M_VALUE = 17 # m values out of the window k must be above or below the threshold
-
-# MIXED CONTROLLER SETTINGS
-# Values can be 'imbalance', 'reactive', 'swap' or ''
-CONTROLLER_SETTINGS = {
-'first_controller' : 'imbalance',
-'second_controller' : 'reactive',
-'third_controller' : 'swap'
-}
-
-######################
+from balancer import migration_queue
+import json
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -38,20 +15,17 @@ logger = sonarlog.getLogger('controller')
 class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
+        super(Controller, self).__init__(pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
         self.migration_scheduler = migration_queue.MigrationQueue(self)
-        self.migration_triggered = False
-        self.controller_setup = {}
         
-        for position,setting in CONTROLLER_SETTINGS.iteritems():
+        self.controller_handlers = []
+        for setting in configuration_advanced.CONTROLLER_SEQ:
             if setting == 'imbalance':
-                self.controller_setup[position] = self.imbalance_controller
+                self.controller_handlers.append(self.imbalance_controller)
             elif setting == 'reactive':
-                self.controller_setup[position] = self.reactive_controller
+                self.controller_handlers.append(self.reactive_controller)
             elif setting == 'swap':
-                self.controller_setup[position] = self.swap_controller
-            else:
-                self.controller_setup[position] = self.static_controller
+                self.controller_handlers.append(self.swap_controller)
             
     def initial_placement_sim(self):
         nodecount = len(nodes.HOSTS)
@@ -86,45 +60,32 @@ class Controller(controller.LoadBalancer):
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
-                                                                 'start_wait' : START_WAIT,
-                                                                 'interval' : INTERVAL,
-                                                                 'threshold_overload' : THRESHOLD_OVERLOAD,
-                                                                 'threshold_underload' : THRESHOLD_UNDERLOAD,
-                                                                 'percentile' : PERCENTILE,
-                                                                 'k_value' :K_VALUE,
-                                                                 'm_value' : M_VALUE
+                                                                 'start_wait' : configuration_advanced.START_WAIT,
+                                                                 'interval' : configuration_advanced.INTERVAL,
+                                                                 'threshold_overload' : configuration_advanced.THRESHOLD_OVERLOAD,
+                                                                 'threshold_underload' : configuration_advanced.THRESHOLD_UNDERLOAD,
+                                                                 'percentile' : configuration_advanced.PERCENTILE,
+                                                                 'k_value' : configuration_advanced.K_VALUE,
+                                                                 'm_value' : configuration_advanced.M_VALUE
                                                                  }))    
     
     def balance(self):
         sleep_time = 60
         time_now = self.pump.sim_time()
         
-        self.migration_triggered = False
-        
-        self.controller_setup['first_controller'](time_now, sleep_time, K_VALUE)
-        if self.migration_triggered:
-            return
-        
-        self.controller_setup['second_controller'](time_now, sleep_time, K_VALUE)
-        if self.migration_triggered:
-            return
-        
-        self.controller_setup['third_controller'](time_now, sleep_time, K_VALUE)
+        for handler in self.controller_handlers:
+            migration_triggered = handler(time_now, sleep_time)
+            if migration_triggered: 
+                return
 
-    def imbalance_controller(self, time_now, sleep_time, k):
-        imbalance_controller = controller_imbalance.Imbalance(self, PERCENTILE, THRESHOLD_IMBALANCE, MIN_IMPROVEMENT_IMBALANCE, THRESHOLD_OVERLOAD, NODE_CAPACITY)
-        imbalance_controller.migrate_imbalance(time_now, sleep_time, k)
-
+    def imbalance_controller(self, time_now, sleep_time):
+        imbalance_controller = controller_imbalance.Imbalance(self.model, self.migration_scheduler)
+        return imbalance_controller.migrate_imbalance(time_now, sleep_time)
     
-    def reactive_controller(self, time_now, sleep_time, K_VALUE):
-        reactive_controller = controller_reactive.Reactive(self, THRESHOLD_OVERLOAD, THRESHOLD_UNDERLOAD, PERCENTILE, K_VALUE, M_VALUE)
-        reactive_controller.migrate_reactive(time_now, sleep_time)
+    def reactive_controller(self, time_now, sleep_time):
+        reactive_controller = controller_reactive.Reactive(self.model, self.migration_scheduler)
+        return reactive_controller.migrate_reactive(time_now, sleep_time)
         
-    def swap_controller(self, time_now, sleep_time, K_VALUE):
-        swap_controller = controller_swap.Swap(self, THRESHOLD_OVERLOAD, THRESHOLD_UNDERLOAD, PERCENTILE, K_VALUE, M_VALUE)
-        swap_controller.migrate_swap(time_now, sleep_time)
-
-    def static_controller(self, time_now, sleep_time, K_VALUE):
-        # DO NOTHING
-        return
-    
+    def swap_controller(self, time_now, sleep_time):
+        swap_controller = controller_swap.Swap(self.model, self.migration_scheduler)
+        return swap_controller.migrate_swap(time_now, sleep_time)
