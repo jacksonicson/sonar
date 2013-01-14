@@ -1,6 +1,6 @@
-from control.logic.model import types
-from control.logic import util
+from balancer.model import types
 import configuration_advanced
+from virtual import nodes
 
 class Swap():
     
@@ -105,13 +105,13 @@ class Swap():
                                     targets.append(target_domains[i])                
                 
                                 # Calculate new loads
-                                new_target_node_load = target_node.percentile_load(self.PERCENTILE, k) + util.domain_to_server_cpu(target_node, domain, domain.percentile_load(self.PERCENTILE, k))
-                                new_source_node_load = node.percentile_load(self.PERCENTILE, k) - util.domain_to_server_cpu(node, domain, domain.percentile_load(self.PERCENTILE, k))
+                                new_target_node_load = target_node.percentile_load(self.PERCENTILE, k) + nodes.domain_to_server_cpu(target_node, domain, domain.percentile_load(self.PERCENTILE, k))
+                                new_source_node_load = node.percentile_load(self.PERCENTILE, k) - nodes.domain_to_server_cpu(node, domain, domain.percentile_load(self.PERCENTILE, k))
                               
                                 for target_domain in targets:
                                     tmp_load = target_domain.percentile_load(self.PERCENTILE, k)
-                                    new_target_node_load -= util.domain_to_server_cpu(target_node, target_domain, tmp_load)
-                                    new_source_node_load += util.domain_to_server_cpu(node, target_domain, tmp_load)                              
+                                    new_target_node_load -= nodes.domain_to_server_cpu(target_node, target_domain, tmp_load)
+                                    new_source_node_load += nodes.domain_to_server_cpu(node, target_domain, tmp_load)                              
                                 
                                 #Test if swap violates rules
                                 test = True
