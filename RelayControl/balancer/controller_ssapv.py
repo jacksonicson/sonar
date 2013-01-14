@@ -1,8 +1,7 @@
 from logs import sonarlog
-from virtual import nodes
+from virtual import nodes, placement
 import controller
 import json
-import placement
 
 ######################
 ## CONFIGURATION    ##
@@ -13,14 +12,14 @@ AGGREGATION = None
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10 * 60, 120)
+        super(Controller, self).__init__(pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):
-        print 'Dump Sandpiper controller configuration...'
+        print 'Dump controller configuration...'
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'SSAPv',
                                                                  'aggregation' : AGGREGATION,
                                                                  }))

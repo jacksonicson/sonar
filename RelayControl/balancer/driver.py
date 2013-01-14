@@ -7,13 +7,20 @@ from control import domains
 import numpy as np
 import scoreboard
 import sys
+from workload.profiles import RAMP_UP
 
 ##########################
 ## CONFIGURATION        ##
-BASE_LOAD = 10
-NOISE = True
+BASE_LOAD = 0
+
+NOISE = False
 NOISE_MEAN = 0.0
 NOISE_SIGMA = 1.0
+
+MIGRATION_SOURCE = 13 
+MIGRATION_TARGET = 17
+
+RAM_UP = 10 * 60
 ##########################
 
 class Driver:
@@ -44,7 +51,9 @@ class Driver:
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
             # Select and load TS (based on the configuration)
-            load = profiles.get_cpu_profile_for_initial_placement(domains.index_of(domain.name))
+            index = domains.index_of(domain.name)
+            mapping = domains.domain_profile_mapping[index]
+            load = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
             ts = connection.load(load)
             
@@ -57,7 +66,6 @@ class Driver:
             if NOISE:
                 # random = np.random.lognormal(mean=NOISE_MEAN, sigma=NOISE_SIGMA, size=len(ts))
                 random = np.random.normal(loc=NOISE_MEAN, scale=NOISE_SIGMA, size=len(ts))
-                print random
                 ts += random
                 ts[ts > 100] = 100
                 ts[ts < 0] = 0
@@ -74,6 +82,9 @@ class Driver:
         # Reduce length of time series to 6 hours
         # self.freq = (freq * 6.0) / 24.0
         self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
+        
+        # Calculate ramp up delete time
+        self.ramp_up = RAMP_UP / self.freq
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
@@ -95,13 +106,16 @@ class Driver:
     def run(self):
         # Index for simulation time
         sim_time = self.pump.sim_time() 
-        tindex = (sim_time / self.freq)
-        if tindex >= self.min_ts_length:
+        tindex = (sim_time / self.freq) + self.ramp_up
+        if tindex >= (self.min_ts_length - self.ramp_up):
             print 'Driver exited!'
             print 'Shutting down simulation...'
             scoreboard.Scoreboard().close() 
             self.pump.stop()
             return
+        
+        # Update slot count in scoreboard
+        scoreboard.Scoreboard().update_slot_count()
         
         # For all nodes update their domains and aggregate the load for the node
         for host in self.model.get_hosts(self.model.types.NODE):
@@ -124,11 +138,20 @@ class Driver:
             # Add hypervisor load to the aggregated load
             # For the SSAPv this causes service level violations
             aggregated_load += BASE_LOAD
+            
+            # Add Migration overheads
+            if host.active_migrations_out: 
+                aggregated_load += host.active_migrations_out * MIGRATION_SOURCE
+            
+            if host.active_migrations_in:
+                aggregated_load += host.active_migrations_in * MIGRATION_TARGET 
+            
             self.__notify(sim_time, host.name, 'psutilcpu', aggregated_load)
             
             # Update overload counter
             if aggregated_load > 100:
                 scoreboard.Scoreboard().add_cpu_violations(1)
+                
         
         # Whole simulation might run accelerated
         self.pump.callLater(self.report_rate, self.run) 

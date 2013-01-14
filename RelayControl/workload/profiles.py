@@ -37,7 +37,7 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 ## CONFIGURATION            ##
 ##############################
-config = mix2
+config = mixsim2
 ##############################
 
 ##############################
@@ -480,15 +480,16 @@ def plot_overlay_mix():
     # Connect with times
     connection = times_client.connect()
     
-#    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
-#    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
-#    plot_mix = mix0
-    a = 0
+    # Plot selected
+    selected_mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
+    selected_mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
+    plot_mix = selected_mix1
     
-    plot_mix = []
-    for i in xrange(a, a + 100):
-        print selected[i].name
-        plot_mix.append(selected[i].name)
+    # Plot all from a set
+#    plot_mix = []
+#    for i in xrange(a, a + 100):
+#        print selected[i].name
+#        plot_mix.append(selected[i].name)
     
     fig = plt.figure()
     
@@ -496,18 +497,25 @@ def plot_overlay_mix():
     ax.set_xlim([0, 300])
     
     for name in plot_mix:
-        timeSeries = connection.load(__times_name(True, name, POSTFIX_NORM))
+        timeSeries = connection.load(__times_name(True, name, POSTFIX_USER))
+        print timeSeries
         _, demand = util.to_array(timeSeries)
-        
+        demand = demand[7:289+7]
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
 
     
-    ax.set_xlabel('Time x5 minutes')
+    xt = [(t * 60 / 5) for t in xrange(0, 25)]
+    xl = [t for t in xrange(0,25)]
+    
+    ax.set_xticks(xt)
+    ax.set_xticklabels(xl)
+    
+    ax.set_xlabel('Time in hours')
     ax.set_ylabel('Load in number of users')
     
-    plt.show()
-#    plt.savefig(configuration.path('overlay', 'png'))
-#    plt.savefig(configuration.path('overlay', 'pdf'))
+#    plt.show()
+    plt.savefig(configuration.path('overlay', 'png'))
+    plt.savefig(configuration.path('mix1', 'pdf'))
     
     # Close times connection
     times_client.close()
@@ -572,8 +580,8 @@ def main():
     # dump_user_profile_maxes()
     # build_all_profiles_for_mix(selected, True)
     # build_modified_profiles(selected, False)
-    # plot_overlay_mix()
-    dump_to_csv()
+    plot_overlay_mix()
+    # dump_to_csv()
     pass
 
 if __name__ == '__main__':

@@ -1,22 +1,23 @@
-from control.logic import controller
-from control.logic import placement
+from balancer import controller
+from virtual import placement
 from logs import sonarlog
 from virtual import nodes
 import configuration_advanced
 import controller_imbalance
 import controller_reactive
 import controller_swap
-import migration_scheduler
+from balancer import migration_queue
 import json
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
-        self.migration_scheduler = migration_scheduler.MigrationScheduler(self)
+        super(Controller, self).__init__(pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
+        self.migration_scheduler = migration_queue.MigrationQueue(self)
+        
         self.controller_handlers = []
         for setting in configuration_advanced.CONTROLLER_SEQ:
             if setting == 'imbalance':

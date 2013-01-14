@@ -1,6 +1,7 @@
 from control import domains
 from control.domains import domain_profile_mapping as mapping
 from ipmodels import ssapv
+from ipmodels import dsap
 from logs import sonarlog
 from service import times_client
 from virtual import nodes
@@ -254,3 +255,101 @@ class SSAPvPlacement(Placement):
             print 'model infeasible'
             return None, None
         
+        
+  
+class DSAPPlacement(Placement):
+
+    def execute(self, num_buckets, aggregation):
+        from workload import util
+                
+        # Execute super code
+        super(DSAPPlacement, self).execute()
+        
+        # Connect with Times
+        print 'Connecting with Times'
+        connection = times_client.connect()
+        
+        # Loading services to combine the dmain_service_mapping with    
+        domain_count = len(domains.domain_profile_mapping)
+        domain_matrix = np.zeros((domain_count, num_buckets), dtype=float)
+        
+        domain_log = ''
+        for domain_index in xrange(domain_count):
+            mapping = domains.domain_profile_mapping[domain_index]
+            
+            # Important: Load the trace of the workload profile
+            domain = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
+            
+            print 'loading domain: %s' % (domain)
+            domain_log += domain + '; '
+            
+            ts = connection.load(domain)
+            ts_len = len(ts.elements)
+        
+            # put TS into domain matrix
+            _time, data = util.to_array(ts)
+            
+            data = data[0:profiles.PROFILE_INTERVAL_COUNT]
+            
+            # Downsampling TS (domain_matrix)
+            self.experiment_length = ts_len * ts.frequency  # length of the experiment measured in seconds
+            bucket_width = self.experiment_length / num_buckets # in sec
+            
+            #elements = bucket_width / ts.frequency
+            elements = ts_len / num_buckets
+            buckets = []
+            for i in xrange(num_buckets):
+                start = i * elements
+                end = min(ts_len, (i+1) * elements) 
+                tmp = data[start : end]
+                buckets.append(aggregation(tmp))
+    
+            domain_matrix[domain_index] = buckets
+            # print data
+    
+        # Log services
+        logger.info('Selected profile: %s' % profiles.selected_name)
+        logger.info('Loading services: %s' % domain_log)
+    
+        # Dumpservice_matrix
+        print 'Logging domain matrix...'
+        np.set_printoptions(linewidth=200, threshold=99999999)
+        logger.info('Service matrix: %s' % domain_matrix)
+    
+        # Close Times connection
+        times_client.close()
+        
+        print "Downsampling-Ratio:",ts_len,"elements TO",num_buckets,"buckets (freq=",ts.frequency,", placement.experiment_length=",self.experiment_length,", profiles.experiment_duration",profiles.EXPERIMENT_DURATION,")"
+        
+        print 'Solving model...'
+        logger.info('Placement strategy: DSAP')
+        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, domain_matrix, self.domain_demand_mem)
+                
+        # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
+        self.assignment_list = assignment_list
+        initial_placement = assignment_list[0]
+        
+        self.server_list = server_list
+        initial_server_count = server_list[0]
+        
+        # Set initial_placement for getter functions 
+        if initial_placement != None:
+            print 'Required servers: %i' % (initial_server_count)
+            logger.info('Required servers: %i' % initial_server_count)
+            print initial_placement
+            logger.info('Assignment: %s' % initial_placement)
+            
+            print 'Assigning domains to servers'
+            migrations = []
+            for key in initial_placement.keys():
+                mapping = domains.domain_profile_mapping[key]
+                migration = (mapping.domain, initial_placement[key])
+                migrations.append(migration)
+            
+            print 'Migrations: %s' % migrations
+            logger.info('Migrations: %s' % migrations)
+            return migrations, self._count_active_servers(initial_placement)
+    
+        else:
+            print 'model infeasible'
+            return None, None

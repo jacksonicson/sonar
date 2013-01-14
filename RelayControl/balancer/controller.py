@@ -1,10 +1,9 @@
 from control import domains
 from logs import sonarlog
-from virtual import nodes
+from virtual import nodes, placement
 import configuration
 import json
 import numpy as np
-import placement
 import scoreboard
 
 # Setup Sonar logging
@@ -68,10 +67,10 @@ class LoadBalancer(object):
         # Migration id counter
         self.migration_id_counter = 0
         
-        
     # Abstract load balancing method
     def balance(self):
-        pass
+        for handler in self.migration_callback_handlers:
+            handler()
     
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
@@ -124,6 +123,14 @@ class LoadBalancer(object):
             node_to.domains[domain.name] = domain
             del node_from.domains[domain.name]
         
+            # Release locks
+            node_from.blocked = end
+            node_to.blocked = end
+            
+            # Update migration counters
+            node_from.active_migrations_out -= 1
+            node_to.active_migrations_in -= 1
+        
             # Call post migration hook
             self.post_migrate_hook(True, domain, node_from, node_to, end)
             
@@ -164,6 +171,10 @@ class LoadBalancer(object):
         now_time = self.pump.sim_time()
         source.blocked = now_time + 60 * 60
         target.blocked = now_time + 60 * 60
+        
+        # Update migration counters
+        source.active_migrations_out += 1
+        target.active_migrations_in += 1
         
         # Log migration start
         data = json.dumps({'domain': domain.name,

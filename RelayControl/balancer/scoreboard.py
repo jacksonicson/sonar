@@ -22,6 +22,7 @@ class Scoreboard(object):
         self.start_timestamp = 0
         
         self.active_server_infos = []
+        self.current_server_count = 0
         self.cpu_violations = 0
         self.cpu_accumulated = 0
         
@@ -33,7 +34,8 @@ class Scoreboard(object):
 
         self.min_servers = sys.maxint
         self.max_servers = 0
-
+        
+        self.slot_count = 0
     
     def close(self):
         self.closed = True
@@ -61,12 +63,17 @@ class Scoreboard(object):
         if not self.closed:
             self.cpu_violations += violations
     
+    def update_slot_count(self):
+        if not self.closed: 
+            self.slot_count += self.current_server_count
+    
     def add_cpu_load(self, load):
         if not self.closed:
             self.cpu_accumulated += load
     
     def add_active_info(self, servercount, timestamp):
         if not self.closed:
+            self.current_server_count = servercount
             self.active_server_infos.append(ActiveServerInfo(timestamp, servercount))
             self.min_servers = min(self.min_servers, servercount)
             self.max_servers = max(self.max_servers, servercount)
@@ -101,24 +108,20 @@ class Scoreboard(object):
        
     def get_results(self, pump):
         # Tuple contains
-        # count of active server infos
-        # average server count
-        # cpu violations
-        # accumulated cpu load
-        # min server
-        # max servers
-        # count of imbalance migrations
-        # count of overload migrations
-        # count of underload migrations
-        # count of swap migrations
+        # * count of active server infos
+        # * average server count
+        # * cpu violations
+        # * accumulated cpu load
+        # * min server
+        # * max servers
+        # * active server simulation time slots
         return (len(self.active_server_infos), self.analytics_average_server_count(pump),
-                self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers,
-                self.imbalance_migrations, self.overload_migrations, self.underload_migrations,
-                self.swaps)
+                self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers, 
+                self.slot_count)
     
     def get_result_line(self, pump):
         res = self.get_results(pump)
-        return '%f \t %f \t %i \t %i \t %i \t %i \t %i \t %i \t %i \t %i' % res
+        return '%f \t %f \t %i \t %i \t %i \t %i \t %i' % res
     
     def dump(self, pump):
         print 'Records %i' % len(self.active_server_infos)

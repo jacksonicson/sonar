@@ -41,6 +41,11 @@ def get_host(hostname):
         return hosts[hostname]
     return None
 
+def get_host_for_domain(domain):
+    for host in get_hosts(types.NODE):
+        if host.has_domain(domain):
+            return host
+    return None
 
 def server_active_info():
     active_count = 0
@@ -84,7 +89,6 @@ class __Host(object):
         
         # Calculates double exponential smoothing
         if self.globalCounter == 2:
-            print 'Initializing smoothed parameters...'
             self.c_t = float(self.readings[0]) 
             self.T_t = float(self.readings[1] - self.readings[0])
             self.f_t = self.c_t + self.T_t
@@ -95,7 +99,11 @@ class __Host(object):
                                                                        reading.value)
         else:
             self.globalCounter += 1
-            
+    
+#    def __eq__(self, other):
+#        if other == None:
+#            return
+#        return other.name == self.name        
     
     def forecast(self):
         return self.f_t
@@ -154,11 +162,18 @@ class Node(__Host):
         # Type of this object
         self.type = types.NODE
         
+        # Migrations
+        self.active_migrations_out = 0
+        self.active_migrations_in = 0
+        
         # Holds a mapping of domains
         self.domains = {}
     
     def add_domain(self, domain):
         self.domains[domain.name] = domain
+        
+    def has_domain(self, domain):
+        return self.domains.has_key(domain)
         
     def get_watch_filter(self):
         return ttypes.SensorToWatch(self.name, 'psutilcpu')

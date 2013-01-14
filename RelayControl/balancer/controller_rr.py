@@ -14,10 +14,10 @@ import numpy as np
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, 10*60, 120)
+        super(Controller, self).__init__(pump, model, 10*60, 120)
         self.var = []
         
     def dump(self):
@@ -26,7 +26,7 @@ class Sandpiper(controller.LoadBalancer):
                                                                  }))
     
     def initial_placement_sim(self):
-        import placement
+        from virtual import placement
         from virtual import nodes
         from control import domains 
         

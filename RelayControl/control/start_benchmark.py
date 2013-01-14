@@ -33,11 +33,11 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-    # print 'No controller used'
-    print 'starting controller'
-    logger.info('loading controller')
-    import logic.main as controller
-    controller.main()
+    print 'No controller used'
+#    print 'starting controller'
+#    logger.info('loading controller')
+#    import balancer.main as controller
+#    controller.main()
 
 
 def ram_up_finished(rain_clients, client_list):
@@ -209,8 +209,8 @@ def phase_start_glassfish_database(done, client_list):
         # Wait for all drones to finish and set phase
         dl = defer.DeferredList(dlist)
         
-        dl.addCallback(phase_start_rain, client_list)
-        # dl.addCallback(finished, client_list)
+        # dl.addCallback(phase_start_rain, client_list)
+        dl.addCallback(finished, client_list)
     except Exception, e:
         print e
         finished(None, client_list)
@@ -276,16 +276,16 @@ def main():
     drones.main()
     
     # Setup initial allocation
-    if start:
-        initial_allocation()
-    
+#    if start:
+#        initial_allocation()
+#    
     # Add host
-    for i in xrange(0,18):
+    for i in xrange(0,1):
         hosts.add_host('target%i' % i, 'target')
         hosts.add_host('target%i' % i, 'database')
     
     hosts.add_host('load0', 'load')
-    hosts.add_host('load1', 'load')
+    # hosts.add_host('load1', 'load')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()

@@ -1,9 +1,8 @@
 from logs import sonarlog
-from model import types
-import controller
+from balancer.model import types
+from balancer import controller
 import json
-import placement
-from virtual import nodes
+from virtual import nodes, placement
 from control import domains
 
 ######################
@@ -22,10 +21,10 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Sandpiper(controller.LoadBalancer):
+class Controller(controller.LoadBalancer):
     
     def __init__(self, pump, model):
-        super(Sandpiper, self).__init__(pump, model, INTERVAL, START_WAIT)
+        super(Controller, self).__init__(pump, model, INTERVAL, START_WAIT)
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
