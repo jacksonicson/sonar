@@ -30,7 +30,7 @@ class Controller(controller.LoadBalancer):
         from virtual import nodes
         from control import domains 
         
-        nodecount = len(nodes.HOSTS)
+        nodecount = len(nodes.NODES)
         splace = placement.RRPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
         migrations, _ = splace.execute()
         

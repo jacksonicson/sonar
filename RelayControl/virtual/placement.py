@@ -89,7 +89,7 @@ class FirstFitPlacement(Placement):
             
         # Logging
         logger.info('Placement strategy: First Fit')
-        logger.info('Required servers: %i' % len(nodes.HOSTS))
+        logger.info('Required servers: %i' % len(nodes.NODES))
         
         # Connect with Times
         print 'Connecting with Times'
@@ -104,7 +104,7 @@ class FirstFitPlacement(Placement):
         
         migrations = []
         assignment = {}
-        for _ in xrange(len(nodes.HOSTS)):
+        for _ in xrange(len(nodes.NODES)):
             buckets.append([0, nodes.NODE_CPU, []])
             buckets_mem.append([0, nodes.NODE_MEM, []])
         

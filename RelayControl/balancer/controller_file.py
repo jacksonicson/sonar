@@ -8,7 +8,7 @@ import json
 ######################
 ## CONFIGURATION    ##
 ######################
-ALLOCATION_MATRIX_FILE = configuration.path('v_2', 'csv')
+ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_I90_VM91-180_compliance_0.99_cap_230_servers12', 'csv')
 ######################
 
 # Setup logging
@@ -27,7 +27,7 @@ class Controller(controller.LoadBalancer):
                                                                  }))
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
-        nodecount = len(nodes.HOSTS)
+        nodecount = len(nodes.NODES)
         domaincount = len(domains.domain_profile_mapping)
         
         # Read allocation matrix
