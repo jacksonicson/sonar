@@ -12,7 +12,7 @@ import numpy as np
 ######################
 START_WAIT = 0
 INTERVAL = 60
-NUM_BUCKETS = 12
+NUM_BUCKETS = 4
 CYCLE_DURATION = 6 * 60 * 60  
 ######################
 
@@ -25,14 +25,15 @@ class Controller(controller.LoadBalancer):
         super(Controller, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
         # Setup migration queue
-        self.migration_queue = MigrationQueue(self, False, False)
+        simple = True
+        self.migration_queue = MigrationQueue(self, simple, not simple)
         
         # Build allocations
         nodecount = len(nodes.NODES)
         self.placement = placement.DSAPPlacement(nodecount, nodes.NODE_CPU,
                                                  nodes.NODE_MEM, nodes.DOMAIN_MEM)
         self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS, 
-                                                            lambda x: np.percentile(x, 100))
+                                                            lambda x: np.percentile(x, 90))
             
         # Current bucket
         self.curr_bucket = 0
@@ -114,7 +115,7 @@ class Controller(controller.LoadBalancer):
             model_source = self.model.get_host(source_node)
             model_target = self.model.get_host(target_node)
             
-            dep = self.migration_queue.add(model_domain, model_source, model_target, dep)
+            dep = self.migration_queue.add(model_domain, model_source, model_target)
         
         return 
         
@@ -139,7 +140,7 @@ class Controller(controller.LoadBalancer):
         
         # Trigger migrations to get new bucket allocation
         self.__run_migrations(self.curr_bucket)
-        # self.__run_optimized_migrations(self.curr_bucket)
+        #self.__run_optimized_migrations(self.curr_bucket)
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):

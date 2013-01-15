@@ -62,6 +62,7 @@ class MigrationQueue(object):
         
     def _schedule(self):
         print 'Scheduling migrations...'
+        print 'Waiting migrations: %i' % (len(self.waiting) + len(self.running))
         
         to_trigger = []
         for i, migration in enumerate(self.waiting):
@@ -77,8 +78,9 @@ class MigrationQueue(object):
             # Check if migration intersects with previous migrations
             if self.restrict:
                 to_check = []
-                to_check.extend(self.waiting[:i])
                 to_check.extend(self.running)
+                to_check.extend(self.waiting[:i])
+                
                 for previous in to_check:
                     test = False
                     test |= previous.domain == migration.domain
@@ -87,6 +89,9 @@ class MigrationQueue(object):
                     
                     # Update skip 
                     skip |= test
+                    
+            if not skip:
+                print 'Test is false: %s: %s - %s' % (migration.domain.name, migration.source.name, migration.target.name)
 
             # Check dependencies
             if migration.depends != None: 
@@ -104,9 +109,6 @@ class MigrationQueue(object):
             self.waiting.remove(migration)
             self.controller.migrate(migration.domain, migration.source,
                                     migration.target, 20)
-            
-        if len(self.running) > 1:
-            print 'parallel: %i' % len(self.running)
             
   
 if __name__ == '__main__':
