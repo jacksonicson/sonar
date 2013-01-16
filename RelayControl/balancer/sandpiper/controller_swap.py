@@ -122,9 +122,9 @@ class Swap():
                                 test &= (time_now - source.blocked) > sleep_time
                                 
                                 if test:
-                                    self.migration_scheduler.add_migration(domain, source, target_node, 'Swap Part 1')
+                                    self.migration_scheduler.add(domain, source, target_node, description='Swap Part 1')
                                     for target_domain in targets:
-                                        self.migration_scheduler.add_migration(target_domain, target_node, source, 'Swap Part 2')
+                                        self.migration_scheduler.add(target_domain, target_node, source, description='Swap Part 2')
                                     
                                     raise StopIteration() 
                             
