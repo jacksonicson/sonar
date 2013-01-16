@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'reactive'
+CONTROLLER = 'sandpiper'
 SIM_ITERATIONS = 1
 ######################
 

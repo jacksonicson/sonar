@@ -45,7 +45,7 @@ class Imbalance():
         
         # run load balancing    
         imbalance = self.imbalance(nodes)
-        print 'IMBALANCE %s' % (imbalance)
+        migration_triggered = False
         num_migrations = 0
         max_migrations = 10
         
@@ -67,18 +67,19 @@ class Imbalance():
           
                 for node in tmp_nodes.itervalues():
                     # consider every node as new parent for domain
+                    # except the same node
+                    if (node.name == source_node.name):
+                        continue
                     
                     # calculate new cpu
                     target_node = self.model.get_host(node.name)
                     target_domain = self.model.get_host(domain.name)
-                    new_domain_cpu = nodesv.to_node_load(target_domain.percentile_load(self.PERCENTILE, self.K_VALUE))
                     old_domain_cpu = domain.cpu
-                    domain.cpu = new_domain_cpu
-                    target_threshold = node.cpu + new_domain_cpu
+                    domain.cpu = nodesv.to_node_load(target_domain.percentile_load(self.PERCENTILE, self.K_VALUE))
+                    target_threshold = node.cpu + domain.cpu
                     
-                    # don't migrate domain to same node nor empty node nor if overload threshold is exceeded
+                    # don't migrate to empty node nor full node nor if overload threshold is exceeded
                     test = False
-                    test |= target_node.name == source_node.name
                     test |= len(target_node.domains) == 0
                     test |= len(target_node.domains) >= 6
                     test |= target_threshold > self.THRESHOLD_OVERLOAD
@@ -88,7 +89,7 @@ class Imbalance():
                     if test:
                         continue
                     
-                    # migrate domain to node (in snapshot) and check new imbalance
+                    # migrate domain to node (in snapshot) and check new imbalance of all nodes
                     node.domains[domain.name] = domain
                     del source.domains[domain.name]
                     old_normalized_cpu_node = node.normalized_cpu
@@ -96,20 +97,23 @@ class Imbalance():
                     node.normalized_cpu = self.normalized_cpu(node)
                     source.normalized_cpu = self.normalized_cpu(source)
                     new_imbalance = self.imbalance(tmp_nodes)
-                    improvement = imbalance - new_imbalance
                     
+                    # check if imbalance is improved
+                    improvement = imbalance - new_imbalance
                     if improvement > self.MIN_IMPROVEMENT_IMBALANCE and improvement > best_improvement:
+                        # safe nodes and domain with MODEL information as best migration
                         best_migration = Migration()
                         best_migration.domain = target_domain
                         best_migration.source = source_node
                         best_migration.target = target_node
                         
+                        # safe nodes and domain with SNAPSHOT information as best migration
                         best_source = source
                         best_target = node
                         best_domain = domain
                         best_improvement = improvement                    
                     
-                    # go back to previous state
+                    # go back to previous state in snapshot
                     domain.cpu = old_domain_cpu
                     source.domains[domain.name] = domain
                     source.normalized_cpu = old_normalized_cpu_source
@@ -119,24 +123,22 @@ class Imbalance():
             if best_migration is None:
                 break
             
-            # update imbalance and new nodes with best_migration
+            # update imbalance with best improvement
             imbalance -= best_improvement 
-            migrations[num_migrations] = best_migration
+            
+            # update migration in snapshot
             best_domain.source = best_target.name
             best_target.domains[best_domain.name] = best_domain
             best_target.normalized_cpu = self.normalized_cpu(best_target)
             del best_source.domains[best_domain.name]
             best_source.normalized_cpu = self.normalized_cpu(best_source)
             num_migrations += 1
-      
-        # migrate domains that improve imbalance
-        for migration in migrations.itervalues():            
-            self.migration_scheduler.add(migration.domain, migration.source, migration.target, description='Imbalance') 
             
-        if len(migrations) != 0:
-            return True
+            # add migration that improves imbalance the most
+            self.migration_scheduler.add(best_migration.domain, best_migration.source, best_migration.target, description='Imbalance')
+            migration_triggered = True 
         
-        return False
+        return migration_triggered
             
     def normalized_cpu(self, node):
         # Calculate normalized cpu of a node        
