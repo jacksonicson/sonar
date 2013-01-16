@@ -17,11 +17,17 @@ class Entry(object):
         return test
         
 
-class MigrationQueue():
+class MigrationQueue(object):
     
-    def __init__(self, controller):
+    def __init__(self, controller, double=False, restrict=False):
         # Reference to the controller
         self.controller = controller
+        
+        # Restirct double migrations
+        self.double = double
+        
+        # Restirct parallelity
+        self.restrict = restrict
         
         # Migration queue
         self.waiting = []
@@ -56,15 +62,36 @@ class MigrationQueue():
         
     def _schedule(self):
         print 'Scheduling migrations...'
+        print 'Waiting migrations: %i' % (len(self.waiting) + len(self.running))
         
         to_trigger = []
-        for migration in self.waiting:
+        for i, migration in enumerate(self.waiting):
             
             # Check if complies with running migrations
             skip = False
-            for test in self.running:
-                # One outgoing migration per server
-                skip |= test.source == migration.source
+            
+            if self.double:
+                for test in self.running:
+                    # One outgoing migration per server
+                    skip |= test.source == migration.source
+
+            # Check if migration intersects with previous migrations
+            if self.restrict:
+                to_check = []
+                to_check.extend(self.running)
+                to_check.extend(self.waiting[:i])
+                
+                for previous in to_check:
+                    test = False
+                    test |= previous.domain == migration.domain
+                    test |= previous.source == migration.source
+                    test |= previous.target == migration.target
+                    
+                    # Update skip 
+                    skip |= test
+                    
+            if not skip:
+                print 'Test is false: %s: %s - %s' % (migration.domain.name, migration.source.name, migration.target.name)
 
             # Check dependencies
             if migration.depends != None: 

@@ -25,7 +25,7 @@ class Controller(controller.LoadBalancer):
                                                                  }))
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
-        nodecount = len(nodes.HOSTS)
+        nodecount = len(nodes.NODES)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
         
         if AGGREGATION == None:
