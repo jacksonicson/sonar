@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'file'
+CONTROLLER = 'round'
 SIM_ITERATIONS = 1
 ######################
 
