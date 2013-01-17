@@ -276,16 +276,16 @@ def main():
     drones.main()
     
     # Setup initial allocation
-#    if start:
-#        initial_allocation()
-#    
+    if start:
+        initial_allocation()
+    
     # Add host
-    for i in xrange(0,1):
+    for i in xrange(0,18):
         hosts.add_host('target%i' % i, 'target')
         hosts.add_host('target%i' % i, 'database')
     
     hosts.add_host('load0', 'load')
-    # hosts.add_host('load1', 'load')
+    hosts.add_host('load1', 'load')
     
     # Connect with all drone relays
     hosts_map = hosts.get_hosts_list()
