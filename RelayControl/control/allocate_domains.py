@@ -8,7 +8,7 @@ import json
 logger = sonarlog.getLogger('allocate_domains')
 
 def main(migrate=True):
-    nodecount = len(nodes.HOSTS)
+    nodecount = len(nodes.NODES)
     
     # Setup models
     # model = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)

@@ -808,7 +808,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
         occupied_minutes += (active_servers * delta_time) / 60.0
         
         # Empty server minutes 
-        empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
+        empty_minutes += (delta_time * (len(nodes.NODES) - active_servers)) / 60
         
         # Go over all servers
         for srv in nodes.NODES:
@@ -850,7 +850,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     avg_servers = (occupied_minutes / 60.0) / duration
     
     # Print stats
-    print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
+    print 'Duration: %i' % (duration * 60 * len(nodes.NODES))
     print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
     print 'Empty minutes: %i' % empty_minutes

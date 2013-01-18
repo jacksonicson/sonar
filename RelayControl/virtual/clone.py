@@ -160,7 +160,7 @@ def clone(connections, source, target, domain_id):
     
     # Delete target if it exists
     print 'Remove old domain description...'
-    for host in nodes.HOSTS:
+    for host in nodes.NODES:
         try:
             dom_target = connections[host].lookupByName(target)
             if dom_target != None:
@@ -271,7 +271,7 @@ def next_vm():
 
 
 def shutdownall():
-    for host in nodes.HOSTS: 
+    for host in nodes.NODES: 
         conn = connections[host]
         ids = conn.listDomainsID()
         for domain_id in ids:

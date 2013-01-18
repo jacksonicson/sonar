@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 def main():
     # Solve allocation problem
-    nodecount = len(nodes.HOSTS)
+    nodecount = len(nodes.NODES)
     model = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
     model.execute()
     
