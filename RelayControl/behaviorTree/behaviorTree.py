@@ -142,12 +142,17 @@ class Action(__Node):
         reactor.callLater(4, d.callback, True)
         return d
 
+
+###################################################################
+# TEST PROGRAMS
+###################################################################
+
 class Action2(Action):
     
     def action(self):
         d = defer.Deferred()
         print "Executing Actio2n"
-        self.blackboard.addData("test","val")
+        self.blackboard.addData("test", "val")
         reactor.callLater(4, d.callback, False)
         return d
 
@@ -156,6 +161,6 @@ class Action3(Action):
     def action(self):
         d = defer.Deferred()
         print "Executing Actio3n"
-        self.blackboard.addData("test","val2")
+        self.blackboard.addData("test", "val2")
         reactor.callLater(4, d.callback, True)
         return d
