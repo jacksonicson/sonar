@@ -271,7 +271,7 @@ def next_vm():
 
 
 def shutdownall():
-    for host in nodes.HOSTS: 
+    for host in nodes.NODES: 
         conn = connections[host]
         ids = conn.listDomainsID()
         for domain_id in ids:

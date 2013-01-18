@@ -28,7 +28,7 @@ class Controller(controller.LoadBalancer):
                 self.controller_handlers.append(self.swap_controller)
             
     def initial_placement_sim(self):
-        nodecount = len(nodes.HOSTS)
+        nodecount = len(nodes.NODES)
         splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
         migrations, _ = splace.execute()
         self.build_internal_model(migrations)       
