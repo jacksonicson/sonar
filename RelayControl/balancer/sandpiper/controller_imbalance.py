@@ -24,7 +24,6 @@ class Imbalance():
         system_nodes = self.model.get_hosts(types.NODE)
         nodes = {}
         domains = {}
-        migrations = {}
         for node in system_nodes:
             node_domains = {}
             
