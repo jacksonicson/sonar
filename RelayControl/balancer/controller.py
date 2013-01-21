@@ -77,7 +77,7 @@ class LoadBalancer(object):
     
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
-        nodecount = len(nodes.HOSTS)
+        nodecount = len(nodes.NODES)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
         migrations, _ = splace.execute(aggregation=True , bucketCount=12)
         self.build_internal_model(migrations)

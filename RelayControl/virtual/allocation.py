@@ -164,9 +164,9 @@ def determine_current_allocation():
         from virtual import util
         connections = util.connect_all()
         
-        allocation = { host : [] for host in nodes.HOSTS }
+        allocation = { host : [] for host in nodes.NODES }
             
-        for host in nodes.HOSTS:
+        for host in nodes.NODES:
             connection = connections[host]
             
             vir_domains = connection.listDomainsID()
