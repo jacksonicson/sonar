@@ -126,7 +126,7 @@ class Reactive():
                             
             if test: 
                 migration_type = 'Overload (Empty=%s)' % (empty)
-                self.migration_scheduler.add_migration(domain, source, target, migration_type) 
+                self.migration_scheduler.add(domain, source, target, description=migration_type) 
                 raise StopIteration()
         
     def migrate_underload(self, node, nodes, source, domain, time_now, sleep_time, empty):
@@ -145,5 +145,5 @@ class Reactive():
             
             if test: 
                 migration_type = 'Underload (Empty=%s)' % (empty)
-                self.migration_scheduler.add_migration(domain, source, target, migration_type)                          
+                self.migration_scheduler.add(domain, source, target, description=migration_type)                          
                 raise StopIteration()
