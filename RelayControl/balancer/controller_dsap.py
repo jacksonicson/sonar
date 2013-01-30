@@ -12,7 +12,7 @@ import numpy as np
 ######################
 START_WAIT = 0
 INTERVAL = 60
-NUM_BUCKETS = 4
+NUM_BUCKETS = 24
 CYCLE_DURATION = 6 * 60 * 60  
 ######################
 

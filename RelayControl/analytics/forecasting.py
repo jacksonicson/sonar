@@ -2,7 +2,6 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import statsmodels as sm2
-import statsmodels.api as sm
     
 def ar_forecast(data, smoothing=False):
     if smoothing:
