@@ -51,7 +51,7 @@ def __clean(path):
         subpath = os.path.join(path, subdir)
         if os.path.isfile(subpath) == False:
             continue
-        
+            
         if string.find(subdir, '.zip') != -1:
             os.remove(subpath)
 
