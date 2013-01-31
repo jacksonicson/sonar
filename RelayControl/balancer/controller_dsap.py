@@ -11,8 +11,8 @@ import numpy as np
 # # CONFIGURATION    ##
 ######################
 START_WAIT = 0
-INTERVAL = 60
-NUM_BUCKETS = 24
+INTERVAL = 60               # how often balance() gets called
+NUM_BUCKETS = 6
 CYCLE_DURATION = 6 * 60 * 60  
 ######################
 
