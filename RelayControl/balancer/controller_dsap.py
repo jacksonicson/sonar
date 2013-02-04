@@ -13,7 +13,7 @@ import virtual.placement as placement
 START_WAIT = 0
 INTERVAL = 60  # how often balance() gets called
 NUM_BUCKETS = 6
-CYCLE_DURATION = 6 * 60 * 60
+CYCLE_DURATION = 6 * 60 * 60 + 10 * 60 * 2
 PERCENTILE = 90  
 ######################
 
@@ -127,7 +127,7 @@ class Controller(controller.LoadBalancer):
     def balance(self):
         # Current bucket index
         bucket_duration = CYCLE_DURATION / NUM_BUCKETS
-        bucket_index = int((self.pump.sim_time() - self.time_null) / bucket_duration)
+        bucket_index = int((self.pump.sim_time() - self.time_null + 10 * 60) / bucket_duration)
         # bucket_index %= NUM_BUCKETS
         print 'bucket index %i' % bucket_index
         if bucket_index >= NUM_BUCKETS:
