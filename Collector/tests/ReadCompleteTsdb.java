@@ -38,7 +38,7 @@ public class ReadCompleteTsdb {
 
 			long hostnameId = Bytes.toLong(key, 16);
 			System.out.println("Hostname: " + hostnameId);
-
+			
 			// All the tags
 			System.out.println("Reading tags: ");
 			int offset = 24;

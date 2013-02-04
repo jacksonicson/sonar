@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '04/01/2013 17:15:00    05/01/2013 00:10:00'
+RAW = '03/02/2013 23:28:00    04/02/2013 06:20:00'
 ##########################
 
 warns = []
@@ -869,6 +869,7 @@ def __analytics_server_utilization(cpu, mem):
     
     _total_cpu = []
     _total_mem = []
+    _violations = 0
     for srv in nodes.NODES: 
         _cpu = np.mean(cpu[srv][0])
         _mem = np.mean(mem[srv][0])
@@ -880,13 +881,16 @@ def __analytics_server_utilization(cpu, mem):
         data = [srv, _cpu, _mem]
         __dump_elements(tuple(data))
         
+        _violations += len(cpu[srv][0][cpu[srv][0] > 99])
+         
+        
     _cpu = np.mean(_total_cpu) # are updated by migration analytics
     _mem = np.mean(_total_mem) # are updated by migration analytics
     
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
     
-    return _cpu, _mem
+    return _cpu, _mem, _violations
  
  
 def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sla_fail_count,
@@ -934,10 +938,11 @@ def __analytics_global_aggregation(global_metrics, servers, avg_cpu, avg_mem, sl
     global_metric_aggregation['migrations_successful'] = (migration_count, 0)
     global_metric_aggregation['min_nodes'] = (min_nodes, 0)
     global_metric_aggregation['max_nodes'] = (max_nodes, 0)
+    global_metric_aggregation['srv_cpu_violations'] = (srv_cpu_violations, 0)
 
     dump = ('server_count', 'cpu_load', 'mem_load', 'total_ops_successful', 'total_operations_failed', 'average_response_time',
              'max_response_time', 'effective_load_ops', 'effective_load_req', 'total_response_time_threshold',
-             'migrations_successful', 'min_nodes', 'max_nodes')
+             'migrations_successful', 'min_nodes', 'max_nodes', 'srv_cpu_violations')
     data = []
     for element in dump:
         try:
@@ -1751,7 +1756,7 @@ def connect_sonar(connection):
     print '## AVG CPU,MEM LOAD ##'
     # This approach does only work for static allocations. For dynamic allocations 
     # the _cpu and _mem values are updated by the migration analytics!
-    avg_cpu, avg_mem = __analytics_server_utilization(cpu, mem)
+    avg_cpu, avg_mem, violations = __analytics_server_utilization(cpu, mem)
     min_nodes, max_nodes = '', ''
     
     print '## MIGRATIONS ##'
@@ -1766,7 +1771,7 @@ def connect_sonar(connection):
     
     print '## GLOBAL METRIC AGGREGATION ###'
     __analytics_global_aggregation(_global_metrics, servers, avg_cpu, avg_mem,
-                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes)
+                                   sla_fail_count, len(migrations_successful), min_nodes, max_nodes, violations)
     
 
 if __name__ == '__main__':
@@ -1775,12 +1780,12 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        # connect_sonar(connection)
+        connect_sonar(connection)
         # extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()
-        t_test_response_statistics_all()
+        # t_test_response_statistics_all()
         # extract_response_times(connection)
     except:
         traceback.print_exc(file=sys.stdout)
