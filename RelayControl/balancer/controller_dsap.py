@@ -4,16 +4,17 @@ from virtual import nodes
 import control.domains as domains
 import controller
 import json
-import virtual.placement as placement
 import numpy as np
+import virtual.placement as placement
 
 ######################
 # # CONFIGURATION    ##
 ######################
 START_WAIT = 0
-INTERVAL = 60               # how often balance() gets called
+INTERVAL = 60  # how often balance() gets called
 NUM_BUCKETS = 6
-CYCLE_DURATION = 6 * 60 * 60  
+CYCLE_DURATION = 6 * 60 * 60
+PERCENTILE = 90  
 ######################
 
 # Setup logging
@@ -25,6 +26,7 @@ class Controller(controller.LoadBalancer):
         super(Controller, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
         # Setup migration queue
+        # B
         simple = True
         self.migration_queue = MigrationQueue(self, simple, not simple)
         
@@ -32,8 +34,8 @@ class Controller(controller.LoadBalancer):
         nodecount = len(nodes.NODES)
         self.placement = placement.DSAPPlacement(nodecount, nodes.NODE_CPU,
                                                  nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS, 
-                                                            lambda x: np.percentile(x, 90))
+        self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS,
+                                                            lambda x: np.percentile(x, PERCENTILE))
             
         # Current bucket
         self.curr_bucket = 0
@@ -95,7 +97,7 @@ class Controller(controller.LoadBalancer):
         domain_load = []
         for mapping in domains.domain_profile_mapping:
             domain_name = mapping.domain
-            load = self.model.get_host(domain_name).mean_load(20) # TODO: KValue
+            load = self.model.get_host(domain_name).mean_load(20)  # TODO: KValue
             domain_load.append(nodes.to_node_load(load))
                     
         # Schedule migrations
@@ -124,7 +126,7 @@ class Controller(controller.LoadBalancer):
         # Current bucket index
         bucket_duration = CYCLE_DURATION / NUM_BUCKETS
         bucket_index = int((self.pump.sim_time() - self.time_null) / bucket_duration)
-        #bucket_index %= NUM_BUCKETS
+        # bucket_index %= NUM_BUCKETS
         print 'bucket index %i' % bucket_index
         if bucket_index >= NUM_BUCKETS:
             return
@@ -139,8 +141,9 @@ class Controller(controller.LoadBalancer):
         self.curr_bucket = bucket_index
         
         # Trigger migrations to get new bucket allocation
+        # A
         self.__run_migrations(self.curr_bucket)
-        #self.__run_optimized_migrations(self.curr_bucket)
+        # self.__run_optimized_migrations(self.curr_bucket)
     
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
