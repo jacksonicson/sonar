@@ -121,6 +121,8 @@ def _get_controller(controller, pump):
         return
     # #############################################################
     
+    return controller
+    
 
 def main(controller):
     # New message pump
