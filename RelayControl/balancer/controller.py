@@ -75,6 +75,10 @@ class LoadBalancer(object):
         for handler in self.migration_callback_handlers:
             handler()
     
+    # Initial placement calculation (production mode!!!)
+    def initial_placement_production(self):
+        pass
+    
     # Initial placement calculation (simulation only!!!)
     def initial_placement_sim(self):
         nodecount = len(nodes.NODES)

@@ -1,3 +1,4 @@
+from balancer import scoreboard
 from control import domains
 from logs import sonarlog
 from workload import profiles
@@ -5,7 +6,6 @@ import configuration as config
 import json
 import model
 import msgpump
-from balancer import scoreboard
 import time
 
 '''
@@ -19,7 +19,7 @@ Conducting Simulations:
 '''
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 CONTROLLER = 'dsap'
 SIM_ITERATIONS = 1
@@ -91,18 +91,15 @@ def build_initial_model(controller):
 def heartbeat(pump):
     print 'Message pump started'
 
-def main(controller):
-    # New message pump
-    pump = msgpump.Pump(heartbeat)
-    
+def _get_controller(controller, pump):
     # New controller
-    import controller_ssapv #@UnusedImport
-    import controller_sandpiper_reactive #@UnusedImport
-    import controller_sandpiper_proactive #@UnusedImport
-    import controller_rr #@UnusedImport
-    import controller_file #@UnusedImport
-    import controller_dsap #@UnusedImport
-    from sandpiper import controller_sandpiper_standard #@UnusedImport
+    import controller_ssapv  # @UnusedImport
+    import controller_sandpiper_reactive  # @UnusedImport
+    import controller_sandpiper_proactive  # @UnusedImport
+    import controller_rr  # @UnusedImport
+    import controller_file  # @UnusedImport
+    import controller_dsap  # @UnusedImport
+    from sandpiper import controller_sandpiper_standard  # @UnusedImport
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
@@ -123,6 +120,14 @@ def main(controller):
         print 'No controller defined'
         return
     # #############################################################
+    
+
+def main(controller):
+    # New message pump
+    pump = msgpump.Pump(heartbeat)
+    
+    # Get controller
+    controller = _get_controller(controller, pump)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -152,6 +157,22 @@ def main(controller):
     pump.start()
     pump.join()
     return pump
+
+
+def initial_allocation():
+    # Only for production mode
+    if config.PRODUCTION:
+        # New message pump
+        pump = msgpump.Pump(heartbeat)
+        
+        # Get controller
+        controller = _get_controller(CONTROLLER, pump)
+        
+        # Build internal infrastructure representation
+        return controller.initial_placement_production()
+        
+    return None
+
 
 def launch():
     if config.PRODUCTION:

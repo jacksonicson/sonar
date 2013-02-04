@@ -34,7 +34,7 @@ class Controller(controller.LoadBalancer):
         nodecount = len(nodes.NODES)
         self.placement = placement.DSAPPlacement(nodecount, nodes.NODE_CPU,
                                                  nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        self.initial_migrations, _ = self.placement.execute(NUM_BUCKETS,
+        self.initial_migrations, self.active_server_info = self.placement.execute(NUM_BUCKETS,
                                                             lambda x: np.percentile(x, PERCENTILE))
             
         # Current bucket
@@ -55,6 +55,8 @@ class Controller(controller.LoadBalancer):
         self.build_internal_model(self.initial_migrations)
         return self.initial_migrations 
     
+    def initial_placement_production(self):
+        return self.initial_migrations, self.active_server_info
     
     def __run_migrations(self, bucket_index):
         # Assignment
