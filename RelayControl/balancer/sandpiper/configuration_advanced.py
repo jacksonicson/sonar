@@ -14,5 +14,5 @@ M_VALUE = 17 # m values out of the window k must be above or below the threshold
 
 # MIXED CONTROLLER SETTINGS
 # Values can be 'imbalance', 'reactive', 'swap' or ''
-CONTROLLER_SEQ = ['imbalance', 'reactive', 'swap']
+CONTROLLER_SEQ = ['reactive', 'imbalance', '']
 ######################
