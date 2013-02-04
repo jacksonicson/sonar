@@ -12,7 +12,7 @@ import math
 ######################
 ## CONFIGURATION    ##
 ######################
-INIT_DB = False
+INIT_DB = True
 start = True
 ######################
 
@@ -33,11 +33,11 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-    print 'No controller used'
-#    print 'starting controller'
-#    logger.info('loading controller')
-#    import balancer.main as controller
-#    controller.main()
+#    print 'No controller used'
+    print 'starting controller'
+    logger.info('loading controller')
+    import balancer.main as controller
+    controller.launch()
 
 
 def ram_up_finished(rain_clients, client_list):
