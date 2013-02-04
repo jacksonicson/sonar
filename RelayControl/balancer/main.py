@@ -21,7 +21,7 @@ Conducting Simulations:
 ######################
 ## CONFIGURATION    ##
 ######################
-CONTROLLER = 'round'
+CONTROLLER = 'sandpiper'
 SIM_ITERATIONS = 1
 ######################
 
@@ -153,14 +153,14 @@ def main(controller):
     pump.join()
     return pump
 
-if __name__ == '__main__':
+def launch():
     if config.PRODUCTION:
         # Controller is executed in production
         main(CONTROLLER)
     else:
         name = '%s - %s' % (profiles.config.name, CONTROLLER)
         lines = []
-        for i in xrange(0, SIM_ITERATIONS):
+        for _ in xrange(0, SIM_ITERATIONS):
             # Flush scoreboard
             scoreboard.Scoreboard().flush()
             
@@ -178,5 +178,8 @@ if __name__ == '__main__':
         print 'Results: %s' % name        
         for line in lines:
             print line
+
+if __name__ == '__main__':
+    launch() 
     
 
