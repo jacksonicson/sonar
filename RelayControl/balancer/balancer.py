@@ -1,4 +1,4 @@
-from balancer import scoreboard
++from balancer import scoreboard
 from control import domains
 from logs import sonarlog
 from virtual import nodes

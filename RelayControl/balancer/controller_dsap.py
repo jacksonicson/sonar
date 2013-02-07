@@ -43,8 +43,14 @@ class Controller(controller.LoadBalancer):
         # Current bucket
         self.curr_bucket = 0
         
+        
+       
+    def start(self):
+        super(Controller, self).start()
+        
         # Initialization time
         self.time_null = self.pump.sim_time()
+        
         
     def dump(self):
         print 'DSAP controller - Dump configuration...'
