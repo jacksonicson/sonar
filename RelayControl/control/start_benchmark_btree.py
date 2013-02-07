@@ -332,16 +332,16 @@ def main():
     # Start benchmark
     start = btree.Sequence(bb)
     start.add(AllocateDomains())
-#    start.add(ConfigureGlassfish())
-#    
-#    pl = btree.ParallelNode()
-#    start.add(pl)
-#    pl.add(StartGlassfish())
-#    pl.add(StartDatabase())
-#    
-#    start.add(StartRain())
-#    start.add(ConnectRain())
-#    start.add(TriggerRain())
+    start.add(ConfigureGlassfish())
+    
+    pl = btree.ParallelNode()
+    start.add(pl)
+    pl.add(StartGlassfish())
+    if INIT_DB: pl.add(StartDatabase())
+    
+    start.add(StartRain())
+    start.add(ConnectRain())
+    start.add(TriggerRain())
     start.add(startController())
     
     # Stop benchmark
@@ -350,7 +350,10 @@ def main():
     stop.add(StopGlassfishRain())
     
     # Execute behavior trees
-    defer = start.execute()     
+    if start:
+        defer = start.execute()
+    else:
+        defer = stop.execute()          
     defer.addCallback(finished)
     
     # Start the Twisted reactor
