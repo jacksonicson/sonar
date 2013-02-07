@@ -1,6 +1,6 @@
 from logs import sonarlog
 from virtual import allocation as virt
-import balancer.main as controller
+import balancer.balancer as controller
 import json
 import time
 
