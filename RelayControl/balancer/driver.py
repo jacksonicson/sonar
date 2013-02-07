@@ -9,7 +9,7 @@ import numpy as np
 import sys
 
 ##########################
-# # CONFIGURATION        ##
+# CONFIGURATION         ##
 BASE_LOAD = 0
 
 NOISE = False
