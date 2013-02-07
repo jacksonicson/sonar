@@ -7,7 +7,7 @@ import time
 # Setup logging
 logger = sonarlog.getLogger('allocate_domains')
 
-def main(migrate=True):
+def build_controller(migrate=True):
     # Calculate initial placement
     migrations, active_server_info = controller.initial_allocation() 
 
@@ -24,5 +24,5 @@ def main(migrate=True):
 
 
 if __name__ == '__main__':
-    main(True)
+    build_controller(True)
 

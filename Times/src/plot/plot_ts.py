@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from service import times_client
 
-def main(name):
+def build_controller(name):
     print 'Downloading...'
     connection = times_client.connect()
     
@@ -32,4 +32,4 @@ def main(name):
                 
 
 if __name__ == '__main__':
-    main('SIS_161_cpu_profile_norm')
+    build_controller('SIS_161_cpu_profile_norm')

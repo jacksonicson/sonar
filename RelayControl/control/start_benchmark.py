@@ -267,11 +267,11 @@ def errback(failure):
     
 def initial_allocation():
     import allocate_domains
-    allocate_domains.main(True)
+    allocate_domains.build_controller(True)
     
-def main():
+def build_controller():
     # Create drones
-    drones.main()
+    drones.build_controller()
     
     # Setup initial allocation
     if start:
@@ -306,4 +306,4 @@ def main():
 
 if __name__ == '__main__':
     sonarlog.connect()
-    main()
+    build_controller()

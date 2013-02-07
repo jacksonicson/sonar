@@ -26,9 +26,6 @@ CONTROLLER = 'dsap'
 SIM_ITERATIONS = 1
 ######################
 
-# Controller instance
-controller_instance = None
-
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
@@ -47,7 +44,6 @@ class MetricHandler:
                 return
              
             host.put(data.reading)
-            
 
 
 def build_from_current_allocation():
@@ -64,19 +60,18 @@ def build_from_current_allocation():
     
 
 def build_internal_model(migrations):
-        _nodes = []
-        for node in nodes.NODES: 
-            mnode = model.Node(node, nodes.NODE_CPU_CORES)
-            _nodes.append(mnode)
-            
-        _domains = {}
-        for domain in domains.domain_profile_mapping:
-            dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-            _domains[domain.domain] = dom
-            
-        for migration in migrations:
-            _nodes[migration[1]].add_domain(_domains[migration[0]])
-    
+    _nodes = []
+    for node in nodes.NODES: 
+        mnode = model.Node(node, nodes.NODE_CPU_CORES)
+        _nodes.append(mnode)
+        
+    _domains = {}
+    for domain in domains.domain_profile_mapping:
+        dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+        _domains[domain.domain] = dom
+        
+    for migration in migrations:
+        _nodes[migration[1]].add_domain(_domains[migration[0]])
     
 def build_initial_model(controller):
     # Flush model
@@ -151,7 +146,7 @@ def _get_controller(controller, pump):
     return controller_instance
     
 
-def main(controller_name):
+def build_controller(controller_name):
     # New message pump
     pump = msgpump.Pump(heartbeat)
     
@@ -188,23 +183,23 @@ def main(controller_name):
     return pump
 
 
-def initial_allocation():
-    # Only for production mode
-    if config.PRODUCTION:
-        # New message pump
-        pump = msgpump.Pump(heartbeat)
-        
-        # Get controller
-        controller = _get_controller(CONTROLLER, pump)
-        
-        # Build internal infrastructure representation
-        return controller.initial_placement()
-        
-    print 'ERROR: Initial allocation can only be used in production mode'
-    return None
+#def initial_allocation():
+#    # Only for production mode
+#    if config.PRODUCTION:
+#        # New message pump
+#        pump = msgpump.Pump(heartbeat)
+#        
+#        # Get controller
+#        controller = _get_controller(CONTROLLER, pump)
+#        
+#        # Build internal infrastructure representation
+#        return controller.initial_placement()
+#        
+#    print 'ERROR: Initial allocation can only be used in production mode'
+#    return None
 
 
-def main_sim():
+def launch_sim():
     name = '%s - %s' % (profiles.config.name, CONTROLLER)
     lines = []
     for _ in xrange(0, SIM_ITERATIONS):
@@ -215,7 +210,7 @@ def main_sim():
         domains.recreate()
         
         # Run controller
-        pump = main(CONTROLLER)
+        pump = build_controller(CONTROLLER)
         
         # Get scoreboard statistics
         res = scoreboard.Scoreboard().get_result_line(pump)
@@ -227,14 +222,7 @@ def main_sim():
         print line
           
             
-def launch():
-    if config.PRODUCTION:
-        main(CONTROLLER)
-    else:
-        main_sim()
-
-
 if __name__ == '__main__':
-    launch() 
+    launch_sim() 
     
 
