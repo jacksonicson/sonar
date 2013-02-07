@@ -1,6 +1,6 @@
 from logs import sonarlog
 from virtual import allocation as virt
-import balancer.control_manager as controller
+from balancer import controller
 import json
 import time
 
@@ -24,6 +24,6 @@ def allocate_domains(migrate, controller):
 
 
 if __name__ == '__main__':
-    controller = controller.build_controller()
+    controller = controller.Controller()
     allocate_domains(True, controller)
 
