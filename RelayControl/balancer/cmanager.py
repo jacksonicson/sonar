@@ -11,7 +11,7 @@ import time
 
 '''
 Conducting Simulations: 
-* main.py - configure the appropriate controller
+* cmanager.py - configure the appropriate controller
 * [controller].py - configure the controller 
 * nodes.py - configure the infrastructure settings (node size, domain size, ..)
 * domains.py - configure the number of domains
@@ -189,7 +189,7 @@ def initial_allocation():
         controller = _get_controller(CONTROLLER, pump)
         
         # Build internal infrastructure representation
-        return controller.initial_placement_production()
+        return controller.initial_placement()
         
     print 'ERROR: Initial allocation can only be used in production mode'
     return None
