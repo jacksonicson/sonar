@@ -13,12 +13,12 @@ import virtual.placement as placement
 ######################
 NUM_BUCKETS = 6  # Number of allocation buckets
 TOTAL_EXPERIMENT_DURATION = profiles.RAMP_UP + profiles.EXPERIMENT_DURATION + profiles.RAMP_DOWN 
-PERCENTILE = 90  
+PERCENTILE = 99 
 ######################
 
 # Fixed values
 START_WAIT = 0  # Data aggregation phase (ALWAYS 0 FOR THIS CONTROLLER)
-INTERVAL = 60  # Control frequency
+INTERVAL = 10  # Control frequency
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
