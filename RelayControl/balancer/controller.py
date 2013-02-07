@@ -55,16 +55,15 @@ class Controller(object):
         self.build_stragegy() 
     
     def model_initialize(self):
-        self.model = model.Model
-        
-        # Flush model
+        # Create a new model
+        self.model = model.Model()
         self.model.flush()
         
         # Run configuration
         if config.PRODUCTION: 
             self.model.model_from_current_allocation()
         else:
-            migrations, _ = self.initial_placement()
+            migrations, _ = self.strategy.initial_placement()
             self.model.model_from_migrations(migrations)
         
         # Dump model
@@ -108,12 +107,12 @@ class Controller(object):
             self.strategy = strategy_file.Strategy(scoreboard, self.pump, model)
         elif CONTROLLER == 'sandpiper':
             from sandpiper import controller_sandpiper_standard  # @UnusedImport
-            self.strategy = controller_sandpiper_standard.Strategy(scoreboard, self.pump, model)
+            self.strategy = controller_sandpiper_standard.Controller(scoreboard, self.pump, model)
         elif CONTROLLER == 'ssapv':
-            import strategy_dsap
             import strategy_ssapv 
             self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, model)
         elif CONTROLLER == 'dsap':
+            import strategy_dsap
             self.strategy = strategy_dsap.Strategy(scoreboard, self.pump, model)
         else:
             print 'No controller defined'
