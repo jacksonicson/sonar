@@ -141,8 +141,7 @@ class StrategyBase(object):
                                                        'timestamp' : self.pump.sim_time()}))
         
         # Update scoreboard
-        sb = self.scoreboard.Scoreboard()
-        sb.add_active_info(active_server_info[0], self.pump.sim_time())
+        self.scoreboard.add_active_info(active_server_info[0], self.pump.sim_time())
         
         
     def migrate(self, domain, source, target):
@@ -202,8 +201,7 @@ class StrategyBase(object):
         # Dump scoreboard information 
         if not configuration.PRODUCTION:
             print 'Scoreboard:'      
-            sb = self.scoreboard.Scoreboard()
-            sb.dump(self.pump)
+            self.scoreboard.dump(self.pump)
             
         # Wait for next control cycle
         print 'Wait for next control cycle...'

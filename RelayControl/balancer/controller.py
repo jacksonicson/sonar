@@ -148,7 +148,7 @@ class Strategy(object):
         else:
             # Use the workload driver to simulate Sonar
             import driver
-            driver = driver.Driver(scoreboard, self.pump, self.model, self.handler)
+            driver = driver.Driver(self.scoreboard, self.pump, self.model, self.handler)
             driver.start()
         
         # Start controller
@@ -172,8 +172,8 @@ def launch_sim():
         controller.start()
         
         # Get scoreboard statistics
-        res = scoreboard.Scoreboard().get_result_line(controller.pump)
-        scoreboard.Scoreboard().dump(controller.pump)
+        res = controller.scoreboard.get_result_line(controller.pump)
+        controller.scoreboard.dump(controller.pump)
         lines.append(res)
 
     print 'Results: %s' % name        

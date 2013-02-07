@@ -3,8 +3,8 @@ from control import domains
 from service import times_client
 from virtual import nodes
 from workload import profiles, util as wutil
+from workload.timeutil import * # @UnusedWildImport
 import model
-from workload.timeutil import *  # @UnusedWildImport
 import numpy as np
 import sys
 
@@ -112,12 +112,12 @@ class Driver:
         if tindex >= (self.min_ts_length - self.ramp_down / self.freq):
             print 'Driver exited!'
             print 'Shutting down simulation...'
-            self.scoreboard.Scoreboard().close() 
+            self.scoreboard..close() 
             self.pump.stop()
             return
         
         # Update slot count in scoreboard
-        self.scoreboard.Scoreboard().update_slot_count()
+        self.scoreboard.update_slot_count()
         
         # For all nodes update their domains and aggregate the load for the node
         for host in self.model.get_hosts(model.types.NODE):
@@ -135,7 +135,7 @@ class Driver:
                 aggregated_load += nodes.to_node_load(load)
                                 
                 # Update aggregated cpu load
-                self.scoreboard.Scoreboard().add_cpu_load(load)
+                self.scoreboard.add_cpu_load(load)
 
             # Add hypervisor load to the aggregated load
             # For the SSAPv this causes service level violations
@@ -152,7 +152,7 @@ class Driver:
             
             # Update overload counter
             if aggregated_load > 100:
-                self.scoreboard.Scoreboard().add_cpu_violations(1)
+                self.scoreboard.add_cpu_violations(1)
                 
         
         # Schedule next call for run
