@@ -22,6 +22,9 @@ start = False
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
 
+# Strategy instance
+controller = controller.Strategy()
+
 class AllocateDomains(btree.Action):
     def action(self):
         # Create drones
@@ -121,7 +124,7 @@ class TriggerRain(btree.Action):
         logger.log(sonarlog.SYNC, 'start driving load')
         logger.info('querying ramp-up duration')
         
-        d = status[0].getRampUpTime()
+        d = self.blackboard.rain_clients[0].getRampUpTime()
         d.addCallback(self.ramp_up)
         
     def ramp_up(self, ret):
@@ -159,6 +162,8 @@ class ConnectRain(btree.Action):
         
     def ok(self, status, d):
         self.blackboard.rain_clients = status
+        print 'Clients'
+        print status
         d.callback(True)
         
     def err(self, status, d):
@@ -235,7 +240,7 @@ class StartDatabase(btree.Action):
                 dlist.append(d)
             
             # Wait for all drones to finish and set phase
-            self.d = defer.Deferred()
+            d = defer.Deferred()
             dl = defer.DeferredList(dlist)
             dl.addCallback(self.ok, d)
             return d
@@ -265,7 +270,7 @@ class StartGlassfish(btree.Action):
                 dlist.append(d)
             
             # Wait for all drones to finish and set phase
-            self.d = defer.Deferred()
+            d = defer.Deferred()
             dl = defer.DeferredList(dlist)
             dl.addCallback(self.ok, d)
             return d
@@ -324,12 +329,22 @@ def main():
     # Blackboard
     bb = btree.BlackBoard()
     
-    # Behavior trees
+    # Start benchmark
     start = btree.Sequence(bb)
     start.add(AllocateDomains())
-    # start.add(ConfigureGlassfish())
-    start.add(StartDatabase())
+#    start.add(ConfigureGlassfish())
+#    
+#    pl = btree.ParallelNode()
+#    start.add(pl)
+#    pl.add(StartGlassfish())
+#    pl.add(StartDatabase())
+#    
+#    start.add(StartRain())
+#    start.add(ConnectRain())
+#    start.add(TriggerRain())
+    start.add(startController())
     
+    # Stop benchmark
     stop = btree.Sequence(bb)
     stop.add(AllocateDomains())
     stop.add(StopGlassfishRain())

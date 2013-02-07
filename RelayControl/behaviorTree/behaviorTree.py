@@ -11,6 +11,7 @@ class BlackBoard:
 class ParallelNode(__Node):
     def __init__(self, blackboard=None):
         self.children = []
+        self.blackboard = blackboard
 
     def execute(self):
         if len(self.children) == 0:

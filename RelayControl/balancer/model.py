@@ -75,7 +75,7 @@ class Model(object):
             for domain_name in allocation[node_name]:
                 domain = Domain(domain_name, nodes.DOMAIN_CPU_CORES)
                 node.add_domain(domain)
-                self.hosts[domain] = domain
+                self.hosts[domain_name] = domain
 
 
     def model_from_migrations(self, migrations):

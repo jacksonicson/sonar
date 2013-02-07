@@ -32,7 +32,7 @@ Strategies:
 ######################
 # # CONFIGURATION    ##
 ######################
-STRATEGY = 'sandpiper' 
+STRATEGY = 'reactive' 
 SIM_ITERATIONS = 1
 ######################
 
@@ -109,25 +109,25 @@ class Strategy(object):
         
         if STRATEGY == 'reactive': 
             import strategy_sandpiper_reactive
-            self.strategy = strategy_sandpiper_reactive.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_sandpiper_reactive.Strategy(self.scoreboard, self.pump, self.model)
         elif STRATEGY == 'proactive':
             import strategy_sandpiper_proactive
-            self.strategy = strategy_sandpiper_proactive.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_sandpiper_proactive.Strategy(self.scoreboard, self.pump, self.model)
         elif STRATEGY == 'round':
             import strategy_rr
-            self.strategy = strategy_rr.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_rr.Strategy(self.scoreboard, self.pump, self.model)
         elif STRATEGY == 'file':
             import strategy_file
-            self.strategy = strategy_file.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_file.Strategy(self.scoreboard, self.pump, self.model)
         elif STRATEGY == 'sandpiper':
             from sandpiper import strategy_sandpiper_standard  # @UnusedImport
-            self.strategy = strategy_sandpiper_standard.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_sandpiper_standard.Strategy(self.scoreboard, self.pump, self.model)
         elif STRATEGY == 'ssapv':
             import strategy_ssapv 
-            self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_ssapv.Strategy(self.scoreboard, self.pump, self.model)
         elif STRATEGY == 'dsap':
             import strategy_dsap
-            self.strategy = strategy_dsap.Strategy(scoreboard, self.pump, self.model)
+            self.strategy = strategy_dsap.Strategy(self.scoreboard, self.pump, self.model)
         else:
             print 'No controller defined'
             return
@@ -144,7 +144,7 @@ class Strategy(object):
             # This will start a new service in a separate thread
             # The controller and simulation run single threaded by message pump
             import connector
-            connector.connect_sonar(model, self.handler)
+            connector.connect_sonar(self.model, self.handler)
         else:
             # Use the workload driver to simulate Sonar
             import driver
