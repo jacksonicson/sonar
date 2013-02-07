@@ -53,6 +53,7 @@ class Driver:
             # Select and load TS (based on the configuration)
             index = domains.index_of(domain.name)
             mapping = domains.domain_profile_mapping[index]
+            # load = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             load = profiles.get_cpu_profile_for_initial_placement(mapping.profileId)
             
             ts = connection.load(load)

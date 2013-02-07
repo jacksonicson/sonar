@@ -102,7 +102,7 @@ class MigrationQueue(object):
                 self.running.append(migration)
                 to_trigger.append(migration)
             else:
-                print 'skipping'
+                pass
             
         # Trigger migrations
         for migration in to_trigger:

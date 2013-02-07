@@ -37,7 +37,7 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 # # CONFIGURATION            ##
 ##############################
-config = mix0
+config = mix1
 ##############################
 
 ##############################
@@ -286,7 +286,7 @@ def __build_sample_day(mix, save):
     times_client.close()
  
  
-def build_modified_profiles(mix, save):
+def __build_modified_profiles(mix, save):
     connection = times_client.connect()
     
     for mi_element in mix:
@@ -398,7 +398,7 @@ def __padprofile(profile_ts, interval):
     return curve 
 
 
-def build_all_profiles_for_mix(mix, save):
+def __build_all_profiles_for_mix(mix, save):
     # TS for sample day and profile processing
     sample_day = []
     profile = []
@@ -441,7 +441,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
         __write_profile(connection, __times_name(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
         times_client.close()
     
-def dump_to_csv():
+def __dump_to_csv():
     connection = times_client.connect()
     
     demands = []
@@ -473,7 +473,7 @@ def dump_to_csv():
         
     times_client.close()
     
-def plot_overlay_mix():
+def __plot_overlay_mix():
     '''
     Plots all TS of a mix in a single axis graph
     '''
@@ -560,7 +560,7 @@ def dump(logger):
     logger.info('selected_name = %s' % selected_name)
     
     
-def dump_user_profile_maxes():
+def __dump_user_profile_maxes():
     '''
     Used to verify that all user profiles have user values below MAX_USERS
     '''
@@ -577,11 +577,11 @@ def dump_user_profile_maxes():
     
 # Builds the profiles and saves them in Times
 def main():
-    # dump_user_profile_maxes()
-    # build_all_profiles_for_mix(selected, True)
-    # build_modified_profiles(selected, False)
-    plot_overlay_mix()
-    # dump_to_csv()
+    # __dump_user_profile_maxes()
+    # __build_all_profiles_for_mix(selected, True)
+    # __build_modified_profiles(selected, False)
+    __plot_overlay_mix()
+    # __dump_to_csv()
     pass
 
 if __name__ == '__main__':
