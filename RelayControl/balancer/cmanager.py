@@ -114,8 +114,9 @@ def heartbeat(pump):
 
 def _get_controller(controller, pump):
     # Only create a single controller instance
+    global controller_instance
     if controller_instance != None:
-        return controller 
+        return controller_instance 
     
     print 'CREATING CONTROLLER INSTANCE'
     
@@ -130,25 +131,24 @@ def _get_controller(controller, pump):
     
     # ### CONTROLLER ##############################################
     if controller == 'reactive': 
-        controller = controller_sandpiper_reactive.Controller(scoreboard, pump, model)
+        controller_instance = controller_sandpiper_reactive.Controller(scoreboard, pump, model)
     elif controller == 'proactive':
-        controller = controller_sandpiper_proactive.Controller(scoreboard, pump, model)
+        controller_instance = controller_sandpiper_proactive.Controller(scoreboard, pump, model)
     elif controller == 'round':
-        controller = controller_rr.Controller(scoreboard, pump, model)
+        controller_instance = controller_rr.Controller(scoreboard, pump, model)
     elif controller == 'file':
-        controller = controller_file.Controller(scoreboard, pump, model)
+        controller_instance = controller_file.Controller(scoreboard, pump, model)
     elif controller == 'sandpiper':
-        controller = controller_sandpiper_standard.Controller(scoreboard, pump, model)
+        controller_instance = controller_sandpiper_standard.Controller(scoreboard, pump, model)
     elif controller == 'ssapv': 
-        controller = controller_ssapv.Controller(scoreboard, pump, model)
+        controller_instance = controller_ssapv.Controller(scoreboard, pump, model)
     elif controller == 'dsap':
-        controller = controller_dsap.Controller(scoreboard, pump, model)
+        controller_instance = controller_dsap.Controller(scoreboard, pump, model)
     else:
         print 'No controller defined'
         return
-    # #############################################################
     
-    return controller
+    return controller_instance
     
 
 def main(controller_name):
