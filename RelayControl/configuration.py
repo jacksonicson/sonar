@@ -71,6 +71,6 @@ PUMP_SPEEDUP = 1
 MIGRATION_DOWNTIME = 15000
 
 ##########################
-## FILESE               ##
+## FILES                ##
 def path(filename, ending='txt'):
     return 'C:/temp/%s.%s' % (filename, ending)

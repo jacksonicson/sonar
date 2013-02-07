@@ -1,15 +1,15 @@
 from collector import ttypes
+from control import domains
 from service import times_client
 from virtual import nodes
 from workload import profiles, util as wutil
-from workload.timeutil import * #@UnusedWildImport
-from control import domains
+from workload.profiles import RAMP_UP
+from workload.timeutil import *  # @UnusedWildImport
 import numpy as np
 import sys
-from workload.profiles import RAMP_UP
 
 ##########################
-## CONFIGURATION        ##
+# # CONFIGURATION        ##
 BASE_LOAD = 0
 
 NOISE = False
@@ -18,8 +18,6 @@ NOISE_SIGMA = 1.0
 
 MIGRATION_SOURCE = 13 
 MIGRATION_TARGET = 17
-
-RAM_UP = 10 * 60
 ##########################
 
 class Driver:
@@ -47,8 +45,8 @@ class Driver:
         print 'Connecting with Times'
         connection = times_client.connect()
         
-        self.min_ts_length = sys.maxint # Minimum length across all TS
-        freq = 0 # Frequency of the TS from Times
+        self.min_ts_length = sys.maxint  # Minimum length across all TS
+        freq = 0  # Frequency of the TS from Times
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
@@ -86,7 +84,7 @@ class Driver:
         self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
         
         # Calculate ramp up delete time
-        self.ramp_up = RAMP_UP / self.freq
+        self.ramp_up = profiles.RAMP_UP / self.freq
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
@@ -155,6 +153,6 @@ class Driver:
                 self.scoreboard.Scoreboard().add_cpu_violations(1)
                 
         
-        # Whole simulation might run accelerated
+        # Schedule next call for run
         self.pump.callLater(self.report_rate, self.run) 
             

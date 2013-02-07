@@ -142,12 +142,12 @@ def _get_controller(controller, pump):
     return controller
     
 
-def main(controller):
+def main(controller_name):
     # New message pump
     pump = msgpump.Pump(heartbeat)
     
     # Get controller
-    controller = _get_controller(controller, pump)
+    controller = _get_controller(controller_name, pump)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
