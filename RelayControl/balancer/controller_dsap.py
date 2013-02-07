@@ -122,6 +122,7 @@ class Controller(controller.LoadBalancer):
             model_source = self.model.get_host(source_node)
             model_target = self.model.get_host(target_node)
             
+            # dep = self.migration_queue.add(model_domain, model_source, model_target, dep)
             dep = self.migration_queue.add(model_domain, model_source, model_target)
         
         return 
