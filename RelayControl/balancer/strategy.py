@@ -201,7 +201,7 @@ class StrategyBase(object):
         # Dump scoreboard information 
         if not configuration.PRODUCTION:
             print 'Scoreboard:'      
-            self.scoreboard.dump(self.pump)
+            self.scoreboard.dump()
             
         # Wait for next control cycle
         print 'Wait for next control cycle...'

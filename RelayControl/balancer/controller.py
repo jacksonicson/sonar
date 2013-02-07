@@ -62,8 +62,6 @@ class MetricHandler(object):
 class Strategy(object):
     
     def __init__(self):
-        self.scoreboard = scoreboard.Scoreboard()
-        
         # Create a new model
         self.model = model.Model()
         self.model.flush()
@@ -107,6 +105,10 @@ class Strategy(object):
             pump.callLater(10 * 60, heartbeat, pump)
         self.pump = msgpump.Pump(heartbeat)
         
+        # Create scoreboard
+        self.scoreboard = scoreboard.Scoreboard(self.pump)
+        
+        # Create controller based on the strategy
         if STRATEGY == 'reactive': 
             import strategy_sandpiper_reactive
             self.strategy = strategy_sandpiper_reactive.Strategy(self.scoreboard, self.pump, self.model)
@@ -172,8 +174,8 @@ def launch_sim():
         controller.start()
         
         # Get scoreboard statistics
-        res = controller.scoreboard.get_result_line(controller.pump)
-        controller.scoreboard.dump(controller.pump)
+        res = controller.scoreboard.get_result_line()
+        controller.scoreboard.dump()
         lines.append(res)
 
     print 'Results: %s' % name        

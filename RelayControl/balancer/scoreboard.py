@@ -9,8 +9,8 @@ class ActiveServerInfo(object):
 
 # Scoreboard is a singleton class which overrides the new operator
 class Scoreboard(object):
-    def __init__(self):
-        print 'SCOREBOARD INSTANCE'
+    def __init__(self, pump):
+        self.pump = pump
         self.flush()
     
     def flush(self):
@@ -41,19 +41,19 @@ class Scoreboard(object):
             self.imbalance_migrations += 1
             return
         if migration_type == 'Overload (Empty=False)':
-            self.overload_migrations +=1
+            self.overload_migrations += 1
             return
         if migration_type == 'Overload (Empty=True)':
-            self.overload_migrations +=1
+            self.overload_migrations += 1
             return
         if migration_type == 'Underload (Empty=False)':
-            self.underload_migrations +=1
+            self.underload_migrations += 1
             return
         if migration_type == 'Underload (Empty=True)':
-            self.underload_migrations +=1
+            self.underload_migrations += 1
             return
         if migration_type == 'Swap Part 1':
-            self.swaps +=1      
+            self.swaps += 1      
     
     def add_cpu_violations(self, violations):
         if not self.closed:
@@ -74,13 +74,13 @@ class Scoreboard(object):
             self.min_servers = min(self.min_servers, servercount)
             self.max_servers = max(self.max_servers, servercount)
 
-    def analytics_average_server_count(self, pump):
+    def analytics_average_server_count(self):
         if not self.active_server_infos:
             return 0
         
         wrapped_infos = []
         wrapped_infos.extend(self.active_server_infos)
-        wrapped_infos.append(ActiveServerInfo(pump.sim_time(), self.active_server_infos[-1].servercount))
+        wrapped_infos.append(ActiveServerInfo(self.pump.sim_time(), self.active_server_infos[-1].servercount))
         
         last_info = None
         server_seconds = 0
@@ -102,7 +102,7 @@ class Scoreboard(object):
         avg_count = server_seconds / total_time
         return avg_count
        
-    def get_results(self, pump):
+    def get_results(self):
         # Tuple contains
         # * count of active server infos
         # * average server count
@@ -111,15 +111,15 @@ class Scoreboard(object):
         # * min server
         # * max servers
         # * active server simulation time slots
-        return (len(self.active_server_infos), self.analytics_average_server_count(pump),
-                self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers, 
+        return (len(self.active_server_infos), self.analytics_average_server_count(),
+                self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers,
                 self.slot_count)
     
-    def get_result_line(self, pump):
-        res = self.get_results(pump)
+    def get_result_line(self):
+        res = self.get_results()
         return '%f \t %f \t %i \t %i \t %i \t %i \t %i' % res
     
-    def dump(self, pump):
+    def dump(self):
         print 'Records %i' % len(self.active_server_infos)
-        print 'Average server count %f' % self.analytics_average_server_count(pump)
+        print 'Average server count %f' % self.analytics_average_server_count()
         

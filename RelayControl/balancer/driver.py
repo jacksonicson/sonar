@@ -112,7 +112,7 @@ class Driver:
         if tindex >= (self.min_ts_length - self.ramp_down / self.freq):
             print 'Driver exited!'
             print 'Shutting down simulation...'
-            self.scoreboard..close() 
+            self.scoreboard.close() 
             self.pump.stop()
             return
         
