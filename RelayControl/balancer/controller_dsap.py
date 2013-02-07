@@ -1,6 +1,7 @@
 from logs import sonarlog
 from migration_queue import MigrationQueue
 from virtual import nodes
+from workload import profiles
 import control.domains as domains
 import controller
 import json
@@ -8,14 +9,16 @@ import numpy as np
 import virtual.placement as placement
 
 ######################
-# # CONFIGURATION    ##
+#  CONFIGURATION    ##
 ######################
-START_WAIT = 0
-INTERVAL = 60  # how often balance() gets called
-NUM_BUCKETS = 6
-CYCLE_DURATION = 6 * 60 * 60 + 10 * 60 * 2
+NUM_BUCKETS = 6  # Number of allocation buckets
+TOTAL_EXPERIMENT_DURATION = profiles.RAMP_UP + profiles.EXPERIMENT_DURATION + profiles.RAMP_DOWN 
 PERCENTILE = 90  
 ######################
+
+# Fixed values
+START_WAIT = 0  # Data aggregation phase (ALWAYS 0 FOR THIS CONTROLLER)
+INTERVAL = 60  # Frequency of calling balance()
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
@@ -126,7 +129,7 @@ class Controller(controller.LoadBalancer):
     
     def balance(self):
         # Current bucket index
-        bucket_duration = CYCLE_DURATION / NUM_BUCKETS
+        bucket_duration = TOTAL_EXPERIMENT_DURATION / NUM_BUCKETS
         bucket_index = int((self.pump.sim_time() - self.time_null + 10 * 60) / bucket_duration)
         # bucket_index %= NUM_BUCKETS
         print 'bucket index %i' % bucket_index
