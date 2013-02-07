@@ -10,18 +10,29 @@ import time
 
 '''
 Conducting Simulations: 
-* cmanager.py - configure the appropriate controller
-* [controller].py - configure the controller 
+* controller.py - configure the appropriate strategy
+* [controller].py - configure the strategy 
 * nodes.py - configure the infrastructure settings (node size, domain size, ..)
 * domains.py - configure the number of domains
 * profiles.py - select the workload mix
 * driver.py - configure the workload simulation settings
 '''
 
+'''
+Strategies:
+- reactive
+- proactive
+- round
+- file
+- sandpiper
+- ssapv
+- dsap
+'''
+
 ######################
 # # CONFIGURATION    ##
 ######################
-CONTROLLER = 'dsap'
+STRATEGY = 'file' 
 SIM_ITERATIONS = 1
 ######################
 
@@ -96,25 +107,25 @@ class Controller(object):
             pump.callLater(10 * 60, heartbeat, pump)
         self.pump = msgpump.Pump(heartbeat)
         
-        if CONTROLLER == 'reactive': 
+        if STRATEGY == 'reactive': 
             import strategy_sandpiper_reactive
             self.strategy = strategy_sandpiper_reactive.Strategy(scoreboard, self.pump, self.model)
-        elif CONTROLLER == 'proactive':
+        elif STRATEGY == 'proactive':
             import strategy_sandpiper_proactive
             self.strategy = strategy_sandpiper_proactive.Strategy(scoreboard, self.pump, self.model)
-        elif CONTROLLER == 'round':
+        elif STRATEGY == 'round':
             import strategy_rr
             self.strategy = strategy_rr.Strategy(scoreboard, self.pump, self.model)
-        elif CONTROLLER == 'file':
+        elif STRATEGY == 'file':
             import strategy_file
             self.strategy = strategy_file.Strategy(scoreboard, self.pump, self.model)
-        elif CONTROLLER == 'sandpiper':
+        elif STRATEGY == 'sandpiper':
             from sandpiper import controller_sandpiper_standard  # @UnusedImport
             self.strategy = controller_sandpiper_standard.Controller(scoreboard, self.pump, self.model)
-        elif CONTROLLER == 'ssapv':
+        elif STRATEGY == 'ssapv':
             import strategy_ssapv 
             self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, self.model)
-        elif CONTROLLER == 'dsap':
+        elif STRATEGY == 'dsap':
             import strategy_dsap
             self.strategy = strategy_dsap.Strategy(scoreboard, self.pump, self.model)
         else:
@@ -150,7 +161,7 @@ class Controller(object):
 
 
 def launch_sim():
-    name = '%s - %s' % (profiles.config.name, CONTROLLER)
+    name = '%s - %s' % (profiles.config.name, STRATEGY)
     lines = []
     for _ in xrange(0, SIM_ITERATIONS):
         # Recreate domains

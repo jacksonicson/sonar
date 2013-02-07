@@ -1,3 +1,4 @@
+from balancer import controller
 from control import drones, hosts, base
 from logs import sonarlog
 from rain import RainService
@@ -6,7 +7,6 @@ from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 from workload import profiles
-from balancer import controller
 import domains
 import math
 

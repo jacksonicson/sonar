@@ -82,7 +82,7 @@ class Driver:
         
         # Reduce length of time series to 6 hours
         # Calculation: Adjust frequency by (new duration / current TS duration)
-        self.freq = ts_freq * (profiles.EXPERIMENT_DURATION / (self.min_ts_length * ts_freq))
+        self.freq = (ts_freq * profiles.EXPERIMENT_DURATION) / (self.min_ts_length * ts_freq)
         
         # Calculate ramp up delete time
         self.ramp_up = profiles.RAMP_UP
