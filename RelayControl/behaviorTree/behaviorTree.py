@@ -4,9 +4,8 @@ class __Node(object):
     def execute(self):
         pass
 
-class BlackBoard:
-    def __init__(self):
-        pass
+class BlackBoard(object):
+    pass
 
 class ParallelNode(__Node):
     def __init__(self, blackboard=None):
