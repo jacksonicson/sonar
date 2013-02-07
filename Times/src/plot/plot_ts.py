@@ -32,4 +32,4 @@ def main(name):
                 
 
 if __name__ == '__main__':
-    main('SIS_100_cpu')
+    main('SIS_161_cpu_profile_norm')
