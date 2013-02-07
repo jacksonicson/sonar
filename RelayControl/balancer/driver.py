@@ -84,7 +84,7 @@ class Driver:
         self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
         
         # Calculate ramp up delete time
-        self.ramp_up = profiles.RAMP_UP / self.freq
+        self.ramp_up = profiles.RAMP_UP
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
@@ -106,7 +106,7 @@ class Driver:
     def run(self):
         # Index for simulation time
         sim_time = self.pump.sim_time() 
-        tindex = (sim_time / self.freq) + self.ramp_up
+        tindex = ((sim_time + self.ramp_up) / self.freq) 
         if tindex >= (self.min_ts_length - self.ramp_up):
             print 'Driver exited!'
             print 'Shutting down simulation...'
