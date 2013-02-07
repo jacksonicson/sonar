@@ -52,13 +52,16 @@ class Controller(object):
     
     def __init__(self):
         self.scoreboard = scoreboard.Scoreboard()
-        self.build_stragegy() 
-    
-    def model_initialize(self):
+        
         # Create a new model
         self.model = model.Model()
         self.model.flush()
         
+        self.build_stragegy()
+        
+        self.model_initialize() 
+    
+    def model_initialize(self):
         # Run configuration
         if config.PRODUCTION: 
             self.model.model_from_current_allocation()
@@ -90,41 +93,38 @@ class Controller(object):
     def build_stragegy(self):
         # New message pump
         def heartbeat(pump):
-            pump.callLater(10 * 60, heartbeat)
+            pump.callLater(10 * 60, heartbeat, pump)
         self.pump = msgpump.Pump(heartbeat)
         
         if CONTROLLER == 'reactive': 
             import strategy_sandpiper_reactive
-            self.strategy = strategy_sandpiper_reactive.Strategy(scoreboard, self.pump, model)
+            self.strategy = strategy_sandpiper_reactive.Strategy(scoreboard, self.pump, self.model)
         elif CONTROLLER == 'proactive':
             import strategy_sandpiper_proactive
-            self.strategy = strategy_sandpiper_proactive.Strategy(scoreboard, self.pump, model)
+            self.strategy = strategy_sandpiper_proactive.Strategy(scoreboard, self.pump, self.model)
         elif CONTROLLER == 'round':
             import strategy_rr
-            self.strategy = strategy_rr.Strategy(scoreboard, self.pump, model)
+            self.strategy = strategy_rr.Strategy(scoreboard, self.pump, self.model)
         elif CONTROLLER == 'file':
             import strategy_file
-            self.strategy = strategy_file.Strategy(scoreboard, self.pump, model)
+            self.strategy = strategy_file.Strategy(scoreboard, self.pump, self.model)
         elif CONTROLLER == 'sandpiper':
             from sandpiper import controller_sandpiper_standard  # @UnusedImport
-            self.strategy = controller_sandpiper_standard.Controller(scoreboard, self.pump, model)
+            self.strategy = controller_sandpiper_standard.Controller(scoreboard, self.pump, self.model)
         elif CONTROLLER == 'ssapv':
             import strategy_ssapv 
-            self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, model)
+            self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, self.model)
         elif CONTROLLER == 'dsap':
             import strategy_dsap
-            self.strategy = strategy_dsap.Strategy(scoreboard, self.pump, model)
+            self.strategy = strategy_dsap.Strategy(scoreboard, self.pump, self.model)
         else:
             print 'No controller defined'
             return
 
     
     def start(self):
-        # Build internal infrastructure representation
-        self.model_initialize()
-        
         # Create notification handler
-        handler = MetricHandler(self.model)
+        self.handler = MetricHandler(self.model)
         
         # Decides whether a simulation or a real
         # control system is run
@@ -133,11 +133,11 @@ class Controller(object):
             # This will start a new service in a separate thread
             # The controller and simulation run single threaded by message pump
             import connector
-            connector.connect_sonar(model, handler)
+            connector.connect_sonar(model, self.handler)
         else:
-            # Start the driver thread which simulates Sonar
+            # Use the workload driver to simulate Sonar
             import driver
-            driver = driver.Driver(scoreboard, self.pump, model, handler)
+            driver = driver.Driver(scoreboard, self.pump, self.model, self.handler)
             driver.start()
         
         # Start controller

@@ -3,7 +3,7 @@ from control import domains
 from service import times_client
 from virtual import nodes
 from workload import profiles, util as wutil
-from workload.profiles import RAMP_UP
+import model
 from workload.timeutil import *  # @UnusedWildImport
 import numpy as np
 import sys
@@ -49,7 +49,7 @@ class Driver:
         ts_freq = 0  # Frequency of the TS from Times
         
         # Iterate over all domains and assign them a TS
-        for domain in self.model.get_hosts(self.model.types.DOMAIN):
+        for domain in self.model.get_hosts(model.types.DOMAIN):
             # Select and load TS (based on the configuration)
             index = domains.index_of(domain.name)
             mapping = domains.domain_profile_mapping[index]
@@ -120,7 +120,7 @@ class Driver:
         self.scoreboard.Scoreboard().update_slot_count()
         
         # For all nodes update their domains and aggregate the load for the node
-        for host in self.model.get_hosts(self.model.types.NODE):
+        for host in self.model.get_hosts(model.types.NODE):
             # Reset aggregated server load
             aggregated_load = 0
             
