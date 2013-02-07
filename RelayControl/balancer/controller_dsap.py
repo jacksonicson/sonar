@@ -130,7 +130,7 @@ class Controller(controller.LoadBalancer):
     def balance(self):
         # Current bucket index
         bucket_duration = TOTAL_EXPERIMENT_DURATION / NUM_BUCKETS
-        bucket_index = int((self.pump.sim_time() - self.time_null + 10 * 60) / bucket_duration)
+        bucket_index = int((self.pump.sim_time() - self.time_null + profiles.RAMP_UP) / bucket_duration)
         # bucket_index %= NUM_BUCKETS
         print 'bucket index %i' % bucket_index
         if bucket_index >= NUM_BUCKETS:
@@ -146,7 +146,6 @@ class Controller(controller.LoadBalancer):
         self.curr_bucket = bucket_index
         
         # Trigger migrations to get new bucket allocation
-        # A
         self.__run_migrations(self.curr_bucket)
         # self.__run_optimized_migrations(self.curr_bucket)
     
