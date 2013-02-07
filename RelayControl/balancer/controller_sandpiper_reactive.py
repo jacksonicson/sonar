@@ -1,11 +1,11 @@
-from logs import sonarlog
-from balancer.model import types
 from balancer import controller
-import json
+from balancer.model import types
+from logs import sonarlog
 from virtual import nodes, placement
+import json
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 START_WAIT = 120
 INTERVAL = 300
@@ -13,8 +13,8 @@ THRESHOLD_OVERLOAD = 90
 THRESHOLD_UNDERLOAD = 40
 PERCENTILE = 80.0
 
-K_VALUE = 20 # sliding windows size
-M_VALUE = 17 # m values out of the window k must be above or below the threshold
+K_VALUE = 20  # sliding windows size
+M_VALUE = 17  # m values out of the window k must be above or below the threshold
 ######################
 
 # Setup logging
@@ -37,13 +37,10 @@ class Controller(controller.LoadBalancer):
                                                                  'm_value' : M_VALUE
                                                                  }))
     
-    def initial_placement_sim(self):
+    def initial_placement(self):
         nodecount = len(nodes.NODES)
         splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute()
-        self.build_internal_model(migrations)       
-            
-        return migrations
+        return splace.execute()
     
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:
@@ -99,7 +96,7 @@ class Controller(controller.LoadBalancer):
         for node in self.model.get_hosts():
             volume = 1.0 / max(0.001, float(100.0 - node.percentile_load(PERCENTILE, k)) / 100.0)
             node.volume = volume
-            node.volume_size = volume / 8.0 # 8 GByte
+            node.volume_size = volume / 8.0  # 8 GByte
             
             if node.type == types.NODE:
                 nodes.append(node)
@@ -144,14 +141,14 @@ class Controller(controller.LoadBalancer):
                             domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                              
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD  # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
                             
                             if test: 
                                 print 'Overload migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, K_VALUE)
+                                self.migrate(domain, source, target)
                                 raise StopIteration()
                             
                         for target in reversed(range(nodes.index(node) + 1, len(nodes))):
@@ -160,14 +157,14 @@ class Controller(controller.LoadBalancer):
                             domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                              
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD  # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
                             
                             if test: 
                                 print 'Overload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, K_VALUE)
+                                self.migrate(domain, source, target)
                                 raise StopIteration()
                             
             except StopIteration: pass 
@@ -196,14 +193,14 @@ class Controller(controller.LoadBalancer):
                             domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                             
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD  # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
                             
                             if test: 
                                 print 'Underload migration: %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, K_VALUE)                                    
+                                self.migrate(domain, source, target)                                    
                                 raise StopIteration()
                         
                         
@@ -213,13 +210,13 @@ class Controller(controller.LoadBalancer):
                             domain_cpu_factor = target.cpu_cores / domain.cpu_cores
                             
                             test = True
-                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD # Overload threshold
+                            test &= (target.percentile_load(PERCENTILE, k) + domain.percentile_load(PERCENTILE, k) / domain_cpu_factor) < THRESHOLD_OVERLOAD  # Overload threshold
                             test &= len(target.domains) < 6
                             test &= (time_now - target.blocked) > sleep_time
                             test &= (time_now - source.blocked) > sleep_time
                             
                             if test: 
                                 print 'Underload migration (Empty): %s from %s to %s' % (domain.name, source.name, target.name)
-                                self.migrate(domain, source, target, K_VALUE)                                    
+                                self.migrate(domain, source, target)                                    
                                 raise StopIteration()
             except StopIteration: pass

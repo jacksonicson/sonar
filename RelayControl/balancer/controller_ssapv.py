@@ -24,17 +24,14 @@ class Controller(controller.LoadBalancer):
                                                                  'aggregation' : AGGREGATION,
                                                                  }))
     # Initial placement calculation (simulation only!!!)
-    def initial_placement_sim(self):
+    def initial_placement(self):
         nodecount = len(nodes.NODES)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
         
         if AGGREGATION == None:
-            migrations, _ = splace.execute(aggregation=False)
+            return splace.execute(aggregation=False)
         else:
-            migrations, _ = splace.execute(aggregation=True, bucketCount=AGGREGATION)
-            
-        self.build_internal_model(migrations)
-        return migrations
+            return splace.execute(aggregation=True, bucketCount=AGGREGATION)
     
     def balance(self):
         # print 'SSAPv static - not controlling'

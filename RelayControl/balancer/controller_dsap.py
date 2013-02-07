@@ -60,11 +60,7 @@ class Controller(controller.LoadBalancer):
                                                                  'num_bucketsl' : NUM_BUCKETS,
                                                                  }))
         
-    def initial_placement_sim(self):
-        self.build_internal_model(self.initial_migrations)
-        return self.initial_migrations 
-    
-    def initial_placement_production(self):
+    def initial_placement(self):
         return self.initial_migrations, self.active_server_info
     
     def __run_migrations(self, bucket_index):

@@ -27,13 +27,10 @@ class Controller(controller.LoadBalancer):
             elif setting == 'swap':
                 self.controller_handlers.append(self.swap_controller)
             
-    def initial_placement_sim(self):
+    def initial_placement(self):
         nodecount = len(nodes.NODES)
         splace = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute()
-        self.build_internal_model(migrations)       
-            
-        return migrations
+        return splace.execute()
         
     def post_migrate_hook(self, success, domain, node_from, node_to, end_time):
         if success:

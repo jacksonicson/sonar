@@ -34,9 +34,9 @@ class SimulatedMigration:
         wait = wait[50]
         
         # Simulate migration wait time
-        self.pump.callLater(wait, self.callback)
+        self.pump.callLater(wait, self.__callback)
         
-    def callback(self):
+    def __callback(self):
         # Set migration end time
         self.end = self.pump.sim_time()
         
@@ -70,11 +70,12 @@ class LoadBalancer(object):
         self.migration_id_counter = 0
         
     # Abstract load balancing method
+    # Override this
     def balance(self):
-        for handler in self.migration_callback_handlers:
-            handler()
+        pass
     
     # Initial placement calculation
+    # Override this
     def initial_placement(self):
         nodecount = len(nodes.NODES)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
@@ -82,11 +83,11 @@ class LoadBalancer(object):
         return migrations, active_server_info
     
     def start(self):
-        print 'Waiting for start: %i' % self.start_wait
+        print 'Sleeping: %i' % self.start_wait
         logger.log(sonarlog.SYNC, 'Releasing load balancer')
         self.pump.callLater(self.start_wait, self.run)
     
-    def migration_callback(self, domain, node_from, node_to, start, end, info, status, error):
+    def __migration_callback(self, domain, node_from, node_to, start, end, info, status, error):
         domain = self.model.get_host(domain)
         node_from = self.model.get_host(node_from)
         node_to = self.model.get_host(node_to)
@@ -144,7 +145,12 @@ class LoadBalancer(object):
         sb.add_active_info(active_server_info[0], self.pump.sim_time())
         
         
-    def migrate(self, domain, source, target, kvalue):
+    def migrate(self, domain, source, target):
+        '''
+        Trigger the migration of domain from source to target node which are the names
+        of the domain and nodes as string. kvalue is only used for reporting purpose. 
+        '''
+        
         print 'Migration triggered'
         assert(source != target)
         
@@ -174,18 +180,18 @@ class LoadBalancer(object):
             pass
         info = info()
         info.migration_id = migration_id
-        info.source_load_cpu = source.mean_load(kvalue)
-        info.target_load_cpu = target.mean_load(kvalue)
+        info.source_load_cpu = source.mean_load(20)
+        info.target_load_cpu = target.mean_load(20)
         
         if configuration.PRODUCTION:
             # Call migration code and hand over the migration_callback reference
             from virtual import allocation
             allocation.migrateDomain(domain.name, source.name, target.name,
-                                     self.migration_callback, maxDowntime=configuration.MIGRATION_DOWNTIME, info=info)
+                                     self.__migration_callback, maxDowntime=configuration.MIGRATION_DOWNTIME, info=info)
         else:
             # Simulate migration
             migration = SimulatedMigration(self.pump, domain.name, source.name, target.name,
-                                           self.migration_callback, info)
+                                           self.__migration_callback, info)
             migration.run()
             
     def run(self):

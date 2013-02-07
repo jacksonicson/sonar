@@ -108,12 +108,11 @@ class MigrationQueue(object):
         for migration in to_trigger:
             self.waiting.remove(migration)
             self.controller.migrate(migration.domain, migration.source,
-                                    migration.target, 20)
+                                    migration.target)
             
   
 if __name__ == '__main__':
     class MockController(object):
-        
         def __init__(self):
             self.q = MigrationQueue(self)
             
@@ -122,12 +121,12 @@ if __name__ == '__main__':
             self.q.add('test2', 'node0', 'node1', a)
             self.q.add('test1', 'node1', 'node2')
             
-        def migration_finished(self, domain, source, target, kvalue):
+        def migration_finished(self, domain, source, target):
             self.q.finished(True, domain, source, target)
         
-        def migrate(self, domain, source, target, kvalue):
+        def migrate(self, domain, source, target):
             print 'migrate: %s' % domain
-            self.migration_finished(domain, source, target, kvalue)
+            self.migration_finished(domain, source, target)
         
     c = MockController()
     c.test()

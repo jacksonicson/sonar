@@ -1,10 +1,6 @@
-from analytics import forecasting as smoother
 from logs import sonarlog
-from model import types
-import configuration
 import controller
 import json
-import numpy as np
 
 ######################
 ## CONFIGURATION    ##
@@ -25,7 +21,7 @@ class Controller(controller.LoadBalancer):
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'SSAPv',
                                                                  }))
     
-    def initial_placement_sim(self):
+    def initial_placement(self):
         from virtual import placement
         from virtual import nodes
         from control import domains 
@@ -48,7 +44,7 @@ class Controller(controller.LoadBalancer):
             print migration 
             _nodes[migration[1]].add_domain(_domains[migration[0]])
             
-        return migrations 
+        return migrations, nodecount
     
     
     def balance(self):
