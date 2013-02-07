@@ -46,7 +46,7 @@ class Driver:
         connection = times_client.connect()
         
         self.min_ts_length = sys.maxint  # Minimum length across all TS
-        freq = 0  # Frequency of the TS from Times
+        ts_freq = 0  # Frequency of the TS from Times
         
         # Iterate over all domains and assign them a TS
         for domain in self.model.get_hosts(self.model.types.DOMAIN):
@@ -59,7 +59,7 @@ class Driver:
             
             # Convert TS to a numpy array
             # select TS not time index
-            freq = ts.frequency
+            ts_freq = ts.frequency
             ts = wutil.to_array(ts)[1]
             
             # Add noise to the time series
@@ -80,11 +80,12 @@ class Driver:
         times_client.close()
         
         # Reduce length of time series to 6 hours
-        # self.freq = (freq * 6.0) / 24.0
-        self.freq = (freq * hour(6.0)) / (self.min_ts_length * freq)
+        # Calculation: Adjust frequency by (new duration / current TS duration)
+        self.freq = ts_freq * (profiles.EXPERIMENT_DURATION / (self.min_ts_length * ts_freq))
         
         # Calculate ramp up delete time
         self.ramp_up = profiles.RAMP_UP
+        self.ramp_down = profiles.RAMP_DOWN
         
         # Schedule message pump
         self.pump.callLater(0, self.run)
@@ -106,8 +107,8 @@ class Driver:
     def run(self):
         # Index for simulation time
         sim_time = self.pump.sim_time() 
-        tindex = ((sim_time + self.ramp_up) / self.freq) 
-        if tindex >= (self.min_ts_length - self.ramp_up):
+        tindex = (sim_time + self.ramp_up) / self.freq
+        if tindex >= (self.min_ts_length - self.ramp_down / self.freq):
             print 'Driver exited!'
             print 'Shutting down simulation...'
             self.scoreboard.Scoreboard().close() 

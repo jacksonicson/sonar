@@ -18,7 +18,7 @@ PERCENTILE = 90
 
 # Fixed values
 START_WAIT = 0  # Data aggregation phase (ALWAYS 0 FOR THIS CONTROLLER)
-INTERVAL = 60  # Frequency of calling balance()
+INTERVAL = 60  # Control frequency
 
 # Setup logging
 logger = sonarlog.getLogger('controller')

@@ -1,4 +1,3 @@
-+from balancer import scoreboard
 from control import domains
 from logs import sonarlog
 from virtual import nodes
@@ -7,6 +6,7 @@ import configuration as config
 import json
 import model
 import msgpump
+import scoreboard
 import time
 
 '''
@@ -60,15 +60,15 @@ def build_from_current_allocation():
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
 
-def build_internal_model(self, migrations):
+def build_internal_model(migrations):
         _nodes = []
         for node in nodes.NODES: 
-            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            mnode = model.Node(node, nodes.NODE_CPU_CORES)
             _nodes.append(mnode)
             
         _domains = {}
         for domain in domains.domain_profile_mapping:
-            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
             _domains[domain.domain] = dom
             
         for migration in migrations:
@@ -195,31 +195,35 @@ def initial_allocation():
     return None
 
 
+def main_sim():
+    name = '%s - %s' % (profiles.config.name, CONTROLLER)
+    lines = []
+    for _ in xrange(0, SIM_ITERATIONS):
+        # Flush scoreboard
+        scoreboard.Scoreboard().flush()
+        
+        # Recreate domains
+        domains.recreate()
+        
+        # Run controller
+        pump = main(CONTROLLER)
+        
+        # Get scoreboard statistics
+        res = scoreboard.Scoreboard().get_result_line(pump)
+        scoreboard.Scoreboard().dump(pump)
+        lines.append(res)
+
+    print 'Results: %s' % name        
+    for line in lines:
+        print line
+          
+            
 def launch():
     if config.PRODUCTION:
-        # Controller is executed in production
         main(CONTROLLER)
     else:
-        name = '%s - %s' % (profiles.config.name, CONTROLLER)
-        lines = []
-        for _ in xrange(0, SIM_ITERATIONS):
-            # Flush scoreboard
-            scoreboard.Scoreboard().flush()
-            
-            # Recreate domains
-            domains.recreate()
-            
-            # Run controller
-            pump = main(CONTROLLER)
-            
-            # Get scoreboard statistics
-            res = scoreboard.Scoreboard().get_result_line(pump)
-            scoreboard.Scoreboard().dump(pump)
-            lines.append(res)
+        main_sim()
 
-        print 'Results: %s' % name        
-        for line in lines:
-            print line
 
 if __name__ == '__main__':
     launch() 

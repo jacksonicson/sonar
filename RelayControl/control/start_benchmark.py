@@ -6,7 +6,7 @@ from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 from workload import profiles
-import balancer.balancer as controller
+import balancer.cmanager as controller
 import domains
 import math
 

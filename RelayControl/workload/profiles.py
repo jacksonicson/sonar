@@ -4,7 +4,7 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 
 from service import times_client
 from times import ttypes
-from timeutil import * #@UnusedWildImport
+from timeutil import *  # @UnusedWildImport
 import configuration
 import matplotlib.pyplot as plt
 import modifier
@@ -35,18 +35,18 @@ mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
 mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 
 ##############################
-## CONFIGURATION            ##
+# # CONFIGURATION            ##
 ##############################
 config = mix0
 ##############################
 
 ##############################
 # Backward compatibility - gets extracted from config
-selected_profile = config.prefix    # Prefix for picking TS from Times
-selected_name = config.name         # Just for logging
-selected = config.data              # Selected workload mix
-modified = config.modified          # Modified version of the workload mix
-traces_exist = config.traces        # For initial placement profiles traces are used if they exist
+selected_profile = config.prefix  # Prefix for picking TS from Times
+selected_name = config.name  # Just for logging
+selected = config.data  # Selected workload mix
+modified = config.modified  # Modified version of the workload mix
+traces_exist = config.traces  # For initial placement profiles traces are used if they exist
 ##############################
 
 '''
@@ -85,24 +85,24 @@ with the interval matches the EXPERIMENT_DURATION.
 '''
 Prefix and post-fixes used to store data in Times
 '''
-POSTIFX_ORIG = '' # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
-POSTFIX_RAW = 'profile' # profile generated from the raw data of the SIS or O2 data set 
-POSTFIX_NORM = 'profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
-POSTFIX_USER = 'profile_user' # Normalized profile multiplied with the max. number of users
-POSTFIX_DAY = 'sampleday' # A sample day of the time series
-POSTFIX_TRACE = 'profile_trace' # Recorded profile which resulted using the user profile in the load driver
-POSTFIX_MODIFIED = 'modified' # A modified trace
+POSTIFX_ORIG = ''  # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
+POSTFIX_RAW = 'profile'  # profile generated from the raw data of the SIS or O2 data set 
+POSTFIX_NORM = 'profile_norm'  # Normalized profile against the set maximum, see mix_selected and ProfileSet class
+POSTFIX_USER = 'profile_user'  # Normalized profile multiplied with the max. number of users
+POSTFIX_DAY = 'sampleday'  # A sample day of the time series
+POSTFIX_TRACE = 'profile_trace'  # Recorded profile which resulted using the user profile in the load driver
+POSTFIX_MODIFIED = 'modified'  # A modified trace
 
 '''
 Experiment specific settings
 Everything is in SECONDS
 '''
-CYCLE_TIME = hour(24) # 24 hours cycle
-PROFILE_INTERVAL_COUNT = CYCLE_TIME / minu(5) # For each 5 minutes there is one data point in a workload profile
-EXPERIMENT_DURATION = hour(6) # 6 hours steady-state duration of the experiment
-RAMP_UP = minu(10) # Ramp up duration of the experiment
-RAMP_DOWN = minu(10) # Ramp down duration of the experiment
-MAX_USERS = user(200) # Maximum number of users
+CYCLE_TIME = hour(24)  # 24 hours cycle
+PROFILE_INTERVAL_COUNT = CYCLE_TIME / minu(5)  # For each 5 minutes there is one data point in a workload profile
+EXPERIMENT_DURATION = hour(6)  # 6 hours steady-state duration of the experiment
+RAMP_UP = minu(10)  # Ramp up duration of the experiment
+RAMP_DOWN = minu(10)  # Ramp down duration of the experiment
+MAX_USERS = user(200)  # Maximum number of users
 
 
 def get_current_cpu_profile(index):
@@ -242,7 +242,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     profile /= maxval
     norm_profile = np.array(profile)
     norm_profile[norm_profile > 1] = 1
-    norm_profile *= 100 # Times does not support float values
+    norm_profile *= 100  # Times does not support float values
     if save:
         __write_profile(connection, __times_name(True, desc.name, POSTFIX_NORM), norm_profile, interval)
     
@@ -500,12 +500,12 @@ def plot_overlay_mix():
         timeSeries = connection.load(__times_name(True, name, POSTFIX_USER))
         print timeSeries
         _, demand = util.to_array(timeSeries)
-        demand = demand[7:289+7]
+        demand = demand[7:289 + 7]
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
 
     
     xt = [(t * 60 / 5) for t in xrange(0, 25)]
-    xl = [t for t in xrange(0,25)]
+    xl = [t for t in xrange(0, 25)]
     
     ax.set_xticks(xt)
     ax.set_xticklabels(xl)
