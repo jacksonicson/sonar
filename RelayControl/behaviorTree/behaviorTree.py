@@ -23,7 +23,7 @@ class BlackBoard:
 
 # Parallel Node
 class ParallelNode(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.children = []
         self.deferreds = []
 
@@ -48,13 +48,14 @@ class ParallelNode(__Node):
             print data
         self.d.callback(result)
         
-    def addChild(self, child):
+    def add(self, child):
+        child.blackboard = self.blackboard
         self.children.append(child)
         return self
         
 # Sequence
 class Sequence(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.children = []
         self.blackboard = blackboard
         self.curChild = 0
@@ -84,13 +85,14 @@ class Sequence(__Node):
             self.d.callback(data)
             pass
         
-    def addChild(self, child):
+    def add(self, child):
+        child.blackboard = self.blackboard
         self.children.append(child)
         return self
 
 # Selector
 class Selector(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.children = []
         self.blackboard = blackboard
         self.curChild = 0
@@ -120,14 +122,15 @@ class Selector(__Node):
             deferFromChild.addCallback(self.moveToNextChild)
             pass
         
-    def addChild(self, child):
+    def add(self, child):
+        child.blackboard = self.blackboard
         self.children.append(child)
         return self
     
 
 # Action (Nodes)
 class Action(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.blackboard = blackboard
         
     def execute(self):
