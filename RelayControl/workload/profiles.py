@@ -104,8 +104,7 @@ RAMP_UP = minu(10)  # Ramp up duration of the experiment
 RAMP_DOWN = minu(10)  # Ramp down duration of the experiment
 MAX_USERS = user(200)  # Maximum number of users
 
-
-def get_current_cpu_profile(index):
+def get_cpu_current_profile(index):
     '''
     Gets CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
@@ -122,18 +121,19 @@ def get_current_cpu_profile(index):
 def get_cpu_profile_for_initial_placement(index):
     '''
     Gets a traced CPU profile by index from the selected workload mix. The selection
-    depends on the modified flag. 
+    depends on whether a profile trace exists. This is always used to build initial
+    allocations! 
     '''
     if traces_exist:
         desc = __by_index(index)
         name = __times_name(True, desc.name, POSTFIX_TRACE)
     else:
-        name = get_current_cpu_profile(index)
+        name = get_cpu_current_profile(index)
     
     print 'Selected CPU profile for initial placement: %s' % name
     return name
 
-def get_current_user_profile(index):
+def get_user_current_profile(index):
     '''
     Gets user profile by index from the selected workload mix. The selection
     depends on the modified flag. 

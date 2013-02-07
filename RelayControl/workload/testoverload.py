@@ -34,7 +34,7 @@ def main():
         import sys
         ts_length = sys.maxint
         for i_service in xrange(service_count):
-            name = profiles.get_current_cpu_profile(i_service)
+            name = profiles.get_cpu_current_profile(i_service)
             tsd = connection.load(name)
             tsd = wutil.to_array(tsd)[1]
             tsdata.append(tsd)
