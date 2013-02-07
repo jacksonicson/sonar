@@ -26,6 +26,9 @@ CONTROLLER = 'dsap'
 SIM_ITERATIONS = 1
 ######################
 
+# Controller instance
+controller_instance = None
+
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
@@ -110,6 +113,12 @@ def heartbeat(pump):
     print 'Message pump started'
 
 def _get_controller(controller, pump):
+    # Only create a single controller instance
+    if controller_instance != None:
+        return controller 
+    
+    print 'CREATING CONTROLLER INSTANCE'
+    
     # New controller
     import controller_ssapv  # @UnusedImport
     import controller_sandpiper_reactive  # @UnusedImport
