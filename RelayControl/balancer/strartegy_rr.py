@@ -1,24 +1,24 @@
 from logs import sonarlog
-import controller
+import strategy
 import json
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 ######################
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, 10*60, 120)
+        super(Strategy, self).__init__(scoreboard, pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'SSAPv',
+        logger.info('Strategy Configuration: %s' % json.dumps({'name' : 'SSAPv',
                                                                  }))
     
     def initial_placement(self):

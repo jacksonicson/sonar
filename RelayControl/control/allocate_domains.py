@@ -1,13 +1,13 @@
 from logs import sonarlog
 from virtual import allocation as virt
-import balancer.cmanager as controller
+import balancer.control_manager as controller
 import json
 import time
 
 # Setup logging
 logger = sonarlog.getLogger('allocate_domains')
 
-def build_controller(migrate=True):
+def build_controller(migrate, controller):
     # Calculate initial placement
     migrations, active_server_info = controller.initial_allocation() 
 
@@ -24,5 +24,6 @@ def build_controller(migrate=True):
 
 
 if __name__ == '__main__':
-    build_controller(True)
+    controller = controller.build_controller()
+    build_controller(True, controller)
 

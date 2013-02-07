@@ -1,6 +1,6 @@
 from logs import sonarlog
 from virtual import nodes, placement
-import controller
+import strategy
 import json
 
 ######################
@@ -12,15 +12,15 @@ AGGREGATION = None
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, 10 * 60, 120)
+        super(Strategy, self).__init__(scoreboard, pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):
         print 'Dump controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'SSAPv',
+        logger.info('Balancer Configuration: %s' % json.dumps({'name' : 'SSAPv',
                                                                  'aggregation' : AGGREGATION,
                                                                  }))
     # Initial placement calculation (simulation only!!!)

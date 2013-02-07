@@ -1,4 +1,4 @@
-from balancer import controller
+from balancer import strategy
 from balancer.model import types
 from logs import sonarlog
 from virtual import nodes, placement
@@ -20,14 +20,14 @@ M_VALUE = 17  # m values out of the window k must be above or below the threshol
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
+        super(Strategy, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
+        logger.info('Strategy Configuration: %s' % json.dumps({'name' : 'Sandpiper',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  'threshold_overload' : THRESHOLD_OVERLOAD,

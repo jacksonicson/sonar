@@ -61,5 +61,5 @@ class Pump(threading.Thread):
                 self.handlers.remove(entry)
                 entry.call()
                 
-        print 'Message pump exited'     
+        print 'Message pump exited %i %s' % (self.running, self.handlers)     
             

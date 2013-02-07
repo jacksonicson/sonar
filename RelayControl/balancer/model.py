@@ -5,57 +5,108 @@ import json
 import numpy as np
 
 ################################
-## Configuration              ##
+# # Configuration              ##
 WINDOW = 7000
 ################################
-
-# Holds an internal list of all hosts
-hosts = {}
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-def flush():
-    global hosts
-    hosts = {}
-
+# Node types
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
 
 types = enum('NODE', 'DOMAIN')
 
-def get_hosts(host_type=None):
-    if host_type == None:
-        return hosts.values()
-    
-    filtered = []
-    for host in hosts.values():
-        if host.type == host_type:
-            filtered.append(host) 
-    
-    return filtered
 
-def get_host(hostname):
-    if hosts.has_key(hostname):
-        return hosts[hostname]
-    return None
+class Model(object):
+    def __init__(self):
+        # Holds an internal list of all hosts
+        self.hosts = {}
+        
+    def flush(self):
+        self.hosts = {}
 
-def get_host_for_domain(domain):
-    for host in get_hosts(types.NODE):
-        if host.has_domain(domain):
-            return host
-    return None
+    def get_hosts(self, host_type=None):
+        if host_type == None:
+            return self.hosts.values()
+        
+        filtered = []
+        for host in self.hosts.values():
+            if host.type == host_type:
+                filtered.append(host) 
+        
+        return filtered
 
-def server_active_info():
-    active_count = 0
-    active_names = []
-    for node in get_hosts(types.NODE):
-        if node.domains:
-            active_names.append(node.name)
-            active_count += 1
+    def get_host(self, hostname):
+        if self.hosts.has_key(hostname):
+            return self.hosts[hostname]
+        return None
+
+
+    def get_host_for_domain(self, domain):
+        for host in self.get_hosts(types.NODE):
+            if host.has_domain(domain):
+                return host
+        return None
+
+
+    def server_active_info(self):
+        active_count = 0
+        active_names = []
+        for node in self.get_hosts(types.NODE):
+            if node.domains:
+                active_names.append(node.name)
+                active_count += 1
+        
+        return active_count, active_names
     
-    return active_count, active_names
+    
+    def model_from_current_allocation(self):
+        from virtual import allocation
+        from virtual import nodes
+        allocation = allocation.determine_current_allocation()
+        
+        for node_name in allocation.iterkeys():
+            node = Node(node_name, nodes.NODE_CPU_CORES)
+            self.hosts[node_name] = node
+            
+            for domain_name in allocation[node_name]:
+                domain = Domain(domain_name, nodes.DOMAIN_CPU_CORES)
+                node.add_domain(domain)
+                self.hosts[domain] = domain
+
+
+    def model_from_migrations(self, migrations):
+        from virtual import nodes
+        from control import domains
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = Node(node, nodes.NODE_CPU_CORES)
+            self.hosts[node] = mnode
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            self.hosts[domain.domain] = dom
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+    
+    def dump(self):
+        print 'Dump controller initial model configuration...'
+        json_map = {}
+        for node in self.get_hosts(host_type=types.NODE):
+            print 'Node: %s' % (node.name)
+            json_map[node.name] = []
+            for domain in node.domains.values():
+                print '   Domain: %s' % domain.name
+                json_map[node.name].append(domain.name)
+                
+        logger.info('Controller Initial Model: %s' % json.dumps(json_map))
     
 
 class __Host(object):
@@ -141,10 +192,7 @@ class __Host(object):
 class Domain(__Host):
     def __init__(self, name, cores):
         super(Domain, self).__init__(name, cores)
-        
-        # Adds itself to the hosts list
-        hosts[name] = self
-        
+                
         # Type of this object
         self.type = types.DOMAIN
         
@@ -155,10 +203,7 @@ class Domain(__Host):
 class Node(__Host):
     def __init__(self, name, cores):
         super(Node, self).__init__(name, cores)
-        
-        # Adds itself to the hosts list
-        hosts[name] = self
-        
+                
         # Type of this object
         self.type = types.NODE
         
@@ -184,17 +229,7 @@ class Node(__Host):
 
 
 
-def dump():
-    print 'Dump controller initial model configuration...'
-    json_map = {}
-    for node in get_hosts(host_type=types.NODE):
-        print 'Node: %s' % (node.name)
-        json_map[node.name] = []
-        for domain in node.domains.values():
-            print '   Domain: %s' % domain.name
-            json_map[node.name].append(domain.name)
-            
-    logger.info('Controller Initial Model: %s' % json.dumps(json_map))
+
 
     
 

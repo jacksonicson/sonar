@@ -1,12 +1,12 @@
 from control import domains
 from logs import sonarlog
 from virtual import nodes
+import strategy
 import configuration
-import controller
 import json
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_I90_VM91-180_compliance_0.99_cap_230_servers12', 'csv')
 ######################
@@ -14,15 +14,15 @@ ALLOCATION_MATRIX_FILE = configuration.path('andreas_matrix_I90_VM91-180_complia
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, 10 * 60, 120)
+        super(Strategy, self).__init__(scoreboard, pump, model, 10 * 60, 120)
         self.var = []
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'File',
+        logger.info('Strategy Configuration: %s' % json.dumps({'name' : 'File',
                                                                  'allocation_matrix_file' : ALLOCATION_MATRIX_FILE,
                                                                  }))
     

@@ -3,9 +3,9 @@ from migration_queue import MigrationQueue
 from virtual import nodes
 from workload import profiles
 import control.domains as domains
-import controller
 import json
 import numpy as np
+import strategy
 import virtual.placement as placement
 
 ######################
@@ -23,10 +23,10 @@ INTERVAL = 10  # Control frequency
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
+        super(Strategy, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
         # Setup migration queue
         # B
@@ -46,7 +46,7 @@ class Controller(controller.LoadBalancer):
         
        
     def start(self):
-        super(Controller, self).start()
+        super(Strategy, self).start()
         
         # Initialization time
         self.time_null = self.pump.sim_time()
@@ -54,7 +54,7 @@ class Controller(controller.LoadBalancer):
         
     def dump(self):
         print 'DSAP controller - Dump configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'DSAP-Controller',
+        logger.info('Strategy Configuration: %s' % json.dumps({'name' : 'DSAP-Strategy',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  'num_bucketsl' : NUM_BUCKETS,

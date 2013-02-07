@@ -2,7 +2,7 @@ from analytics import forecasting as smoother
 from logs import sonarlog
 from model import types
 from virtual import placement, nodes
-import controller
+import strategy
 import json
 import numpy as np
 
@@ -25,15 +25,15 @@ M_VALUE = 17  # m values out of the window k must be above or below the threshol
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
+        super(Strategy, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         self.var = []
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper Proactive',
+        logger.info('Strategy Configuration: %s' % json.dumps({'name' : 'Sandpiper Proactive',
                                                                  'start_wait' : START_WAIT,
                                                                  'interval' : INTERVAL,
                                                                  'threshold_overload' : THRESHOLD_OVERLOAD,
