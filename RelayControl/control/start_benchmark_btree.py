@@ -13,7 +13,7 @@ import math
 
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 INIT_DB = True
 start = False
@@ -54,7 +54,6 @@ class AllocateDomains(btree.Action):
         return d
         
     def start_phase(self, client_list, d):
-        print 'Start phase ended'
         self.blackboard.client_list = client_list
         d.callback(True)
 
@@ -66,15 +65,19 @@ class StopGlassfishRain(btree.Action):
         
         dlist = []
         
+        print('stopping glassfish on targets: '),
         for target in hosts.get_hosts('target'):
-            print 'stopping glassfish on target %s' % (target) 
+            print(target),
             d = base.launch(self.blackboard.client_list, target, 'glassfish_stop')
             dlist.append(d)
+        print ''
         
+        print('stopping rain on targets: '),
         for target in hosts.get_hosts('load'):
-            print 'stopping rain on target %s' % (target)
+            print(target),
             d = base.launch(self.blackboard.client_list, target, 'rain_stop')
             dlist.append(d)
+        print ''
         
         dl = defer.DeferredList(dlist)
         d = defer.Deferred()
