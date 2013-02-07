@@ -120,8 +120,8 @@ class Strategy(object):
             import strategy_file
             self.strategy = strategy_file.Strategy(scoreboard, self.pump, self.model)
         elif STRATEGY == 'sandpiper':
-            from sandpiper import controller_sandpiper_standard  # @UnusedImport
-            self.strategy = controller_sandpiper_standard.Strategy(scoreboard, self.pump, self.model)
+            from sandpiper import strategy_sandpiper_standard  # @UnusedImport
+            self.strategy = strategy_sandpiper_standard.Strategy(scoreboard, self.pump, self.model)
         elif STRATEGY == 'ssapv':
             import strategy_ssapv 
             self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, self.model)
