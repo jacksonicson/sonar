@@ -20,8 +20,8 @@ start = False
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
 
-# Controller instance
-controller = controller.Controller()
+# Strategy instance
+controller = controller.Strategy()
 
 def finished_end(done, client_list):
     print 'finish phase'

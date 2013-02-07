@@ -32,7 +32,7 @@ Strategies:
 ######################
 # # CONFIGURATION    ##
 ######################
-STRATEGY = 'file' 
+STRATEGY = 'sandpiper' 
 SIM_ITERATIONS = 1
 ######################
 
@@ -59,7 +59,7 @@ class MetricHandler(object):
             host.put(data.reading)
 
 
-class Controller(object):
+class Strategy(object):
     
     def __init__(self):
         self.scoreboard = scoreboard.Scoreboard()
@@ -121,7 +121,7 @@ class Controller(object):
             self.strategy = strategy_file.Strategy(scoreboard, self.pump, self.model)
         elif STRATEGY == 'sandpiper':
             from sandpiper import controller_sandpiper_standard  # @UnusedImport
-            self.strategy = controller_sandpiper_standard.Controller(scoreboard, self.pump, self.model)
+            self.strategy = controller_sandpiper_standard.Strategy(scoreboard, self.pump, self.model)
         elif STRATEGY == 'ssapv':
             import strategy_ssapv 
             self.strategy = strategy_ssapv.Strategy(scoreboard, self.pump, self.model)
@@ -168,7 +168,7 @@ def launch_sim():
         domains.recreate()
         
         # Run controller
-        controller = Controller()
+        controller = Strategy()
         controller.start()
         
         # Get scoreboard statistics

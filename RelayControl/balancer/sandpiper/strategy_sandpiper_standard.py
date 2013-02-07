@@ -1,21 +1,21 @@
-from balancer import controller
+from balancer import strategy
 from virtual import placement
 from logs import sonarlog
 from virtual import nodes
 import configuration_advanced
-import controller_imbalance
-import controller_reactive
-import controller_swap
+import strategy_imbalance
+import strategy_reactive
+import strategy_swap
 from balancer import migration_queue
 import json
 
 # Setup logging
 logger = sonarlog.getLogger('controller')
 
-class Controller(controller.LoadBalancer):
+class Strategy(strategy.StrategyBase):
     
     def __init__(self, scoreboard, pump, model):
-        super(Controller, self).__init__(scoreboard, pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
+        super(Strategy, self).__init__(scoreboard, pump, model, configuration_advanced.INTERVAL, configuration_advanced.START_WAIT)
         self.migration_scheduler = migration_queue.MigrationQueue(self)
         
         self.controller_handlers = []
@@ -56,7 +56,7 @@ class Controller(controller.LoadBalancer):
         
     def dump(self):
         print 'Dump Sandpiper controller configuration...'
-        logger.info('Controller Configuration: %s' % json.dumps({'name' : 'Sandpiper',
+        logger.info('Strategy Configuration: %s' % json.dumps({'name' : 'Sandpiper',
                                                                  'start_wait' : configuration_advanced.START_WAIT,
                                                                  'interval' : configuration_advanced.INTERVAL,
                                                                  'threshold_overload' : configuration_advanced.THRESHOLD_OVERLOAD,
@@ -76,13 +76,13 @@ class Controller(controller.LoadBalancer):
                 return
 
     def imbalance_controller(self, time_now, sleep_time):
-        imbalance_controller = controller_imbalance.Imbalance(self.model, self.migration_scheduler)
+        imbalance_controller = strategy_imbalance.Imbalance(self.model, self.migration_scheduler)
         return imbalance_controller.migrate_imbalance(time_now, sleep_time)
     
     def reactive_controller(self, time_now, sleep_time):
-        reactive_controller = controller_reactive.Reactive(self.model, self.migration_scheduler)
+        reactive_controller = strategy_reactive.Reactive(self.model, self.migration_scheduler)
         return reactive_controller.migrate_reactive(time_now, sleep_time)
         
     def swap_controller(self, time_now, sleep_time):
-        swap_controller = controller_swap.Swap(self.model, self.migration_scheduler)
+        swap_controller = strategy_swap.Swap(self.model, self.migration_scheduler)
         return swap_controller.migrate_swap(time_now, sleep_time)
