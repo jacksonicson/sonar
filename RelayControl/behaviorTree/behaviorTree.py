@@ -1,59 +1,44 @@
 from twisted.internet import defer, reactor
 
-# The Node 
 class __Node(object):
     def execute(self):
         pass
 
-"""The Blackboard class which consists of a dictionary to store temporary data
-in a key-value pair format"""
 class BlackBoard:
     def __init__(self):
-        self.data = {}
         pass
 
-    def addData(self, key, value):
-        self.data[key] = value
-
-    def getData(self, key):
-        try:
-            return self.data[key]
-        except:
-            pass
-
-# Parallel Node
 class ParallelNode(__Node):
     def __init__(self, blackboard=None):
         self.children = []
-        self.deferreds = []
 
     def execute(self):
         if len(self.children) == 0:
-            print "Nodes should have at least one action"
+            print 'Parallel needs at least one child'
             return None
 
-        self.d = defer.Deferred()
-        print "Execute in Parallel"
+        dl = []
         for child in self.children:
             d = child.execute()
-            self.deferreds.append(d)
+            dl.append(d)
 
-        defList = defer.DeferredList(self.deferreds, consumeErrors=0)
+        defList = defer.DeferredList(dl, consumeErrors=0)
         defList.addCallback(self.parallelCallback)
-        return d
+        self.d = defer.Deferred()
+        return self.d
 
     def parallelCallback(self, result):
-        print "Callback in result"
-        for ignore, data in result:
-            print data
-        self.d.callback(result)
+        agg = True
+        for _, test in result:
+            agg = agg and test
+        self.d.callback(agg)
         
     def add(self, child):
         child.blackboard = self.blackboard
         self.children.append(child)
         return self
         
-# Sequence
+        
 class Sequence(__Node):
     def __init__(self, blackboard=None):
         self.children = []
@@ -61,36 +46,40 @@ class Sequence(__Node):
         self.curChild = 0
         
     def execute(self):
-        if len(self.children) == 0:
-            print "Sequence should have at least one action"
+        if not self.children:
+            print 'Sequence needs at least one child'
             return None
-
-        print "Execute in Sequence"
+        
         self.d = defer.Deferred()
         self.moveToNextChild(True)
-        return self.d
+        return self.d 
+    
     
     def moveToNextChild(self, data):
-        if(self.curChild == len(self.children)):
-            print "Going to callback parent now"
-            self.d.callback(data)
-            pass
-        
         if data == True:
+            if self.curChild >= len(self.children):
+                # Sequence finished with true
+                self.d.callback(True)
+                return
+            
             item = self.children[self.curChild];
-            self.curChild = self.curChild + 1
+            self.curChild += 1
+            
             deferFromChild = item.execute()
-            deferFromChild.addCallback(self.moveToNextChild)
-        else :
-            self.d.callback(data)
-            pass
+            if isinstance(deferFromChild, bool):
+                self.moveToNextChild(deferFromChild)
+            else:
+                deferFromChild.addCallback(self.moveToNextChild)
+        else:
+            # Sequence finished with false
+            self.d.callback(False)
+        
         
     def add(self, child):
         child.blackboard = self.blackboard
         self.children.append(child)
         return self
 
-# Selector
 class Selector(__Node):
     def __init__(self, blackboard=None):
         self.children = []
@@ -98,29 +87,31 @@ class Selector(__Node):
         self.curChild = 0
         
     def execute(self):
-        if len(self.children) == 0:
-            print "Selector should have at least one action"
+        if not self.children:
+            print 'Selector needs at least one child'
             return None
 
-        print "Execute in Selector"
         self.d = defer.Deferred()
         self.moveToNextChild(False)
         return self.d
     
     def moveToNextChild(self, data):
-        if(self.curChild == len(self.children)):
-            print "Going to callback parent now"
-            self.d.callback(data)
-            pass
-        
         if data == True:
-             self.d.callback(data)
-        else :
-            item = self.children[self.curChild];
+            self.d.callback(True)
+        else:
+            if self.curChild >= len(self.children):
+                # Select finished with true
+                self.d.callback(False)
+                return
+            
+            item = self.children[self.curChild]
             self.curChild = self.curChild + 1
+            
             deferFromChild = item.execute()
-            deferFromChild.addCallback(self.moveToNextChild)
-            pass
+            if isinstance(deferFromChild, bool):
+                self.moveToNextChild(deferFromChild)
+            else:                        
+                deferFromChild.addCallback(self.moveToNextChild)
         
     def add(self, child):
         child.blackboard = self.blackboard
@@ -134,36 +125,30 @@ class Action(__Node):
         self.blackboard = blackboard
         
     def execute(self):
-        self.d = defer.Deferred()
-        defir = self.action()
-        defir.addCallback(self.d.callback)
-        return self.d
+        return self.action()
 
     def action(self):
         d = defer.Deferred()
-        print "Executing Action"
-        reactor.callLater(4, d.callback, True)
+        print "Dummy - Action Body"
+        reactor.callLater(1, d.callback, True)
         return d
 
 
-###################################################################
-# TEST PROGRAMS
-###################################################################
+# Test program
+def finish(data):
+    print 'finish %i' % data
+    if reactor.running:
+        reactor.stop()
 
-class Action2(Action):
+if __name__ == '__main__':
+    print 'Test behavior trees'
+    bb = BlackBoard(); 
+    root = Sequence(bb)
+    root.add(Action())
+    root.add(Action())
     
-    def action(self):
-        d = defer.Deferred()
-        print "Executing Actio2n"
-        self.blackboard.addData("test", "val")
-        reactor.callLater(4, d.callback, False)
-        return d
-
-class Action3(Action):
+    d = root.execute()
+    d.addCallback(finish)    
+    reactor.run()
     
-    def action(self):
-        d = defer.Deferred()
-        print "Executing Actio3n"
-        self.blackboard.addData("test", "val2")
-        reactor.callLater(4, d.callback, True)
-        return d
+    
