@@ -1,6 +1,7 @@
 from balancer import scoreboard
 from control import domains
 from logs import sonarlog
+from virtual import nodes
 from workload import profiles
 import configuration as config
 import json
@@ -58,6 +59,22 @@ def build_from_current_allocation():
         for domain in allocation[host]:
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
+
+def build_internal_model(self, migrations):
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+    
+    
 def build_initial_model(controller):
     # Flush model
     model.flush()
@@ -66,7 +83,8 @@ def build_initial_model(controller):
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
-        controller.initial_placement_sim()
+        migrations, _ = controller.initial_placement()
+        build_internal_model(migrations)
     
     # Dump model
     model.dump()
@@ -173,6 +191,7 @@ def initial_allocation():
         # Build internal infrastructure representation
         return controller.initial_placement_production()
         
+    print 'ERROR: Initial allocation can only be used in production mode'
     return None
 
 

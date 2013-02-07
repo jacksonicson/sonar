@@ -1,4 +1,3 @@
-from control import domains
 from logs import sonarlog
 from virtual import nodes, placement
 import configuration
@@ -75,32 +74,12 @@ class LoadBalancer(object):
         for handler in self.migration_callback_handlers:
             handler()
     
-    # Initial placement calculation (production mode!!!)
-    def initial_placement_production(self):
-        pass
-    
-    # Initial placement calculation (simulation only!!!)
-    def initial_placement_sim(self):
+    # Initial placement calculation
+    def initial_placement(self):
         nodecount = len(nodes.NODES)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-        migrations, _ = splace.execute(aggregation=True , bucketCount=12)
-        self.build_internal_model(migrations)
-        return migrations
-    
-    def build_internal_model(self, migrations):
-        _nodes = []
-        for node in nodes.NODES: 
-            mnode = self.model.Node(node, nodes.NODE_CPU_CORES)
-            _nodes.append(mnode)
-            
-        _domains = {}
-        for domain in domains.domain_profile_mapping:
-            dom = self.model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
-            _domains[domain.domain] = dom
-            
-        for migration in migrations:
-            _nodes[migration[1]].add_domain(_domains[migration[0]])
-    
+        migrations, active_server_info = splace.execute(aggregation=True , bucketCount=12)
+        return migrations, active_server_info
     
     def start(self):
         print 'Waiting for start: %i' % self.start_wait
