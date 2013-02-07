@@ -6,7 +6,7 @@ from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 from workload import profiles
-import balancer.cmanager as controller
+from balancer import controller
 import domains
 import math
 
@@ -19,6 +19,9 @@ start = False
 
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
+
+# Controller instance
+controller = controller.Controller()
 
 def finished_end(done, client_list):
     print 'finish phase'
@@ -34,7 +37,7 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-    controller.launch()
+    controller.start()
 
 
 def ram_up_finished(rain_clients, client_list):
@@ -265,17 +268,14 @@ def errback(failure):
     print failure
     reactor.stop()
     
-def initial_allocation():
-    import allocate_domains
-    allocate_domains.build_controller(True)
-    
-def build_controller():
+def allocate_domains():
     # Create drones
-    drones.build_controller()
+    drones.build_all_drones()
     
     # Setup initial allocation
     if start:
-        initial_allocation()
+        import allocate_domains
+        allocate_domains.allocate_domains(True, controller)
     
     # Add host
     for i in xrange(0, 18):
@@ -306,4 +306,4 @@ def build_controller():
 
 if __name__ == '__main__':
     sonarlog.connect()
-    build_controller()
+    allocate_domains()
