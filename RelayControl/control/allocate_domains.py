@@ -9,7 +9,7 @@ logger = sonarlog.getLogger('allocate_domains')
 
 def allocate_domains(migrate, controller):
     # Calculate initial placement
-    migrations, active_server_info = controller.strategy.initial_allocation() 
+    migrations, active_server_info = controller.strategy.initial_placement() 
 
     # Log initial placement settings    
     print 'Updated active server count: %i' % active_server_info[0]
