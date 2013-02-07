@@ -6,11 +6,12 @@ from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 from workload import profiles
+import balancer.cmanager as controller
 import domains
 import math
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 INIT_DB = True
 start = True
@@ -33,10 +34,6 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-#    print 'No controller used'
-    print 'starting controller'
-    logger.info('loading controller')
-    import balancer.main as controller
     controller.launch()
 
 
@@ -240,7 +237,7 @@ def phase_configure_glassfish(client_list):
         dl = defer.DeferredList(dlist)
         
         dl.addCallback(phase_start_glassfish_database, client_list)
-        #dl.addCallback(finished, client_list)
+        # dl.addCallback(finished, client_list)
         
     except Exception, e:
         print e

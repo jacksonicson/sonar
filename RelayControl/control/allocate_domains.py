@@ -1,5 +1,6 @@
 from logs import sonarlog
-from virtual import allocation as virt, nodes, placement
+from virtual import allocation as virt
+import balancer.cmanager as controller
 import json
 import time
 
@@ -7,25 +8,16 @@ import time
 logger = sonarlog.getLogger('allocate_domains')
 
 def main(migrate=True):
-    # nodecount = len(nodes.NODES)
-    
-    # Setup models
-    # model = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-    # model = placement.RRPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-    # model = placement.FirstFitPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
-    
-    # Get migrations
-    # migrations, active_server_info  = model.execute()
-    
-    import balancer.main as controller
+    # Calculate initial placement
     migrations, active_server_info = controller.initial_allocation() 
-    
+
+    # Log initial placement settings    
     print 'Updated active server count: %i' % active_server_info[0]
     logger.info('Initial Active Servers: %s' % json.dumps({'count' : active_server_info[0],
                                                            'servers' : active_server_info[1],
                                                            'timestamp' : time.time()}))
     
-    # Migrate
+    # Trigger migrations
     if migrate:
             print 'Migrating...'
             virt.migrateAllocation(migrations)

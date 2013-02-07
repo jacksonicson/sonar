@@ -25,8 +25,9 @@ class Controller(controller.LoadBalancer):
         logger.info('Controller Configuration: %s' % json.dumps({'name' : 'File',
                                                                  'allocation_matrix_file' : ALLOCATION_MATRIX_FILE,
                                                                  }))
-    # Initial placement calculation (simulation only!!!)
-    def initial_placement_sim(self):
+    
+
+    def initial_placement(self):
         nodecount = len(nodes.NODES)
         domaincount = len(domains.domain_profile_mapping)
         
@@ -35,13 +36,22 @@ class Controller(controller.LoadBalancer):
         lines = handle.readlines()
         handle.close()
         
-        # Rows are servers
-        # Columns are domains
+        # Rows are servers, columns are domains
+        active_servers = 0
         matrix = [[0 for _ in xrange(domaincount)] for _ in xrange(nodecount)]
         for x, line in enumerate(lines):
             elements = line.split(',')
+            
+            x_active = False
+            
             for y, element in enumerate(elements):
                 matrix[x][y] = int(element)
+                
+                if matrix[x][y] > 0:
+                    x_active = True
+                    
+            if x_active:
+                active_servers += 1
                 
         # Convert allocation matrix to a migration list
         migrations = []
@@ -56,8 +66,7 @@ class Controller(controller.LoadBalancer):
         print 'Migrations: %s' % migrations
         
         # Build internal model 
-        self.build_internal_model(migrations)
-        return migrations
+        return migrations, active_servers
     
     def balance(self):
         # print 'SSAPv static - not controlling'

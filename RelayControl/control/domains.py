@@ -42,18 +42,18 @@ recreate()
 def cpu_profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry.domain == domain:
-            return profiles.get_current_cpu_profile(entry.profileId)
+            return profiles.get_cpu_current_profile(entry.profileId)
         
     print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
-    return profiles.get_current_cpu_profile(0)
+    return profiles.get_cpu_current_profile(0)
 
 def user_profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry.domain == domain:
-            return profiles.get_current_user_profile(entry.profileId)
+            return profiles.get_user_current_profile(entry.profileId)
         
     print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
-    return profiles.get_current_user_profile(0)
+    return profiles.get_user_current_profile(0)
 
 
 def has_domain(name):
@@ -76,7 +76,7 @@ def index_of(name):
 def print_mapping():
     print 'Dumping domain profile mappings...'
     for entry in domain_profile_mapping:
-        profile = profiles.get_current_user_profile(entry.profileId)
+        profile = profiles.get_user_current_profile(entry.profileId)
         print '%s --- load --> %s' % (profile, entry.domain)
     print 'End dumping domain profile mappings.'
     
@@ -84,7 +84,7 @@ def print_mapping():
 def dump(logger):
     out = ''
     for entry in domain_profile_mapping:
-        profile = profiles.get_current_user_profile(entry.profileId)
+        profile = profiles.get_user_current_profile(entry.profileId)
         out += '%s > %s; ' % (profile, entry.domain)
     logger.info("Mapping: %s" % out)
         

@@ -1,11 +1,12 @@
-from balancer import scoreboard
 from control import domains
 from logs import sonarlog
+from virtual import nodes
 from workload import profiles
 import configuration as config
 import json
 import model
 import msgpump
+import scoreboard
 import time
 
 '''
@@ -58,6 +59,22 @@ def build_from_current_allocation():
         for domain in allocation[host]:
             node.add_domain(model.Domain(domain, nodes.DOMAIN_CPU_CORES))
     
+
+def build_internal_model(migrations):
+        _nodes = []
+        for node in nodes.NODES: 
+            mnode = model.Node(node, nodes.NODE_CPU_CORES)
+            _nodes.append(mnode)
+            
+        _domains = {}
+        for domain in domains.domain_profile_mapping:
+            dom = model.Domain(domain.domain, nodes.DOMAIN_CPU_CORES)
+            _domains[domain.domain] = dom
+            
+        for migration in migrations:
+            _nodes[migration[1]].add_domain(_domains[migration[0]])
+    
+    
 def build_initial_model(controller):
     # Flush model
     model.flush()
@@ -66,7 +83,8 @@ def build_initial_model(controller):
     if config.PRODUCTION: 
         build_from_current_allocation()
     else:
-        controller.initial_placement_sim()
+        migrations, _ = controller.initial_placement()
+        build_internal_model(migrations)
     
     # Dump model
     model.dump()
@@ -124,12 +142,12 @@ def _get_controller(controller, pump):
     return controller
     
 
-def main(controller):
+def main(controller_name):
     # New message pump
     pump = msgpump.Pump(heartbeat)
     
     # Get controller
-    controller = _get_controller(controller, pump)
+    controller = _get_controller(controller_name, pump)
     
     # Build internal infrastructure representation
     build_initial_model(controller)
@@ -173,34 +191,39 @@ def initial_allocation():
         # Build internal infrastructure representation
         return controller.initial_placement_production()
         
+    print 'ERROR: Initial allocation can only be used in production mode'
     return None
 
 
+def main_sim():
+    name = '%s - %s' % (profiles.config.name, CONTROLLER)
+    lines = []
+    for _ in xrange(0, SIM_ITERATIONS):
+        # Flush scoreboard
+        scoreboard.Scoreboard().flush()
+        
+        # Recreate domains
+        domains.recreate()
+        
+        # Run controller
+        pump = main(CONTROLLER)
+        
+        # Get scoreboard statistics
+        res = scoreboard.Scoreboard().get_result_line(pump)
+        scoreboard.Scoreboard().dump(pump)
+        lines.append(res)
+
+    print 'Results: %s' % name        
+    for line in lines:
+        print line
+          
+            
 def launch():
     if config.PRODUCTION:
-        # Controller is executed in production
         main(CONTROLLER)
     else:
-        name = '%s - %s' % (profiles.config.name, CONTROLLER)
-        lines = []
-        for _ in xrange(0, SIM_ITERATIONS):
-            # Flush scoreboard
-            scoreboard.Scoreboard().flush()
-            
-            # Recreate domains
-            domains.recreate()
-            
-            # Run controller
-            pump = main(CONTROLLER)
-            
-            # Get scoreboard statistics
-            res = scoreboard.Scoreboard().get_result_line(pump)
-            scoreboard.Scoreboard().dump(pump)
-            lines.append(res)
+        main_sim()
 
-        print 'Results: %s' % name        
-        for line in lines:
-            print line
 
 if __name__ == '__main__':
     launch() 
