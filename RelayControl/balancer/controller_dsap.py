@@ -138,8 +138,6 @@ class Controller(controller.LoadBalancer):
 
         # Schedule migrations only once per bucket
         if self.curr_bucket == bucket_index:
-#            if self.migration_queue.empty():
-#                self.__run_migrations(self.curr_bucket)
             return
         
         # Update current bucket status
