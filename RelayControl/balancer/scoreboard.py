@@ -9,13 +9,9 @@ class ActiveServerInfo(object):
 
 # Scoreboard is a singleton class which overrides the new operator
 class Scoreboard(object):
-    # Singleton construction by overriding new operation
-    _instance = None
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Scoreboard, cls).__new__(cls, *args, **kwargs)
-            cls._instance.flush()
-        return cls._instance
+    def __init__(self):
+        print 'SCOREBOARD INSTANCE'
+        self.flush()
     
     def flush(self):
         self.closed = False
