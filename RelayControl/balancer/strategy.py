@@ -181,6 +181,7 @@ class StrategyBase(object):
                            'to': target.name,
                            'id': migration_id})
         logger.info('Live Migration Triggered: %s' % data)
+        print 'Live Migration Triggered: %s' % data
         
         # Backup current model status - for later analytics
         class info(object):
