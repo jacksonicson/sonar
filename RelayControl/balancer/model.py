@@ -51,6 +51,16 @@ class Model(object):
                 return host
         return None
 
+    def get_assignment_list(self):
+        from control import domains
+        from virtual import nodes
+        assignment = {}
+        for node in self.get_hosts(types.NODE):
+            for domain_name in node.domains.keys():
+                assignment[domains.index_of(domain_name)] = nodes.index_of(node.name)
+                   
+        return assignment
+
 
     def server_active_info(self):
         active_count = 0

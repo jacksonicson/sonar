@@ -29,7 +29,6 @@ class Strategy(strategy.StrategyBase):
         super(Strategy, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
         # Setup migration queue
-        # B
         simple = True
         self.migration_queue = MigrationQueue(self, simple, not simple)
         
@@ -67,8 +66,10 @@ class Strategy(strategy.StrategyBase):
         # Assignment
         curr_assignment = self.placement.assignment_list[bucket_index]
         
-        # Previous assignment
-        prev_assignment = self.placement.assignment_list[(bucket_index - 1) % NUM_BUCKETS]
+        # Previous assignment (based on model data - not uncertain calculation data)
+        # Calculated data might be different from model data due to failed migrations
+        # prev_assignment = self.placement.assignment_list[(bucket_index - 1) % NUM_BUCKETS]
+        prev_assignment = self.model.get_assignment_list()
         
         for index_domain in curr_assignment.keys():
             # Get data
@@ -126,16 +127,20 @@ class Strategy(strategy.StrategyBase):
             
             # dep = self.migration_queue.add(model_domain, model_source, model_target, dep)
             dep = self.migration_queue.add(model_domain, model_source, model_target)
-        
         return 
         
     
     def balance(self):
         # Current bucket index
         bucket_duration = TOTAL_EXPERIMENT_DURATION / NUM_BUCKETS
-        bucket_index = int((self.pump.sim_time() - self.time_null + profiles.RAMP_UP) / bucket_duration)
+        time = self.pump.sim_time() - self.time_null  # relative time since end of ramp-up and start of steady-state
+        timeg = time + profiles.RAMP_UP  # global time in TS data  
+        bucket_index = int(timeg / bucket_duration) # always floor this value
+        bucket_time = bucket_duration - (timeg - bucket_duration * bucket_index)
+        
         # bucket_index %= NUM_BUCKETS
         print 'bucket index %i' % bucket_index
+        print 'time till next bucket %i' % (bucket_time)
         if bucket_index >= NUM_BUCKETS:
             return
 

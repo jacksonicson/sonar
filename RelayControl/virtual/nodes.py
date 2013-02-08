@@ -24,6 +24,12 @@ for i in xrange(NODE_COUNT):
 def get_node_name(index):
     return NODES[index]
 
+def index_of(node_name):
+    for i, node in enumerate(NODES):
+        if node == node_name:
+            return i
+    return None
+
 def cpu_factor():
     return NODE_CPU_CORES / DOMAIN_CPU_CORES
 
