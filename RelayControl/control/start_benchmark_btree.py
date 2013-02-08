@@ -25,15 +25,10 @@ logger = sonarlog.getLogger('start_benchmark')
 # Strategy instance
 controller = controller.Controller()
 
-class AllocateDomains(btree.Action):
+class ConnectRelay(btree.Action):
     def action(self):
         # Create drones
         drones.build_all_drones()
-        
-        # Setup initial allocation
-        if START_BT:
-            import allocate_domains
-            allocate_domains.allocate_domains(True, controller)
         
         # Add host
         for i in xrange(0, 18):
@@ -56,6 +51,19 @@ class AllocateDomains(btree.Action):
     def start_phase(self, client_list, d):
         self.blackboard.client_list = client_list
         d.callback(True)
+        
+
+class AllocateDomains(btree.Action):
+    def action(self):
+        print 'Setting up initial allocation'
+        
+        # Setup initial allocation
+        import allocate_domains
+        allocate_domains.allocate_domains(True, controller)
+        
+        d = defer.Deferred()
+        reactor.callLater(0, d.callback, True)
+        return d
 
 
 class StopGlassfishRain(btree.Action):
@@ -100,17 +108,9 @@ class TriggerRain(btree.Action):
         print 'releasing load...'
         logger.info('releasing load on rain DRIVER_NODES')
     
-        # Extract clients
-        _rain_clients = []
-        for client in self.blackboard.rain_clients:
-            _rain_clients.append(client[1].client)
-            if client[0] == False:
-                print 'Warn: Could not connect with all Rain servers'            
-        rain_clients = _rain_clients
-        
         # Release load
         dlist = []
-        for client in rain_clients:
+        for client in self.blackboard.rain_clients:
             print '   * releasing %s' % (client)
             logger.debug('releasing')
             
@@ -163,10 +163,15 @@ class ConnectRain(btree.Action):
         dl.addErrback(self.err, d)
         return d
         
-    def ok(self, status, d):
-        self.blackboard.rain_clients = status
-        print 'Clients'
-        print status
+    def ok(self, rain_clients, d):
+        _rain_clients = []
+        for client in rain_clients:
+            _rain_clients.append(client[1].client)
+            if client[0] == False:
+                print 'Warn: Could not connect with all Rain servers'            
+        rain_clients = _rain_clients
+        
+        self.blackboard.rain_clients = _rain_clients
         d.callback(True)
         
     def err(self, status, d):
@@ -334,15 +339,16 @@ def main():
     
     # Start benchmark
     start = btree.Sequence(bb)
-    start.add(AllocateDomains())
-    start.add(ConfigureGlassfish())
-    
-    pl = btree.ParallelNode()
-    start.add(pl)
-    pl.add(StartGlassfish())
-    if INIT_DB: pl.add(StartDatabase())
-    
-    start.add(StartRain())
+    start.add(ConnectRelay())
+#    if START_BT: start.add(AllocateDomains())
+#    start.add(ConfigureGlassfish())
+#    
+#    pl = btree.ParallelNode()
+#    start.add(pl)
+#    pl.add(StartGlassfish())
+#    if INIT_DB: pl.add(StartDatabase())
+#    
+#    start.add(StartRain())
     start.add(ConnectRain())
     start.add(TriggerRain())
     start.add(startController())
