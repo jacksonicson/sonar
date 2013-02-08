@@ -64,6 +64,7 @@ class MigrationQueue(object):
                 if not success:
                     migration.retries += 1
                     if migration.retries < 3:
+                        print 'WARN: Migration failed, retrying...'
                         self.waiting.append(migration)
                     else:
                         print 'WARN: Migration failed too often - CANCEL MIGRATION'
@@ -86,6 +87,8 @@ class MigrationQueue(object):
                 for test in self.running:
                     # One outgoing migration per server
                     skip |= test.source == migration.source
+                    skip |= test.target == migration.target
+                    skip |= test.domain == migration.domain
 
             # Check if migration intersects with previous migrations
             if self.restrict:
