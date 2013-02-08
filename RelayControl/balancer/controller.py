@@ -170,7 +170,7 @@ def launch_sim():
         domains.recreate()
         
         # Run controller
-        controller = Strategy()
+        controller = Controller()
         controller.start()
         
         # Get scoreboard statistics

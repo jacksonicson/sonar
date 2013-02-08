@@ -24,7 +24,7 @@ Configuring a benchmark run:
 
 ##########################
 ## GLOBAL               ##
-PRODUCTION = True
+PRODUCTION = False
 
 # Ask user explicitly if production mode is enabled
 __asked = False
