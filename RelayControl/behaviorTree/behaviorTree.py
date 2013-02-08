@@ -11,7 +11,7 @@ class ParallelNode(__Node):
     def __init__(self, blackboard=None):
         self.children = []
         self.blackboard = blackboard
-
+        
     def execute(self):
         if len(self.children) == 0:
             print 'Parallel needs at least one child'
@@ -22,12 +22,19 @@ class ParallelNode(__Node):
             d = child.execute()
             dl.append(d)
 
-        defList = defer.DeferredList(dl, consumeErrors=0)
+        defList = defer.DeferredList(dl, fireOnOneErrback=True, consumeErrors=True)
+        
         defList.addCallback(self.parallelCallback)
+        defList.addErrback(self.error)
+        
         self.d = defer.Deferred()
         return self.d
 
+    def error(self, fail):
+        self.d.errback(fail)
+
     def parallelCallback(self, result):
+        print 'parallel callback'
         agg = True
         for _, test in result:
             agg = agg and test
@@ -55,6 +62,10 @@ class Sequence(__Node):
         return self.d 
     
     
+    def error(self, fail):
+        print 'Error handler in Sequence node'
+        self.d.errback(fail)
+    
     def moveToNextChild(self, data):
         if data == True:
             if self.curChild >= len(self.children):
@@ -70,6 +81,7 @@ class Sequence(__Node):
                 self.moveToNextChild(deferFromChild)
             else:
                 deferFromChild.addCallback(self.moveToNextChild)
+                # deferFromChild.addErrback(self.error)
         else:
             # Sequence finished with false
             self.d.callback(False)
@@ -95,6 +107,10 @@ class Selector(__Node):
         self.moveToNextChild(False)
         return self.d
     
+    def error(self, fail):
+        print 'Error handler in Selector node'
+        self.d.errback(fail)
+    
     def moveToNextChild(self, data):
         if data == True:
             self.d.callback(True)
@@ -110,8 +126,9 @@ class Selector(__Node):
             deferFromChild = item.execute()
             if isinstance(deferFromChild, bool):
                 self.moveToNextChild(deferFromChild)
-            else:                        
+            else:           
                 deferFromChild.addCallback(self.moveToNextChild)
+                deferFromChild.addErrback(self.error)
         
     def add(self, child):
         child.blackboard = self.blackboard
@@ -135,20 +152,42 @@ class Action(__Node):
 
 
 # Test program
+class NodeA(Action):
+    def action(self):
+        print 'Action - NodeA'
+        d = defer.Deferred()
+        reactor.callLater(1, d.callback, True)
+        return d
+    
+class NodeB(Action):
+    def action(self):
+        print 'Action - NodeB'
+        d = defer.Deferred()
+        reactor.callLater(1, d.errback, ValueError('error in Node b'))
+        return d
+
 def finish(data):
     print 'finish %i' % data
+    if reactor.running:
+        reactor.stop()
+
+def error(fail):
+    print 'Behavior tree failed'
+    print str(fail)
     if reactor.running:
         reactor.stop()
 
 if __name__ == '__main__':
     print 'Test behavior trees'
     bb = BlackBoard(); 
-    root = Sequence(bb)
-    root.add(Action())
-    root.add(Action())
+    root = ParallelNode(bb)
+    
+    root.add(NodeB())
+    root.add(NodeA())
     
     d = root.execute()
-    d.addCallback(finish)    
+    d.addCallback(finish)
+    d.addErrback(error)    
     reactor.run()
     
     

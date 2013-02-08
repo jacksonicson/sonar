@@ -16,7 +16,7 @@ import math
 # # CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = False
+START_BT = False
 ######################
 
 # Setup logging
@@ -353,10 +353,14 @@ def main():
     stop.add(StopGlassfishRain())
     
     # Execute behavior trees
-    if start:
+    if START_BT:
+        print 'Running start bt'
         defer = start.execute()
     else:
-        defer = stop.execute()          
+        print 'Running stop bt'
+        defer = stop.execute()
+        
+    # Finished callback to clean up          
     defer.addCallback(finished)
     
     # Start the Twisted reactor
