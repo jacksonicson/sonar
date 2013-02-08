@@ -1,3 +1,9 @@
+##################################################################
+# WARNING
+# THIS CODE IS DEPRECATED AND SHOULD NOT BE USED
+# USE START_BENCHMARK_BTREE INSTEAD!!!!
+##################################################################
+
 from balancer import controller
 from control import drones, hosts, base
 from logs import sonarlog
@@ -305,5 +311,6 @@ def allocate_domains():
     reactor.run()
 
 if __name__ == '__main__':
-    sonarlog.connect()
-    allocate_domains()
+    # sonarlog.connect()
+    # allocate_domains()
+    pass

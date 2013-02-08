@@ -32,7 +32,7 @@ Strategies:
 ######################
 # # CONFIGURATION    ##
 ######################
-STRATEGY = 'reactive' 
+STRATEGY = 'dsap' 
 SIM_ITERATIONS = 1
 ######################
 
@@ -59,7 +59,7 @@ class MetricHandler(object):
             host.put(data.reading)
 
 
-class Strategy(object):
+class Controller(object):
     
     def __init__(self):
         # Create a new model

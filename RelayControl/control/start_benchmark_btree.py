@@ -16,14 +16,14 @@ import math
 # # CONFIGURATION    ##
 ######################
 INIT_DB = True
-START_BT = False
+START_BT = True
 ######################
 
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
 
 # Strategy instance
-controller = controller.Strategy()
+controller = controller.Controller()
 
 class AllocateDomains(btree.Action):
     def action(self):
@@ -31,7 +31,7 @@ class AllocateDomains(btree.Action):
         drones.build_all_drones()
         
         # Setup initial allocation
-        if start:
+        if START_BT:
             import allocate_domains
             allocate_domains.allocate_domains(True, controller)
         
