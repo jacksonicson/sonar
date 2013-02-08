@@ -5,6 +5,7 @@ class Entry(object):
         self.target = target_node
         self.description = description
         self.depends = depends
+        self.retries = 0 
         
     def __eq__(self, other):
         if other == None:
@@ -36,6 +37,11 @@ class MigrationQueue(object):
     def empty(self):
         return len(self.waiting) == 0 and len(self.running) == 0
 
+
+    def flush(self):
+        del self.waiting[:]
+
+
     def add(self, domain, source_node, target_node, depends=None, description=None):
         entry = Entry(domain, source_node, target_node, depends, description)
 
@@ -55,8 +61,14 @@ class MigrationQueue(object):
         for migration in self.running:
             if migration == entry: 
                 self.running.remove(migration)
+                if not success:
+                    migration.retries += 1
+                    if migration.retries < 3:
+                        self.waiting.append(migration)
+                    else:
+                        print 'WARN: Migration failed too often - CANCEL MIGRATION'
+                    
                 self._schedule()
-                return
         print 'ERROR'
         
         

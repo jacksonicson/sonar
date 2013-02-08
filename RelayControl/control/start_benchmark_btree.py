@@ -75,14 +75,14 @@ class StopGlassfishRain(btree.Action):
         
         print('stopping glassfish on targets: '),
         for target in hosts.get_hosts('target'):
-            print(target),
+            print target 
             d = base.launch(self.blackboard.client_list, target, 'glassfish_stop')
             dlist.append(d)
         print ''
         
         print('stopping rain on targets: '),
         for target in hosts.get_hosts('load'):
-            print(target),
+            print target
             d = base.launch(self.blackboard.client_list, target, 'rain_stop')
             dlist.append(d)
         print ''
@@ -355,7 +355,7 @@ def main():
     
     # Stop benchmark ####################################
     stop = btree.Sequence(bb)
-    stop.add(AllocateDomains())
+    stop.add(ConnectRelay())
     stop.add(StopGlassfishRain())
     
     # Execute Behavior Trees ############################

@@ -143,6 +143,10 @@ class Strategy(strategy.StrategyBase):
         if self.curr_bucket == bucket_index:
             return
         
+        # Wait for migration queue to finish up all migrations
+        if not self.migration_queue.empty():
+            return
+        
         # Update current bucket status
         self.curr_bucket = bucket_index
         
