@@ -127,7 +127,6 @@ class Strategy(strategy.StrategyBase):
             
             # dep = self.migration_queue.add(model_domain, model_source, model_target, dep)
             dep = self.migration_queue.add(model_domain, model_source, model_target)
-        
         return 
         
     
