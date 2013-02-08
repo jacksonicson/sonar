@@ -67,8 +67,10 @@ class Strategy(strategy.StrategyBase):
         # Assignment
         curr_assignment = self.placement.assignment_list[bucket_index]
         
-        # Previous assignment
-        prev_assignment = self.placement.assignment_list[(bucket_index - 1) % NUM_BUCKETS]
+        # Previous assignment (based on model data - not uncertain calculation data)
+        # Calculated data might be different from model data due to failed migrations
+        # prev_assignment = self.placement.assignment_list[(bucket_index - 1) % NUM_BUCKETS]
+        prev_assignment = self.model.get_assignment_list()
         
         for index_domain in curr_assignment.keys():
             # Get data
