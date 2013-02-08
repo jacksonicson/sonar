@@ -11,7 +11,7 @@ import virtual.placement as placement
 ######################
 #  CONFIGURATION    ##
 ######################
-NUM_BUCKETS = 18  # Number of allocation buckets
+NUM_BUCKETS = 6  # Number of allocation buckets
 TOTAL_EXPERIMENT_DURATION = profiles.RAMP_UP + profiles.EXPERIMENT_DURATION + profiles.RAMP_DOWN 
 PERCENTILE = 99 
 ######################
@@ -45,10 +45,11 @@ class Strategy(strategy.StrategyBase):
         
        
     def start(self):
-        super(Strategy, self).start()
-        
         # Initialization time
         self.time_null = self.pump.sim_time()
+        
+        # Super call
+        super(Strategy, self).start()
         
         
     def dump(self):
