@@ -151,7 +151,15 @@ class StrategyBase(object):
         '''
         
         print 'Migration triggered'
+        
+        # Assert migration
+        self.model.dump()
+        domain = self.model.get_host(domain.name)
+        node_from = self.model.get_host(source.name)
+        node_to = self.model.get_host(target.name)
         assert(source != target)
+        assert(domain.name in node_from.domains.keys())
+        assert(domain.name not in node_to.domains.keys())
         
         # Update counter
         migration_id = self.migration_id_counter
