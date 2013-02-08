@@ -67,8 +67,7 @@ class Controller(object):
         self.model.flush()
         
         self.build_stragegy()
-        
-        self.model_initialize() 
+         
     
     def model_initialize(self):
         # Run configuration
@@ -136,6 +135,9 @@ class Controller(object):
 
     
     def start(self):
+        # Build model
+        self.model_initialize()
+        
         # Create notification handler
         self.handler = MetricHandler(self.model)
         
