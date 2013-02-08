@@ -29,7 +29,6 @@ class Strategy(strategy.StrategyBase):
         super(Strategy, self).__init__(scoreboard, pump, model, INTERVAL, START_WAIT)
         
         # Setup migration queue
-        # B
         simple = True
         self.migration_queue = MigrationQueue(self, simple, not simple)
         
@@ -135,9 +134,14 @@ class Strategy(strategy.StrategyBase):
     def balance(self):
         # Current bucket index
         bucket_duration = TOTAL_EXPERIMENT_DURATION / NUM_BUCKETS
-        bucket_index = int((self.pump.sim_time() - self.time_null + profiles.RAMP_UP) / bucket_duration)
+        time = self.pump.sim_time() - self.time_null  # relative time since end of ramp-up and start of steady-state
+        timeg = time + profiles.RAMP_UP  # global time in TS data  
+        bucket_index = int(timeg / bucket_duration) # always floor this value
+        bucket_time = bucket_duration - (timeg - bucket_duration * bucket_index)
+        
         # bucket_index %= NUM_BUCKETS
         print 'bucket index %i' % bucket_index
+        print 'time till next bucket %i' % (bucket_time)
         if bucket_index >= NUM_BUCKETS:
             return
 
