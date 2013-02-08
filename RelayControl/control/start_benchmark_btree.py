@@ -337,28 +337,28 @@ def main():
     # Blackboard
     bb = btree.BlackBoard()
     
-    # Start benchmark
+    # Start benchmark ###################################
     start = btree.Sequence(bb)
     start.add(ConnectRelay())
-#    if START_BT: start.add(AllocateDomains())
-#    start.add(ConfigureGlassfish())
-#    
-#    pl = btree.ParallelNode()
-#    start.add(pl)
-#    pl.add(StartGlassfish())
-#    if INIT_DB: pl.add(StartDatabase())
-#    
-#    start.add(StartRain())
+    if START_BT: start.add(AllocateDomains())
+    start.add(ConfigureGlassfish())
+    
+    pl = btree.ParallelNode()
+    start.add(pl)
+    pl.add(StartGlassfish())
+    if INIT_DB: pl.add(StartDatabase())
+    
+    start.add(StartRain())
     start.add(ConnectRain())
     start.add(TriggerRain())
     start.add(startController())
     
-    # Stop benchmark
+    # Stop benchmark ####################################
     stop = btree.Sequence(bb)
     stop.add(AllocateDomains())
     stop.add(StopGlassfishRain())
     
-    # Execute behavior trees
+    # Execute Behavior Trees ############################
     if START_BT:
         print 'Running start bt'
         defer = start.execute()
