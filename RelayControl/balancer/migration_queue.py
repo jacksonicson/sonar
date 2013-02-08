@@ -91,19 +91,19 @@ class MigrationQueue(object):
                     skip |= test.domain == migration.domain
 
             # Check if migration intersects with previous migrations
-            if self.restrict:
-                to_check = []
-                to_check.extend(self.running)
-                to_check.extend(self.waiting[:i])
-                
-                for previous in to_check:
-                    test = False
-                    test |= previous.domain == migration.domain
-                    test |= previous.source == migration.source
-                    test |= previous.target == migration.target
-                    
-                    # Update skip 
-                    skip |= test
+#            if self.restrict:
+#                to_check = []
+#                to_check.extend(self.running)
+#                to_check.extend(self.waiting[:i])
+#                
+#                for previous in to_check:
+#                    test = False
+#                    test |= previous.domain == migration.domain
+#                    test |= previous.source == migration.source
+#                    test |= previous.target == migration.target
+#                    
+#                    # Update skip 
+#                    skip |= test
                     
             if not skip:
                 print 'Test is false: %s: %s - %s' % (migration.domain.name, migration.source.name, migration.target.name)
