@@ -49,6 +49,7 @@ class ConnectRelay(btree.Action):
         return d
         
     def start_phase(self, client_list, d):
+        logger.log(sonarlog.SYNC, 'start of startup sequence')
         self.blackboard.client_list = client_list
         d.callback(True)
         
@@ -340,7 +341,9 @@ def main():
     # Start benchmark ###################################
     start = btree.Sequence(bb)
     start.add(ConnectRelay())
+    
     if START_BT: start.add(AllocateDomains())
+    
     start.add(ConfigureGlassfish())
     
     pl = btree.ParallelNode()
