@@ -45,10 +45,11 @@ class Strategy(strategy.StrategyBase):
         
        
     def start(self):
-        super(Strategy, self).start()
-        
         # Initialization time
         self.time_null = self.pump.sim_time()
+        
+        # Super call
+        super(Strategy, self).start()
         
         
     def dump(self):

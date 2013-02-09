@@ -49,7 +49,11 @@ class SimulatedMigration:
 
 class StrategyBase(object):
     def __init__(self, scoreboard, pump, model, interval, start_wait):
-        super(StrategyBase, self).__init__()
+        '''
+        Strategy is initialized but not started.
+        WARNING: The model is not built at this point and cannot be used
+        therefore. Code that requires the model needs to be executed in start() 
+        '''
         
         # Reference to scoreboard
         self.scoreboard = scoreboard
@@ -69,20 +73,30 @@ class StrategyBase(object):
         # Migration id counter
         self.migration_id_counter = 0
         
-    # Abstract load balancing method
-    # Override this
+        
     def balance(self):
+        '''
+        Override this
+        Called regularly to trigger control actions 
+        '''
         pass
     
-    # Initial placement calculation
-    # Override this
     def initial_placement(self):
+        '''
+        Override this
+        Calculate an initial placement and return a list of migrations and the
+        info about active servers
+        '''
         nodecount = len(nodes.NODES)
         splace = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
         migrations, active_server_info = splace.execute(aggregation=True , bucketCount=12)
         return migrations, active_server_info
     
     def start(self):
+        '''
+        Override this and call super
+        Executed when the strategy is actually started 
+        '''
         print 'Sleeping: %i' % self.start_wait
         logger.log(sonarlog.SYNC, 'Releasing load balancer')
         self.pump.callLater(self.start_wait, self.run)

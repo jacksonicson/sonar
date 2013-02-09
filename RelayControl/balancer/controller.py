@@ -62,18 +62,19 @@ class MetricHandler(object):
 class Controller(object):
     
     def __init__(self):
-        # Create a new model
+        # Create  new model
         self.model = model.Model()
-        self.model.flush()
-        
+
+        # Setup the strategy        
         self.build_stragegy()
          
-    
     def model_initialize(self):
         # Run configuration
         if config.PRODUCTION: 
+            # Load current infrastructure state into model
             self.model.model_from_current_allocation()
         else:
+            # Load calculated initial placement into model
             migrations, _ = self.strategy.initial_placement()
             self.model.model_from_migrations(migrations)
         
@@ -135,7 +136,12 @@ class Controller(object):
 
     
     def start(self):
-        # Build model
+        # Build model - This has to be executed at start not in init
+        # The setup routine creates a Controller instance and then
+        # calculates and establishes the initial placement. If the 
+        # model was initialized in the init method it would aquire the
+        # infrastructure state before the calculated initial placement
+        # was established  
         self.model_initialize()
         
         # Create notification handler

@@ -21,13 +21,6 @@ types = enum('NODE', 'DOMAIN')
 
 
 class Model(object):
-    def __init__(self):
-        # Holds an internal list of all hosts
-        self.hosts = {}
-        
-    def flush(self):
-        self.hosts = {}
-
     def get_hosts(self, host_type=None):
         if host_type == None:
             return self.hosts.values()
@@ -74,6 +67,8 @@ class Model(object):
     
     
     def model_from_current_allocation(self):
+        self.hosts = {}
+        
         from virtual import allocation
         from virtual import nodes
         allocation = allocation.determine_current_allocation()
@@ -89,6 +84,8 @@ class Model(object):
 
 
     def model_from_migrations(self, migrations):
+        self.hosts = {}
+        
         from virtual import nodes
         from control import domains
         _nodes = []
