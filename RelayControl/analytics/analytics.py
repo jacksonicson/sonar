@@ -12,12 +12,12 @@ from workload import profiles, util, plot as wplot
 import configuration
 import csv
 import json
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import time
 import traceback
-import math
 
 '''
 Additional R-Scripts:
@@ -26,7 +26,7 @@ migrationAnalysis.R
 '''
 
 ##########################
-## Configuration        ##
+# # Configuration        ##
 ##########################
 COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '04/02/2013 15:30:00    04/02/2013 23:00:00'
+RAW = '08/02/2013 22:45:00    09/02/2013 05:30:00'
 ##########################
 
 warns = []
@@ -121,8 +121,8 @@ def __fetch_allocation_config(sonar, host, frame):
     query = ttypes.LogsQuery()
     query.hostname = host
     query.sensor = 'allocate_domains'
-    query.startTime = frame[0] - 60 * 60 # Scan 10 minutes before the start_benchmark
-    query.stopTime = frame[0] + 1 * 60 # Cannot occur after the benchmark start. Due to testing there may 
+    query.startTime = frame[0] - 60 * 60  # Scan 10 minutes before the start_benchmark
+    query.stopTime = frame[0] + 1 * 60  # Cannot occur after the benchmark start. Due to testing there may 
     # also be invalid entries after benchmark start. So, pick the first one before the benchmark.  
         
     servers = 0
@@ -186,6 +186,7 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     release_load = None
     end_startup = None
     for log in logs:
+        print log
         if log.logLevel == 50010:
             if log.logMessage == 'start driving load':
                 release_load = log.timestamp
@@ -874,7 +875,7 @@ def __analytics_server_utilization(cpu, mem):
         _cpu = np.mean(cpu[srv][0])
         _mem = np.mean(mem[srv][0])
         
-        if _cpu > 3: # do not include offline servers
+        if _cpu > 3:  # do not include offline servers
             _total_cpu.extend(cpu[srv][0])
             _total_mem.extend(mem[srv][0])
         
@@ -884,8 +885,8 @@ def __analytics_server_utilization(cpu, mem):
         _violations += len(cpu[srv][0][cpu[srv][0] > 99])
          
         
-    _cpu = np.mean(_total_cpu) # are updated by migration analytics
-    _mem = np.mean(_total_mem) # are updated by migration analytics
+    _cpu = np.mean(_total_cpu)  # are updated by migration analytics
+    _mem = np.mean(_total_mem)  # are updated by migration analytics
     
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
