@@ -121,6 +121,9 @@ class ANode(object):
         return (successors, costs)
        
     def __eq__(self, another):
+        if another == None:
+            return False
+        
         return self.domains == another.domains
     
     def __hash__(self):
@@ -212,34 +215,36 @@ class AStar(object):
 
 def main():
     # Create initial state
-    nodes = 50
-    domainc = 50
-    
-    domains = []
-    domainl = []
-    nodel = [0 for _ in xrange(nodes)]
-    
-    for i in xrange(domainc):
-        while True: 
-            import random
-            node = random.randint(0, nodes-1)
-            load = abs(random.randint(0, 50-1))
-            if (nodel[node] + load) > 100:
-                continue
-            domains.append(node)
-            domainl.append(load)
-            nodel[node] += load
-            break
-        
-    nodel.append(0)
-    
-#    nodes = 6
-#    domains = [1,2,2,3,4,5]
-#    target = [2,1,2,3,5,4]
-#    domainl = [90,20,00,0,90,20]
+#    nodes = 50
+#    domainc = 50
+#    
+#    domains = []
+#    domainl = []
 #    nodel = [0 for _ in xrange(nodes)]
-#    for i in xrange(len(domains)):
-#        nodel[domains[i]] += domainl[i]
+#    
+#    for i in xrange(domainc):
+#        while True: 
+#            import random
+#            node = random.randint(0, nodes-1)
+#            load = abs(random.randint(0, 50-1))
+#            if (nodel[node] + load) > 100:
+#                continue
+#            domains.append(node)
+#            domainl.append(load)
+#            nodel[node] += load
+#            break
+#        
+#    nodel.append(0)
+    
+    nodes = 6
+    domains = [1,2,2,3,4,5]
+    target = [2,1,2,3,5,4]
+    
+    domainl = [90,20,00,0,90,20]
+    
+    nodel = [0 for _ in xrange(nodes)]
+    for i in xrange(len(domains)):
+        nodel[domains[i]] += domainl[i]
     
     print domains
     print domainl
@@ -247,8 +252,8 @@ def main():
     print 'A*'
         
     # Create target state
-    target = list(domains)
-    target[3] = 1
+#    target = list(domains)
+#    target[3] = 1
     
     
     # Validate overload
@@ -280,6 +285,47 @@ def main():
         if end.predecessor is None:
             break
         end = end.predecessor
+
+
+def plan(node_count, start, target, domain_load):
+    print start
+    print target
+    
+    # Calulate the nodes load for the start allocation
+    nodes_load = [0 for _ in xrange(node_count)]
+    for i in xrange(len(start)):
+        nodes_load[start[i]] += domain_load[i]
+    
+    # Create A* nodes for the search
+    start = ANode(nodes_load, start, domain_load)
+    target = ANode(nodes_load, target, domain_load)
+    
+    # Create a new mesh with start and target nodes
+    mesh = Mesh()
+    mesh.put(start)
+    mesh.put(target)
+    
+    # Run A*
+    s = AStar()
+    end = s.search(mesh, start, target)
+    
+    # Extract migrations from A*
+    migrations = []
+    while True:
+        predecessor = end.predecessor
+        if end.predecessor == None:
+            break
+        
+        for domain, server in enumerate(end.domains):
+            if predecessor.domains[domain] != server:
+                migration = (domain, predecessor.domains[domain], server)
+                migrations.append(migration)
+                break
+        
+        end = predecessor
+        
+    print migrations
+    return reversed(migrations)
 
 class Mesh(object):
     def __init__(self):

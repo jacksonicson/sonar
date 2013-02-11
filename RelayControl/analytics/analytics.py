@@ -26,7 +26,7 @@ migrationAnalysis.R
 '''
 
 ##########################
-## Configuration        ##
+# # Configuration        ##
 ##########################
 COLLECTOR_IP = 'monitor0'
 MANAGEMENT_PORT = 7931
@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '30/12/2012 03:00:00    30/12/2012 10:00:00'
+RAW = '10/02/2013 21:58:00    11/02/2013 04:50:00'
 ##########################
 
 warns = []
@@ -121,8 +121,8 @@ def __fetch_allocation_config(sonar, host, frame):
     query = ttypes.LogsQuery()
     query.hostname = host
     query.sensor = 'allocate_domains'
-    query.startTime = frame[0] - 60 * 60 # Scan 10 minutes before the start_benchmark
-    query.stopTime = frame[0] + 1 * 60 # Cannot occur after the benchmark start. Due to testing there may 
+    query.startTime = frame[0] - 60 * 60  # Scan 10 minutes before the start_benchmark
+    query.stopTime = frame[0] + 1 * 60  # Cannot occur after the benchmark start. Due to testing there may 
     # also be invalid entries after benchmark start. So, pick the first one before the benchmark.  
         
     servers = 0
@@ -186,6 +186,7 @@ def __fetch_start_benchamrk_syncs(sonar, host, frame):
     release_load = None
     end_startup = None
     for log in logs:
+        print log
         if log.logLevel == 50010:
             if log.logMessage == 'start driving load':
                 release_load = log.timestamp
@@ -206,7 +207,7 @@ def __fetch_migrations(connection, load_host, timeframe):
     query = ttypes.LogsQuery()
     query.hostname = load_host
     query.sensor = 'controller'
-    query.startTime = timeframe[0]
+    query.startTime = timeframe[0] - 60
     query.stopTime = timeframe[1]
     logs = connection.queryLogs(query)
     
@@ -219,6 +220,9 @@ def __fetch_migrations(connection, load_host, timeframe):
     server_active = [] 
     triggered = []
     
+    # Initial model
+    initial = None
+    
     # scan logs for results
     for log in logs:
         if log.timestamp > timeframe[1]:
@@ -230,6 +234,12 @@ def __fetch_migrations(connection, load_host, timeframe):
                 if log.logMessage == 'Releasing load balancer':
                     sync_release = log.timestamp
         else:
+            # Initial model
+            STR_INITIAL_MODEL = 'Controller Initial Model: '
+            if log.logMessage.startswith(STR_INITIAL_MODEL):
+                msg = log.logMessage[len(STR_INITIAL_MODEL):]
+                initial = json.loads(msg)
+            
             # Migration triggered
             STR_MIGRATION_TRIGGERED = 'Live Migration Triggered: '
             if log.logMessage.startswith(STR_MIGRATION_TRIGGERED):
@@ -260,7 +270,7 @@ def __fetch_migrations(connection, load_host, timeframe):
                 active_state = (log.timestamp, active['count'], active['servers'])
                 server_active.append(active_state)
                 
-    return successful, failed, server_active, triggered
+    return successful, failed, server_active, triggered, initial
 
 '''
 Extracts all JSON configuration and metric information from the Rain log. This
@@ -537,6 +547,7 @@ def __plot_migrations_vs_resp_time(data_frame, domain_track_map, migrations_trig
         # Plot response times        
         for track in domain_track_map[domain]:
             res_resp, res_time = __fetch_timeseries(connection, track[0], 'rain.rtime.%s' % track[1], data_frame)
+            
             ax.plot(res_time, res_resp)
             
         # Add annotations to the trace
@@ -798,7 +809,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
         occupied_minutes += (active_servers * delta_time) / 60.0
         
         # Empty server minutes 
-        empty_minutes += (delta_time * (len(nodes.HOSTS) - active_servers)) / 60
+        empty_minutes += (delta_time * (len(nodes.NODES) - active_servers)) / 60
         
         # Go over all servers
         for srv in nodes.NODES:
@@ -840,7 +851,7 @@ def __analytics_migrations(data_frame, cpu, mem, migrations, server_active_flags
     avg_servers = (occupied_minutes / 60.0) / duration
     
     # Print stats
-    print 'Duration: %i' % (duration * 60 * len(nodes.HOSTS))
+    print 'Duration: %i' % (duration * 60 * len(nodes.NODES))
     print 'Duration check: %i' % (occupied_minutes + empty_minutes)
     print 'Occupied minutes: %i' % occupied_minutes
     print 'Empty minutes: %i' % empty_minutes
@@ -864,7 +875,7 @@ def __analytics_server_utilization(cpu, mem):
         _cpu = np.mean(cpu[srv][0])
         _mem = np.mean(mem[srv][0])
         
-        if _cpu > 3: # do not include offline servers
+        if _cpu > 3:  # do not include offline servers
             _total_cpu.extend(cpu[srv][0])
             _total_mem.extend(mem[srv][0])
         
@@ -874,8 +885,8 @@ def __analytics_server_utilization(cpu, mem):
         _violations += len(cpu[srv][0][cpu[srv][0] > 99])
          
         
-    _cpu = np.mean(_total_cpu) # are updated by migration analytics
-    _mem = np.mean(_total_mem) # are updated by migration analytics
+    _cpu = np.mean(_total_cpu)  # are updated by migration analytics
+    _mem = np.mean(_total_mem)  # are updated by migration analytics
     
     data = ['total', _cpu, _mem]
     __dump_elements(tuple(data))
@@ -1018,11 +1029,16 @@ def t_test_response_statistics_all():
             self.samples = 1
             self.sum_rtime = 0
             self.sum_std = 0
+            self.rtime = []
         
         def accept(self, samples, rtime, std):
             self.samples += samples
             self.sum_rtime += samples * rtime
             self.sum_std += samples * std
+            self.rtime.append(rtime)
+            
+        def sd_rtime(self):
+            return np.var(self.rtime)
             
         def average(self):
             self.sum_rtime /= self.samples
@@ -1080,11 +1096,18 @@ def t_test_response_statistics_all():
             r2.average()
             t, test, df = t_test(r1.sum_rtime, r2.sum_rtime, r1.sum_std, r1.sum_std,
                                  r1.samples, r2.samples)
+            
+            if r1.sd_rtime() < r2.sd_rtime():
+                print r1.sd_rtime() / r2.sd_rtime()
+            else:
+                print r2.sd_rtime() / r1.sd_rtime()
+            
             sig = t > test
             if sig:
                 report = '%s.%s to %s.%s (%s) $p(%i)=%0.02f,p<0.05$' % (control0, type0, control1, type1, mix, df, t)
                 print '%s.%s x %s.%s (%s) -> %i, t=%0.2f test=%0.2f df=%0.2f [%s]' % (control0, type0, control1, type1, mix, sig, t, test, df, report)
-        except:
+        except Exception as inst:
+            print inst
             __warn('%s.%s x %s.%s -> %s' % (control0, type0, control1, type1, 'FAIL'))
 
     # For all mixes    
@@ -1212,7 +1235,6 @@ def t_test_response_statistics():
                         except StopIteration:
                             pass
                             
-        import csv
         with open('C:/temp/result_%i.csv' % run, 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             spamwriter.writerow(ops)
@@ -1220,103 +1242,156 @@ def t_test_response_statistics():
             
         __dump_warns()
           
+def __plot_aggregated_load_with_migrations(cpu_load_from, timeframe):
+    fig = plt.figure()
+    
+    # Plot accumulated CPU load
+    ax = fig.add_subplot(111)
+    ax.set_ylabel('Accumulated server load')
+    ax.set_xlabel('Time hour:minutes')
+    ax.plot(cpu_load_from[1], cpu_load_from[0], label='Server Load')
+    ax.axvline(timeframe[0], color='r')
+    ax.axvline(timeframe[1], color='r')
+ 
+def __extract_errors(timeframe, logs):
+    errors = 0
+    for log in logs:
+        time = log.timestamp
+        
+        if time > timeframe[0] and time < (timeframe[1] + 60):
+            errors += 1
+            
+    return errors
+
+def __extract_cpu(timeframe, cpu_load):
+    readings_before, readings_during = [], []
+    
+    for i in xrange(len(cpu_load[0])):
+        time = cpu_load[1][i]
+        load = cpu_load[0][i]
+        
+        if time > timeframe[0] and time < timeframe[1]:
+            readings_during.append(load)
+            
+        elif time > (timeframe[0] - 60) and time < timeframe[0]:
+            readings_before.append(load)
+            
+    return readings_before, readings_during 
         
 def extract_migration_times(connection):
     # List of migration times
     times = []
+    
+    # List of migration informations
     info = []
     
     def handle(entry):
         # Refine markers
         raw_frame, _ = __refine_markers(connection)
         
-        # Fetch migrations
-        successful, _, _, _ = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
+        # Fetch migration data and rain data to sync controller time
+        successful, failed, actives, triggered, initial = __fetch_migrations(connection, CONTROLLER_NODE, raw_frame)
         _, release, _ = __fetch_start_benchamrk_syncs(connection, CONTROLLER_NODE, raw_frame)
         _, _, _, _, _, _, _, scenario_start0, errordata0 = __fetch_rain_data(connection, 'load0', raw_frame)
         _, _, _, _, _, _, _, scenario_start1, errordata1 = __fetch_rain_data(connection, 'load1', raw_frame)
         
+        # Time correction to synchronize time 
         delta = release - scenario_start0
 
-        # Get timestamps from successful migration times
-        for end in successful:
+        # Current domain-node allocation
+        current_model = initial
+        print current_model
+
+        # Iterate over all successful migrations
+        for i, end in enumerate(successful):
+            # Migration duration
             times.append((end[1]['duration'],))
             
+            # Load server (source, target) load during migration
             correction = delta
-            
-            # Load server load during migration
             node_from = end[1]['from']
             node_to = end[1]['to']
             domain = end[1]['domain']
             timeframe = (float(end[1]['start']) - correction, float(end[1]['end']) - correction)
             fetchframe = (timeframe[0] - 100, timeframe[1] + 100)
             
+            # CPU
             cpu_load_from = __fetch_timeseries(connection, node_from, 'psutilcpu', fetchframe)
             cpu_load_to = __fetch_timeseries(connection, node_to, 'psutilcpu', fetchframe)
             cpu_load_domain = __fetch_timeseries(connection, domain, 'psutilcpu', fetchframe)
             
+            # NET
             net_load_from = __fetch_timeseries(connection, node_from, 'psutilnet.br0.sent', fetchframe)
             net_load_to = __fetch_timeseries(connection, node_to, 'psutilnet.br0.recv', fetchframe)
             
-#            # New plot
-#            fig = plt.figure()
-#            
-#            # Plot accumulated CPU load
-#            ax = fig.add_subplot(111)
-#            ax.set_ylabel('Accumulated server load')
-#            ax.set_xlabel('Time hour:minutes')
-#            ax.plot(cpu_load_from[1], cpu_load_from[0], label='Server Load')
-#            ax.axvline(timeframe[0], color='r')
-#            ax.axvline(timeframe[1], color='r')
-#            
-            def extract_errors(logs):
-                errors = 0
-                for log in logs:
-                    time = log.timestamp
-                    
-                    if time > timeframe[0] and time < (timeframe[1] + 60):
-                        errors += 1
-                        
-                return errors
-            
-            def extract_cpu(cpu_load):
-                readings_before, readings_during = [], []
+            # Update current model and fetch domain loads
+            domain_loads_source = []
+            domain_loads_target = []
+            if current_model != None:
+                src_domains = current_model[node_from]
+                trg_domains = current_model[node_to] 
                 
-                for i in xrange(len(cpu_load[0])):
-                    time = cpu_load[1][i]
-                    load = cpu_load[0][i]
-                    
-                    if time > timeframe[0] and time < timeframe[1]:
-                        readings_during.append(load)
-                        
-                    elif time > (timeframe[0] - 60) and time < timeframe[0]:
-                        readings_before.append(load)
-                        
-                return readings_before, readings_during 
-
-            before_cpu_source, during_cpu_source = extract_cpu(cpu_load_from)
-            before_cpu_target, during_cpu_target = extract_cpu(cpu_load_to)
-            before_cpu_domain, during_cpu_domain = extract_cpu(cpu_load_domain)
-                        
-            before_net_source, during_net_source = extract_cpu(net_load_from)
-            before_net_target, during_net_target = extract_cpu(net_load_to)
+                # Fetch CPU load of domains
+                for domload in src_domains: 
+                    cpu_load_domain_i = __fetch_timeseries(connection, domload, 'psutilcpu', fetchframe)
+                    domain_loads_source.append(cpu_load_domain_i)
+                
+                for domload in trg_domains:
+                    cpu_load_domain_i = __fetch_timeseries(connection, domload, 'psutilcpu', fetchframe)
+                    domain_loads_target.append(cpu_load_domain_i)
+                
+                # Updated model with migration
+                index = [j for j, x in enumerate(src_domains) if x == domain]
+                del current_model[node_from][index[0]]
+                current_model[node_to].append(domain)
             
-            errors = extract_errors(errordata0)
-            errors += extract_errors(errordata1)
+            # Plot accumulated server load with migrations
+            # __plot_aggregated_load_with_migrations(cpu_load_from, timeframe)
+
+            # CPU load
+            before_cpu_source, during_cpu_source = __extract_cpu(timeframe, cpu_load_from)
+            before_cpu_target, during_cpu_target = __extract_cpu(timeframe, cpu_load_to)
+            before_cpu_domain, during_cpu_domain = __extract_cpu(timeframe, cpu_load_domain)
+            
+            # NET load
+            before_net_source, during_net_source = __extract_cpu(timeframe, net_load_from)
+            before_net_target, during_net_target = __extract_cpu(timeframe, net_load_to)
+            
+            # Sum of domain loads (filter out to get hypervisor load only)
+            sum_cpu_source_domains_before, sum_cpu_source_domains_during = 0, 0
+            for dom_load in domain_loads_source:
+                before, during = __extract_cpu(timeframe, dom_load)
+                sum_cpu_source_domains_before += np.sum(before)
+                sum_cpu_source_domains_during += np.sum(during)
+            
+            sum_cpu_target_domains_before, sum_cpu_target_domains_during = 0, 0
+            for dom_load in domain_loads_target:
+                before, during = __extract_cpu(timeframe, dom_load)
+                sum_cpu_target_domains_before += np.sum(before)
+                sum_cpu_target_domains_during += np.sum(during)
+                        
+            # Count errors that were caused by the migration
+            errors = __extract_errors(timeframe, errordata0)
+            errors += __extract_errors(timeframe, errordata1)
             
             try:
                 def agg(values):
-                    # p = 95
                     return np.mean(values)
                 
-                result = (agg(before_cpu_source), agg(during_cpu_source),
-                     agg(before_cpu_target), agg(during_cpu_target),
+                def agg_h(values, delta):
+                    return (np.sum(values) - delta / 2) / len(values)
+                
+                # Create new result entry
+                result = (agg_h(before_cpu_source, sum_cpu_source_domains_before), agg_h(during_cpu_source, sum_cpu_source_domains_during),
+                     agg_h(before_cpu_target, sum_cpu_target_domains_before), agg_h(during_cpu_target, sum_cpu_target_domains_during),
+                     
                      agg(before_net_source), agg(during_net_source),
                      agg(before_net_target), agg(during_net_target),
+                     
                      agg(before_cpu_domain), agg(during_cpu_domain),
                      errors, float(end[1]['duration']))
                 
-                # print 'source: before=%0.2f during=%0.2f    target: before=%0.2f during=%0.2f    duration:%0.2f' % result
+                # Append result entry to list
                 info.append(result) 
             except:
                 __warn('Error extracting migration infos')
@@ -1329,24 +1404,25 @@ def extract_migration_times(connection):
                 print during_net_source
                 print before_cpu_domain
                 print during_cpu_domain
-                
                 pass 
             
             
-            
-
+    # Extract migrations for all experiments
     __process_from_experiment_schedule(handle)
 
-    # Write migration data to CSV file 
+    # Write migration times to CSV file 
     with open(configuration.path('migration-times', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
         spamwriter.writerow(('duration',))
         spamwriter.writerows(times)
+        
+    # Write migration data to CSV file
     with open(configuration.path('migration-data', 'csv'), 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter='\t')
         spamwriter.writerow(('source-before', 'source-during', 'target-before', 'target-during', 'source-net-before',
                              'source-net-during', 'target-net-before', 'target-net-during',
-                             'domain-cpu-before', 'domain-cpu-during', 'errors', 'duration'))
+                             'domain-cpu-before', 'domain-cpu-during',
+                             'errors', 'duration'))
         spamwriter.writerows(info)
 
 
@@ -1399,6 +1475,7 @@ def __process_from_experiment_schedule(callback_handler, limit=300):
     # Load experiments database
     count = 0
     for entry in __load_experiment_db(EXPERIMENT_DB):
+        print entry
         global START, END, RAW
         RAW = entry[0]
         START, END = RAW.split('    ')
@@ -1459,7 +1536,7 @@ def extract_response_statistics(connection):
         rain_results = __load_rain_results(connection, raw_frame)
         _schedules, _track_configs, _global_metrics, _rain_metrics, _track_metrics, _spec_metrics, _errors = rain_results
         
-        with open(configuration.path('%s_%s_%s_%i' % (entry[1:]), 'csv'), 'wb') as csvfile:
+        with open(configuration.path('%s_%s_%s_%i' % (entry[1:5]), 'csv'), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='\t')
             print '### Operation Sampling Table ###'
             if len(_global_metrics) < 2:
@@ -1655,7 +1732,7 @@ def connect_sonar(connection):
     ### Reading Migrations ##############################################################################################################
     #####################################################################################################################################
     migrations = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
-    migrations_successful, migrations_failed, server_active_flags, migrations_triggered = migrations
+    migrations_successful, migrations_failed, server_active_flags, _, _ = migrations
     print '## MIGRATIONS ##'
     print 'Successful: %i' % len(migrations_successful)
     print 'Failed: %i' % len(migrations_failed)
@@ -1704,8 +1781,8 @@ if __name__ == '__main__':
     
     connection = __connect()
     try:
-        # connect_sonar(connection)
-        extract_migration_times(connection)
+        connect_sonar(connection)
+        # extract_migration_times(connection)
         # extract_regression_data(connection)
         # extract_response_statistics(connection)
         # t_test_response_statistics()

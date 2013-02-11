@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from service import times_client
 
-def main(name):
+def allocate_domains(name):
     print 'Downloading...'
     connection = times_client.connect()
     
@@ -32,4 +32,4 @@ def main(name):
                 
 
 if __name__ == '__main__':
-    main('SIS_100_cpu')
+    allocate_domains('SIS_161_cpu_profile_norm')

@@ -10,6 +10,7 @@ yum install unzip
 yum install twisted
 yum install python-setuptools
 yum install python-zope-interface 
+yum install thrift
 
 # Copy relay to opt dir
 rm -rf /opt/relay

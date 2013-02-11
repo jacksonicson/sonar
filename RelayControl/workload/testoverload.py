@@ -1,4 +1,4 @@
-from control.logic import placement
+from virtual import placement
 from virtual import nodes
 from service import times_client
 from workload import profiles, util as wutil
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 def main():
     # Solve allocation problem
-    nodecount = len(nodes.HOSTS)
+    nodecount = len(nodes.NODES)
     model = placement.SSAPvPlacement(nodecount, nodes.NODE_CPU, nodes.NODE_MEM, nodes.DOMAIN_MEM)
     model.execute()
     
@@ -34,7 +34,7 @@ def main():
         import sys
         ts_length = sys.maxint
         for i_service in xrange(service_count):
-            name = profiles.get_current_cpu_profile(i_service)
+            name = profiles.get_cpu_current_profile(i_service)
             tsd = connection.load(name)
             tsd = wutil.to_array(tsd)[1]
             tsdata.append(tsd)

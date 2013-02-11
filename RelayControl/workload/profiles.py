@@ -4,7 +4,7 @@ List of TS and workload profiles used by the benchmark (stored in Times)
 
 from service import times_client
 from times import ttypes
-from timeutil import * #@UnusedWildImport
+from timeutil import *  # @UnusedWildImport
 import configuration
 import matplotlib.pyplot as plt
 import modifier
@@ -35,18 +35,18 @@ mixsim = Config('mix_sim', 'mix_sim', pdata.mix_sim, False)
 mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 
 ##############################
-## CONFIGURATION            ##
+# # CONFIGURATION            ##
 ##############################
 config = mix1
 ##############################
 
 ##############################
 # Backward compatibility - gets extracted from config
-selected_profile = config.prefix    # Prefix for picking TS from Times
-selected_name = config.name         # Just for logging
-selected = config.data              # Selected workload mix
-modified = config.modified          # Modified version of the workload mix
-traces_exist = config.traces        # For initial placement profiles traces are used if they exist
+selected_profile = config.prefix  # Prefix for picking TS from Times
+selected_name = config.name  # Just for logging
+selected = config.data  # Selected workload mix
+modified = config.modified  # Modified version of the workload mix
+traces_exist = config.traces  # For initial placement profiles traces are used if they exist
 ##############################
 
 '''
@@ -85,27 +85,26 @@ with the interval matches the EXPERIMENT_DURATION.
 '''
 Prefix and post-fixes used to store data in Times
 '''
-POSTIFX_ORIG = '' # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
-POSTFIX_RAW = 'profile' # profile generated from the raw data of the SIS or O2 data set 
-POSTFIX_NORM = 'profile_norm' # Normalized profile against the set maximum, see mix_selected and ProfileSet class
-POSTFIX_USER = 'profile_user' # Normalized profile multiplied with the max. number of users
-POSTFIX_DAY = 'sampleday' # A sample day of the time series
-POSTFIX_TRACE = 'profile_trace' # Recorded profile which resulted using the user profile in the load driver
-POSTFIX_MODIFIED = 'modified' # A modified trace
+POSTIFX_ORIG = ''  # original RAW time series imported from the SIS or O2 data set. This is NO profile!!!
+POSTFIX_RAW = 'profile'  # profile generated from the raw data of the SIS or O2 data set 
+POSTFIX_NORM = 'profile_norm'  # Normalized profile against the set maximum, see mix_selected and ProfileSet class
+POSTFIX_USER = 'profile_user'  # Normalized profile multiplied with the max. number of users
+POSTFIX_DAY = 'sampleday'  # A sample day of the time series
+POSTFIX_TRACE = 'profile_trace'  # Recorded profile which resulted using the user profile in the load driver
+POSTFIX_MODIFIED = 'modified'  # A modified trace
 
 '''
 Experiment specific settings
 Everything is in SECONDS
 '''
-CYCLE_TIME = hour(24) # 24 hours cycle
-PROFILE_INTERVAL_COUNT = CYCLE_TIME / minu(5) # For each 5 minutes there is one data point in a workload profile
-EXPERIMENT_DURATION = hour(6) # 6 hours steady-state duration of the experiment
-RAMP_UP = minu(10) # Ramp up duration of the experiment
-RAMP_DOWN = minu(10) # Ramp down duration of the experiment
-MAX_USERS = user(200) # Maximum number of users
+CYCLE_TIME = hour(24)  # 24 hours cycle
+PROFILE_INTERVAL_COUNT = CYCLE_TIME / minu(5)  # For each 5 minutes there is one data point in a workload profile
+EXPERIMENT_DURATION = hour(6)  # 6 hours steady-state duration of the experiment
+RAMP_UP = minu(10)  # Ramp up duration of the experiment
+RAMP_DOWN = minu(10)  # Ramp down duration of the experiment
+MAX_USERS = user(200)  # Maximum number of users
 
-
-def get_current_cpu_profile(index):
+def get_cpu_current_profile(index):
     '''
     Gets CPU profile by index from the selected workload mix. The selection
     depends on the modified flag. 
@@ -122,18 +121,19 @@ def get_current_cpu_profile(index):
 def get_cpu_profile_for_initial_placement(index):
     '''
     Gets a traced CPU profile by index from the selected workload mix. The selection
-    depends on the modified flag. 
+    depends on whether a profile trace exists. This is always used to build initial
+    allocations! 
     '''
     if traces_exist:
         desc = __by_index(index)
         name = __times_name(True, desc.name, POSTFIX_TRACE)
     else:
-        name = get_current_cpu_profile(index)
+        name = get_cpu_current_profile(index)
     
     print 'Selected CPU profile for initial placement: %s' % name
     return name
 
-def get_current_user_profile(index):
+def get_user_current_profile(index):
     '''
     Gets user profile by index from the selected workload mix. The selection
     depends on the modified flag. 
@@ -242,7 +242,7 @@ def __store_profile(connection, desc, set_max, profile, interval, save=False):
     profile /= maxval
     norm_profile = np.array(profile)
     norm_profile[norm_profile > 1] = 1
-    norm_profile *= 100 # Times does not support float values
+    norm_profile *= 100  # Times does not support float values
     if save:
         __write_profile(connection, __times_name(True, desc.name, POSTFIX_NORM), norm_profile, interval)
     
@@ -286,7 +286,7 @@ def __build_sample_day(mix, save):
     times_client.close()
  
  
-def build_modified_profiles(mix, save):
+def __build_modified_profiles(mix, save):
     connection = times_client.connect()
     
     for mi_element in mix:
@@ -398,7 +398,7 @@ def __padprofile(profile_ts, interval):
     return curve 
 
 
-def build_all_profiles_for_mix(mix, save):
+def __build_all_profiles_for_mix(mix, save):
     # TS for sample day and profile processing
     sample_day = []
     profile = []
@@ -441,7 +441,7 @@ def process_sonar_trace(name, trace_ts, timestamps, save=False):
         __write_profile(connection, __times_name(False, name, POSTFIX_TRACE), profile, interval, noprefix=True)
         times_client.close()
     
-def dump_to_csv():
+def __dump_to_csv():
     connection = times_client.connect()
     
     demands = []
@@ -473,22 +473,23 @@ def dump_to_csv():
         
     times_client.close()
     
-def plot_overlay_mix():
+def __plot_overlay_mix():
     '''
     Plots all TS of a mix in a single axis graph
     '''
     # Connect with times
     connection = times_client.connect()
     
-#    mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
-#    mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
-#    plot_mix = mix0
-    a = 0
+    # Plot selected
+    selected_mix0 = ['O2_retail_ADDORDER', 'SIS_163_cpu', 'SIS_393_cpu']
+    selected_mix1 = ['SIS_222_cpu', 'SIS_213_cpu', 'SIS_387_cpu']
+    plot_mix = selected_mix1
     
-    plot_mix = []
-    for i in xrange(a, a + 100):
-        print selected[i].name
-        plot_mix.append(selected[i].name)
+    # Plot all from a set
+#    plot_mix = []
+#    for i in xrange(a, a + 100):
+#        print selected[i].name
+#        plot_mix.append(selected[i].name)
     
     fig = plt.figure()
     
@@ -496,18 +497,25 @@ def plot_overlay_mix():
     ax.set_xlim([0, 300])
     
     for name in plot_mix:
-        timeSeries = connection.load(__times_name(True, name, POSTFIX_NORM))
+        timeSeries = connection.load(__times_name(True, name, POSTFIX_USER))
+        print timeSeries
         _, demand = util.to_array(timeSeries)
-        
+        demand = demand[7:289 + 7]
         ax.plot(range(0, len(demand)), demand, linewidth=0.7)
 
     
-    ax.set_xlabel('Time x5 minutes')
+    xt = [(t * 60 / 5) for t in xrange(0, 25)]
+    xl = [t for t in xrange(0, 25)]
+    
+    ax.set_xticks(xt)
+    ax.set_xticklabels(xl)
+    
+    ax.set_xlabel('Time in hours')
     ax.set_ylabel('Load in number of users')
     
-    plt.show()
-#    plt.savefig(configuration.path('overlay', 'png'))
-#    plt.savefig(configuration.path('overlay', 'pdf'))
+#    plt.show()
+    plt.savefig(configuration.path('overlay', 'png'))
+    plt.savefig(configuration.path('mix1', 'pdf'))
     
     # Close times connection
     times_client.close()
@@ -552,7 +560,7 @@ def dump(logger):
     logger.info('selected_name = %s' % selected_name)
     
     
-def dump_user_profile_maxes():
+def __dump_user_profile_maxes():
     '''
     Used to verify that all user profiles have user values below MAX_USERS
     '''
@@ -569,11 +577,11 @@ def dump_user_profile_maxes():
     
 # Builds the profiles and saves them in Times
 def main():
-    # dump_user_profile_maxes()
-    # build_all_profiles_for_mix(selected, True)
-    # build_modified_profiles(selected, False)
-    # plot_overlay_mix()
-    dump_to_csv()
+    # __dump_user_profile_maxes()
+    # __build_all_profiles_for_mix(selected, True)
+    # __build_modified_profiles(selected, False)
+    __plot_overlay_mix()
+    # __dump_to_csv()
     pass
 
 if __name__ == '__main__':

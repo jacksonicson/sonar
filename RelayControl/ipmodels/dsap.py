@@ -55,10 +55,10 @@ def setupConstraints(model):
         for i in xrange(server_count):
             server_load = quicksum((demand(j, CPU, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
             model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_CPU))
-            
+          
             server_load = quicksum((demand(j, MEM, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
             model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_MEM))
-        
+    
     model.update()
 
 
@@ -97,7 +97,7 @@ def getServerCounts():
                 server_counts[d] += 1
     
     return server_counts
-        
+
 
 def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw, _demand_mem):
     global server_count
@@ -123,37 +123,28 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     model.setParam('OutputFlag', False)
     model.optimize()
 
-    assignment = getAssignment()
-    i = 0
-    for interval in assignment: 
-        print '%i: %s' % (i, interval)
-        i += 1
+    assignment_list = getAssignment()
     
     server_counts = getServerCounts()
     print 'Servers per interval: %s' % server_counts
     print 'Average server count: %f' % (np.mean(server_counts))
     
-    return server_counts, assignment
-
+    return server_counts, assignment_list    
+    
+    
+    
 # Test program
 if __name__ == '__main__':
     demand_duration = 24
     service_count = 12
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
-    # Fill demand with random data
+    # A) Filling demand values with random data for testing purposes
     for j in xrange(service_count):
         for t in range(demand_duration):
             demand_raw[j][t] = random.randint(0, 50)
             
-    demand_mem = [[] for _ in xrange(len(demand_raw))]
-    for i in xrange(len(demand_raw)):
-        demand_mem[i] = [0 for _ in xrange(len(demand_raw[i]))]
-        
-    print demand_mem
-    print demand_raw
-    solve(12, 100, 100, demand_raw, demand_mem)
-
+    # VM memory demand is constant
+    demand_mem=5
     
-
-
+    solve(12, 100, 100, demand_raw, demand_mem)

@@ -5,32 +5,36 @@ import random
 Maps domains to profiles
 '''
 
+######################
+## CONFIGURATION    ##
+######################
+DOMAINS = 18
+WORKLOAD_OFFSET = 0
+WORKLOAD_RANDOM = False
+WORKLOAD_MAX_RANDOM = 200
+######################
+
 class Domain:
     def __init__(self, domain, profileId, rain_target=False):
         self.domain = domain
         self.profileId = profileId
         self.rain_target = rain_target
 
-domain_profile_mapping = [
-    Domain('target0', 0, True),
-    Domain('target1', 1, True),
-    Domain('target2', 2, True),
-    Domain('target3', 3, True),
-    Domain('target4', 4, True),
-    Domain('target5', 5, True),
-    Domain('target6', 6, True),
-    Domain('target7', 7, True),
-    Domain('target8', 8, True),
-    Domain('target9', 9, True),
-    Domain('target10', 10, True),
-    Domain('target11', 11, True),
-    Domain('target12', 12, True),
-    Domain('target13', 13, True),
-    Domain('target14', 14, True),
-    Domain('target15', 15, True),
-    Domain('target16', 16, True),
-    Domain('target17', 17, True),
-    ]
+domain_profile_mapping = []
+
+def recreate():
+    global domain_profile_mapping
+    domain_profile_mapping = []
+    for i in xrange(DOMAINS):
+        if WORKLOAD_RANDOM:
+            target_index = random.randint(0, WORKLOAD_MAX_RANDOM)
+        else:
+            offset = WORKLOAD_OFFSET
+            target_index = offset + i
+            
+        domain_profile_mapping.append(Domain('target%i' % i, target_index, True))
+        
+recreate()
 
 ###############################################################################
 ###############################################################################
@@ -38,18 +42,18 @@ domain_profile_mapping = [
 def cpu_profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry.domain == domain:
-            return profiles.get_current_cpu_profile(entry.profileId)
+            return profiles.get_cpu_current_profile(entry.profileId)
         
     print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
-    return profiles.get_current_cpu_profile(0)
+    return profiles.get_cpu_current_profile(0)
 
 def user_profile_by_name(domain):
     for entry in domain_profile_mapping:
         if entry.domain == domain:
-            return profiles.get_current_user_profile(entry.profileId)
+            return profiles.get_user_current_profile(entry.profileId)
         
     print 'WARN: no profileId configured for domain %s, using profileId with index 0' % domain
-    return profiles.get_current_user_profile(0)
+    return profiles.get_user_current_profile(0)
 
 
 def has_domain(name):
@@ -70,15 +74,17 @@ def index_of(name):
 
 
 def print_mapping():
+    print 'Dumping domain profile mappings...'
     for entry in domain_profile_mapping:
-        profile = profiles.get_current_user_profile(entry.profileId)
+        profile = profiles.get_user_current_profile(entry.profileId)
         print '%s --- load --> %s' % (profile, entry.domain)
+    print 'End dumping domain profile mappings.'
     
   
 def dump(logger):
     out = ''
     for entry in domain_profile_mapping:
-        profile = profiles.get_current_user_profile(entry.profileId)
+        profile = profiles.get_user_current_profile(entry.profileId)
         out += '%s > %s; ' % (profile, entry.domain)
     logger.info("Mapping: %s" % out)
         

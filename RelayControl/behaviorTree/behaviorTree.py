@@ -1,161 +1,193 @@
 from twisted.internet import defer, reactor
 
-# The Node 
 class __Node(object):
     def execute(self):
         pass
 
-"""The Blackboard class which consists of a dictionary to store temporary data
-in a key-value pair format"""
-class BlackBoard:
-    def __init__(self):
-        self.data = {}
-        pass
+class BlackBoard(object):
+    pass
 
-    def addData(self, key, value):
-        self.data[key] = value
-
-    def getData(self, key):
-        try:
-            return self.data[key]
-        except:
-            pass
-
-# Parallel Node
 class ParallelNode(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.children = []
-        self.deferreds = []
-
+        self.blackboard = blackboard
+        
     def execute(self):
         if len(self.children) == 0:
-            print "Nodes should have at least one action"
+            print 'Parallel needs at least one child'
             return None
 
-        self.d = defer.Deferred()
-        print "Execute in Parallel"
+        dl = []
         for child in self.children:
             d = child.execute()
-            self.deferreds.append(d)
+            dl.append(d)
 
-        defList = defer.DeferredList(self.deferreds, consumeErrors=0)
+        defList = defer.DeferredList(dl, fireOnOneErrback=True, consumeErrors=True)
+        
         defList.addCallback(self.parallelCallback)
-        return d
+        defList.addErrback(self.error)
+        
+        self.d = defer.Deferred()
+        return self.d
+
+    def error(self, fail):
+        self.d.errback(fail)
 
     def parallelCallback(self, result):
-        print "Callback in result"
-        for ignore, data in result:
-            print data
-        self.d.callback(result)
+        print 'parallel callback'
+        agg = True
+        for _, test in result:
+            agg = agg and test
+        self.d.callback(agg)
         
-    def addChild(self, child):
+    def add(self, child):
+        child.blackboard = self.blackboard
         self.children.append(child)
         return self
         
-# Sequence
+        
 class Sequence(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.children = []
         self.blackboard = blackboard
         self.curChild = 0
         
     def execute(self):
-        if len(self.children) == 0:
-            print "Sequence should have at least one action"
+        if not self.children:
+            print 'Sequence needs at least one child'
             return None
-
-        print "Execute in Sequence"
+        
         self.d = defer.Deferred()
         self.moveToNextChild(True)
-        return self.d
+        return self.d 
+    
+    
+    def error(self, fail):
+        print 'Error handler in Sequence node'
+        self.d.errback(fail)
     
     def moveToNextChild(self, data):
-        if(self.curChild == len(self.children)):
-            print "Going to callback parent now"
-            self.d.callback(data)
-            pass
-        
         if data == True:
+            if self.curChild >= len(self.children):
+                # Sequence finished with true
+                self.d.callback(True)
+                return
+            
             item = self.children[self.curChild];
-            self.curChild = self.curChild + 1
+            self.curChild += 1
+            
             deferFromChild = item.execute()
-            deferFromChild.addCallback(self.moveToNextChild)
-        else :
-            self.d.callback(data)
-            pass
+            if isinstance(deferFromChild, bool):
+                self.moveToNextChild(deferFromChild)
+            else:
+                deferFromChild.addCallback(self.moveToNextChild)
+                # deferFromChild.addErrback(self.error)
+        else:
+            # Sequence finished with false
+            self.d.callback(False)
         
-    def addChild(self, child):
+        
+    def add(self, child):
+        child.blackboard = self.blackboard
         self.children.append(child)
         return self
 
-# Selector
 class Selector(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.children = []
         self.blackboard = blackboard
         self.curChild = 0
         
     def execute(self):
-        if len(self.children) == 0:
-            print "Selector should have at least one action"
+        if not self.children:
+            print 'Selector needs at least one child'
             return None
 
-        print "Execute in Selector"
         self.d = defer.Deferred()
         self.moveToNextChild(False)
         return self.d
     
+    def error(self, fail):
+        print 'Error handler in Selector node'
+        self.d.errback(fail)
+    
     def moveToNextChild(self, data):
-        if(self.curChild == len(self.children)):
-            print "Going to callback parent now"
-            self.d.callback(data)
-            pass
-        
         if data == True:
-             self.d.callback(data)
-        else :
-            item = self.children[self.curChild];
+            self.d.callback(True)
+        else:
+            if self.curChild >= len(self.children):
+                # Select finished with true
+                self.d.callback(False)
+                return
+            
+            item = self.children[self.curChild]
             self.curChild = self.curChild + 1
+            
             deferFromChild = item.execute()
-            deferFromChild.addCallback(self.moveToNextChild)
-            pass
+            if isinstance(deferFromChild, bool):
+                self.moveToNextChild(deferFromChild)
+            else:           
+                deferFromChild.addCallback(self.moveToNextChild)
+                deferFromChild.addErrback(self.error)
         
-    def addChild(self, child):
+    def add(self, child):
+        child.blackboard = self.blackboard
         self.children.append(child)
         return self
     
 
 # Action (Nodes)
 class Action(__Node):
-    def __init__(self, blackboard):
+    def __init__(self, blackboard=None):
         self.blackboard = blackboard
         
     def execute(self):
-        self.d = defer.Deferred()
-        defir = self.action()
-        defir.addCallback(self.d.callback)
-        return self.d
+        return self.action()
 
     def action(self):
         d = defer.Deferred()
-        print "Executing Action"
-        reactor.callLater(4, d.callback, True)
+        print "Dummy - Action Body"
+        reactor.callLater(1, d.callback, True)
         return d
 
-class Action2(Action):
+
+# Test program
+class NodeA(Action):
+    def action(self):
+        print 'Action - NodeA'
+        d = defer.Deferred()
+        reactor.callLater(1, d.callback, True)
+        return d
     
+class NodeB(Action):
     def action(self):
+        print 'Action - NodeB'
         d = defer.Deferred()
-        print "Executing Actio2n"
-        self.blackboard.addData("test","val")
-        reactor.callLater(4, d.callback, False)
+        reactor.callLater(1, d.errback, ValueError('error in Node b'))
         return d
 
-class Action3(Action):
+def finish(data):
+    print 'finish %i' % data
+    if reactor.running:
+        reactor.stop()
+
+def error(fail):
+    print 'Behavior tree failed'
+    print str(fail)
+    if reactor.running:
+        reactor.stop()
+
+if __name__ == '__main__':
+    print 'Test behavior trees'
+    bb = BlackBoard(); 
+    root = ParallelNode(bb)
     
-    def action(self):
-        d = defer.Deferred()
-        print "Executing Actio3n"
-        self.blackboard.addData("test","val2")
-        reactor.callLater(4, d.callback, True)
-        return d
+    root.add(NodeB())
+    root.add(NodeA())
+    
+    d = root.execute()
+    d.addCallback(finish)
+    d.addErrback(error)    
+    reactor.run()
+    
+    

@@ -5,39 +5,55 @@
 
 using namespace std; 
 
-ANode::ANode() {
-	// Empty
+int *pool = NULL; 
+int poolCount = 0; 
+int*  pooled(const int domLength)
+{
+	if(pool == NULL) {
+		cout << "new pool" << endl; 
+		pool = new int[100000 * domLength];
+	}
+
+	if(poolCount > 100000)
+		pool = new int[100000 * domLength];
+
+	poolCount++;
+	return pool + domLength * poolCount; 
 }
 
-ANode::ANode(int* mapping, int* volume, int domLength, int nodeLength)
+ANode::ANode(int* mapping, int* volume, int domLength, int nodeLength, int modifyIndex, int modifyValue)
 {
-	this->mapping = mapping;
+	this->mapping = mapping; 
 	this->volume = volume; 
-	this->domLength = domLength;
+	this->domLength = domLength; 
 	this->nodeLength = nodeLength; 
 	this->costs = 9999; 
 	this->prio = 0; 
 	this->pred = NULL; 
 	this->root = false; 
+
+	this->modify_index = modifyIndex;
+	this->modify_value = modifyValue; 
 }
 
-ANode::ANode(int* mapping, int* volume, int domLength, int nodeLength, bool root)
-{
-	ANode(mapping, volume, domLength, nodeLength);
-	this->root = root;
-}
+int* ANode::load; 
 
 bool ANode::valid()
 {
-	int* load = new int[nodeLength];
+	if(ANode::load == NULL)
+		ANode::load = new int[nodeLength];
+
 	for(int i=0; i<nodeLength; i++)
-		load[i] = 0;
+		ANode::load[i] = 0;
 
 	for(int i=0; i<domLength; i++)
 	{
-		load[mapping[i]] += volume[i];
-		if(load[mapping[i]] > 100)
+		ANode::load[value(i)] += volume[i];
+		if(ANode::load[value(i)] > 100)
+		{
 			return false;
+		}
+
 	}
 
 	return true; 
@@ -48,7 +64,7 @@ unsigned ANode::hash()
 	unsigned sum = 0; 
 	for(int i=0; i<domLength; i++)
 	{
-		sum += mapping[i];
+		sum += value(i);
 	}
 	return sum; 
 }
@@ -62,7 +78,7 @@ bool ANode::equals(ANode* b)
 {
 	for(int i=0; i<domLength; i++)
 	{
-		if(mapping[i] != b->mapping[i])
+		if(value(i) != b->value(i))
 			return false; 
 	}
 
@@ -83,7 +99,7 @@ void ANode::dump() {
 	cout << "node: ";
 	for(int i=0; i<domLength; i++)
 	{
-		cout << mapping[i] << " ,";
+		cout << value(i) << " ,";
 	}
 	cout << endl;
 }
@@ -93,10 +109,18 @@ int ANode::h(ANode* end)
 	int sum = 0; 
 	for(int i=0; i<domLength; i++)
 	{
-		if(mapping[i] != end->mapping[i])
+		if(value(i) != end->value(i))
 			sum += 1;
 	}
 	return sum; 
+}
+
+int ANode::value(int index)
+{
+	int value = mapping[index];
+	if(index == this->modify_index)
+		value = this->modify_value;
+	return value; 
 }
 
 
@@ -105,6 +129,8 @@ pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end, multimap<int, ANode*
 	vector<ANode*> result; 
 	vector<int> costs; 
 	
+	int* mapping2 = NULL; 
+
 	for(int d=0; d<domLength; d++)
 	{
 		for(int n=0; n<this->nodeLength; n++)
@@ -113,13 +139,19 @@ pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end, multimap<int, ANode*
 				continue;
 
 			int cc = 1;
-			if(end->mapping[d] == mapping[d])
-				cc += 3;
+			if(end->value(d) == this->value(d))
+				cc += 1;
 
 			// Check if node exists already without creating it
+			int swap = this->mapping[modify_index];
+			this->mapping[modify_index] =  modify_value;
+
+			int swap_index = this->modify_index;
+			this->modify_index = -1; 
+			
 			int backup = this->mapping[d];
 			this->mapping[d] = n;
-
+			
 			bool exist = false;
 			pair<multimap<int, ANode*>::iterator, multimap<int, ANode*>::iterator> found;
 			found = mesh.equal_range(this->hash());
@@ -136,21 +168,29 @@ pair<vector<ANode*>, vector<int>> ANode::childs(ANode* end, multimap<int, ANode*
 
 			// Restore mapping
 			this->mapping[d] = backup;
-				
+			this->mapping[modify_index] = swap; 
+			this->modify_index = swap_index;
+			
 			// Continue if exists
 			if(exist)
 				continue; 
 
-			// Create the new node for real now
-			int* mapping2 = new int[domLength];
-			memcpy(mapping2, this->mapping, sizeof(int) * domLength); 
-			mapping2[d] = n;
+			if(mapping2 == NULL)
+			{
+				// Create the new node for real now
+				// mapping2 = pooled(domLength); // new int[domLength];
+				mapping2 = new int[domLength];
+				memcpy(mapping2, this->mapping, sizeof(int) * domLength); 
+				mapping2[this->modify_index] = this->modify_value;
+			}
 
-			ANode* newNode = new ANode(mapping2, volume, domLength, nodeLength);
+			// Create new instance of the node (Give mapping as pointer) 
+			ANode* newNode = new ANode(mapping2, volume, domLength, nodeLength, d, n);
 
 			if(newNode->valid())
 			{
 				mesh.insert(pair<int, ANode*>(newNode->hash(), newNode));
+
 				result.insert(result.begin(), newNode);
 				costs.insert(costs.begin(), cc);
 			}

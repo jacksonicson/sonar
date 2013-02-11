@@ -92,18 +92,19 @@ public class LogDatabase {
 			byte[] key = buildKey(id);
 			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
 
-			// Create a new row in this case
-			// TODO: Why is this?
+			// Ensure that a timestamp is given
 			if (message.getTimestamp() == 0)
 				message.setTimestamp(id.getTimestamp());
 
 			TSerializer serializer = new TSerializer();
 
-			// Hack - if this is not applied log messages with the same timestamp overwrite each other!
-			internalCounter++;
+			// Update internal message counter
+			if (internalCounter++ > Integer.MAX_VALUE)
+				internalCounter = 0;
 
+			// The hostname plus the internalCounter guarantee that the column name is unique
+			// even if multiple systems are writing to the same log sensor (should be impossible)
 			Put put = new Put(key);
-			// TODO: Why does the qualifier need a the hostname?
 			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(id.getHostname() + internalCounter), serializer.serialize(message));
 			table.put(put);
 
@@ -121,7 +122,7 @@ public class LogDatabase {
 	public List<LogMessage> run(LogsQuery logQuery) throws QueryException, UnresolvableException, InvalidLabelException {
 		List<LogMessage> logMessages = null;
 		try {
-			
+
 			// determine if start range and end range of log priority is
 			// provided
 			boolean logPriorityFlag = false;
@@ -134,7 +135,6 @@ public class LogDatabase {
 			scan.setCaching(100);
 
 			// set the range
-
 			byte[] startRow = new byte[keyWidth()];
 			int index = 0;
 			index += appendToKey(startRow, index, Bytes.toBytes(sensorResolver.resolveName(logQuery.getSensor())));
@@ -149,29 +149,35 @@ public class LogDatabase {
 			index += appendToKey(endRow, index, logQuery.getStopTime());
 			scan.setStopRow(endRow);
 
+			// Scanner on the table
 			ResultScanner scanner = table.getScanner(scan);
-
+			
+			// Results
 			logMessages = new ArrayList<LogMessage>();
+			
+			// Deserializer for the log data
+			TDeserializer deserializer = new TDeserializer();
 
+			// Iterate over all rows
 			Result next;
 			while ((next = scanner.next()) != null) {
 
+				// Navigator on column family
 				NavigableMap<byte[], byte[]> familyMap = next.getFamilyMap(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA));
 
+				// Iterate over all qualifiers. Each one contains a log message
 				for (byte[] qualifier : familyMap.keySet()) {
 					byte[] data = familyMap.get(qualifier);
 					if (data == null)
 						continue;
 
-					// TODO: The instance is created for each row. Is this necessary?
-					TDeserializer deserializer = new TDeserializer();
+					// Create a new log message by deserializing the HBase content
 					LogMessage logMsg = new LogMessage();
 					try {
 						deserializer.deserialize(logMsg, data);
 						if (logPriorityFlag) {
 							// if log priority is specified
-							if (logQuery.getLogStartRange() >= logMsg.getLogLevel()
-									|| logQuery.getLogEndRange() <= logMsg.getLogLevel()) {
+							if (logQuery.getLogStartRange() >= logMsg.getLogLevel() || logQuery.getLogEndRange() <= logMsg.getLogLevel()) {
 								// add only when the log message range matches
 								// that of the current log level
 								logMessages.add(logMsg);

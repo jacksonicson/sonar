@@ -1,3 +1,10 @@
+##################################################################
+# WARNING
+# THIS CODE IS DEPRECATED AND SHOULD NOT BE USED
+# USE START_BENCHMARK_BTREE INSTEAD!!!!
+##################################################################
+
+from balancer import controller
 from control import drones, hosts, base
 from logs import sonarlog
 from rain import RainService
@@ -10,14 +17,17 @@ import domains
 import math
 
 ######################
-## CONFIGURATION    ##
+# # CONFIGURATION    ##
 ######################
 INIT_DB = True
-start = True
+start = False
 ######################
 
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
+
+# Strategy instance
+controller = controller.Strategy()
 
 def finished_end(done, client_list):
     print 'finish phase'
@@ -33,11 +43,7 @@ def finished(done, client_list):
 
     # Launch the controller
     print '### CONTROLLER ###############################'
-#    print 'No controller used'
-    print 'starting controller'
-    logger.info('loading controller')
-    import logic.main as controller
-    controller.main()
+    controller.start()
 
 
 def ram_up_finished(rain_clients, client_list):
@@ -255,6 +261,7 @@ def start_phase(client_list):
     phase_configure_glassfish(client_list)
     # phase_start_rain(None, client_list)
     # trigger_rain_benchmark(None, client_list)
+    # phase_start_glassfish_database(None, client_list)
     
     
 def stop_phase(client_list):
@@ -267,20 +274,17 @@ def errback(failure):
     print failure
     reactor.stop()
     
-def initial_allocation():
-    import allocate_domains
-    allocate_domains.main(True)
-    
-def main():
+def allocate_domains():
     # Create drones
-    drones.main()
+    drones.build_all_drones()
     
     # Setup initial allocation
     if start:
-        initial_allocation()
+        import allocate_domains
+        allocate_domains.allocate_domains(True, controller)
     
     # Add host
-    for i in xrange(0,18):
+    for i in xrange(0, 18):
         hosts.add_host('target%i' % i, 'target')
         hosts.add_host('target%i' % i, 'database')
     
@@ -307,5 +311,6 @@ def main():
     reactor.run()
 
 if __name__ == '__main__':
-    sonarlog.connect()
-    main()
+    # sonarlog.connect()
+    # allocate_domains()
+    pass
