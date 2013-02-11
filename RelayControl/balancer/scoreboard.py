@@ -74,6 +74,12 @@ class Scoreboard(object):
             self.min_servers = min(self.min_servers, servercount)
             self.max_servers = max(self.max_servers, servercount)
 
+    def get_migration_count(self):
+        # -1 because the controller adds the active server info after the
+        # model initialization. Successively the active server info is updated
+        # after each migration 
+        return len(self.active_server_infos) - 1
+
     def analytics_average_server_count(self):
         if not self.active_server_infos:
             return 0
@@ -111,7 +117,7 @@ class Scoreboard(object):
         # * min server
         # * max servers
         # * active server simulation time slots
-        return (len(self.active_server_infos), self.analytics_average_server_count(),
+        return (self.get_migration_count(), self.analytics_average_server_count(),
                 self.cpu_violations, self.cpu_accumulated, self.min_servers, self.max_servers,
                 self.slot_count)
     
