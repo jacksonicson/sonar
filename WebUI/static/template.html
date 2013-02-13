@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Sonar</title>
+
+    <!-- Le styles -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="bootstrap/css/datepicker.css" rel="stylesheet">
+    <link href="bootstrap/css/timepicker.css" rel="stylesheet">
+
+    <style type="text/css">
+
+        body {
+            position: relative;
+            padding-top: 90px;
+        }
+
+        .navbar-fixed-top .brand {
+            padding-right: 0;
+            padding-left: 0;
+            margin-left: 20px;
+            float: right;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
+            -webkit-transition: all .2s linear;
+            -moz-transition: all .2s linear;
+            transition: all .2s linear;
+        }
+
+        .navbar-fixed-top .brand:hover {
+            text-decoration: none;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        .footer {
+            margin-top: 45px;
+            padding: 35px 0 36px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .footer p {
+            margin-bottom: 0;
+            color: #555;
+        }
+
+        a.labelLink, a.labelLink:link,a.labelLink:active { color: white; text-decoration: none;}
+        a.labelLink:visited { color: white; text-decoration: none;}
+        a.labelLink:hover{cursor: pointer;}
+
+    </style>
+
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            var pathname = window.location.pathname;
+            pathname = pathname.replace('/', '');
+            pathname = pathname.charAt(0).toUpperCase() + pathname.slice(1);
+            $('#nav' + pathname).attr("class", "active");
+
+            $('#alertBox').hide();
+        });
+
+        var alertCount = 0;
+
+        function doAlert(message) {
+            $('#alertBox').empty();
+            $('#alertBox').append(
+                    $('<img>').attr("src", "wait.gif")
+            );
+            $('#alertBox').append("&nbsp;&nbsp;&nbsp;" + message);
+            $('#alertBox').show();
+
+            alertCount++;
+        }
+
+        function stopAlert() {
+            alertCount--;
+            if (alertCount <= 0)
+                $('#alertBox').hide();
+
+            if (alertCount < 0)
+                alertCount = 0;
+        }
+
+    </script>
+
+    {% block jshead %}
+    <!-- stylesheets and JS in the header -->
+    {% endblock %}
+
+</head>
+<body data-offset="50"  data-target=".subnav" data-spy="scroll" data-twttr-rendered="true" >
+
+<!-- Navbar -->
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="#">Sonar</a>
+
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li id="navConfig"><a href="config">Configuration</a></li>
+                    <li id="navBrowse"><a href="browse">TS Browser</a></li>
+                    <li id="navLogs"><a href="logs">LOG Browser</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Content container -->
+<div class="container">
+
+    <div class="alert" id="alertBox">
+        <button class="close" data-dismiss="alert">×</button>
+        no alert
+    </div>
+
+    {% block container %}
+    <!-- this is the content area -->
+    {% endblock %}
+</div>
+
+
+<div class="container">
+    <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+
+        <p><img alt="Sonar" src="images/sonar.png"></p>
+    </footer>
+</div>
+
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+<script src="./bootstrap/js/bootstrap-transition.js"></script>
+<script src="./bootstrap/js/bootstrap-alert.js"></script>
+<script src="./bootstrap/js/bootstrap-modal.js"></script>
+<script src="./bootstrap/js/bootstrap-dropdown.js"></script>
+<script src="./bootstrap/js/bootstrap-scrollspy.js"></script>
+<script src="./bootstrap/js/bootstrap-tab.js"></script>
+<script src="./bootstrap/js/bootstrap-tooltip.js"></script>
+<script src="./bootstrap/js/bootstrap-popover.js"></script>
+<script src="./bootstrap/js/bootstrap-button.js"></script>
+<script src="./bootstrap/js/bootstrap-collapse.js"></script>
+<script src="./bootstrap/js/bootstrap-carousel.js"></script>
+<script src="./bootstrap/js/bootstrap-typeahead.js"></script>
+<script src="./bootstrap/js/bootstrap-datepicker.js"></script>
+<script src="./bootstrap/js/bootstrap-timepicker.js"></script>
+
+{% block jsfoot %}
+<!-- additional js in the footer go here -->
+{% endblock %}
+
+</body>
+</html>

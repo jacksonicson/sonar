@@ -1,0 +1,87 @@
+{% extends 'template.html' %}
+
+{% block jshead %}
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"
+        src="autocomplete.js"></script>
+<script type="text/javascript" src="logs.js"></script>
+<style type="text/css">
+    .top{cursor: pointer;}
+
+    .mid{
+        cursor: pointer;
+    }
+</style>
+
+{% endblock%}
+
+{% block container %}
+<div class="row">
+    <div class="span3">
+        <form class="well" id="queryForm">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="hostname">Hostname</label>
+                    <div class="controls">
+                        <input type="text" class="input" placeholder="hotstname" id="hostname"
+                               name="hostname" autocomplete="off"/>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="sensor">Sensor</label>
+                    <div class="controls">
+                        <input type="text" class="input" placeholder="sensor" id="sensor"
+                               name="sensor" autocomplete="off"/>
+                    </div>
+                </div>
+				
+				<div class="control-group">
+                    <label class="control-label" for="startdate">Start</label>
+                    <div class="controls">
+                        <input type="text" class="input-small" value="" id="startdate" name="startdate">
+                        <input type="text" class="input-small timepicker-default" id="starttime" name="starttime">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="stopdate">Stop</label>
+                    <div class="controls">
+                        <input type="text" class="input-small" value="" id="stopdate" name="stopdate">
+                        <input type="text" class="input-small timepicker-default" id="stoptime" name="stoptime">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="addQuery">Query</button>
+                    <button class="btn">Cancel</button>
+                </div>
+
+            </fieldset>
+        </form>
+        <p style="padding-bottom: 10px; margin-left: 5px"><span style="font-size:12px;">Total log count:</span></p>
+        <p style="margin-left: 8px"><span style="font-size:40px;" id="logsFoundtext">0</span></p>
+    </div>
+
+    <div class="span8" id="container">
+        <table class="table table-condensed" style="width: 900px;" id="logResultsTable">
+            <thead>
+            <tr>
+                <th style="width:10%">&nbsp;</th>
+                <th style="width:5%">&nbsp;</th>
+                <th style="width:85%">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody id='logResultsTableBody'>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block jsfoot %}
+<script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+{% endblock %}
+
+</body>
+</html>
