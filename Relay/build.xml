@@ -1,0 +1,47 @@
+<project name="Relay" default="main" basedir=".">
+
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="." />
+			<arg value="--gen" />
+			<arg value="py:twisted" />
+			<arg value="../Thrift/relay.thrift" />
+		</exec>
+	</target>
+
+	<target name="prepare">
+			<delete dir="build" />
+			<mkdir dir="build" />
+			<mkdir dir="build/files" />
+		</target>
+	
+	<target name="package" depends="prepare, thrift">
+		<copy todir="build/files">
+			<fileset dir=".">
+				<exclude name="build/*" />
+				<include name="**/*.py" />
+				<include name="**/*.service" />
+				<include name="**/*.sh" />
+			</fileset>
+		</copy>
+
+		<copy todir="build" file="install.sh" />
+
+		<zip destfile="build/relay.zip" basedir="build/files">
+			<include name="**/*.*" />
+		</zip>
+	</target>
+
+	<target name="copy_to_server" depends="package">
+		<scp todir="root:rooter@monitor0.dfg:/mnt/arr0/share/packages/relay" trust="true" failonerror="true" verbose="false">
+			<fileset dir="build">
+				<include name="install.sh" />
+				<include name="relay.zip" />
+			</fileset>
+		</scp>
+	</target>
+
+	<target name="main" depends="package" />
+
+</project>

@@ -1,0 +1,13 @@
+# systemd service configuration
+
+[Unit]
+Description=Relay Service
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/python /opt/relay/relay.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

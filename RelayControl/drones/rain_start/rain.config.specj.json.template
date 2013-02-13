@@ -1,0 +1,72 @@
+{
+    "timing": {
+        "rampUp": 600,
+        "duration": 21600,
+        "rampDown": 600,
+    },
+    
+    "aggregateStats": true,
+    "waitForStartSignal": true,
+    
+    "usePipe": false,
+    "useThrift": true,
+    "sonarHost" : "monitor0",
+    
+    "### Track generators #########":"##",
+    
+    "profilesCreatorClass": "de.tum.in.dss.specj.generator.SpecjProfileCreator",
+    "profilesCreatorClassParams": {
+    	"meanResponseTimeSamplingInterval" : 60,
+    
+    	"behavior" : {
+    		"default" : [
+        		[0.0,  0.0],
+        		[0.0,  0.0],
+        	],
+    	},
+    	
+    	"specj" : {
+    	 	"### SpecJ: users = scale (=txrate) * THREADS_PER_SCALE_FACTOR (=10)":"####",
+		    "### scale and txrate is the same for SpecJ":"###",
+		    "### default value for scale factor is 10":"###",
+		    "### -> Rain users are calculated by: txrate * 10":"###",
+    		"txRate":60,
+		    "maxItemsPerLoc":75000,
+		    "itemsPerTxRate":100,
+		    "parallelism":10
+    	},
+    	    
+    	"tracks": [
+    	
+% for target in targets:
+	    	{
+    			type:"dealer",
+    			
+		        "target": {
+		          "hostname": "${target['target']}",
+		          "port": 8080
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "${target['profile']}",
+		        }
+    		},
+    		{
+	    		type:"mfg",
+	    		
+		        "target": {
+		          "hostname": "${target['target']}",
+		          "port": 8080,
+		        },
+		        "loadScheduleCreatorParameters" : {
+			        "host": "monitor0",
+		        	"mix": "default",
+		        	"profile" : "${target['profile']}",
+		        }
+	    	},
+	    	
+% endfor
+    	],
+    },
+}

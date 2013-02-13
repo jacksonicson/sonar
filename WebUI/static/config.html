@@ -1,0 +1,205 @@
+{% extends 'template.html' %}
+
+{% block jshead %}
+<link href="sonar.css" rel="stylesheet">
+
+<script type="text/javascript" src="config.js"></script>
+{% endblock%}
+
+{% block container %}
+
+<div class="span8">
+    <div class="tabbable">
+        <!-- Specify the tabs -->
+        <ul class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tabSensor" data-toggle="tab">Sensors</a></li>
+            <li><a href="#tabHostnames" data-toggle="tab">Hostnames</a></li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="tab-content">
+
+            <!-- Sensors -->
+            <div class="tab-pane active" id="tabSensor">
+
+                <a class="btn" data-toggle="modal" href="#" id="btnNewSensor">New Sensor</a>
+                <table class="table" id="listSensors">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Opt.</th>
+                        <th>Sensor Name</th>
+                        <th>Binary Available</th>
+                        <th>Labels</th>
+                    </tr>
+                    </thead>
+                    <tbody id='listSensorsBody'>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Hostnames -->
+            <div class="tab-pane" id="tabHostnames">
+                <div class="btn-group">
+                    <a class="btn" data-toggle="modal" href="#" id="btnNewHost">New Host</a>
+                 
+                  <button class="btn dropdown-toggle disabled" id="extendsButton" data-toggle="dropdown">Extend<span class="caret"></span></button>
+                  <ul class="dropdown-menu" id="hostExtendOptions">
+                    <li><a href="#" id="hostext_-1" onClick="setBulkHostExtends(event)">--None--</a></li>
+                  </ul>
+                </div>
+                <table class="table" id="listHosts">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>&nbsp;</th>
+                        <th>&nbsp;</th>
+                        <th>Hostname</th>
+                        <th>Sensors</th>
+                    </tr>
+                    </thead>
+                    <tbody id='listHostsBody'>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Dialog new host -->
+<div class="modal hide" id="newHost">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>New Host</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" id="newHostForm">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="hostName">Hostname:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="Sensor Name" id="hostName"
+                               name="hostname"/>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="hostLabels">Labels:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="hostLabels"
+                               name="hostLabels"/>
+                    </div>
+                </div>
+                
+                 <div class="control-group">
+                    <label class="control-label" for="hostLabels">Extends:</label>
+
+                    <div class="controls">
+                        <select id="hostExtends" name="hostExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group" id="sensorField">
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary" id="submitHost">Save changes</a>
+    </div>
+</div>
+
+<!-- Dialog new sensor -->
+<div class="modal hide" id="newSensorDlg">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>New Sensor</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" id="newSensorForm">
+            <input type="hidden" name="newSensorFlag" id="newSensorFlag" value="true"/>
+            <fieldset>
+                <div class="control-group" id="sensorNameGroup">
+                    <label class="control-label" for="sensorName">Sensor Name:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="Sensor Name" id="sensorName"
+                               name="sensorName"/>
+                    </div>
+                </div>
+
+                <div class="control-group" id="sensorLabelGroup">
+                    <label class="control-label" for="sensorLabels">Labels:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="label0, label1, .." id="sensorLabels"
+                               name="sensorLabels"/>
+                    </div>
+                </div>
+
+                <div class="control-group" id="sensorIntervalGroup">
+                    <label class="control-label" for="sensorInterval">Interval:</label>
+
+                    <div class="controls">
+                        <input type="text" class="input-xlarge" placeholder="Sensor interval in seconds.." id="sensorInterval"
+                               name="sensorInterval"/>[seconds]
+                    </div>
+                </div>
+                
+                <div class="control-group hide" id="sensorExtendControl">
+                    <label class="control-label" for="hostLabels">Extends:</label>
+
+                    <div class="controls">
+                        <select id="sensorExtends" name="sensorExtends">
+                            <option value="-1">None</options>                            
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group" for="sensorType" id="sensorTypeGroup">
+                    <label class="control-label">Sensor Type:</label>
+
+                    <div class="controls">
+                        <div class="btn-group" data-toggle-name="sensorType" data-toggle="buttons-radio" >
+                            <button type="button" value="0" id="metricButton" class="btn" data-toggle="button">Metric</button>
+                            <button type="button" value="1" id="logButton" class="btn" data-toggle="button">Log</button>
+                        </div>
+                        <input type="hidden" name="sensorType" id="sensorType" value="0" />
+                    </div>
+                </div>
+
+                <div class="control-group" id="sensorParamGroup">
+                    <table class="table" style="width:98%" id="sensorParamTable">
+                        <thead>
+                        <tr>
+                            <th style="width:90%;" colspan="2">Sensor Parameters</th>
+                            <th style="width:10%;"><a href="#" class="btn btn-primary" id="addButton">Add</a></th>
+                        </tr>
+                        </thead>
+                        <tbody id='sensorParamTableBody'>
+                        </tbody>
+                    </table>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary" id="submitSensor">Save changes</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block jsfoot %}
+
+{% endblock %}

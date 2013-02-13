@@ -1,0 +1,88 @@
+<project name="Collector" default="package" basedir=".">
+
+	<import file="classpath.xml" />
+
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="package" location="${build}/package" />
+	<property name="resources" location="resources" />
+	<property name="jarfile" value="collector.jar" />
+
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="../Thrift/collector.thrift" />
+		</exec>
+
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="generated" />
+			<arg value="--gen" />
+			<arg value="java" />
+			<arg value="resources/timeseries.thrift" />
+		</exec>
+	</target>
+
+	<target name="compile" depends="thrift">
+		<javac srcdir="${src}:resources:generated" destdir="${build}/bin" debug="true">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="prepare">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build}/bin" />
+	</target>
+
+	<target name="jar">
+		<jar destfile="${build}/${jarfile}" basedir="${build}/bin" />
+	</target>
+
+	<target name="package" depends="prepare, compile, jar">
+		<delete dir="${package}" quiet="true" />
+		<mkdir dir="${package}" />
+
+		<!-- JAR files -->
+		<copy flatten="false" todir="${package}/lib">
+			<fileset dir="lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+
+		<!-- SpecJ Rain Driver jar file -->
+		<copy file="${build}/${jarfile}" todir="${package}" />
+
+		<!-- Resources -->
+		<copy todir="${package}">
+			<fileset dir="${resources}">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<!-- Launcher -->
+		<copyfile src="classpath.txt" dest="${package}/classpath.txt" />
+		<copyfile src="start.py" dest="${package}/start.py" />
+
+		<!-- Create zip archive -->
+		<zip destfile="build/collector.zip">
+			<fileset dir="build/package">
+				<include name="**/*.*" />
+			</fileset>
+		</zip>
+
+	</target>
+
+	<target name="clean">
+		<delete dir="${build}" />
+	</target>
+
+	<target name="mkcp">
+		<exec executable="python">
+			<arg value="buildclasspath.py" />
+		</exec>
+	</target>
+</project>

@@ -1,0 +1,36 @@
+<project name="SensorHub" default="main" basedir=".">
+
+	<target name="thrift">
+		<exec executable="thrift">
+			<arg value="-out" />
+			<arg value="." />
+			<arg value="--gen" />
+			<arg value="py" />
+			<arg value="../Thrift/collector.thrift" />
+		</exec>
+	</target>
+
+	<target name="prepare">
+		<delete dir="build" />
+		<mkdir dir="build" />
+		<mkdir dir="build/files" />
+	</target>
+
+	<target name="package" depends="prepare, thrift">
+		<copy todir="build/files">
+			<fileset dir=".">
+				<exclude name="build/*" />
+				<include name="**/*.py" />
+				<include name="**/*.service" />
+				<include name="**/*.sh" />
+			</fileset>
+		</copy>
+
+		<zip destfile="build/sensorhub.zip" basedir="build/files">
+			<include name="**/*.*" />
+		</zip>
+	</target>
+
+	<target name="main" depends="package" />
+
+</project>

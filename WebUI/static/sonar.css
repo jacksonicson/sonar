@@ -1,0 +1,22 @@
+table.sensor {
+    border-width: 0px;
+    padding: 0px;
+}
+
+.sensorParamTable{
+    border-collapse:collapse;
+    border:1px solid #AAA;
+    margin-left:10px;
+}
+.sensorParamTable th{
+    border:1px solid #AAF;
+    font-weight:bold;
+}
+.sensorParamTable td{
+    padding:4px;
+    border:1px solid #AAF;
+}
+
+.delete{
+    cursor: pointer;
+}
