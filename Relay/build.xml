@@ -1,21 +1,23 @@
 <project name="Relay" default="main" basedir=".">
 
+	<property name="thrift" value="../Thrift" />
+
 	<target name="thrift">
 		<exec executable="thrift">
 			<arg value="-out" />
 			<arg value="." />
 			<arg value="--gen" />
 			<arg value="py:twisted" />
-			<arg value="../Thrift/relay.thrift" />
+			<arg value="${thrift}/relay.thrift" />
 		</exec>
 	</target>
 
 	<target name="prepare">
-			<delete dir="build" />
-			<mkdir dir="build" />
-			<mkdir dir="build/files" />
-		</target>
-	
+		<delete dir="build" />
+		<mkdir dir="build" />
+		<mkdir dir="build/files" />
+	</target>
+
 	<target name="package" depends="prepare, thrift">
 		<copy todir="build/files">
 			<fileset dir=".">

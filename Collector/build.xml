@@ -8,6 +8,7 @@
 	<property name="package" location="${build}/package" />
 	<property name="resources" location="resources" />
 	<property name="jarfile" value="collector.jar" />
+	<property name="thrift" value="../Thrift" />
 
 	<target name="thrift">
 		<exec executable="thrift">
@@ -15,7 +16,7 @@
 			<arg value="generated" />
 			<arg value="--gen" />
 			<arg value="java" />
-			<arg value="../Thrift/collector.thrift" />
+			<arg value="${thrift}/collector.thrift" />
 		</exec>
 
 		<exec executable="thrift">

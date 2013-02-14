@@ -1,12 +1,14 @@
 <project name="Sensors" default="main" basedir=".">
 
+	<property name="thrift" value="../Thrift" />
+
 	<target name="thrift">
 		<exec executable="thrift">
 			<arg value="-out" />
 			<arg value="." />
 			<arg value="--gen" />
 			<arg value="py" />
-			<arg value="../Thrift/collector.thrift" />
+			<arg value="${thrift}/collector.thrift" />
 		</exec>
 	</target>
 
