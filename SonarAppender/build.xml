@@ -7,6 +7,7 @@
 	<property name="build" location="build" />
 	<property name="package" location="${build}/package" />
 	<property name="jarfile" value="sonarAppender.jar" />
+	<property name="thrift" value="../Thrift" />
 
 	<target name="thrift">
 		<exec executable="thrift">
@@ -14,7 +15,7 @@
 			<arg value="generated" />
 			<arg value="--gen" />
 			<arg value="java" />
-			<arg value="../Thrift/collector.thrift" />
+			<arg value="${thrift}/collector.thrift" />
 		</exec>
 	</target>
 

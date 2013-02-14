@@ -1,12 +1,14 @@
 <project name="Times" default="main" basedir=".">
 
+	<property name="thrift" value="../Thrift" />
+	
 	<target name="thrift">
 		<exec executable="thrift">
 			<arg value="-out" />
 			<arg value="src" />
 			<arg value="--gen" />
 			<arg value="py" />
-			<arg value="../Thrift/times.thrift" />
+			<arg value="${thrift}/times.thrift" />
 		</exec>
 	</target>
 
