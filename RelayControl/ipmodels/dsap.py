@@ -147,7 +147,8 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     createVariables(model, migrations > 0)
     setupConstraints(model, migrations) 
     setupObjective(model)
-    model.setParam('OutputFlag', False)
+    model.setParam('OutputFlag', True)
+    model.setParam('TimeLimit', 5 * 60)
     model.optimize()
 
     assignment_list = getAssignment()

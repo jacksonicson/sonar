@@ -14,6 +14,7 @@ import virtual.placement as placement
 NUM_BUCKETS = 10  # Number of allocation buckets
 TOTAL_EXPERIMENT_DURATION = profiles.RAMP_UP + profiles.EXPERIMENT_DURATION + profiles.RAMP_DOWN 
 PERCENTILE = 99 
+MIGRATION_LIMIT = 50
 ######################
 
 # Fixed values
@@ -37,7 +38,8 @@ class Strategy(strategy.StrategyBase):
         self.placement = placement.DSAPPlacement(nodecount, nodes.NODE_CPU,
                                                  nodes.NODE_MEM, nodes.DOMAIN_MEM)
         self.initial_migrations, self.active_server_info = self.placement.execute(NUM_BUCKETS,
-                                                            lambda x: np.percentile(x, PERCENTILE))
+                                                            lambda x: np.percentile(x, PERCENTILE),
+                                                            MIGRATION_LIMIT)
             
         # Current bucket
         self.curr_bucket = 0

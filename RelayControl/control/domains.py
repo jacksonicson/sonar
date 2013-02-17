@@ -8,7 +8,7 @@ Maps domains to profiles
 ######################
 ## CONFIGURATION    ##
 ######################
-DOMAINS = 180
+DOMAINS = 18
 WORKLOAD_OFFSET = 0
 WORKLOAD_RANDOM = False
 WORKLOAD_MAX_RANDOM = 200
