@@ -39,7 +39,7 @@ EXPERIMENT_DB = configuration.path('experiments', 'csv')
 CONTROLLER_NODE = 'Andreas-PC'
 DRIVER_NODES = ['load0', 'load1']
 
-RAW = '10/02/2013 21:58:00    11/02/2013 04:50:00'
+RAW = '17/02/2013 07:00:00    17/02/2013 18:10:00'
 ##########################
 
 warns = []
@@ -1732,7 +1732,7 @@ def connect_sonar(connection):
     ### Reading Migrations ##############################################################################################################
     #####################################################################################################################################
     migrations = __fetch_migrations(connection, CONTROLLER_NODE, data_frame)
-    migrations_successful, migrations_failed, server_active_flags, _, _ = migrations
+    migrations_successful, migrations_failed, server_active_flags, migrations_triggered, _ = migrations
     print '## MIGRATIONS ##'
     print 'Successful: %i' % len(migrations_successful)
     print 'Failed: %i' % len(migrations_failed)

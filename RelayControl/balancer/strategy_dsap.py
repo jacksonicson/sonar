@@ -11,7 +11,7 @@ import virtual.placement as placement
 ######################
 #  CONFIGURATION    ##
 ######################
-NUM_BUCKETS = 6  # Number of allocation buckets
+NUM_BUCKETS = 10  # Number of allocation buckets
 TOTAL_EXPERIMENT_DURATION = profiles.RAMP_UP + profiles.EXPERIMENT_DURATION + profiles.RAMP_DOWN 
 PERCENTILE = 99 
 ######################
