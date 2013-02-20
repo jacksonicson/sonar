@@ -5,7 +5,7 @@ List of all hosts/nodes in the infrastructure
 ######################
 ## CONFIGURATION    ##
 ######################
-NODE_COUNT = 6
+NODE_COUNT = 80
 
 NODE_CPU_CORES = 4
 DOMAIN_CPU_CORES = 2

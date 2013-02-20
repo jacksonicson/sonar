@@ -3,7 +3,7 @@
 	<property name="thrift" value="../Thrift" />
 	<property name="sensorHub" value="../SensorHub" />
 	<property name="relay" value="../Relay" />
-	<property name="specDriver" value="../specDriver" />
+	<property name="specDriver" value="../../specDriver" />
 
 	<target name="thrift">
 		<exec executable="thrift">
