@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from service import times_client
+import numpy as np
 
 def allocate_domains(name):
     print 'Downloading...'
@@ -15,6 +16,19 @@ def allocate_domains(name):
     signal = []
     for element in timeSeries.elements:
         signal.append(element.value)
+    
+    # Buckets (DSAP paper)
+    blen = len(signal) / 6
+    bsignal = []
+    for b in xrange(6):
+        values = signal[b * blen:(b+1)*blen]
+        b = np.percentile(values, 99)
+        bsignal.append(b)
+        
+    signal = []
+    signal.append(bsignal[0])
+    signal.extend(bsignal)
+    signal.append(bsignal[-1])
     
     # Setup the new plot
     fig = plt.figure()

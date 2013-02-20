@@ -1,12 +1,11 @@
 from control import domains
 from control.domains import domain_profile_mapping as mapping
-from ipmodels import ssapv
-from ipmodels import dsap
+from ipmodels import dsap, ssapv
 from logs import sonarlog
 from service import times_client
 from virtual import nodes
 from workload import profiles
-from workload.timeutil import * #@UnusedWildImport
+from workload.timeutil import *  # @UnusedWildImport
 import numpy as np
 
 # Setup logging
@@ -122,7 +121,7 @@ class FirstFitPlacement(Placement):
             _, demand = util.to_array(ts)
         
             # Determine max demand value of this service
-            max_value = np.percentile(demand, 95) # np.max(demand)
+            max_value = np.percentile(demand, 95)  # np.max(demand)
             
             bin_found = False
             try:
@@ -259,7 +258,7 @@ class SSAPvPlacement(Placement):
   
 class DSAPPlacement(Placement):
 
-    def execute(self, num_buckets, aggregation):
+    def execute(self, num_buckets, aggregation, migration_limit):
         from workload import util
                 
         # Execute super code
@@ -293,14 +292,14 @@ class DSAPPlacement(Placement):
             
             # Downsampling TS (domain_matrix)
             self.experiment_length = ts_len * ts.frequency  # length of the experiment measured in seconds
-            bucket_width = self.experiment_length / num_buckets # in sec
+            bucket_width = self.experiment_length / num_buckets  # in sec
             
-            #elements = bucket_width / ts.frequency
+            # elements = bucket_width / ts.frequency
             elements = ts_len / num_buckets
             buckets = []
             for i in xrange(num_buckets):
                 start = i * elements
-                end = min(ts_len, (i+1) * elements) 
+                end = min(ts_len, (i + 1) * elements) 
                 tmp = data[start : end]
                 buckets.append(aggregation(tmp))
     
@@ -319,11 +318,11 @@ class DSAPPlacement(Placement):
         # Close Times connection
         times_client.close()
         
-        print "Downsampling-Ratio:",ts_len,"elements TO",num_buckets,"buckets (freq=",ts.frequency,", placement.experiment_length=",self.experiment_length,", profiles.experiment_duration",profiles.EXPERIMENT_DURATION,")"
+        print "Downsampling-Ratio:", ts_len, "elements TO", num_buckets, "buckets (freq=", ts.frequency, ", placement.experiment_length=", self.experiment_length, ", profiles.experiment_duration", profiles.EXPERIMENT_DURATION, ")"
         
         print 'Solving model...'
         logger.info('Placement strategy: DSAP')
-        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, domain_matrix, self.domain_demand_mem)
+        server_list, assignment_list = dsap.solve(self.nodecount, self.node_capacity_cpu, self.node_capacity_mem, domain_matrix, self.domain_demand_mem, migration_limit)
                 
         # return values for initial placement only > A(0) <   (#servers + assignment(t=0))
         self.assignment_list = assignment_list

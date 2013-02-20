@@ -3,7 +3,7 @@ from numpy import empty, random
 import numpy as np
 
 ###############################
-### Configuration            ##
+# ## Configuration            ##
 server_count = None
 service_count = None
 server_capacity_CPU = None
@@ -22,7 +22,7 @@ def demand(service, resource, time):
     else:
         return demand_mem 
 
-def createVariables(model):
+def createVariables(model, migration=False):
     global var_allocation
     global var_server_active
     
@@ -41,10 +41,20 @@ def createVariables(model):
                 v = model.addVar(vtype=GRB.BINARY)
                 var_allocation[d, i, j] = v 
     
+    # Migration slacks
+    if migration:
+        global var_migration_slacks
+        var_migration_slacks = empty((server_count, service_count, demand_duration), dtype=object)
+        for i in xrange(server_count):
+            for j in xrange(service_count):
+                for t in xrange(demand_duration):
+                    v = model.addVar(vtype=GRB.BINARY)
+                    var_migration_slacks[i, j, t] = v
+    
     model.update()
     
 
-def setupConstraints(model):
+def setupConstraints(model, migration=0):
     # Allocate all services
     for d in xrange(demand_duration):
         for j in xrange(service_count):
@@ -58,6 +68,23 @@ def setupConstraints(model):
           
             server_load = quicksum((demand(j, MEM, d) * var_allocation[d, i, j]) for j in xrange(0, service_count))
             model.addConstr(server_load <= (var_server_active[d, i] * server_capacity_MEM))
+    
+    # Limit migrations
+    if migration > 0:
+        for i in xrange(server_count):
+            for j in xrange(service_count):
+                for t in xrange(1, demand_duration):
+                    c1 = [var_allocation[t, i, j], -1 * var_allocation[t - 1, i, j]]
+                    c2 = [var_allocation[t - 1, i, j], -1 * var_allocation[t, i, j]]
+                    model.addConstr(quicksum(c1) <= var_migration_slacks[i, j, t])
+                    model.addConstr(quicksum(c2) <= var_migration_slacks[i, j, t])
+
+        mig = []                    
+        for i in xrange(server_count):
+            for j in xrange(service_count):
+                for t in xrange(1, demand_duration):
+                    mig.append(var_migration_slacks[i, j, t])
+        model.addConstr(quicksum(mig) <= 2 * migration)
     
     model.update()
 
@@ -99,7 +126,7 @@ def getServerCounts():
     return server_counts
 
 
-def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw, _demand_mem):
+def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw, _demand_mem, migrations=0):
     global server_count
     global service_count
     global server_capacity_CPU
@@ -117,10 +144,11 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     demand_mem = _demand_mem
     
     model = Model("dsap"); 
-    createVariables(model)
-    setupConstraints(model) 
+    createVariables(model, migrations > 0)
+    setupConstraints(model, migrations) 
     setupObjective(model)
-    model.setParam('OutputFlag', False)
+    model.setParam('OutputFlag', True)
+    model.setParam('TimeLimit', 5 * 60)
     model.optimize()
 
     assignment_list = getAssignment()
@@ -135,8 +163,8 @@ def solve(_server_count, _server_capacity_cpu, _server_capacity_mem, _demand_raw
     
 # Test program
 if __name__ == '__main__':
-    demand_duration = 24
-    service_count = 12
+    demand_duration = 6
+    service_count = 18
     demand_raw = empty((service_count, demand_duration), dtype=float)
     
     # A) Filling demand values with random data for testing purposes
@@ -145,6 +173,6 @@ if __name__ == '__main__':
             demand_raw[j][t] = random.randint(0, 50)
             
     # VM memory demand is constant
-    demand_mem=5
+    demand_mem = 5
     
-    solve(12, 100, 100, demand_raw, demand_mem)
+    solve(6, 100, 100, demand_raw, demand_mem, 30)
