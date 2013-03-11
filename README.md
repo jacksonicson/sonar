@@ -13,20 +13,18 @@ Sonar monitoring consits of four subprojects:
 
 ### Sytem dependencies: 
 * Python
-	* Apache Thrift
-	* EasyInstall
-	* PyYaml
+ * Apache Thrift
+ * EasyInstall
+ * PyYaml
 * NTP (Network Time Protocol)
-
 * SensorHub and Sensors
-	* yum group install "Development Tools"
-	* yum install python-devel
-	* [PsUtil](https://code.google.com/p/psutil/)
-	
+ * yum group install "Development Tools"
+ * yum install python-devel
+ * [PsUtil](https://code.google.com/p/psutil/)
 * Relay and RelayControl
-	* [Python Twisted ](http://twistedmatrix.com/trac/)
-	* [Zope Interfaces](https://pypi.python.org/pypi/zope.interface#download)
-	* [Mako Template Engine](http://www.makotemplates.org/)
+ * [Python Twisted ](http://twistedmatrix.com/trac/)
+ * [Zope Interfaces](https://pypi.python.org/pypi/zope.interface#download)
+ * [Mako Template Engine](http://www.makotemplates.org/)
 
 
 ## Relay
