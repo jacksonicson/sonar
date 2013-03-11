@@ -11,22 +11,6 @@ Sonar monitoring consits of four subprojects:
 * Collector: A horizontal scalable service that receives monitoring data from the SensorHub. Everything is stored in an Apache HBase database. 
 * WebUI: A web user interface to configure which Sensors are running on which systems. In addition it provies interfaces for querying and browsing recorded log-message or metric readings. 
 
-### Sytem dependencies: 
-* Python
- * Apache Thrift
- * EasyInstall
- * PyYaml
-* NTP (Network Time Protocol)
-* SensorHub and Sensors
- * yum group install "Development Tools"
- * yum install python-devel
- * [PsUtil](https://code.google.com/p/psutil/)
-* Relay and RelayControl
- * [Python Twisted ](http://twistedmatrix.com/trac/)
- * [Zope Interfaces](https://pypi.python.org/pypi/zope.interface#download)
- * [Mako Template Engine](http://www.makotemplates.org/)
-
-
 ## Relay
 Relay was designed for research environments where security is of no concern. We do not recommend to use Relay in any productive environment therefore. Sonar monitoring does depend in any way on the Relay system. 
 

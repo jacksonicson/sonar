@@ -37,7 +37,7 @@ mixsim2 = Config('mix_sim2', 'mix_sim2', pdata.mix_sim2, False)
 ##############################
 # # CONFIGURATION            ##
 ##############################
-config = mixsim2
+config = mix2
 ##############################
 
 ##############################
@@ -445,10 +445,11 @@ def __dump_to_csv():
     connection = times_client.connect()
     
     demands = []
-    for desc in selected:
-        timeSeries = connection.load(__times_name(True, desc.name, POSTFIX_NORM))
+    for i in range(len(selected)):
+        ts_name = get_cpu_current_profile(i)
+        timeSeries = connection.load(ts_name)
         _, demand = util.to_array(timeSeries)
-        demands.append((desc.name, demand))
+        demands.append((ts_name, demand))
         
     import csv
     with open(configuration.path('traces', 'csv'), 'wb') as csvfile:
@@ -580,8 +581,8 @@ def main():
     # __dump_user_profile_maxes()
     # __build_all_profiles_for_mix(selected, True)
     # __build_modified_profiles(selected, False)
-    __plot_overlay_mix()
-    # __dump_to_csv()
+    # __plot_overlay_mix()
+    __dump_to_csv()
     pass
 
 if __name__ == '__main__':

@@ -194,8 +194,9 @@ pair<ANode*, ANode*> buildRandConfig()
 	srand((unsigned)time(NULL));
 
 	// Configure number of domains and nodes 
-	int lenDomains = 500; 
-	int lenNodes = 100; 
+	int lenDomains = 60; 
+	int lenNodes = 30; 
+	int changes = 20; 
 	int* mapping = new int[lenDomains];
 	int* volume = new int[lenDomains];
 
@@ -223,7 +224,7 @@ pair<ANode*, ANode*> buildRandConfig()
 	memcpy(volume2, volume, lenDomains * sizeof(int)); 
 
 	// Configure number of changes
-	for(int i=0; i<5; i++)
+	for(int i=0; i<changes; i++)
 	{
 		while(true)
 		{
@@ -288,6 +289,9 @@ int main()
 	} else {
 		cout << "No solution found!" << endl;
 	}
+
+	int i=0; 
+	cin >> i;
 
 	return 0;
 }
