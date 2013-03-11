@@ -13,15 +13,15 @@ Sonar monitoring consits of four subprojects:
 
 ### Sytem dependencies: 
 * Python
-** Apache Thrift
-** EasyInstall
-** PyYaml
+	* Apache Thrift
+	* EasyInstall
+	* PyYaml
 * NTP (Network Time Protocol)
 
 * Relay dependencies
-** yum group install "Development Tools"
-** yum install python-devel
-** [psutil] 
+	* yum group install "Development Tools"
+	* yum install python-devel
+	* [psutil] 
 
 
 ## Relay
