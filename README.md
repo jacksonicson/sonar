@@ -21,12 +21,12 @@ Sonar monitoring consits of four subprojects:
 * SensorHub and Sensors
 	* yum group install "Development Tools"
 	* yum install python-devel
-	* [psutil] 
+	* [PsUtil](https://code.google.com/p/psutil/)
 	
 * Relay and RelayControl
-	* Python Twisted [twisted]
-	* Zope Interfaces [zopei]
-	* Mako Template Engine [mako]
+	* [Python Twisted ](http://twistedmatrix.com/trac/)
+	* [Zope Interfaces](https://pypi.python.org/pypi/zope.interface#download)
+	* [Mako Template Engine](http://www.makotemplates.org/)
 
 
 ## Relay
@@ -40,7 +40,3 @@ The architecture is similar to the one of OpenTSDB but differs in a number of po
 * Dynamic configuration of sensors from a central location
 
 
-[psutil]: https://code.google.com/p/psutil/  "PsUtil"
-[mako]: http://www.makotemplates.org/ "Mako Template Engine"
-[zopei]: https://pypi.python.org/pypi/zope.interface#download "Zope Interfaces"
-[twisted]: http://twistedmatrix.com/trac/ "Twisted"
