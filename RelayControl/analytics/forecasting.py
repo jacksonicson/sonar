@@ -30,6 +30,13 @@ class Status(object):
         
         self.forecast = 0
 
+def flip_flop(readings):
+    status = None
+    for x in readings:
+        forecast, status = continous_flip_flop(x, status) 
+    return forecast
+        
+
 def continous_flip_flop(x, status=None):
     '''
     Implementation of the flip flop filter as described by Minkyong Kim and Brian Noble
@@ -46,7 +53,7 @@ def continous_flip_flop(x, status=None):
     status.f_stable = continous_single_exponential_smoothed(status.f_stable, x, 0.1)
     
     # Update estimated population mean \bar{x}
-    status.x_bar = continous_single_exponential_smoothed(status.x_bar, x, 0.7)
+    status.x_bar = continous_single_exponential_smoothed(status.x_bar, x, 0.5)
     
     # Calculate \bar{MW}
     mw_average = np.mean(status.mw)
@@ -68,13 +75,15 @@ def continous_flip_flop(x, status=None):
         if status.x_prev != None:
             delta = abs(x - status.x_prev)
             status.mw.append(delta)
-            l = 30
+            l = 3
             if len(status.mw) > l:
                 status.mw = status.mw[-l:]
                 
     else:
-        print 'stable'
-        forecast = status.f_stable
+        if status.f_agile >= lcl and status.f_agile <= ucl:
+            forecast = status.f_agile
+        else:
+            forecast = status.f_stable
     
     # Return status and forecast
     status.x_prev = x
@@ -218,7 +227,7 @@ def main():
     ax = fig.add_subplot(111)
     
     ax.plot(demand)
-    ax.plot(s0, lw=2)
+    ax.plot(s0, lw=1, c='red')
     #ax.plot(ua)
     #ax.plot(ul)
     ax.fill_between(xrange(0, len(ua)), ua, ul, interpolate=True, facecolor='lightgray', lw=0)
