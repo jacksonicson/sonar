@@ -16,15 +16,83 @@ def ar_forecast(data, smoothing=False):
         return data[-1]
 
 
+class Status(object):
+    def __init__(self):
+        self.f_agile = None
+        self.f_stable = None
+        self.b_bar = None
+        self.mw = [10]
+        self.x_prev = None
+        self.x_bar = None
+        
+        self.ucl = None
+        self.lcl = None
+
+def continous_flip_flop(x, status=None):
+    '''
+    Implementation of the flip flop filter as described by Minkyong Kim and Brian Noble
+    EWMA = Exponential Weighted Moving Average
+    buffer = Status information that was returned by the previous call 
+    '''
+    
+    # Initialize status
+    if status == None:
+        status = Status()
+    
+    # Update agile and stable EWMA
+    status.f_agile = continous_single_exponential_smoothed(status.f_agile, x, 0.9)
+    status.f_stable = continous_single_exponential_smoothed(status.f_stable, x, 0.1)
+    
+    # Update estimated population mean \bar{x}
+    status.x_bar = continous_single_exponential_smoothed(status.x_bar, x, 0.5)
+    
+    # Calculate \bar{MW}
+    mw_average = np.mean(status.mw)
+        
+    # Update upper and lower control limits
+    ucl = status.x_bar + 3 * (mw_average / 1.128)
+    lcl = status.x_bar - 3 * (mw_average / 1.128)
+    status.ucl = ucl
+    status.lcl = lcl
+    
+    # print 'agile %f lower %f upper %f' % (status.f_agile, lcl, ucl)
+    
+    # Run flip-flop logic
+    if status.f_agile >= lcl and status.f_agile <= ucl:
+        forecast = status.f_agile
+        
+        # Update moving range
+        if status.x_prev != None:
+            delta = abs(x - status.x_prev)
+            status.mw.append(delta)
+            l = 2
+            if len(status.mw) > l:
+                status.mw = status.mw[-l:]
+                
+    else:
+        print 'stable'
+        forecast = status.f_stable
+    
+    # Return status and forecast
+    status.x_prev = x
+    return forecast, status
+
+
 def continous_single_exponential_smoothed(f_t, data_t, alpha):
     # Smoothing equation (1)
     # f_t is the forecasted value for f_{t+1}
+    
+    if f_t == None: 
+        return data_t
+    
     f_t = alpha * data_t + (1 - alpha) * f_t
+    
     return f_t
+
 
 def single_exponential_smoother(data, alpha=0.3):
     if len(data) < 2:
-        return 50 # Neutral CPU value
+        return 50  # Neutral CPU value
     
     # Parameters and initial values
     # y_t0 has to be initialized
@@ -71,9 +139,9 @@ def continuouse_double_exponential_smoothed(c_t, T_t, data_t, alpha=0.2, beta=0.
     return f_t, c_t, T_t
 
 
-def double_exponential_smoother(data, periods=1,alpha=0.2, beta=0.3):
+def double_exponential_smoother(data, periods=1, alpha=0.2, beta=0.3):
     if len(data) < 2:
-        return 50 # neutral cpu value
+        return 50  # neutral cpu value
     
     # Parameters and initial values
     alpha = float(alpha)
@@ -120,18 +188,36 @@ def main():
     times_client.close()
     
     random = np.random.lognormal(mean=0.0, sigma=1.5, size=len(demand))
+    # random = np.random.normal(loc=0, scale=3, size=len(demand))
     demand += random
 
     # Run smoother
-    _, s0, _ = single_exponential_smoother(demand)
-    _, s1, _ = double_exponential_smoother(demand)
+    s0 = []
+    s1 = []
+    ua = []
+    ul = []
+    status = None
+    f_t = None
+    for x in demand:
+        forecast, status = continous_flip_flop(x, status)
+        s0.append(forecast)
+        
+        ua.append(status.ucl)
+        ul.append(status.lcl)
+        
+        f_t = continous_single_exponential_smoothed(f_t, x, 0.1)
+        s1.append(f_t)
+        
     
     # Plot original data with forecasted
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    
     ax.plot(demand)
     ax.plot(s0)
-    ax.plot(s1)
+    ax.plot(ua)
+    ax.plot(ul)
+    # ax.plot(s1)
     plt.show()
 
 
