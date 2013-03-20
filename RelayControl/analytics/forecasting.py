@@ -27,6 +27,8 @@ class Status(object):
         
         self.ucl = None
         self.lcl = None
+        
+        self.forecast = 0
 
 def continous_flip_flop(x, status=None):
     '''
@@ -44,7 +46,7 @@ def continous_flip_flop(x, status=None):
     status.f_stable = continous_single_exponential_smoothed(status.f_stable, x, 0.1)
     
     # Update estimated population mean \bar{x}
-    status.x_bar = continous_single_exponential_smoothed(status.x_bar, x, 0.5)
+    status.x_bar = continous_single_exponential_smoothed(status.x_bar, x, 0.7)
     
     # Calculate \bar{MW}
     mw_average = np.mean(status.mw)
@@ -58,14 +60,15 @@ def continous_flip_flop(x, status=None):
     # print 'agile %f lower %f upper %f' % (status.f_agile, lcl, ucl)
     
     # Run flip-flop logic
-    if status.f_agile >= lcl and status.f_agile <= ucl:
-        forecast = status.f_agile
+    # if status.f_agile >= lcl and status.f_agile <= ucl:
+    if status.forecast >= lcl and status.forecast <= ucl:
+        forecast = status.forecast
         
         # Update moving range
         if status.x_prev != None:
             delta = abs(x - status.x_prev)
             status.mw.append(delta)
-            l = 2
+            l = 30
             if len(status.mw) > l:
                 status.mw = status.mw[-l:]
                 
@@ -75,6 +78,7 @@ def continous_flip_flop(x, status=None):
     
     # Return status and forecast
     status.x_prev = x
+    status.forecast = forecast 
     return forecast, status
 
 
@@ -188,7 +192,7 @@ def main():
     times_client.close()
     
     random = np.random.lognormal(mean=0.0, sigma=1.5, size=len(demand))
-    # random = np.random.normal(loc=0, scale=3, size=len(demand))
+    random = np.random.normal(loc=0, scale=2, size=len(demand))
     demand += random
 
     # Run smoother
@@ -214,9 +218,10 @@ def main():
     ax = fig.add_subplot(111)
     
     ax.plot(demand)
-    ax.plot(s0)
-    ax.plot(ua)
-    ax.plot(ul)
+    ax.plot(s0, lw=2)
+    #ax.plot(ua)
+    #ax.plot(ul)
+    ax.fill_between(xrange(0, len(ua)), ua, ul, interpolate=True, facecolor='lightgray', lw=0)
     # ax.plot(s1)
     plt.show()
 
