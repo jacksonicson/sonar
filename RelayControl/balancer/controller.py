@@ -32,7 +32,7 @@ Strategies:
 ######################
 # # CONFIGURATION    ##
 ######################
-STRATEGY = 'dsap' 
+STRATEGY = 'sandpiper' 
 SIM_ITERATIONS = 1
 ######################
 
