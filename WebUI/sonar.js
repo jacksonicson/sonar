@@ -13,7 +13,7 @@ var url = require('url');
 
 var PORT = 8090;
 // var SERVER_HOST = 'localhost';
-var SERVER_HOST = 'monitor0.dfg';
+var SERVER_HOST = 'monitor0';
 
 var thrift = require('thrift');
 var managementService = require('./ManagementService');
@@ -45,7 +45,7 @@ function delHostHandler(req, resp) {
 function delSensorHandler(req, resp) {
     var connection = thrift.createConnection(SERVER_HOST, 7932);
     var client = thrift.createClient(managementService, connection);
-
+    
     var query = url.parse(req.url).query;
     var body = qs.parse(query);
     var sensorName = body.sensorName;
