@@ -23,7 +23,7 @@ import configuration as config
 ###############################################
 DEFAULT_SETUP_IP = 'vmt'
 STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
-clone_names = [('playglassdb_v2', 'target%i' % i) for i in range(0, 2)]
+clone_names = [('playglassdb_v2', 'target%i' % i) for i in range(0, 18)]
 SETUP_SERVER = 'srv0'
 ###############################################
 
