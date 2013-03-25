@@ -5,8 +5,9 @@ import base
 # Add hosts
 hosts = []
 index = 0
-for i in xrange(0, 18):
-    hosts.append('target%i' % i)
+#for i in xrange(0, 18):
+#    hosts.append('target%i' % i)
+hosts.append('srv0')
 
 
 def finished(done, client_list):

@@ -29,8 +29,8 @@ def main():
     ######################################################
     ## DOMAINS CONFIGURATION                            ##
     ######################################################
-    for i in xrange(0, 18):
-        hosts.add_host('target%i' % i, 'deploy')
+#    for i in xrange(0, 18):
+#        hosts.add_host('target%i' % i, 'deploy')
 #    for i in xrange(0,6):
 #        hosts.add_host('srv%i' % i, 'deploy')
 #    hosts.add_host('storage0', 'deploy')
@@ -41,6 +41,7 @@ def main():
 #    hosts.add_host('load1', 'deploy')
 #    hosts.add_host('test0', 'deploy')
 #    hosts.add_host('test1', 'deploy')
+    hosts.add_host('vmt', 'deploy')
     ######################################################
     
     # Connect
