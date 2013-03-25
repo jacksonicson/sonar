@@ -8,6 +8,7 @@ dhclient -r
 
 # Update hostname
 sed -i "s/vmt/target17/g" /etc/sysconfig/network
+sed -i "s/vmt/target17/g" /etc/hostname
 
 # Change scripts
 cp ifcfg-eth0 /etc/sysconfig/network-scripts/
