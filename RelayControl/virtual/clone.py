@@ -9,17 +9,18 @@ from relay import RelayService
 from string import Template
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTwisted
-from twisted.internet import reactor
+from twisted.internet import defer, reactor
 from twisted.internet.protocol import ClientCreator
 import configuration as config
 import nodes
 import sys
+import thread
 import time
 import traceback
 import virtual.util as util
 
 ###############################################
-### CONFIG                                   ##
+# ## CONFIG                                   ##
 ###############################################
 DEFAULT_SETUP_IP = 'vmt'
 STORAGE_POOLS = ['s0a0', 's0a1', 's1a0']
@@ -31,7 +32,7 @@ SETUP_SERVER = 'srv0'
 killed_vms = []
 connections = None 
 
-def update_done(ret, vm, relay_conn):
+def update_done(ret, vm, d, relay_conn):
     print 'Update executed'
     
     # Sometimes VMs stall while shutting down
@@ -53,10 +54,11 @@ def update_done(ret, vm, relay_conn):
     
     
     # Schedule next VM clone
-    reactor.callLater(0, next_vm)
+    d.callback()
+    
 
 
-def connection_established(ret, vm):
+def connection_established(ret, vm, d):
     print 'Connection established'
     
     try:
@@ -86,15 +88,15 @@ def connection_established(ret, vm):
     # Load and execute drone
     print 'Waiting for drone...'
     drone = drones.load_drone('setup_vm')
-    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, ret)
+    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, d, ret)
         
 
-def error(err, vm):
+def error(err, vm, d):
     print 'Connection failed, waiting and trying again...'
-    reactor.callLater(20, setup, vm)
+    reactor.callLater(20, setup, vm, d)
     
 
-def setup(vm):
+def setup(vm, d=None):
     print 'Connecting with new domain...'
     
     creator = ClientCreator(reactor,
@@ -103,9 +105,12 @@ def setup(vm):
                           TBinaryProtocol.TBinaryProtocolFactory(),
                           ).connectTCP(DEFAULT_SETUP_IP, config.RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
-    
-    creator.addCallback(connection_established, vm)
-    creator.addErrback(error, vm)
+    if d == None:
+        d = defer.Deferred()
+        
+    creator.addCallback(connection_established, vm, d)
+    creator.addErrback(error, vm, d)
+    return d
     
 
 def id_mac(domain_id):
@@ -241,7 +246,24 @@ def clone(connections, source, target, domain_id):
     # Launch domain
     print 'Launching Domain...'
     new_domain.create()
-   
+ 
+
+def start():
+    print 'Connecting with libvirt daemons...'
+    # Create drones
+    drones.main()
+    
+    # Connect
+    global connections
+    connections = util.connect_all()
+    
+    print 'Starting reactor in a new thread...'
+    thread.start_new_thread(reactor.run)
+ 
+ 
+def custom_clone(source, target, count):
+    clone(connections, source, target, count)
+    return setup(target)
    
 # VM clone counter
 count = 0
@@ -267,7 +289,8 @@ def next_vm():
     clone(connections, job[0], job[1], count)
     
     count += 1
-    setup(job[1])
+    d = setup(job[1])
+    d.addCallback(next_vm)
 
 
 def shutdownall():

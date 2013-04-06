@@ -7,9 +7,10 @@ from iaas import Infrastructure
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
+from twisted.internet.defer import DeferredQueue
+from virtual import clone
 import configuration as config
 import threading
-#from virtual import clone
 
 
 class ServiceThread(threading.Thread):
@@ -41,7 +42,15 @@ class Handler(Infrastructure.Iface):
     
     def allocateDomain(self):
         print 'allocating domain now...'
-        return 'test'
+        
+        # Logic is handled by the reactor thread
+        d = clone.custom_clone('playglassdb_v2', 'target100', 100)
+        
+        # Wait for the deferred 
+        q = DeferredQueue()
+        d.addBoth(q.put)
+        ret = q.get(False)
+        return ret
     
     def isDomainReady(self, hostname):
         pass
@@ -51,6 +60,9 @@ class Handler(Infrastructure.Iface):
 
 
 def start():
+    print 'Starting clone thread...'
+    clone.start()
+    
     print 'Creating IaaS handler...'
     handler = Handler()
     
