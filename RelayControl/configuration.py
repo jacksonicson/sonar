@@ -73,7 +73,7 @@ MIGRATION_DOWNTIME = 15000
 ##########################
 ## IAAS                 ##
 IAAS_PORT = 9877 
-IAAS_INTERFACE_IPV4 = '192.168.96.3'
+IAAS_INTERFACE_IPV4 = '192.168.96.6'
 
 ##########################
 ## FILES                ##

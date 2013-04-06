@@ -14,7 +14,6 @@ from twisted.internet.protocol import ClientCreator
 import configuration as config
 import nodes
 import sys
-import thread
 import time
 import traceback
 import virtual.util as util
@@ -58,7 +57,7 @@ def update_done(ret, vm, d, relay_conn):
     
 
 
-def connection_established(ret, vm, d):
+def connection_established(ret, vm, dd):
     print 'Connection established'
     
     try:
@@ -88,7 +87,7 @@ def connection_established(ret, vm, d):
     # Load and execute drone
     print 'Waiting for drone...'
     drone = drones.load_drone('setup_vm')
-    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, d, ret)
+    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, dd, ret)
         
 
 def error(err, vm, d):
@@ -258,7 +257,7 @@ def start():
     connections = util.connect_all()
     
     print 'Starting reactor in a new thread...'
-    thread.start_new_thread(reactor.run)
+    reactor.run()
  
  
 def custom_clone(source, target, count):
