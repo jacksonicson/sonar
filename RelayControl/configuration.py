@@ -71,6 +71,11 @@ PUMP_SPEEDUP = 1
 MIGRATION_DOWNTIME = 15000
 
 ##########################
+## IAAS                 ##
+IAAS_PORT = 9877 
+IAAS_INTERFACE_IPV4 = '192.168.96.3'
+
+##########################
 ## FILES                ##
 def path(filename, ending='txt'):
     return 'C:/temp/%s.%s' % (filename, ending)
