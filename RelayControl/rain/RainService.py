@@ -28,13 +28,6 @@ class Iface(Interface):
     """
     pass
 
-  def dynamicLoadProfile(profile):
-    """
-    Parameters:
-     - profile
-    """
-    pass
-
   def getTrackNames():
     pass
 
@@ -89,39 +82,6 @@ class Client:
     if result.success is not None:
       return d.callback(result.success)
     return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "startBenchmark failed: unknown result"))
-
-  def dynamicLoadProfile(self, profile):
-    """
-    Parameters:
-     - profile
-    """
-    self._seqid += 1
-    d = self._reqs[self._seqid] = defer.Deferred()
-    self.send_dynamicLoadProfile(profile)
-    return d
-
-  def send_dynamicLoadProfile(self, profile):
-    oprot = self._oprot_factory.getProtocol(self._transport)
-    oprot.writeMessageBegin('dynamicLoadProfile', TMessageType.CALL, self._seqid)
-    args = dynamicLoadProfile_args()
-    args.profile = profile
-    args.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def recv_dynamicLoadProfile(self, iprot, mtype, rseqid):
-    d = self._reqs.pop(rseqid)
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      return d.errback(x)
-    result = dynamicLoadProfile_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return d.callback(result.success)
-    return d.errback(TApplicationException(TApplicationException.MISSING_RESULT, "dynamicLoadProfile failed: unknown result"))
 
   def getTrackNames(self, ):
     self._seqid += 1
@@ -243,7 +203,6 @@ class Processor(TProcessor):
     self._handler = Iface(handler)
     self._processMap = {}
     self._processMap["startBenchmark"] = Processor.process_startBenchmark
-    self._processMap["dynamicLoadProfile"] = Processor.process_dynamicLoadProfile
     self._processMap["getTrackNames"] = Processor.process_getTrackNames
     self._processMap["getRampUpTime"] = Processor.process_getRampUpTime
     self._processMap["getRampDownTime"] = Processor.process_getRampDownTime
@@ -275,22 +234,6 @@ class Processor(TProcessor):
   def write_results_success_startBenchmark(self, success, result, seqid, oprot):
     result.success = success
     oprot.writeMessageBegin("startBenchmark", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_dynamicLoadProfile(self, seqid, iprot, oprot):
-    args = dynamicLoadProfile_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = dynamicLoadProfile_result()
-    d = defer.maybeDeferred(self._handler.dynamicLoadProfile, args.profile)
-    d.addCallback(self.write_results_success_dynamicLoadProfile, result, seqid, oprot)
-    return d
-
-  def write_results_success_dynamicLoadProfile(self, success, result, seqid, oprot):
-    result.success = success
-    oprot.writeMessageBegin("dynamicLoadProfile", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -459,126 +402,6 @@ class startBenchmark_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('startBenchmark_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.BOOL, 0)
-      oprot.writeBool(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class dynamicLoadProfile_args:
-  """
-  Attributes:
-   - profile
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'profile', (Profile, Profile.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, profile=None,):
-    self.profile = profile
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.profile = Profile()
-          self.profile.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('dynamicLoadProfile_args')
-    if self.profile is not None:
-      oprot.writeFieldBegin('profile', TType.STRUCT, 1)
-      self.profile.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class dynamicLoadProfile_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.BOOL, 'success', None, None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.BOOL:
-          self.success = iprot.readBool();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('dynamicLoadProfile_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.BOOL, 0)
       oprot.writeBool(self.success)

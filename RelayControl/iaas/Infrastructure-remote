@@ -4,7 +4,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py:twisted
+#  options string: py
 #
 
 import sys
@@ -15,7 +15,7 @@ from thrift.transport import TSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
-import RainService
+import Infrastructure
 from ttypes import *
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
@@ -23,11 +23,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] function [arg1 [arg2...]]'
   print ''
   print 'Functions:'
-  print '  bool startBenchmark(long controllerTimestamp)'
-  print '   getTrackNames()'
-  print '  long getRampUpTime()'
-  print '  long getRampDownTime()'
-  print '  long getDurationTime()'
+  print '  string allocateDomain()'
+  print '  bool isDomainReady(string hostname)'
+  print '  bool deleteDomain(string hostname)'
   print ''
   sys.exit(0)
 
@@ -76,38 +74,26 @@ else:
   else:
     transport = TTransport.TBufferedTransport(socket)
 protocol = TBinaryProtocol.TBinaryProtocol(transport)
-client = RainService.Client(protocol)
+client = Infrastructure.Client(protocol)
 transport.open()
 
-if cmd == 'startBenchmark':
+if cmd == 'allocateDomain':
+  if len(args) != 0:
+    print 'allocateDomain requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.allocateDomain())
+
+elif cmd == 'isDomainReady':
   if len(args) != 1:
-    print 'startBenchmark requires 1 args'
+    print 'isDomainReady requires 1 args'
     sys.exit(1)
-  pp.pprint(client.startBenchmark(eval(args[0]),))
+  pp.pprint(client.isDomainReady(args[0],))
 
-elif cmd == 'getTrackNames':
-  if len(args) != 0:
-    print 'getTrackNames requires 0 args'
+elif cmd == 'deleteDomain':
+  if len(args) != 1:
+    print 'deleteDomain requires 1 args'
     sys.exit(1)
-  pp.pprint(client.getTrackNames())
-
-elif cmd == 'getRampUpTime':
-  if len(args) != 0:
-    print 'getRampUpTime requires 0 args'
-    sys.exit(1)
-  pp.pprint(client.getRampUpTime())
-
-elif cmd == 'getRampDownTime':
-  if len(args) != 0:
-    print 'getRampDownTime requires 0 args'
-    sys.exit(1)
-  pp.pprint(client.getRampDownTime())
-
-elif cmd == 'getDurationTime':
-  if len(args) != 0:
-    print 'getDurationTime requires 0 args'
-    sys.exit(1)
-  pp.pprint(client.getDurationTime())
+  pp.pprint(client.deleteDomain(args[0],))
 
 else:
   print 'Unrecognized method %s' % cmd
