@@ -82,7 +82,6 @@ public class AnalyzeLogTables {
 					System.out.println("mean: " + mean);
 
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
