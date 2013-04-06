@@ -9,6 +9,7 @@ from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 import configuration as config
 import threading
+#from virtual import clone
 
 
 class ServiceThread(threading.Thread):
@@ -39,7 +40,8 @@ class Handler(Infrastructure.Iface):
         pass
     
     def allocateDomain(self):
-        pass
+        print 'allocating domain now...'
+        return 'test'
     
     def isDomainReady(self, hostname):
         pass

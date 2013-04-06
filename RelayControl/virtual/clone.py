@@ -11,12 +11,12 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTwisted
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientCreator
+import configuration as config
 import nodes
 import sys
 import time
 import traceback
 import virtual.util as util
-import configuration as config
 
 ###############################################
 ### CONFIG                                   ##
