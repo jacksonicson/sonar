@@ -53,8 +53,7 @@ def update_done(ret, vm, d, relay_conn):
     
     
     # Schedule next VM clone
-    d.callback()
-    
+    d.callback(0)
 
 
 def connection_established(ret, vm, dd):
@@ -62,7 +61,7 @@ def connection_established(ret, vm, dd):
     
     try:
         # Read configuration template
-        config = open('drones/setup_vm/main_template.sh', 'r')
+        config = open(drones.DRONE_DIR + '/setup_vm/main_template.sh', 'r')
         data = config.readlines()
         data = ''.join(data)
         config.close()
@@ -73,7 +72,7 @@ def connection_established(ret, vm, dd):
         templ = templ.substitute(d)
             
         # Write result configuration
-        config = open('drones/setup_vm/main.sh', 'w')
+        config = open(drones.DRONE_DIR + '/setup_vm/main.sh', 'w')
         config.writelines(templ)
         config.close()
     except Exception, e:
@@ -95,7 +94,7 @@ def error(err, vm, d):
     reactor.callLater(20, setup, vm, d)
     
 
-def setup(vm, d=None):
+def setup(vm, d):
     print 'Connecting with new domain...'
     
     creator = ClientCreator(reactor,
@@ -104,9 +103,6 @@ def setup(vm, d=None):
                           TBinaryProtocol.TBinaryProtocolFactory(),
                           ).connectTCP(DEFAULT_SETUP_IP, config.RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
-    if d == None:
-        d = defer.Deferred()
-        
     creator.addCallback(connection_established, vm, d)
     creator.addErrback(error, vm, d)
     return d
@@ -262,7 +258,9 @@ def start():
  
 def custom_clone(source, target, count):
     clone(connections, source, target, count)
-    return setup(target)
+    d = defer.Deferred() 
+    reactor.callFromThread(setup, target, d)
+    return d
    
 # VM clone counter
 count = 0
