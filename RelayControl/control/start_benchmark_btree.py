@@ -16,7 +16,7 @@ import math
 # # CONFIGURATION    ##
 ######################
 INIT_DB = True
-START_BT = False
+START_BT = True
 ######################
 
 # Setup logging
