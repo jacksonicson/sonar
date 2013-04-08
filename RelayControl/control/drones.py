@@ -5,7 +5,7 @@ import string
 
 ######################
 ## CONFIGURATION    ##
-DRONE_DIR = 'drones'
+DRONE_DIR = '../RelayControl/drones'
 ######################
 
 class Drone(object):

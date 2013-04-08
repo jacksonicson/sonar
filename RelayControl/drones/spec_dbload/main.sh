@@ -11,7 +11,7 @@ umount /mnt/share
 mount -t nfs monitor0:/mnt/arr0/share /mnt/share
 
 # Load dumpfile
-mysql -uroot -prooter specdb < /mnt/share/dumps/specdb\ txrate\ 60.sql
+mysql -uroot -proot specj < /mnt/share/dumps/specdb\ txrate\ 60.sql
 
 # Umount NFS share
 cd /

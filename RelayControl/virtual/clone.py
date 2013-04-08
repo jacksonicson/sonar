@@ -14,7 +14,6 @@ from twisted.internet.protocol import ClientCreator
 import configuration as config
 import nodes
 import sys
-import thread
 import time
 import traceback
 import virtual.util as util
@@ -54,16 +53,15 @@ def update_done(ret, vm, d, relay_conn):
     
     
     # Schedule next VM clone
-    d.callback()
-    
+    d.callback(0)
 
 
-def connection_established(ret, vm, d):
+def connection_established(ret, vm, dd):
     print 'Connection established'
     
     try:
         # Read configuration template
-        config = open('drones/setup_vm/main_template.sh', 'r')
+        config = open(drones.DRONE_DIR + '/setup_vm/main_template.sh', 'r')
         data = config.readlines()
         data = ''.join(data)
         config.close()
@@ -74,7 +72,7 @@ def connection_established(ret, vm, d):
         templ = templ.substitute(d)
             
         # Write result configuration
-        config = open('drones/setup_vm/main.sh', 'w')
+        config = open(drones.DRONE_DIR + '/setup_vm/main.sh', 'w')
         config.writelines(templ)
         config.close()
     except Exception, e:
@@ -88,7 +86,7 @@ def connection_established(ret, vm, d):
     # Load and execute drone
     print 'Waiting for drone...'
     drone = drones.load_drone('setup_vm')
-    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, d, ret)
+    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, dd, ret)
         
 
 def error(err, vm, d):
@@ -96,7 +94,7 @@ def error(err, vm, d):
     reactor.callLater(20, setup, vm, d)
     
 
-def setup(vm, d=None):
+def setup(vm, d):
     print 'Connecting with new domain...'
     
     creator = ClientCreator(reactor,
@@ -105,9 +103,6 @@ def setup(vm, d=None):
                           TBinaryProtocol.TBinaryProtocolFactory(),
                           ).connectTCP(DEFAULT_SETUP_IP, config.RELAY_PORT)
     creator.addCallback(lambda conn: conn.client)
-    if d == None:
-        d = defer.Deferred()
-        
     creator.addCallback(connection_established, vm, d)
     creator.addErrback(error, vm, d)
     return d
@@ -258,12 +253,14 @@ def start():
     connections = util.connect_all()
     
     print 'Starting reactor in a new thread...'
-    thread.start_new_thread(reactor.run)
+    reactor.run()
  
  
 def custom_clone(source, target, count):
     clone(connections, source, target, count)
-    return setup(target)
+    d = defer.Deferred() 
+    reactor.callFromThread(setup, target, d)
+    return d
    
 # VM clone counter
 count = 0
