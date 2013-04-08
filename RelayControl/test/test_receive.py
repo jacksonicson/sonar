@@ -63,8 +63,12 @@ def connect_sonar(filters, handler, interface=config.LISTENING_INTERFACE_IPV4, c
     
 
 class Handler(NotificationClient.Iface):
-    def receive(self, data):
-        print data
+    def receive(self, datalist):
+        for data in datalist:
+            reading = data.reading
+            ident = data.id
+            print '%s - %s = %s' % (reading.value, ident.hostname, ident.sensor)
+        
 
 if __name__ == '__main__':
     print 'Starting...'
@@ -75,6 +79,8 @@ if __name__ == '__main__':
     # Define hosts and sensors to listen on
     filters = [
                ttypes.SensorToWatch('srv0', 'psutilcpu'),
+               ttypes.SensorToWatch('srv1', 'psutilcpu'),
+               ttypes.SensorToWatch('srv1', 'psutilmem.phymem'),
                ]
     
     thread = connect_sonar(filters, handler)
