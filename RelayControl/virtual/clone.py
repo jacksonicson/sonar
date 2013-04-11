@@ -1,5 +1,5 @@
 '''
-All Domains (VMs) are setup on the srv0 system! This is the initialization system. If a Domain is moved 
+All Domains (VMs) are configure_domain on the srv0 system! This is the initialization system. If a Domain is moved 
 to another system it's configuration has to be created on the target system. 
 '''
 
@@ -10,6 +10,7 @@ from string import Template
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
+from twisted.internet.defer import DeferredQueue
 from twisted.internet.protocol import ClientCreator
 import configuration as config
 import nodes
@@ -17,6 +18,7 @@ import sys
 import time
 import traceback
 import virtual.util as util
+import threading
 
 ###############################################
 # ## CONFIG                                   ##
@@ -29,9 +31,37 @@ SETUP_SERVER = 'srv0'
 
 
 killed_vms = []
-connections = None 
+connections = None
+queue = DeferredQueue()
 
-def update_done(ret, vm, d, relay_conn):
+# Distribute images across all pools, pool_index gives the pool where the next VM will be created
+pool_index = long(time.time()) % len(STORAGE_POOLS)
+ 
+ 
+class QueueEntry(object):
+    '''
+    Describes one clone entry in the clone queue
+    '''
+    
+    def __init__(self, source, target, domain_id):
+        self.source = source
+        self.target = target
+        self.domain_id = domain_id  
+
+
+def domain_configuration_finished():
+    '''
+    Is called as soon as a domain is fully configured. 
+    '''
+    print 'Domain cloned successfully'
+    wait_for_next_entry()
+
+
+def kill_domain(ret, vm, relay_conn):
+    '''
+    Waits until a domain is shut down. After a timeout the domain 
+    gets killed.
+    '''
     print 'Update executed'
     
     # Sometimes VMs stall while shutting down
@@ -51,13 +81,17 @@ def update_done(ret, vm, d, relay_conn):
         new_domain.destroy()
         killed_vms.append(vm)
     
+    # Finish
+    domain_configuration_finished()
     
-    # Schedule next VM clone
-    d.callback(0)
 
 
-def connection_established(ret, vm, dd):
-    print 'Connection established'
+def launch_drone(ret, vm):
+    '''
+     Launches the drone on the connection in the parameter
+    '''
+    
+    print 'Launching drone (connection established)'
     
     try:
         # Read configuration template
@@ -86,31 +120,36 @@ def connection_established(ret, vm, dd):
     # Load and execute drone
     print 'Waiting for drone...'
     drone = drones.load_drone('setup_vm')
-    ret.launchNoWait(drone.data, drone.name).addCallback(update_done, vm, dd, ret)
+    ret.launchNoWait(drone.data, drone.name).addCallback(kill_domain, vm, ret)
         
 
-def error(err, vm, d):
-    print 'Connection failed, waiting and trying again...'
-    reactor.callLater(20, setup, vm, d)
+def error(err, vm):
+    '''
+    Error handler if the connection with the new domain fails
+    '''
+    print 'Connection failed, retrying...'
+    reactor.callLater(3, configure_domain, vm)
     
 
-def setup(vm, d):
-    print 'Connecting with new domain...'
+def configure_domain(target):
+    '''
+    Reconfigures a domain by running the reconfiguration drone 
+    '''
     
+    print 'Connecting with new domain...'
     creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
                           TBinaryProtocol.TBinaryProtocolFactory(),
-                          ).connectTCP(DEFAULT_SETUP_IP, config.RELAY_PORT)
+                          ).connectTCP(DEFAULT_SETUP_IP, config.RELAY_PORT, timeout=10)
     creator.addCallback(lambda conn: conn.client)
-    creator.addCallback(connection_established, vm, d)
-    creator.addErrback(error, vm, d)
-    return d
+    creator.addCallback(launch_drone, target)
+    creator.addErrback(error, target)
     
 
-def id_mac(domain_id):
+def mac_by_id(domain_id):
     '''
-    Is used to give target0 always the same MAC for each clone process. 
+    Is used to give target0 always the same MAC for each clone_domain process. 
     If random MACs are used the DNS server registers multiply mappings and cannot
     resolve the names properly. 
     '''
@@ -128,7 +167,11 @@ def id_mac(domain_id):
     return base
 
 
-def rand_mac():
+def mac_by_rand():
+    '''
+    Generates a MAC address based on a random number
+    '''
+    
     import random
     base = '52:54:00'
     # generate 3 random NN blocks
@@ -142,12 +185,9 @@ def rand_mac():
     print 'Randomly generated MAC: %s' % base    
     return base
 
-# Distribute images across all pools, pool_index gives the pool where the next
-# VM will be created
-pool_index = long(time.time()) % len(STORAGE_POOLS)
-print 'Initial pool: %i - %s' % (pool_index, STORAGE_POOLS[pool_index])
 
-def clone(connections, source, target, domain_id):
+
+def clone_domain(connections, source, target, domain_id):
     # Connection for srv0
     conn = connections[SETUP_SERVER]
     
@@ -230,7 +270,7 @@ def clone(connections, source, target, domain_id):
     source = xml_tree.xpath('/domain/devices/disk/source')[0]
     source.set('file', '/mnt/' + dst_pool + '/' + target + '.qcow')
     mac = xml_tree.xpath('/domain/devices/interface/mac')[0]
-    mac.attrib['address'] = id_mac(domain_id)
+    mac.attrib['address'] = mac_by_id(domain_id)
     xml_domain_desc = etree.tostring(xml_tree)
     # print xml_domain_desc # print final domain description
     
@@ -242,56 +282,51 @@ def clone(connections, source, target, domain_id):
     print 'Launching Domain...'
     new_domain.create()
  
+ 
+def wait_for_next_entry():
+    # Register callback handler again to handle the next entry
+    d = queue.get() 
+    d.addCallback(next_clone_entry)
+ 
+ 
+def next_clone_entry(entry):
+    print 'processing next clone entry in queue...'
+    
+    # Clone the domain
+    clone_domain(connections, entry.source, entry.target, entry.domain_id)
+    
+    # Configure the domain
+    configure_domain(entry.target)
+
+def stop():
+    reactor.stop()
+
+def start_reactor():
+    reactor.run(installSignalHandlers=0)
 
 def start():
-    print 'Connecting with libvirt daemons...'
+    print 'Rebuilding drones...'
     # Create drones
     drones.main()
     
     # Connect
+    print 'Connecting with libvirt daemons...'
     global connections
     connections = util.connect_all()
     
+    # Start queue listener
+    wait_for_next_entry()
+    
+    # Start reactor 
     print 'Starting reactor in a new thread...'
-    reactor.run()
+    threading._start_new_thread(start_reactor, ())
  
  
-def custom_clone(source, target, count):
-    clone(connections, source, target, count)
-    d = defer.Deferred() 
-    reactor.callFromThread(setup, target, d)
-    return d
-   
-# VM clone counter
-count = 0
-
-def next_vm():   
-    global count
-    
-    if count >= len(clone_names):
-        print 'exiting...'
-        
-        print 'Domains cloned'
-        print ''
-        print 'Following configuration steps need to be executed:'
-        print '   * UPDATE: relay service'
-        print '   * UPDATE: sensorhub service'
-        print ''
-        
-        reactor.stop()  
-        return
-    
-    job = clone_names[count]
-    print 'Launching clone %s -> %s' % job
-    clone(connections, job[0], job[1], count)
-    
-    count += 1
-    d = setup(job[1])
-    d.addCallback(next_vm)
-
-
 def shutdownall():
-    for host in nodes.NODES: 
+    # Go over all nodes
+    for host in nodes.NODES:
+        
+        # Go over all domains on the node 
         conn = connections[host]
         ids = conn.listDomainsID()
         for domain_id in ids:
@@ -299,31 +334,11 @@ def shutdownall():
             domain = conn.lookupByID(domain_id)
             domain.destroy()
 
-
-def main():
-    # Dump configuration
-    print 'Cloning: %s ' % clone_names
+ 
+def clone(source, target, count):
+    # Create a new entry that describes the clone
+    entry = QueueEntry(source, target, count)
     
-    # Create drones
-    drones.main()
-    
-    # Connect
-    global connections
-    connections = util.connect_all()
-    
-    try:
-        # Shutdown all running VMs 
-        shutdownall()
-        
-        reactor.callLater(0, next_vm)
-        
-        print 'Starting reactor'
-        reactor.run()
-        print 'Reactor returned'
-        
-    finally:
-        util.close_all(connections)
-    
-
-if __name__ == '__main__':
-    main()
+    # Add the entry to the queue (thread safe) 
+    reactor.callFromThread(queue.put, entry)
+   
