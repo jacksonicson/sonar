@@ -134,7 +134,7 @@ def error(err, vm):
     '''
     Error handler if the connection with the new domain fails
     '''
-    print 'Connection failed, retrying...'
+    sys.stdout.write('.')
     reactor.callLater(3, configure_domain, vm)
     
 
@@ -143,7 +143,7 @@ def configure_domain(target):
     Reconfigures a domain by running the reconfiguration drone 
     '''
     
-    print 'Connecting with new domain...'
+    print 'Connecting with new domain.'
     creator = ClientCreator(reactor,
                           TTwisted.ThriftClientProtocol,
                           RelayService.Client,
