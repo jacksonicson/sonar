@@ -56,7 +56,7 @@ def domain_configuration_finished(target):
     '''
     
     if target is exit_name:
-        print 'Exiting...'
+        print 'Exit target found'
         stop()
         return
     
