@@ -41,7 +41,7 @@ def main():
 #    hosts.add_host('load1', 'deploy')
 #    hosts.add_host('test0', 'deploy')
 #    hosts.add_host('test1', 'deploy')
-    hosts.add_host('vmt', 'deploy')
+#    hosts.add_host('vmt', 'deploy')
     ######################################################
     
     # Connect
