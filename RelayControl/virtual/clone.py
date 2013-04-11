@@ -15,10 +15,10 @@ from twisted.internet.protocol import ClientCreator
 import configuration as config
 import nodes
 import sys
+import threading
 import time
 import traceback
 import virtual.util as util
-import threading
 
 ###############################################
 # ## CONFIG                                   ##
@@ -30,6 +30,7 @@ SETUP_SERVER = 'srv0'
 ###############################################
 
 
+exit_name = None
 killed_vms = []
 connections = None
 queue = DeferredQueue()
@@ -49,10 +50,16 @@ class QueueEntry(object):
         self.domain_id = domain_id  
 
 
-def domain_configuration_finished():
+def domain_configuration_finished(target):
     '''
     Is called as soon as a domain is fully configured. 
     '''
+    
+    if target is exit_name:
+        print 'Exiting...'
+        stop()
+        return
+    
     print 'Domain cloned successfully'
     wait_for_next_entry()
 
@@ -82,7 +89,7 @@ def kill_domain(ret, vm, relay_conn):
         killed_vms.append(vm)
     
     # Finish
-    domain_configuration_finished()
+    domain_configuration_finished(vm)
     
 
 
@@ -302,7 +309,13 @@ def stop():
     reactor.stop()
 
 def start_reactor():
-    reactor.run(installSignalHandlers=0)
+    class ThreadWrapper(threading.Thread):
+        def run(self):
+            reactor.run(installSignalHandlers=0)
+            
+    thr = ThreadWrapper()
+    thr.start()
+    return thr
 
 def start():
     print 'Rebuilding drones...'
@@ -319,7 +332,7 @@ def start():
     
     # Start reactor 
     print 'Starting reactor in a new thread...'
-    threading._start_new_thread(start_reactor, ())
+    return start_reactor()
  
  
 def shutdownall():
@@ -342,3 +355,29 @@ def clone(source, target, count):
     # Add the entry to the queue (thread safe) 
     reactor.callFromThread(queue.put, entry)
    
+   
+def main():
+    # Establish libvirt connections and start reactor
+    thr = start()
+    
+    # Stop everything
+    shutdownall()
+    
+    # Schedule all clone entries
+    index = 0
+    for to_clone in clone_names:
+        clone(to_clone[0], to_clone[1], index)
+        index += 1
+    
+    # When to exit
+    global exit_name
+    exit_name = to_clone[-1]
+    
+    # Wait for exit
+    print 'Waiting for clone process...'
+    thr.join()
+    print 'Exiting'
+    
+
+if __name__ == '__main__':
+    main()
