@@ -38,19 +38,22 @@ class ServiceThread(threading.Thread):
 
 class Handler(Infrastructure.Iface):
     def __init__(self):
-        pass
+        self.counter = 100
     
     def allocateDomain(self):
         print 'allocating domain now...'
-        clone.clone('playglassdb_v2', 'target100', 100)
-        return 'none'
+        name = 'target%i' % self.counter
+        clone.clone('playglassdb_v2', name, self.counter)
+        self.counter += 1
+        return name
     
     def isDomainReady(self, hostname):
-        pass
+        print 'checking domain state...'
+        return clone.try_connecting(hostname)
     
     def deleteDomain(self, hostname):
         print 'deleting domain now...'
-        clone.delete('target100')
+        clone.delete(hostname)
         return True
 
 

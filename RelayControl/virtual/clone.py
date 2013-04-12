@@ -12,12 +12,14 @@ from thrift.transport import TTwisted
 from twisted.internet import defer, reactor
 from twisted.internet.defer import DeferredQueue
 from twisted.internet.protocol import ClientCreator
+from twisted.internet import threads as tthread
 import configuration as config
 import nodes
 import sys
 import threading
 import time
 import traceback
+import Queue
 import virtual.util as util
 
 ###############################################
@@ -34,6 +36,8 @@ exit_name = None
 killed_vms = []
 connections = None
 queue = DeferredQueue()
+
+active_list = []
 
 # Distribute images across all pools, pool_index gives the pool where the next VM will be created
 pool_index = long(time.time()) % len(STORAGE_POOLS)
@@ -59,6 +63,13 @@ def domain_configuration_finished(target):
         print 'Exit target found'
         stop()
         return
+    
+    if exit_name is None:
+        print 'Launching domain again...'
+        conn = connections[SETUP_SERVER]
+        new_domain = conn.lookupByName(target)
+        new_domain.create()
+        active_list.append(target)
     
     print 'Domain cloned successfully'
     wait_for_next_entry()
@@ -134,7 +145,6 @@ def error(err, vm):
     '''
     Error handler if the connection with the new domain fails
     '''
-    sys.stdout.write('.')
     reactor.callLater(3, configure_domain, vm)
     
 
@@ -338,6 +348,9 @@ def delete_domain(to_del):
             
     # Delete domain instance and storage volume
     remove_domain_data(to_del)
+    
+    # Remove it from the active list
+    # TODO
  
  
 def wait_for_next_entry():
@@ -350,10 +363,11 @@ def next_clone_entry(entry):
     print 'processing next clone entry in queue...'
     
     # Clone the domain
-    clone_domain(connections, entry.source, entry.target, entry.domain_id)
+    d = tthread.deferToThread(clone_domain, connections, entry.source, entry.target, entry.domain_id)
     
     # Configure the domain
-    configure_domain(entry.target)
+    d.addCallback(lambda res: configure_domain(entry.target))
+
 
 def stop():
     reactor.stop()
@@ -409,6 +423,34 @@ def clone(source, target, count):
 def delete(domain):
     reactor.callFromThread(delete_domain, domain)
    
+
+def internal_try_connecting(domain, defer):
+    '''
+    Connects with the domain's Relay service. If it does not respond in 5 seconds
+    it is assumed that the domain is not available right now 
+    '''
+    
+    print 'Connecting with %s' % domain
+    creator = ClientCreator(reactor,
+                          TTwisted.ThriftClientProtocol,
+                          RelayService.Client,
+                          TBinaryProtocol.TBinaryProtocolFactory(),
+                          ).connectTCP(domain, config.RELAY_PORT, timeout=10)
+    creator.addCallback(lambda conn: conn.client)
+    creator.addCallback(lambda value: defer.callback(True))
+    creator.addErrback(lambda value: defer.callback(False))
+    
+   
+def try_connecting(domain):
+    if domain not in active_list:
+        return False
+     
+    d = defer.Deferred()
+    reactor.callFromThread(internal_try_connecting, domain, d)
+    q = Queue.Queue()
+    d.addCallback(q.put)
+    print 'Blocking for PING...'
+    return  q.get(True)
    
 def main():
     # Establish libvirt connections and start reactor
@@ -435,3 +477,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+

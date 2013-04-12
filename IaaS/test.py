@@ -6,6 +6,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 from thrift.transport import TSocket, TTransport
 import configuration as config
+import time
 
 def main():
     print 'Connecting...'
@@ -15,9 +16,17 @@ def main():
     client = Infrastructure.Client(protocol)
     
     print 'allocating domain...'
-    # hostname = client.allocateDomain()
-    # print 'hostname: %s' % hostname
-    client.deleteDomain('target100')
+    hostname = client.allocateDomain()
+    print 'hostname: %s' % hostname
+
+    while client.isDomainReady(hostname) == False:
+        print 'Waiting for domain...'
+        time.sleep(5) 
+    
+    
+#    print 'Deleting domain'
+#    hostname = 'target102'
+#    client.deleteDomain(hostname)
 
 if __name__ == '__main__':
     main()
