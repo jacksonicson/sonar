@@ -15,8 +15,9 @@ def main():
     client = Infrastructure.Client(protocol)
     
     print 'allocating domain...'
-    hostname = client.allocateDomain()
-    print 'hostname: %s' % hostname
+    # hostname = client.allocateDomain()
+    # print 'hostname: %s' % hostname
+    client.deleteDomain('target100')
 
 if __name__ == '__main__':
     main()

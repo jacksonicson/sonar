@@ -49,7 +49,9 @@ class Handler(Infrastructure.Iface):
         pass
     
     def deleteDomain(self, hostname):
-        pass
+        print 'deleting domain now...'
+        clone.delete('target100')
+        return True
 
 
 def start():
@@ -59,9 +61,11 @@ def start():
     print 'Creating IaaS handler...'
     handler = Handler()
     
-    print 'Starting IaaS service thread...'
+    print 'Starting IaaS service in main thread...'
     global thread
     thread = ServiceThread(handler)
+    
+    # Blocks until the service is disrupted (e.g. by SIGTERM)
     thread.run()
     
     print 'Stopping reactor...'

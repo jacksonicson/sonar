@@ -289,6 +289,56 @@ def clone_domain(connections, source, target, domain_id):
     print 'Launching Domain...'
     new_domain.create()
  
+def remove_domain_data(to_del):
+    # Connection for srv0
+    conn = connections[SETUP_SERVER]
+    
+    # Connect with all known storage pools
+    print 'Connecting with storage pools...'
+    pools = []
+    for name in STORAGE_POOLS:
+        pool = conn.storagePoolLookupByName(name)
+        pools.append(pool)
+    
+    # Delete target if it exists
+    print 'Remove old domain description...'
+    for host in nodes.NODES:
+        try:
+            dom_target = connections[host].lookupByName(to_del)
+            if dom_target != None:
+                ret = dom_target.undefine()
+                print 'Domain removed: %i' % ret 
+        except:
+            pass
+        
+    print 'Removing old volume...'
+    for delpool in pools:
+        try:
+            volume_target = delpool.storageVolLookupByName(to_del + ".qcow")
+            if volume_target != None:
+                ret = volume_target.delete(0)
+                print 'Volume removed: %i' % ret
+        except:
+            pass
+ 
+ 
+def delete_domain(to_del):
+    # Destroy the VM
+    for host in nodes.NODES:
+        # Go over all domains on the node 
+        conn = connections[host]
+        ids = conn.listDomainsID()
+        for domain_id in ids:
+            domain = conn.lookupByID(domain_id)
+            name = domain.name()
+            if name == to_del:
+                print 'destroying domain %s' % to_del
+                domain.destroy()
+                return
+            
+    # Delete domain instance and storage volume
+    remove_domain_data(to_del)
+ 
  
 def wait_for_next_entry():
     # Register callback handler again to handle the next entry
@@ -354,6 +404,10 @@ def clone(source, target, count):
     
     # Add the entry to the queue (thread safe) 
     reactor.callFromThread(queue.put, entry)
+   
+   
+def delete(domain):
+    reactor.callFromThread(delete_domain, domain)
    
    
 def main():
