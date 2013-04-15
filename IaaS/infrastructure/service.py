@@ -10,6 +10,7 @@ from thrift.transport import TSocket, TTransport
 from virtual import clone
 import configuration as config
 import threading
+import behaviors
 
 
 class ServiceThread(threading.Thread):
@@ -54,6 +55,12 @@ class Handler(Infrastructure.Iface):
     def deleteDomain(self, hostname):
         print 'deleting domain now...'
         clone.delete(hostname)
+        return True
+    
+    def launchDrone(self, drone, hostname):
+        print 'Launching btree %s on host %s ...' % (drone, hostname)
+        btree = behaviors.StartGlassfishTree(hostname)
+        btree.launch()
         return True
 
 

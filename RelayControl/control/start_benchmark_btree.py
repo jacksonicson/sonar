@@ -11,7 +11,6 @@ from workload import profiles
 import domains
 import math
 
-
 ######################
 # # CONFIGURATION    ##
 ######################
