@@ -2,6 +2,7 @@ from behaviorTree import behaviorTree as btree
 from control import drones, hosts, base
 from logs import sonarlog
 from twisted.internet import defer, reactor
+import Queue
 
 # Setup logging
 logger = sonarlog.getLogger('start_benchmark')
@@ -132,7 +133,7 @@ class StartGlassfishTree(object):
     def __init__(self, hostname):
         self.hostname = hostname
     
-    def __inReactor(self):
+    def __inReactor(self, defer):
         # Blackboard
         bb = btree.BlackBoard()
         
@@ -148,8 +149,17 @@ class StartGlassfishTree(object):
         pl.add(StartDatabase())
         
         # Launch behavior tree
-        defer = start.execute()
+        d_bt = start.execute()
+        d_bt.addCallback(lambda _: defer.callback(True))
 
     
     def launch(self):
-        reactor.callFromThread(self.__inReactor)
+        
+        d = defer.Deferred()
+        reactor.callFromThread(self.__inReactor, d)
+        q = Queue.Queue()
+        d.addCallback(q.put)
+        print 'Blocking for BT...'
+        return  q.get(True)
+        
+        
