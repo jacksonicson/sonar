@@ -10,4 +10,6 @@ service Infrastructure {
 	bool isDomainReady(1:string hostname);
 	
 	bool deleteDomain(1:string hostname);
+	
+	bool launchDrone(1:string drone, 2:string hostname);
 }
