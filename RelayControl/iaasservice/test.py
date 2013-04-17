@@ -3,10 +3,8 @@ Test program for the IaaS service
 '''
 from iaas import Infrastructure
 from thrift.protocol import TBinaryProtocol
-from thrift.server import TServer
-from thrift.transport import TSocket, TTransport
+from thrift.transport import TSocket
 import configuration as config
-import time
 
 def main():
     print 'TEST Connecting...'
