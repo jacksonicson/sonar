@@ -29,7 +29,7 @@ public class ManagementTest {
 			// Sensors
 			System.out.println("sensors"); 
 			Set<String> sensors = client.getSensors("target150");
-			System.out.println("done"); 
+			System.out.println("done " + sensors.size()); 
 			for (String sensor : sensors) {
 				System.out.println("Sensor: " + sensor);
 			}

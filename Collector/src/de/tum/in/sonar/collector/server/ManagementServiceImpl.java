@@ -422,7 +422,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
-		logger.debug("get all sensors for host: " + hostname);
+		logger.info("get all sensors for host: " + hostname);
 
 		// Check cache
 		if (sensorlistCache.get(hostname) != null)
@@ -430,30 +430,23 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		Jedis jedis = jedisPool.getResource();
 		try {
-			// If the given host is not registered explicitly check
-			// for regular expression hosts
-			if (!jedis.sismember(key("hosts"), hostname)) {
-				// Query sensors by
-				Set<String> hosts = getAllHosts();
-				for (String host : hosts) {
-					boolean match = Pattern.matches(host, hostname);
-					if (match) {
-						// Recursion with the host pattern that exists in the
-						// hosts list!
-						return getSensors(host);
-					}
-				}
-
-				// No regular expression host found
-				return new HashSet<String>();
-			}
 
 			String key = key("host", hostname, "sensor");
 			String query = key + ":*";
 			logger.debug("finding sensors with query: " + query);
 			Set<String> sensorKeys = jedis.keys(query);
 
+			// Set with all found sensors
 			Set<String> sensors = new HashSet<String>();
+
+			// Get the sensors from extensions
+			String extendedKey = key("host", hostname, "extends");
+			if (jedis.exists(extendedKey)) {
+				String virtualHost = jedis.get(extendedKey);
+				sensors.addAll(getSensors(virtualHost));
+			}
+
+			// Get the configured sensors
 			for (String sensorKey : sensorKeys) {
 				// Check state of the sensor
 				String value = jedis.get(sensorKey);
@@ -466,11 +459,23 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				}
 			}
 
-			// Get the sensors from extensions
-			String extendedKey = key("host", hostname, "extends");
-			if (jedis.exists(extendedKey)) {
-				String virtualHost = jedis.get(extendedKey);
-				sensors.addAll(getSensors(virtualHost));
+			// If nothing was found so far
+			// Check matching hostname expressions
+			if (sensorKeys.isEmpty()) {
+				// Query sensors by
+				Set<String> hosts = getAllHosts();
+				for (String host : hosts) {
+
+					// Do not check identical hostname
+					if (host.equals(hostname))
+						continue;
+
+					boolean match = Pattern.matches(host, hostname);
+					if (match) {
+						// Add those sensors to the sensor list
+						sensors.addAll(getSensors(host));
+					}
+				}
 			}
 
 			// Add data to cache
