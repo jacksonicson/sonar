@@ -16,6 +16,10 @@ def add_host(hostname, drone_type):
         hosts.append(hostname)
 
 
+def clear():
+    hosts_map.clear()
+    del hosts[:]
+
 def get_index(host):
     index = hosts.index(host)
     return index
