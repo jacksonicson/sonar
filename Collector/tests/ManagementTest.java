@@ -26,6 +26,12 @@ public class ManagementTest {
 
 			ManagementService.Client client = new ManagementService.Client(protocol);
 
+			Set<String> hosts = client.getAllHosts();
+			for(String host : hosts) {
+				client.getSensors(host); 
+			}
+			client.getAllSensors(); 
+			
 			// Sensors
 			System.out.println("sensors"); 
 			Set<String> sensors = client.getSensors("target150");

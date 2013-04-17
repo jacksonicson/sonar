@@ -461,7 +461,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 			// If nothing was found so far
 			// Check matching hostname expressions
-			if (sensorKeys.isEmpty()) {
+			if (sensors.isEmpty()) {
 				// Query sensors by
 				Set<String> hosts = getAllHosts();
 				for (String host : hosts) {
