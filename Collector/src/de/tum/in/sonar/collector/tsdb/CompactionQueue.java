@@ -29,6 +29,8 @@ class CompactionQueue extends Thread {
 	// Logger
 	private Logger logger = LoggerFactory.getLogger(CompactionQueue.class);
 
+	private static final boolean COMPACTION_ENABLED = false;
+
 	private static final long TIME_DELAY = 10 * 60;
 
 	private DelayQueue<RowKeyJob> delayQueue = new DelayQueue<RowKeyJob>();
@@ -36,6 +38,9 @@ class CompactionQueue extends Thread {
 	private HTable table = null;
 
 	public void schedule(byte[] key) {
+		if (!COMPACTION_ENABLED)
+			return;
+
 		RowKeyJob rowKeyJob = new RowKeyJob(TIME_DELAY, key);
 		if (delayQueue.contains(rowKeyJob)) {
 			logger.trace("Removing: " + key);
@@ -47,7 +52,8 @@ class CompactionQueue extends Thread {
 		logger.trace("length: " + delayQueue.size());
 	}
 
-	private void compact(byte[] key, NavigableMap<byte[], byte[]> familyMap) throws IOException, TException, InterruptedException {
+	private void compact(byte[] key, NavigableMap<byte[], byte[]> familyMap) throws IOException, TException,
+			InterruptedException {
 		List<CompactPoint> points = new ArrayList<CompactPoint>();
 		Delete del = new Delete(key);
 
@@ -90,7 +96,7 @@ class CompactionQueue extends Thread {
 		put.add(Bytes.toBytes(Const.FAMILY_TSDB_DATA), Bytes.toBytes("data"), buffer);
 		table.put(put);
 		table.delete(del);
-		table.flushCommits(); 
+		table.flushCommits();
 	}
 
 	private void compact(List<byte[]> keys) throws IOException, TException, InterruptedException {
@@ -133,7 +139,8 @@ class CompactionQueue extends Thread {
 		Result result = table.get(get);
 
 		List<Long> timestampList = new ArrayList<Long>();
-		Map<Long, byte[]> timestamps = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA)).get(Bytes.toBytes("data"));
+		Map<Long, byte[]> timestamps = result.getMap().get(Bytes.toBytes(Const.FAMILY_TSDB_DATA)).get(
+				Bytes.toBytes("data"));
 		timestampList.addAll(timestamps.keySet());
 
 		Collections.sort(timestampList);
@@ -170,10 +177,9 @@ class CompactionQueue extends Thread {
 				}
 
 				// Finally trigger compaction
-				if (compacts.size() > 20)
-				{
+				if (compacts.size() > 20) {
 					compact(compacts);
-					compacts.clear(); 
+					compacts.clear();
 				}
 
 			} catch (IOException e) {

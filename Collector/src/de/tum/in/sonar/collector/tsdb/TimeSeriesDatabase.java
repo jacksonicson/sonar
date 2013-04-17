@@ -11,7 +11,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
@@ -35,7 +34,7 @@ import de.tum.in.sonar.collector.tsdb.gen.CompactTimeseries;
 public class TimeSeriesDatabase extends Thread {
 
 	private static Logger logger = LoggerFactory.getLogger(Collector.class);
-
+	
 	private HBaseUtil hbaseUtil;
 
 	private IdResolver labelResolver;
@@ -69,7 +68,8 @@ public class TimeSeriesDatabase extends Thread {
 	}
 
 	private int keyWidth(int labels) {
-		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_ID_WIDTH + Const.LABEL_ID_WIDTH * labels;
+		int keyWidth = Const.SENSOR_ID_WIDTH + Const.TIMESTAMP_WIDTH + Const.HOSTNAME_ID_WIDTH + Const.LABEL_ID_WIDTH
+				* labels;
 		return keyWidth;
 	}
 
@@ -113,7 +113,8 @@ public class TimeSeriesDatabase extends Thread {
 			Set<InternalTableSchema> tables = new HashSet<InternalTableSchema>();
 			tables.add(new InternalTableSchema(Const.TABLE_TSDB, new String[] { Const.FAMILY_TSDB_DATA }));
 			tables.add(new InternalTableSchema(Const.TABLE_UID, new String[] { "forward", "backward" }));
-			tables.add(new InternalTableSchema(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD, Const.FAMILY_UID_BACKWARD }));
+			tables.add(new InternalTableSchema(Const.FAMILY_TSDB_DATA, new String[] { Const.FAMILY_UID_FORWARD,
+					Const.FAMILY_UID_BACKWARD }));
 
 			// Remove all existing table from the set
 			HTableDescriptor tableDescriptors[] = hbase.listTables();
@@ -411,7 +412,7 @@ public class TimeSeriesDatabase extends Thread {
 			Scan scan = new Scan();
 			scan.addColumn(Bytes.toBytes(Const.FAMILY_UID_FORWARD), Bytes.toBytes("sensor"));
 			scan.setMaxVersions(1);
-			
+
 			ResultScanner scanner = table.getScanner(scan);
 
 			Iterator<Result> it = scanner.iterator();

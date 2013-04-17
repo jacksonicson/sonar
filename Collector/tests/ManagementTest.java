@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -8,7 +9,6 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import de.tum.in.sonar.collector.ManagementService;
-import de.tum.in.sonar.collector.TimeSeriesQuery;
 
 public class ManagementTest {
 
@@ -16,15 +16,25 @@ public class ManagementTest {
 
 		TTransport transport;
 		try {
-			transport = new TSocket("localhost", 7931);
+			System.out.println("socket"); 
+			transport = new TSocket("131.159.41.171", 7931);
+			System.out.println("open"); 
 			transport.open();
-
+			
+			System.out.println("protocol"); 
 			TProtocol protocol = new TBinaryProtocol(transport);
 
-			ManagementService.Client client = new ManagementService.Client(
-					protocol);
+			ManagementService.Client client = new ManagementService.Client(protocol);
 
-			client.getAllSensors();
+			// Sensors
+			System.out.println("sensors"); 
+			Set<String> sensors = client.getSensors("target150");
+			System.out.println("done"); 
+			for (String sensor : sensors) {
+				System.out.println("Sensor: " + sensor);
+			}
+
+			// client.getAllSensors();
 
 			// String data = "Really new sensor version";
 			// byte[] ds = Bytes.toBytes(data);

@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -103,7 +104,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:config:[item] - configuration for the sensor
 	// :sensor:[name]:config:interval ->intervalValue - interval for which the sensor has to be invoked
 	// :sensor:[name]:config:extends -> otherSensorName - inheritance for sensor configuration
-	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries 
+	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries
 	// :sensor:[name]:labels -> [] - set of labels
 	//
 	// :host:[hostname]:labels -> [] - set of labels
@@ -258,11 +259,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	@Override
 	public void addHost(String hostname) throws TException {
 		logger.debug("add host: " + hostname);
-		
+
 		// Check if hostname is null
-		if(hostname == null)
-			return; 
-		
+		if (hostname == null)
+			return;
+
 		Jedis jedis = jedisPool.getResource();
 		try {
 			// Add hostname to the hosts list
@@ -429,6 +430,24 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		Jedis jedis = jedisPool.getResource();
 		try {
+			// If the given host is not registered explicitly check
+			// for regular expression hosts
+			if (!jedis.sismember(key("hosts"), hostname)) {
+				// Query sensors by
+				Set<String> hosts = getAllHosts();
+				for (String host : hosts) {
+					boolean match = Pattern.matches(host, hostname);
+					if (match) {
+						// Recursion with the host pattern that exists in the
+						// hosts list!
+						return getSensors(host);
+					}
+				}
+
+				// No regular expression host found
+				return new HashSet<String>();
+			}
+
 			String key = key("host", hostname, "sensor");
 			String query = key + ":*";
 			logger.debug("finding sensors with query: " + query);
@@ -714,7 +733,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			// clear the sensor parameters and add the configuration again
 			clearSensorParameters(sensor);
 			setSensorConfiguration(sensor, configuration);
-		
+
 		} else {
 			logger.error("The sensor " + sensor + " does not exist");
 		}
