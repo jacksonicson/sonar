@@ -28,7 +28,11 @@ public class ManagementTest {
 
 			Set<String> hosts = client.getAllHosts();
 			for(String host : hosts) {
-				client.getSensors(host); 
+				client.getLabels(host);
+				Set<String> sensors = client.getSensors(host);
+				for(String sensor : sensors) {
+					client.getBundledSensorConfiguration(sensor, host); 
+				}
 			}
 			client.getAllSensors(); 
 			
