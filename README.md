@@ -8,7 +8,7 @@ Sonar is a data center monitoring solution that is designed to gather vast amoun
 * WebUI: A web user interface to configure which sensor programs should be running on a particular node. In addition it provies interfaces for querying and browsing recorded log-message or metric readings. 
 
 ## OpenTSDB
-The architecture is similar to the one of OpenTSDB but differs in a number of points: 
+The architecture is similar to the one of OpenTSDB but differs at some points: 
 * Apache Thrift is used for all telmetry and storage
 * Support for storing log messages
 * Sensor programs are distributed and installed by Sonar
