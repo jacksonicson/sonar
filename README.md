@@ -33,4 +33,4 @@ Further libraries might be required, depending on the snsor programs used.
 The collector is based on Java. The project contains all required JAR libraries. 
 
 ### WebUI
-Is basd on [NodeJS](http://nodejs.org/). The project contains all required libraries.
+Based on [NodeJS](http://nodejs.org/). The project contains all required libraries.
