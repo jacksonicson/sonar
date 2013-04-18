@@ -1,4 +1,4 @@
-<project name="SonarAppender" default="jar" basedir=".">
+<project name="SonarAppender" default="main" basedir=".">
 
 	<import file="classpath.xml" />
 
@@ -30,7 +30,7 @@
 		<mkdir dir="${build}/bin" />
 	</target>
 
-	<target name="jar" depends="prepare, compile">
+	<target name="main" depends="prepare, thrift, compile">
 		<jar destfile="${build}/${jarfile}" basedir="${build}/bin" />
 	</target>
 

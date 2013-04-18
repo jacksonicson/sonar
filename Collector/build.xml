@@ -1,4 +1,4 @@
-<project name="Collector" default="package" basedir=".">
+<project name="Collector" default="main" basedir=".">
 
 	<import file="classpath.xml" />
 
@@ -43,7 +43,7 @@
 		<jar destfile="${build}/${jarfile}" basedir="${build}/bin" />
 	</target>
 
-	<target name="package" depends="prepare, compile, jar">
+	<target name="main" depends="prepare, thrift, compile, jar">
 		<delete dir="${package}" quiet="true" />
 		<mkdir dir="${package}" />
 
