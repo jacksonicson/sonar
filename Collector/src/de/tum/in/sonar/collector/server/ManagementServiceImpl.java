@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -103,7 +104,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	// :sensor:[name]:config:[item] - configuration for the sensor
 	// :sensor:[name]:config:interval ->intervalValue - interval for which the sensor has to be invoked
 	// :sensor:[name]:config:extends -> otherSensorName - inheritance for sensor configuration
-	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries 
+	// :sensor:[name]:config:properties -> []- key:value pairs to send data to sensor binaries
 	// :sensor:[name]:labels -> [] - set of labels
 	//
 	// :host:[hostname]:labels -> [] - set of labels
@@ -258,11 +259,11 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 	@Override
 	public void addHost(String hostname) throws TException {
 		logger.debug("add host: " + hostname);
-		
+
 		// Check if hostname is null
-		if(hostname == null)
-			return; 
-		
+		if (hostname == null)
+			return;
+
 		Jedis jedis = jedisPool.getResource();
 		try {
 			// Add hostname to the hosts list
@@ -421,7 +422,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
-		logger.debug("get all sensors for host: " + hostname);
+		logger.info("get all sensors for host: " + hostname);
 
 		// Check cache
 		if (sensorlistCache.get(hostname) != null)
@@ -429,12 +430,23 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 		Jedis jedis = jedisPool.getResource();
 		try {
+
 			String key = key("host", hostname, "sensor");
 			String query = key + ":*";
 			logger.debug("finding sensors with query: " + query);
 			Set<String> sensorKeys = jedis.keys(query);
 
+			// Set with all found sensors
 			Set<String> sensors = new HashSet<String>();
+
+			// Get the sensors from extensions
+			String extendedKey = key("host", hostname, "extends");
+			if (jedis.exists(extendedKey)) {
+				String virtualHost = jedis.get(extendedKey);
+				sensors.addAll(getSensors(virtualHost));
+			}
+
+			// Get the configured sensors
 			for (String sensorKey : sensorKeys) {
 				// Check state of the sensor
 				String value = jedis.get(sensorKey);
@@ -447,11 +459,23 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 				}
 			}
 
-			// Get the sensors from extensions
-			String extendedKey = key("host", hostname, "extends");
-			if (jedis.exists(extendedKey)) {
-				String virtualHost = jedis.get(extendedKey);
-				sensors.addAll(getSensors(virtualHost));
+			// If nothing was found so far
+			// Check matching hostname expressions
+			if (sensors.isEmpty()) {
+				// Query sensors by
+				Set<String> hosts = getAllHosts();
+				for (String host : hosts) {
+
+					// Do not check identical hostname
+					if (host.equals(hostname))
+						continue;
+
+					boolean match = Pattern.matches(host, hostname);
+					if (match) {
+						// Add those sensors to the sensor list
+						sensors.addAll(getSensors(host));
+					}
+				}
 			}
 
 			// Add data to cache
@@ -714,7 +738,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 			// clear the sensor parameters and add the configuration again
 			clearSensorParameters(sensor);
 			setSensorConfiguration(sensor, configuration);
-		
+
 		} else {
 			logger.error("The sensor " + sensor + " does not exist");
 		}

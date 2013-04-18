@@ -19,8 +19,8 @@
 ./lib/slf4j-log4j12-1.5.8.jar
 ./lib/thrift/httpclient-4.1.2.jar
 ./lib/thrift/httpcore-4.1.3.jar
-./lib/thrift/libthrift-0.8.0.jar
 ./lib/google guice/guice-3.0-no_aop.jar
-./lib/jedis/jedis-2.2.0-SNAPSHOT.jar
 ./lib/apache-commons/commons-pool-1.6-sources.jar
 ./lib/apache-commons/commons-pool-1.6.jar
+./lib/thrift/libthrift-0.8.0.jar
+./lib/jedis/jedis-2.1.0.jar
