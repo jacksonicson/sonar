@@ -14,3 +14,21 @@ The architecture is similar to the one of OpenTSDB but differs at some points:
 * Sensor programs are distributed and installed by Sonar automatically
 * Dynamic (re-)configuration of sensors from a central location
 * Supports dynamic environments like virtualized data centers
+
+## Installation
+
+Sonar needs access to an HBase cluster and a Redis key-value store. 
+
+### Monitored Node
+Each monitored node (Linux) runs the SensorHub daemon with the following dependencies: 
+* Python 2.7
+* psutil 0.5.1
+* Apache thrift (python)
+
+Further libraries might be required by the sensor programs. 
+
+### Collector Node
+The collector is based on Java. The project contains all required JAR libraries. 
+
+### WebUI
+Is basd on NodeJS. The project contains all required libraries.
