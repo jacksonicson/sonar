@@ -2,6 +2,9 @@
 Sonar is a data center monitoring solution that is designed to gather vast amounts of server metrics an log data. All data is stored in HBase by one or multiple data collection daemons. 
 
 ## Components
+
+![Sonar Architecture](https://github.com/jacksonicson/sonar/blob/master/architecture.png?raw=true "Sonar Architecture")
+
 * Sensors: A number of small programs dedicated to measure metrics on a system. For example, there are two programs that measure the CPU and memory load. A sensor gathers metric readings in an interval and prints the reading on its stndard output stream. 
 * SensorHub: Runs on each monitored node. It starts and controls sensor program instances and reads their metric readings on the standard output stream. All data is aggregated and forwarded to a Collector service. 
 * Collector: A horizontal scalable service that receives monitoring data from SensorHubs. All data is stored in an HBase database. In addition, the Collector manages all meta data about the infrastructure.
