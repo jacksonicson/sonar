@@ -1,6 +1,6 @@
 <project name="SensorHub" default="main" basedir=".">
 
-	<property name="thrift" value="../Thrift" />
+	<property name="collector" value="../Collector" />
 
 	<target name="thrift">
 		<exec executable="thrift">
@@ -8,7 +8,7 @@
 			<arg value="." />
 			<arg value="--gen" />
 			<arg value="py" />
-			<arg value="${thrift}/collector.thrift" />
+			<arg value="${collector}/collector.thrift" />
 		</exec>
 	</target>
 
