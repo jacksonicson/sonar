@@ -7,7 +7,7 @@ Sonar is a data center monitoring solution that is designed to gather vast amoun
 * Collector: A horizontal scalable service that receives monitoring data from SensorHubs. All data is stored in an HBase database. In addition, the Collector manages all meta data about the infrastructure.
 * WebUI: A web user interface to configure which sensor programs should be running on a particular node. In addition it provies interfaces for querying and browsing recorded log-message or metric readings. 
 
-## OpenTSDB
+## Differences to OpenTSDB
 The architecture is similar to the one of OpenTSDB but differs at some points: 
 * Apache Thrift is used for all telemetry and storage
 * Supports log messages
