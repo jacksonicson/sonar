@@ -21,14 +21,16 @@ Sonar needs access to an HBase cluster and a Redis key-value store.
 
 ### Monitored Node
 Each monitored node (Linux) runs the SensorHub daemon with the following dependencies: 
-* Python 2.7
-* psutil 0.5.1
-* Apache thrift (python)
+* Python 2.7 (with development packages)
+* Python Easy Install
+* [Apache Thrift for Python](http://thrift.apache.org/)
+* [PyYaml](https://bitbucket.org/xi/pyyaml)
+* [Psutil 0.5.1](https://code.google.com/p/psutil/)
 
-Further libraries might be required by the sensor programs. 
+Further libraries might be required, depending on the snsor programs used. 
 
 ### Collector Node
 The collector is based on Java. The project contains all required JAR libraries. 
 
 ### WebUI
-Is basd on NodeJS. The project contains all required libraries.
+Is basd on [NodeJS](http://nodejs.org/). The project contains all required libraries.
