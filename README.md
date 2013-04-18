@@ -9,7 +9,8 @@ Sonar is a data center monitoring solution that is designed to gather vast amoun
 
 ## OpenTSDB
 The architecture is similar to the one of OpenTSDB but differs at some points: 
-* Apache Thrift is used for all telmetry and storage
-* Support for storing log messages
-* Sensor programs are distributed and installed by Sonar
-* Dynamic configuration of sensors from a central location
+* Apache Thrift is used for all telemetry and storage
+* Supports log messages
+* Sensor programs are distributed and installed by Sonar automatically
+* Dynamic (re-)configuration of sensors from a central location
+* Supports dynamic environments like virtualized data centers
