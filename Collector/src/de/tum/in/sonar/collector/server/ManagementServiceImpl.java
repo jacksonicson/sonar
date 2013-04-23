@@ -422,7 +422,7 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
-		logger.info("get all sensors for host: " + hostname);
+		logger.debug("get all sensors for host: " + hostname);
 
 		// Check cache
 		if (sensorlistCache.get(hostname) != null)
