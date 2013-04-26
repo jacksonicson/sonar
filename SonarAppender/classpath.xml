@@ -9,7 +9,7 @@
 <pathelement location="./lib/thrift/servlet-api-2.5.jar" />
 <pathelement location="./lib/thrift/slf4j-api-1.5.8.jar" />
 <pathelement location="./lib/thrift/slf4j-log4j12-1.5.8.jar" />
-<pathelement location="./lib/thrift/libthrift-0.9.0.jar" />
+<pathelement location="./lib/thrift/libthrift-0.8.0.jar" />
 </path><fileset dir='../' id='libfiles'><include name="lib/log4j-1.2.16.jar" />
 <include name="lib/thrift/commons-codec-1.4.jar" />
 <include name="lib/thrift/commons-lang-2.5.jar" />
@@ -21,5 +21,5 @@
 <include name="lib/thrift/servlet-api-2.5.jar" />
 <include name="lib/thrift/slf4j-api-1.5.8.jar" />
 <include name="lib/thrift/slf4j-log4j12-1.5.8.jar" />
-<include name="lib/thrift/libthrift-0.9.0.jar" />
+<include name="lib/thrift/libthrift-0.8.0.jar" />
 </fileset></project>

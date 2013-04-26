@@ -15,6 +15,6 @@
 	<classpathentry kind="lib" path="lib/thrift/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/thrift/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/thrift/slf4j-log4j12-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/thrift/libthrift-0.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/thrift/libthrift-0.8.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
