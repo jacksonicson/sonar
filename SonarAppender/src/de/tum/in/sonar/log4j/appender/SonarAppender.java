@@ -152,8 +152,6 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 			e.printStackTrace();
 		}
 
-		System.out.println("JOINED");
-
 		if (isConnected())
 			transport.close();
 
