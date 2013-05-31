@@ -5,16 +5,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
@@ -48,6 +53,8 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 	private LogDatabase logdb;
 
 	private ComboPooledDataSource cpds;
+
+	private SensorlistCache sensorlistCache = new SensorlistCache();
 
 	public SqlManagementServiceImpl() throws PropertyVetoException {
 		cpds = new ComboPooledDataSource();
@@ -109,18 +116,24 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		return new ArrayList<TransferableTimeSeriesPoint>();
 	}
 
+	private void assertNext(ResultSet res) throws SQLException {
+		if (!res.next()) {
+			logger.error("Result set is expected to have one row");
+			throw new NullPointerException();
+		}
+	}
+
 	@Override
 	public ByteBuffer fetchSensor(String name) throws TException {
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
-			PreparedStatement st = con.prepareStatement("select binary from sensors where name = ?");
+
+			// Fetch the ZIP BLOB of the sensor
+			PreparedStatement st = con.prepareStatement("select zip from sensors where name = ?");
 			st.setString(1, name);
 			ResultSet res = st.executeQuery();
-			if (!res.next()) {
-				logger.warn("Could not find sensor binary for " + name);
-				return null;
-			}
+			assertNext(res);
 
 			// Copy stuff
 			InputStream in = res.getBlob(1).getBinaryStream();
@@ -135,9 +148,11 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			return ByteBuffer.wrap(out.toByteArray());
 
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching sensor " + name, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} catch (IOException e) {
-			logger.warn("Could not load sensor binary for " + name);
+			logger.warn("IOException while copying sensor binary");
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -146,9 +161,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					// pass
 				}
 		}
-
-		logger.warn("Could not find sensor binary for " + name);
-		return null;
 	}
 
 	@Override
@@ -159,15 +171,11 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			PreparedStatement st = con.prepareStatement("select md5 from sensors where name = ?");
 			st.setString(1, name);
 			ResultSet res = st.executeQuery();
-			if (!res.next()) {
-				logger.warn("Could not find sensor hash for " + name);
-				return null;
-			}
-
+			assertNext(res);
 			return res.getString(1);
-
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching sensor " + name, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -176,8 +184,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					// pass
 				}
 		}
-
-		return null;
 	}
 
 	@Override
@@ -189,14 +195,28 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			// Build input stream from buffer
 			ByteArrayInputStream in = new ByteArrayInputStream(file.array());
 
-			// Run query
-			PreparedStatement st = con.prepareStatement("update sensors set name = ? where name = ?");
+			// Build query
+			PreparedStatement st = con.prepareStatement("update sensors set zip = ?, md5=? where name = ?");
 			st.setBlob(1, in);
-			st.setString(2, name);
-			st.executeUpdate();
+			st.setString(3, name);
 
+			// Set MD5
+			try {
+				MessageDigest md = MessageDigest.getInstance("MD5");
+				byte[] md5 = md.digest(file.array());
+				BigInteger bigInt = new BigInteger(1, md5);
+				String smd5 = bigInt.toString(16);
+				st.setString(2, smd5);
+				logger.info("deploy md5: " + smd5);
+			} catch (NoSuchAlgorithmException e) {
+				logger.error("Could not create MD5 for sensor binary", e);
+			}
+
+			// Run query
+			st.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("SQL exception while deploying sensor " + name, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -212,29 +232,25 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
+
 			PreparedStatement st = con.prepareStatement("select name from sensors");
 			ResultSet res = st.executeQuery();
-
 			Set<String> names = new HashSet<String>();
 			while (res.next()) {
 				names.add(res.getString(1));
 			}
 
 			return names;
-
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching all sensor names", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
 					con.close();
 				} catch (SQLException e) {
-					// pass
 				}
 		}
-
-		logger.warn("Could not fetch all sensor names");
-		return null;
 	}
 
 	@Override
@@ -247,7 +263,8 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			ResultSet res = st.executeQuery();
 			return res.next();
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching all sensor names", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -256,9 +273,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					// pass
 				}
 		}
-
-		logger.warn("Could not check whether sensor " + name + " has a binary");
-		return false;
 	}
 
 	@Override
@@ -275,7 +289,8 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			st.setString(1, name);
 			st.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching all sensor names", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -297,30 +312,46 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			con = cpds.getConnection();
 
-			PreparedStatement st = con
-					.prepareStatement("insert into sensors (interval, type, extends) values (?,?,?) where name = ?");
-			st.setLong(1, configuration.getInterval());
-			st.setInt(2, configuration.getSensorType().getValue());
-			st.setString(3, configuration.getSensorExtends());
-			st.setString(4, name);
+			// Get rid of old sensors
+			delSensor(name);
+
+			// Insert new sensor
+			PreparedStatement st = con.prepareStatement(
+					"insert into sensors (name, interv, type, extends) values (?,?,?,?)",
+					Statement.RETURN_GENERATED_KEYS);
+
+			st.setString(1, name);
+			st.setLong(2, configuration.getInterval());
+			st.setString(4, configuration.getSensorExtends());
+			if (configuration.getSensorType() == null)
+				st.setNull(3, java.sql.Types.INTEGER);
+			else
+				st.setInt(3, configuration.getSensorType().getValue());
 			st.executeUpdate();
 
-			st = con.prepareStatement("select id from sensors where name = ?");
-			ResultSet rid = st.executeQuery();
-			rid.next();
-			int id = rid.getInt(1);
+			// Get generated ID for the new sensor
+			ResultSet keys = st.getGeneratedKeys();
+			if (!keys.next()) {
+				logger.error("Could not get ID of new sensor");
+				return;
+			}
+			int id = keys.getInt(1);
 
-			for (Parameter param : configuration.getParameters()) {
-				PreparedStatement stParam = con
-						.prepareStatement("insert into params (SENSOR_ID, param, value, extend) values (?,?,?,?)");
-				stParam.setInt(1, id);
-				stParam.setString(2, param.getKey());
-				stParam.setString(3, param.getValue());
-				stParam.setString(4, param.getExtendSensor());
-				st.execute();
+			// Insert parameters of the new sensor
+			if (configuration.getParameters() != null) {
+				for (Parameter param : configuration.getParameters()) {
+					PreparedStatement stParam = con
+							.prepareStatement("insert into params (SENSOR_ID, param, value, extend) values (?,?,?,?)");
+					stParam.setInt(1, id);
+					stParam.setString(2, param.getKey());
+					stParam.setString(3, param.getValue());
+					stParam.setString(4, param.getExtendSensor());
+					st.execute();
+				}
 			}
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching all sensor names", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -337,22 +368,25 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			con = cpds.getConnection();
 
+			// Sensor configuration
 			SensorConfiguration config = new SensorConfiguration();
 
-			PreparedStatement st = con
-					.prepareStatement("select id, interval, type, extends from sensors where name = ?");
+			// Fetch basic sensor configuration
+			PreparedStatement st = con.prepareStatement("select id, interv, type, extends from sensors where name = ?");
 			st.setString(1, name);
 			ResultSet res = st.executeQuery();
-			if (!res.next()) {
-				logger.warn("Could not load sensor configuration for sensor " + name);
-				return null;
-			}
+			assertNext(res);
 
 			config.setInterval(res.getLong(2));
 			config.setSensorType(SensorType.findByValue(res.getInt(3)));
 			config.setSensorExtends(res.getString(4));
 
+			// Fetch sensor ID
+			int idSensor = fetchSensorId(con, name);
+
+			// Fetch parameters for this sensor
 			st = con.prepareStatement("select param, value, extend from params where SENSOR_ID = ? ");
+			st.setInt(1, idSensor);
 			res = st.executeQuery();
 			while (res.next()) {
 				Parameter param = new Parameter();
@@ -364,18 +398,15 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 			return config;
 		} catch (SQLException e) {
-			logger.error("SQL exception with sensor " + name, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
 					con.close();
 				} catch (SQLException e) {
-					// pass
 				}
 		}
-
-		logger.warn("Could not read sensor configuration for sensor " + name);
-		return null;
 	}
 
 	@Override
@@ -391,7 +422,8 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			}
 			return sensors;
 		} catch (SQLException e) {
-			logger.error("SQL exception while fetching sensor names", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -400,9 +432,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					// pass
 				}
 		}
-
-		logger.warn("Could not read sensor names");
-		return null;
 	}
 
 	@Override
@@ -412,30 +441,41 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			con = cpds.getConnection();
 
+			// Update central sensor settings
 			PreparedStatement st = con
-					.prepareStatement("update sensors set interval = ?, type = ?, extends = ? where name = ?");
+					.prepareStatement("update sensors set interv = ?, type = ?, extends = ? where name = ?");
 			st.setLong(1, configuration.getInterval());
-			st.setInt(2, configuration.getSensorType().getValue());
 			st.setString(3, configuration.getSensorExtends());
 			st.setString(4, name);
+			if (configuration.getSensorType() == null)
+				st.setNull(2, java.sql.Types.INTEGER);
+			else
+				st.setInt(2, configuration.getSensorType().getValue());
 			st.executeUpdate();
 
-			st = con.prepareStatement("select id from sensors where name = ?");
-			ResultSet rid = st.executeQuery();
-			rid.next();
-			int id = rid.getInt(1);
+			// Fetch sensor id
+			int idSensor = fetchSensorId(con, name);
 
-			for (Parameter param : configuration.getParameters()) {
-				PreparedStatement stParam = con
-						.prepareStatement("insert into params (SENSOR_ID, param, value, extend) values (?,?,?,?)");
-				stParam.setInt(1, id);
-				stParam.setString(2, param.getKey());
-				stParam.setString(3, param.getValue());
-				stParam.setString(4, param.getExtendSensor());
-				st.execute();
+			// Delete all parameters
+			st = con.prepareStatement("delete from params where SENSOR_ID = ?");
+			st.setInt(1, idSensor);
+			st.execute();
+
+			// Update sensor parameters
+			if (configuration.getParameters() != null) {
+				for (Parameter param : configuration.getParameters()) {
+					PreparedStatement stParam = con
+							.prepareStatement("insert into params (SENSOR_ID, param, value, extend) values (?,?,?,?)");
+					stParam.setInt(1, idSensor);
+					stParam.setString(2, param.getKey());
+					stParam.setString(3, param.getValue());
+					stParam.setString(4, param.getExtendSensor());
+					st.execute();
+				}
 			}
 		} catch (SQLException e) {
 			logger.error("SQL exception while fetching all sensor names", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -450,12 +490,17 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 	public void addHost(String hostname) throws TException {
 		Connection con = null;
 		try {
+			// Get rid of existing hosts
+			delHost(hostname);
+
+			// Insert new hosts
 			con = cpds.getConnection();
 			PreparedStatement st = con.prepareStatement("insert into hosts (name) values(?)");
 			st.setString(1, hostname);
 			st.execute();
 		} catch (SQLException e) {
-			logger.error("SQL exception while adding host " + hostname, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -464,7 +509,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					// pass
 				}
 		}
-		logger.warn("Could not add hostname " + hostname);
 	}
 
 	@Override
@@ -477,7 +521,8 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			st.setString(2, hostname);
 			st.execute();
 		} catch (SQLException e) {
-			logger.error("SQL exception while adding host extension " + hostname, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -486,7 +531,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					// pass
 				}
 		}
-		logger.warn("Could not add host extension " + hostname);
 	}
 
 	@Override
@@ -497,15 +541,11 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			PreparedStatement st = con.prepareStatement("select extends from hosts where name = ?");
 			st.setString(1, hostname);
 			ResultSet res = st.executeQuery();
-			if (!res.next()) {
-				logger.warn("Could not load host extension for host " + hostname);
-				return null;
-			}
-
+			assertNext(res);
 			return res.getString(1);
-
 		} catch (SQLException e) {
-			logger.error("SQL exception while adding host extension " + hostname, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -513,9 +553,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 				} catch (SQLException e) {
 				}
 		}
-
-		logger.warn("Could not get host extension " + hostname);
-		return null;
 	}
 
 	@Override
@@ -523,16 +560,19 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
-			PreparedStatement st = con.prepareStatement("select name hosts");
+
+			PreparedStatement st = con.prepareStatement("select name from hosts");
 			ResultSet res = st.executeQuery();
 			Set<String> hosts = new HashSet<String>();
+
 			while (res.next()) {
 				hosts.add(res.getString(1));
 			}
-			return hosts;
 
+			return hosts;
 		} catch (SQLException e) {
-			logger.error("SQL exception while loading all hosts", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -540,9 +580,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 				} catch (SQLException e) {
 				}
 		}
-
-		logger.warn("Could not load all hosts");
-		return null;
 	}
 
 	@Override
@@ -554,16 +591,15 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			st.setString(1, hostname);
 			st.execute();
 		} catch (SQLException e) {
-			logger.error("SQL exception while deleting host " + hostname, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
 					con.close();
 				} catch (SQLException e) {
-					// pass
 				}
 		}
-		logger.warn("Could not delete host " + hostname);
 	}
 
 	@Override
@@ -576,67 +612,109 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		return new HashSet<String>();
 	}
 
+	private int fetchSensorId(Connection con, String name) throws SQLException {
+		PreparedStatement st = con.prepareStatement("select id from sensors where name = ?");
+		st.setString(1, name);
+
+		ResultSet res = st.executeQuery();
+		assertNext(res);
+		return res.getInt(1);
+	}
+
+	private int fetchHostId(Connection con, String name) throws SQLException {
+		PreparedStatement st = con.prepareStatement("select id from hosts where name = ?");
+		st.setString(1, name);
+
+		ResultSet res = st.executeQuery();
+		assertNext(res);
+		return res.getInt(1);
+	}
+
 	@Override
 	public void setSensor(String hostname, String sensor, boolean activate) throws TException {
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
 
-			PreparedStatement st;
-			ResultSet res;
-
-			st = con.prepareStatement("select id from sensors where name = ?");
-			res = st.executeQuery();
-			if (!res.next())
-				return;
-			int idSensor = res.getInt(1);
-
-			st = con.prepareStatement("select id from hosts where name = ?");
-			res = st.executeQuery();
-			if (!res.next())
-				return;
-			int idHost = res.getInt(1);
+			int idSensor = fetchSensorId(con, sensor);
+			int idHost = fetchHostId(con, hostname);
 
 			if (activate) {
-				st = con.prepareStatement("insert into host2sensors values (?,?)");
+				PreparedStatement st = con.prepareStatement("insert into host2sensors values (?,?)");
 				st.setInt(1, idHost);
 				st.setInt(2, idSensor);
 				st.execute();
 			} else {
-				st = con.prepareStatement("delete from host2sensors where HOST_ID=? and SENSOR_ID=?");
+				PreparedStatement st = con.prepareStatement("delete from host2sensors where HOST_ID=? and SENSOR_ID=?");
 				st.setInt(1, idHost);
 				st.setInt(2, idSensor);
 				st.execute();
 			}
 
 		} catch (SQLException e) {
-			logger.error("SQL exception while adding host extension " + hostname, e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
 					con.close();
 				} catch (SQLException e) {
-					// pass
 				}
 		}
-		logger.warn("Could not add host extension " + hostname);
 	}
 
 	@Override
 	public Set<String> getSensors(String hostname) throws TException {
+		// Check cache
+		if (sensorlistCache.get(hostname) != null)
+			return sensorlistCache.get(hostname);
+
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
-			PreparedStatement st = con.prepareStatement("select name sensors");
+
+			// Add all sensors registered for this host
+			int idHost = fetchHostId(con, hostname);
+			PreparedStatement st = con
+					.prepareStatement("select sensors.name from host2sensors join sensors on sensors.ID = host2sensors.SENSOR_ID where HOST_ID = ?");
+			st.setInt(1, idHost);
 			ResultSet res = st.executeQuery();
 			Set<String> sensors = new HashSet<String>();
 			while (res.next()) {
 				sensors.add(res.getString(1));
 			}
+
+			// Add all sensors from extension
+			String extension = getHostExtension(hostname);
+			sensors.addAll(getSensors(extension));
+
+			// If nothing was found so far
+			// Check matching hostname expressions
+			if (sensors.isEmpty()) {
+				// Query sensors by
+				Set<String> hosts = getAllHosts();
+				for (String host : hosts) {
+
+					// Do not check identical hostname
+					if (host.equals(hostname))
+						continue;
+
+					boolean match = Pattern.matches(host, hostname);
+					if (match) {
+						// Add those sensors to the sensor list
+						sensors.addAll(getSensors(host));
+					}
+				}
+			}
+
+			// Add data to cache
+			sensorlistCache.put(hostname, sensors);
+
 			return sensors;
 
 		} catch (SQLException e) {
-			logger.error("SQL exception while loading all sensors", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -644,33 +722,16 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 				} catch (SQLException e) {
 				}
 		}
-
-		logger.warn("Could not load all sensors");
-		return null;
 	}
 
 	private boolean getSensorActiveState(Connection con, String hostname, String sensor) throws SQLException {
-		logger.debug("get sensor active state");
+		int idHost = fetchHostId(con, hostname);
+		int idSensor = fetchSensorId(con, sensor);
 
-		PreparedStatement st;
-		ResultSet res;
-
-		st = con.prepareStatement("select id from sensors where name = ?");
-		res = st.executeQuery();
-		if (!res.next())
-			return false;
-		int idSensor = res.getInt(1);
-
-		st = con.prepareStatement("select id from hosts where name = ?");
-		res = st.executeQuery();
-		if (!res.next())
-			return false;
-		int idHost = res.getInt(1);
-
-		st = con.prepareStatement("select * from host2sensors where HOST_ID=? and SENSOR_ID=?");
+		PreparedStatement st = con.prepareStatement("select * from host2sensors where HOST_ID=? and SENSOR_ID=?");
 		st.setInt(1, idHost);
 		st.setInt(2, idSensor);
-		res = st.executeQuery();
+		ResultSet res = st.executeQuery();
 		return res.next();
 	}
 
@@ -682,6 +743,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 			BundledSensorConfiguration config = new BundledSensorConfiguration();
 
+			// Basic settings
 			config.setSensor(sensor);
 			config.setHostname(hostname);
 
@@ -702,9 +764,9 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			config.setLabels(allLabels);
 
 			return config;
-
 		} catch (SQLException e) {
-			logger.error("SQL exception while loading bundled sensor configuration", e);
+			logger.error("SQL exception", e);
+			throw new TException(e);
 		} finally {
 			if (con != null)
 				try {
@@ -712,9 +774,6 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 				} catch (SQLException e) {
 				}
 		}
-
-		logger.warn("Could not load bundled sensor configuration");
-		return null;
 	}
 
 	public void setTsdb(TimeSeriesDatabase tsdb) {
