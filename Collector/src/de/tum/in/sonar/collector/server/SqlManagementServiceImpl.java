@@ -298,7 +298,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			con = cpds.getConnection();
 
 			PreparedStatement st = con
-					.prepareStatement("update sensors set interval = ?, type = ?, extends = ? where name = ?");
+					.prepareStatement("insert into sensors (interval, type, extends) values (?,?,?) where name = ?");
 			st.setLong(1, configuration.getInterval());
 			st.setInt(2, configuration.getSensorType().getValue());
 			st.setString(3, configuration.getSensorExtends());
@@ -649,9 +649,71 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		return null;
 	}
 
+	private boolean getSensorActiveState(Connection con, String hostname, String sensor) throws SQLException {
+		logger.debug("get sensor active state");
+
+		PreparedStatement st;
+		ResultSet res;
+
+		st = con.prepareStatement("select id from sensors where name = ?");
+		res = st.executeQuery();
+		if (!res.next())
+			return false;
+		int idSensor = res.getInt(1);
+
+		st = con.prepareStatement("select id from hosts where name = ?");
+		res = st.executeQuery();
+		if (!res.next())
+			return false;
+		int idHost = res.getInt(1);
+
+		st = con.prepareStatement("select * from host2sensors where HOST_ID=? and SENSOR_ID=?");
+		st.setInt(1, idHost);
+		st.setInt(2, idSensor);
+		res = st.executeQuery();
+		return res.next();
+	}
+
 	@Override
 	public BundledSensorConfiguration getBundledSensorConfiguration(String sensor, String hostname) throws TException {
-		// TODO Auto-generated method stub
+		Connection con = null;
+		try {
+			con = cpds.getConnection();
+
+			BundledSensorConfiguration config = new BundledSensorConfiguration();
+
+			config.setSensor(sensor);
+			config.setHostname(hostname);
+
+			// Get the sensor activation state
+			config.setActive(getSensorActiveState(con, hostname, sensor));
+
+			// Get sensor configuration
+			SensorConfiguration sensorConfig = getSensorConfiguration(sensor);
+			config.setConfiguration(sensorConfig);
+
+			// Get all labels (aggregation of host and sensor)
+			Set<String> hostLabels = this.getLabels(hostname);
+			Set<String> sensorLabels = this.getSensorLabels(sensor);
+
+			Set<String> allLabels = new HashSet<String>();
+			allLabels.addAll(sensorLabels);
+			allLabels.addAll(hostLabels);
+			config.setLabels(allLabels);
+
+			return config;
+
+		} catch (SQLException e) {
+			logger.error("SQL exception while loading bundled sensor configuration", e);
+		} finally {
+			if (con != null)
+				try {
+					con.close();
+				} catch (SQLException e) {
+				}
+		}
+
+		logger.warn("Could not load bundled sensor configuration");
 		return null;
 	}
 
