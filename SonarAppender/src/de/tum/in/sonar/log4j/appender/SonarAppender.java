@@ -7,6 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -27,6 +28,9 @@ import de.tum.in.sonar.collector.LogMessage;
  * 
  */
 public class SonarAppender extends AppenderSkeleton implements Appender {
+
+	// Logger
+	private static final Logger logger = Logger.getLogger(SonarAppender.class);
 
 	// the default server
 	private String server = "localhost";
@@ -100,7 +104,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 		messageProcessor = new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("Sonar Appender Thread started");
+				logger.info("Sonar Appender Thread started");
 				while (running || messageQueue.isEmpty() == false) {
 					try {
 						Object payload = messageQueue.take();
@@ -142,7 +146,7 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 */
 	@Override
 	public void close() {
-		System.out.println("Sonar Appender Thread Close Called2");
+		logger.info("Shutting down Sonar appender thread");
 		running = false;
 
 		consumer.interrupt();
@@ -226,7 +230,9 @@ public class SonarAppender extends AppenderSkeleton implements Appender {
 	 * @param e
 	 */
 	void handleError(final String failure, final Exception e) {
-		getErrorHandler().error("Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=[" + e.getMessage() + "]");
+		getErrorHandler().error(
+				"Failure in SonarAppender: name=[" + name + "], failure=[" + failure + "], exception=["
+						+ e.getMessage() + "]");
 	}
 
 	/**

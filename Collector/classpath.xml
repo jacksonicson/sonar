@@ -23,7 +23,7 @@
 <pathelement location="./lib/apache-commons/commons-pool-1.6-sources.jar" />
 <pathelement location="./lib/apache-commons/commons-pool-1.6.jar" />
 <pathelement location="./lib/thrift/libthrift-0.8.0.jar" />
-<pathelement location="./lib/jedis/jedis-2.1.0.jar" />
+<pathelement location="./lib/jedis/jedis-2.2.0-SNAPSHOT.jar" />
 </path><fileset dir='../' id='libfiles'><include name="lib/hbase-0.92.1.jar" />
 <include name="lib/hadoop-core-1.0.0.jar" />
 <include name="lib/log4j-1.2.16.jar" />
@@ -49,5 +49,5 @@
 <include name="lib/apache-commons/commons-pool-1.6-sources.jar" />
 <include name="lib/apache-commons/commons-pool-1.6.jar" />
 <include name="lib/thrift/libthrift-0.8.0.jar" />
-<include name="lib/jedis/jedis-2.1.0.jar" />
+<include name="lib/jedis/jedis-2.2.0-SNAPSHOT.jar" />
 </fileset></project>

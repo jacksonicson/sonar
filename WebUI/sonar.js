@@ -13,7 +13,7 @@ var url = require('url');
 
 var PORT = 8090;
 // var SERVER_HOST = 'localhost';
-var SERVER_HOST = 'monitor0';
+var SERVER_HOST = 'localhost';
 
 var thrift = require('thrift');
 var managementService = require('./ManagementService');

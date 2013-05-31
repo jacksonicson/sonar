@@ -29,7 +29,7 @@
 	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6-sources.jar"/>
 	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/thrift/libthrift-0.8.0.jar"/>
-	<classpathentry kind="lib" path="lib/jedis/jedis-2.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jedis/jedis-2.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
