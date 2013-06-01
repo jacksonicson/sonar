@@ -59,12 +59,22 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 	public SqlManagementServiceImpl() throws PropertyVetoException {
 		cpds = new ComboPooledDataSource();
 		cpds.setDriverClass("com.mysql.jdbc.Driver");
+		// cpds.setJdbcUrl("jdbc:mysql://localhost/sonar?autoReconnect=true");
 		cpds.setJdbcUrl("jdbc:mysql://localhost/sonar");
 		cpds.setUser("root");
 		cpds.setPassword("root");
-		cpds.setMinPoolSize(1);
-		cpds.setAcquireIncrement(5);
-		cpds.setMaxPoolSize(50);
+
+		cpds.setMinPoolSize(3);
+		cpds.setAcquireIncrement(3);
+		cpds.setMaxPoolSize(60);
+		cpds.setMaxIdleTime(5 * 60);
+
+		// Prevent connections from going idle
+		cpds.setIdleConnectionTestPeriod(30);
+		cpds.setPreferredTestQuery("SELECT 1");
+
+		// Test connections on checkout (resource intensive)
+		// cpds.setTestConnectionOnCheckout(true);
 	}
 
 	@Override
