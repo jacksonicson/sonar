@@ -288,10 +288,12 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 			Integer idSensor = fetchSensorId(con, name);
 			if (idSensor != null) {
+				// Delete sensor itself
 				PreparedStatement st = con.prepareStatement("delete from sensors where name = ?");
 				st.setString(1, name);
 				st.execute();
 
+				// Delete all its parameters
 				PreparedStatement stp = con.prepareStatement("delete from params where SENSOR_ID = ?");
 				stp.setInt(1, idSensor);
 				stp.execute();
@@ -312,7 +314,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setSensorLabels(String sensor, Set<String> labels) throws TException {
-		// pass
+		// Not supported
 	}
 
 	@Override
@@ -321,7 +323,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			con = cpds.getConnection();
 
-			// Get rid of old sensors
+			// Get rid of old sensors if one exists
 			delSensor(name);
 
 			// Insert new sensor
@@ -340,10 +342,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 			// Get generated ID for the new sensor
 			ResultSet keys = st.getGeneratedKeys();
-			if (!keys.next()) {
-				logger.error("Could not get ID of new sensor");
-				return;
-			}
+			assertNext(keys);
 			int id = keys.getInt(1);
 
 			// Insert parameters of the new sensor
@@ -470,7 +469,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			st.setInt(1, idSensor);
 			st.execute();
 
-			// Update sensor parameters
+			// Update with new sensor parameters
 			if (configuration.getParameters() != null) {
 				for (Parameter param : configuration.getParameters()) {
 					PreparedStatement stParam = con
@@ -501,12 +500,13 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			// Insert new hosts
 			con = cpds.getConnection();
-			
+
+			// Check if the hosts exists and do not re-insert it
 			Integer id = fetchHostId(con, hostname);
 			if (id != null)
 				return;
 
-			
+			// Insert new host
 			PreparedStatement st = con.prepareStatement("insert into hosts (name) values(?)");
 			st.setString(1, hostname);
 			st.execute();
@@ -599,9 +599,21 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
+
+			// Get host id
+			Integer hostId = fetchHostId(con, hostname);
+			if (hostId == null)
+				return; // return if host is unkonwn
+
+			// Delete host
 			PreparedStatement st = con.prepareStatement("delete from hosts where name = ?");
 			st.setString(1, hostname);
 			st.execute();
+
+			// Delete all host to sensor mappings
+			PreparedStatement dst = con.prepareStatement("delete from hosts2sensors where HOST_ID = ?");
+			dst.setInt(1, hostId);
+			dst.execute();
 		} catch (SQLException e) {
 			logger.error("SQL exception", e);
 			throw new TException(e);
@@ -616,11 +628,12 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public void setHostLabels(String hostname, Set<String> labels) throws TException {
-		// pass
+		// Not supported
 	}
 
 	@Override
 	public Set<String> getLabels(String hostname) throws TException {
+		// Not supported
 		return new HashSet<String>();
 	}
 
@@ -652,19 +665,29 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			con = cpds.getConnection();
 
-			int idSensor = fetchSensorId(con, sensor);
-			int idHost = fetchHostId(con, hostname);
+			// Resolve IDs
+			Integer idSensor = fetchSensorId(con, sensor);
+			Integer idHost = fetchHostId(con, hostname);
 
+			// Exit if sensor or host is unkonw
+			if (idSensor == null || idHost == null) {
+				logger.warn("Trying to remove sensor " + sensor + " from host " + hostname
+						+ " for unkowon sensor or host");
+				return;
+			}
+
+			// Always remove the mapping if it exists
+			PreparedStatement delete = con.prepareStatement("delete from host2sensors where HOST_ID=? and SENSOR_ID=?");
+			delete.setInt(1, idHost);
+			delete.setInt(2, idSensor);
+			delete.execute();
+
+			// Insert new mapping
 			if (activate) {
-				PreparedStatement st = con.prepareStatement("insert into host2sensors values (?,?)");
-				st.setInt(1, idHost);
-				st.setInt(2, idSensor);
-				st.execute();
-			} else {
-				PreparedStatement st = con.prepareStatement("delete from host2sensors where HOST_ID=? and SENSOR_ID=?");
-				st.setInt(1, idHost);
-				st.setInt(2, idSensor);
-				st.execute();
+				PreparedStatement insert = con.prepareStatement("insert into host2sensors values (?,?)");
+				insert.setInt(1, idHost);
+				insert.setInt(2, idSensor);
+				insert.execute();
 			}
 
 		} catch (SQLException e) {
@@ -692,8 +715,10 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			// List with all sensors
 			Set<String> sensors = new HashSet<String>();
 
-			// Add all sensors registered for this host
+			// Get ID for host
 			Integer idHost = fetchHostId(con, hostname);
+
+			// If host is known (e.g. pattern hosts are not known)
 			if (idHost != null) {
 				PreparedStatement st = con
 						.prepareStatement("select sensors.name from host2sensors join sensors on sensors.ID = host2sensors.SENSOR_ID where HOST_ID = ?");
@@ -703,23 +728,22 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					sensors.add(res.getString(1));
 				}
 
-				// Add all sensors from extension
+				// Add all sensors from its extension
 				String extension = getHostExtension(hostname);
 				if (extension != null && !extension.equals("-1"))
 					sensors.addAll(getSensors(extension));
 			}
 
-			// If nothing was found so far
-			// Check matching hostname expressions
+			// If nothing was found so far (host was unknown or didn't contain entries due to auto register)
 			if (sensors.isEmpty()) {
-				// Query sensors by
+				// Query all hosts
 				Set<String> hosts = getAllHosts();
 				for (String host : hosts) {
-
-					// Do not check identical hostname
+					// Do not check identical hostname (would cause endless recursion loop)
 					if (host.equals(hostname))
 						continue;
 
+					// Pattern matching on this host
 					boolean match = Pattern.matches(host, hostname);
 					if (match) {
 						// Add those sensors to the sensor list
@@ -746,8 +770,14 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 	}
 
 	private boolean getSensorActiveState(Connection con, String hostname, String sensor) throws SQLException {
-		int idHost = fetchHostId(con, hostname);
-		int idSensor = fetchSensorId(con, sensor);
+		Integer idHost = fetchHostId(con, hostname);
+		Integer idSensor = fetchSensorId(con, sensor);
+
+		// Exist if sensor or hostname was not found
+		if (idHost == null || idSensor == null) {
+			logger.warn("Could not get sensor active state");
+			return false;
+		}
 
 		PreparedStatement st = con.prepareStatement("select * from host2sensors where HOST_ID=? and SENSOR_ID=?");
 		st.setInt(1, idHost);
