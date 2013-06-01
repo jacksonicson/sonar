@@ -499,11 +499,14 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 	public void addHost(String hostname) throws TException {
 		Connection con = null;
 		try {
-			// Get rid of existing hosts
-			delHost(hostname);
-
 			// Insert new hosts
 			con = cpds.getConnection();
+			
+			Integer id = fetchHostId(con, hostname);
+			if (id != null)
+				return;
+
+			
 			PreparedStatement st = con.prepareStatement("insert into hosts (name) values(?)");
 			st.setString(1, hostname);
 			st.execute();

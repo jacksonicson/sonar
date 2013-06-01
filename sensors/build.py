@@ -37,7 +37,7 @@ def configure(sensor, path):
         transport, client = connect.openClient()
         
         # Update configuration
-        client.setSensorConfiguration(sensor, config)
+        client.updateSensorConfiguration(sensor, config, [])
         
         # Close transport
         connect.closeClient(transport)

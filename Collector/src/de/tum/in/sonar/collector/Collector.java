@@ -60,10 +60,9 @@ public class Collector {
 			managementService.setTsdb(tsdb);
 			managementService.setLogdb(logdb);
 		} catch (PropertyVetoException e) {
-			logger.error("Failed initializing C3PO pool", e); 
-			System.exit(1); 
+			logger.error("Failed initializing C3PO pool", e);
+			System.exit(1);
 		}
-		
 
 		ServerBootstrap dataSinkServer = new ServerBootstrap();
 		dataSinkServer.setCollectServiceImpl(collectService);
