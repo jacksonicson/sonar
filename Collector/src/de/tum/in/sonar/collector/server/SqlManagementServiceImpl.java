@@ -390,7 +390,11 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			config.setSensorExtends(res.getString(4));
 
 			// Fetch sensor ID
-			int idSensor = fetchSensorId(con, name);
+			Integer idSensor = fetchSensorId(con, name);
+			if (idSensor == null) {
+				logger.warn("Could not load sensor parameters, sensor is unknown" + name);
+				return config;
+			}
 
 			// Fetch parameters for this sensor
 			st = con.prepareStatement("select param, value, extend from params where SENSOR_ID = ? ");
@@ -462,7 +466,11 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 			st.executeUpdate();
 
 			// Fetch sensor id
-			int idSensor = fetchSensorId(con, name);
+			Integer idSensor = fetchSensorId(con, name);
+			if (idSensor == null) {
+				logger.warn("Could not update sensor parameters, sensor is not known" + name);
+				return;
+			}
 
 			// Delete all parameters
 			st = con.prepareStatement("delete from params where SENSOR_ID = ?");
