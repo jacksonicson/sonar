@@ -44,8 +44,8 @@ public class ManagementTest {
 			String sensor = "Sensor" + id;
 
 			client.addHost(host);
-			client.addHostExtension(host, "DUMMY");
-			client.getHostExtension(host);
+			// client.addHostExtension(host, "Andreas");
+			// client.getHostExtension(host);
 			client.getAllHosts();
 
 			SensorConfiguration configuration = new SensorConfiguration();
@@ -79,18 +79,22 @@ public class ManagementTest {
 			client.setSensor(host, sensor, true);
 			Set<String> assigned = client.getSensors(host);
 			assert (assigned.contains(sensor));
-			assert (assigned.size() == 1);
 
 			BundledSensorConfiguration bconfig = client.getBundledSensorConfiguration(sensor, host);
 			assert (bconfig.isActive());
 
 			client.setSensor(host, sensor, false);
 			assigned = client.getSensors(host);
-			assert (assigned.size() == 0);
 			assert (!assigned.contains(sensor));
 
 			bconfig = client.getBundledSensorConfiguration(sensor, host);
 			assert (!bconfig.isActive());
+
+			Set<String> pattern = client.getSensors("Super");
+			assert (pattern.size() > 0);
+
+			pattern = client.getSensors("target10");
+			assert (pattern.size() > 0);
 
 			// client.delHost(host);
 			// client.delSensor(sensor);

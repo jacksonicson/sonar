@@ -285,9 +285,18 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		Connection con = null;
 		try {
 			con = cpds.getConnection();
-			PreparedStatement st = con.prepareStatement("delete from sensors where name = ?");
-			st.setString(1, name);
-			st.executeUpdate();
+
+			Integer idSensor = fetchSensorId(con, name);
+			if (idSensor != null) {
+				PreparedStatement st = con.prepareStatement("delete from sensors where name = ?");
+				st.setString(1, name);
+				st.execute();
+
+				PreparedStatement stp = con.prepareStatement("delete from params where SENSOR_ID = ?");
+				stp.setInt(1, idSensor);
+				stp.execute();
+			}
+
 		} catch (SQLException e) {
 			logger.error("SQL exception", e);
 			throw new TException(e);
@@ -346,7 +355,7 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 					stParam.setString(2, param.getKey());
 					stParam.setString(3, param.getValue());
 					stParam.setString(4, param.getExtendSensor());
-					st.execute();
+					stParam.execute();
 				}
 			}
 		} catch (SQLException e) {
@@ -612,21 +621,25 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		return new HashSet<String>();
 	}
 
-	private int fetchSensorId(Connection con, String name) throws SQLException {
+	private Integer fetchSensorId(Connection con, String name) throws SQLException {
 		PreparedStatement st = con.prepareStatement("select id from sensors where name = ?");
 		st.setString(1, name);
 
 		ResultSet res = st.executeQuery();
-		assertNext(res);
+		if (!res.next())
+			return null;
+
 		return res.getInt(1);
 	}
 
-	private int fetchHostId(Connection con, String name) throws SQLException {
+	private Integer fetchHostId(Connection con, String name) throws SQLException {
 		PreparedStatement st = con.prepareStatement("select id from hosts where name = ?");
 		st.setString(1, name);
 
 		ResultSet res = st.executeQuery();
-		assertNext(res);
+		if (!res.next())
+			return null;
+
 		return res.getInt(1);
 	}
 
@@ -673,20 +686,25 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 		try {
 			con = cpds.getConnection();
 
-			// Add all sensors registered for this host
-			int idHost = fetchHostId(con, hostname);
-			PreparedStatement st = con
-					.prepareStatement("select sensors.name from host2sensors join sensors on sensors.ID = host2sensors.SENSOR_ID where HOST_ID = ?");
-			st.setInt(1, idHost);
-			ResultSet res = st.executeQuery();
+			// List with all sensors
 			Set<String> sensors = new HashSet<String>();
-			while (res.next()) {
-				sensors.add(res.getString(1));
-			}
 
-			// Add all sensors from extension
-			String extension = getHostExtension(hostname);
-			sensors.addAll(getSensors(extension));
+			// Add all sensors registered for this host
+			Integer idHost = fetchHostId(con, hostname);
+			if (idHost != null) {
+				PreparedStatement st = con
+						.prepareStatement("select sensors.name from host2sensors join sensors on sensors.ID = host2sensors.SENSOR_ID where HOST_ID = ?");
+				st.setInt(1, idHost);
+				ResultSet res = st.executeQuery();
+				while (res.next()) {
+					sensors.add(res.getString(1));
+				}
+
+				// Add all sensors from extension
+				String extension = getHostExtension(hostname);
+				if (extension != null && !extension.equals("-1"))
+					sensors.addAll(getSensors(extension));
+			}
 
 			// If nothing was found so far
 			// Check matching hostname expressions

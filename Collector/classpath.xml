@@ -24,6 +24,9 @@
 <pathelement location="./lib/apache-commons/commons-pool-1.6.jar" />
 <pathelement location="./lib/thrift/libthrift-0.8.0.jar" />
 <pathelement location="./lib/jedis/jedis-2.2.0-SNAPSHOT.jar" />
+<pathelement location="./lib/c3p0-0.9.2.1.jar" />
+<pathelement location="./lib/mchange-commons-java-0.2.3.4.jar" />
+<pathelement location="./lib/mysql-connector-java-5.1.25-bin.jar" />
 </path><fileset dir='../' id='libfiles'><include name="lib/hbase-0.92.1.jar" />
 <include name="lib/hadoop-core-1.0.0.jar" />
 <include name="lib/log4j-1.2.16.jar" />
@@ -50,4 +53,7 @@
 <include name="lib/apache-commons/commons-pool-1.6.jar" />
 <include name="lib/thrift/libthrift-0.8.0.jar" />
 <include name="lib/jedis/jedis-2.2.0-SNAPSHOT.jar" />
+<include name="lib/c3p0-0.9.2.1.jar" />
+<include name="lib/mchange-commons-java-0.2.3.4.jar" />
+<include name="lib/mysql-connector-java-5.1.25-bin.jar" />
 </fileset></project>

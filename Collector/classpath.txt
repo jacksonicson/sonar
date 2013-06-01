@@ -24,3 +24,6 @@
 ./lib/apache-commons/commons-pool-1.6.jar
 ./lib/thrift/libthrift-0.8.0.jar
 ./lib/jedis/jedis-2.2.0-SNAPSHOT.jar
+./lib/c3p0-0.9.2.1.jar
+./lib/mchange-commons-java-0.2.3.4.jar
+./lib/mysql-connector-java-5.1.25-bin.jar
