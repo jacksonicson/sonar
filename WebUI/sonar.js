@@ -730,6 +730,8 @@ function sensorNamesHandler(req, resp){
                 }
                 sensorData.push(sensorInfo);
             }
+            console.log("# sensors: " + sensorData.length);
+
             var ss = JSON.stringify(sensorData);
             // console.log(ss);
             resp.end(ss);

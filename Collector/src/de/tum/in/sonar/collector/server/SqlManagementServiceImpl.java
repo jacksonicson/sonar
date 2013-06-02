@@ -433,27 +433,13 @@ public class SqlManagementServiceImpl implements ManagementService.Iface {
 
 	@Override
 	public Set<String> getSensorNames() throws TException {
-		Connection con = null;
+		Set<String> result = new HashSet<String>();
 		try {
-			con = cpds.getConnection();
-			PreparedStatement st = con.prepareStatement("select name from sensors");
-			ResultSet res = st.executeQuery();
-			Set<String> sensors = new HashSet<String>();
-			while (res.next()) {
-				sensors.add(res.getString(1));
-			}
-			return sensors;
-		} catch (SQLException e) {
-			logger.error("SQL exception", e);
-			throw new TException(e);
-		} finally {
-			if (con != null)
-				try {
-					con.close();
-				} catch (SQLException e) {
-					// pass
-				}
+			result.addAll(tsdb.getSensorNames());
+		} catch (QueryException e) {
+			logger.error("Error while getting the list of configured sensors", e);
 		}
+		return result;
 	}
 
 	@Override

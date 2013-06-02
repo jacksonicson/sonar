@@ -23,10 +23,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="config.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="config.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="338" column="46" selection-start="10033" selection-end="10033" vertical-scroll-proportion="0.8489388">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="router.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/router.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sonar.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sonar.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="732" column="27" selection-start="24881" selection-end="24881" vertical-scroll-proportion="0.7790262">
               <folding />
             </state>
           </provider>
@@ -56,8 +74,8 @@
         <option value="$PROJECT_DIR$/static/autocomplete.js" />
         <option value="$PROJECT_DIR$/static/logs.js" />
         <option value="$PROJECT_DIR$/static/browse.js" />
-        <option value="$PROJECT_DIR$/sonar.js" />
         <option value="$PROJECT_DIR$/static/config.js" />
+        <option value="$PROJECT_DIR$/sonar.js" />
       </list>
     </option>
   </component>
@@ -152,12 +170,12 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="recentsLimit" value="5" />
     <property name="options.lastSelected" value="preferences.keymap" />
+    <property name="recentsLimit" value="5" />
     <property name="last_opened_file_path" value="D:/spotted/web" />
     <property name="DefaultHtmlFileTemplate" value="Html" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -199,8 +217,8 @@
       <method />
     </configuration>
     <list size="2">
-      <item index="0" class="java.lang.String" itemvalue="Node.js.Sonar" />
-      <item index="1" class="java.lang.String" itemvalue="Node.js.sonar.js" />
+      <item index="0" class="java.lang.String" itemvalue="Node.js.sonar.js" />
+      <item index="1" class="java.lang.String" itemvalue="Node.js.Sonar" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -253,7 +271,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1296" height="1000" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -332,11 +350,6 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/router.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="170" column="5" selection-start="3693" selection-end="3693" vertical-scroll-proportion="0.3564669" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/dygraph-combined.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
@@ -378,30 +391,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/thrift/lib/thrift/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="0" selection-start="1091" selection-end="1091" vertical-scroll-proportion="0.54299754">
-          <folding />
-        </state>
+        <state line="26" column="0" selection-start="1091" selection-end="1091" vertical-scroll-proportion="0.54299754" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/connect/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="13" selection-start="88" selection-end="88" vertical-scroll-proportion="0.062653564">
-          <folding />
-        </state>
+        <state line="3" column="13" selection-start="88" selection-end="88" vertical-scroll-proportion="0.062653564" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="7" selection-start="1956" selection-end="1956" vertical-scroll-proportion="0.02122347">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sonar.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="747" column="25" selection-start="25233" selection-end="25233" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="76" column="7" selection-start="1956" selection-end="1956" vertical-scroll-proportion="0.02122347" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/logs.html">
@@ -420,7 +420,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/config.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="338" column="46" selection-start="10033" selection-end="10033" vertical-scroll-proportion="0.8489388">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/router.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sonar.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="732" column="27" selection-start="24881" selection-end="24881" vertical-scroll-proportion="0.7790262">
           <folding />
         </state>
       </provider>
