@@ -162,6 +162,10 @@ public class TimeSeriesDatabase extends Thread {
 
 	public void run() {
 		while (true) {
+			
+			if(queue.size() > 300)
+				logger.warn("Metric queue size is: " + queue.size());
+			
 			try {
 				MetricPoint dataPoint = queue.take();
 

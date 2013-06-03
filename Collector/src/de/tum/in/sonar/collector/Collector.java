@@ -1,5 +1,6 @@
 package de.tum.in.sonar.collector;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 
 import org.slf4j.Logger;
@@ -8,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import de.tum.in.sonar.collector.log.LogDatabase;
 import de.tum.in.sonar.collector.notification.NotificationManager;
 import de.tum.in.sonar.collector.server.CollectServiceImpl;
-import de.tum.in.sonar.collector.server.ManagementServiceImpl;
 import de.tum.in.sonar.collector.server.NotificationServiceImpl;
 import de.tum.in.sonar.collector.server.ServerBootstrap;
+import de.tum.in.sonar.collector.server.SqlManagementServiceImpl;
 import de.tum.in.sonar.collector.tsdb.TableCreationException;
 import de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase;
 
@@ -43,7 +44,7 @@ public class Collector {
 		}
 
 		NotificationManager notifyManager = new NotificationManager();
-		notifyManager.start(); 
+		notifyManager.start();
 
 		CollectServiceImpl collectService = new CollectServiceImpl();
 		collectService.setTsdb(tsdb);
@@ -51,11 +52,17 @@ public class Collector {
 		collectService.setNotificationManager(notifyManager);
 
 		NotificationServiceImpl notificationService = new NotificationServiceImpl();
-		notificationService.setNotificationManager(notifyManager); 
+		notificationService.setNotificationManager(notifyManager);
 
-		ManagementServiceImpl managementService = new ManagementServiceImpl();
-		managementService.setTsdb(tsdb);
-		managementService.setLogdb(logdb);
+		SqlManagementServiceImpl managementService = null;
+		try {
+			managementService = new SqlManagementServiceImpl();
+			managementService.setTsdb(tsdb);
+			managementService.setLogdb(logdb);
+		} catch (PropertyVetoException e) {
+			logger.error("Failed initializing C3PO pool", e);
+			System.exit(1);
+		}
 
 		ServerBootstrap dataSinkServer = new ServerBootstrap();
 		dataSinkServer.setCollectServiceImpl(collectService);

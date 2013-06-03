@@ -1,4 +1,8 @@
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.thrift.TException;
@@ -8,41 +12,110 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import de.tum.in.sonar.collector.BundledSensorConfiguration;
 import de.tum.in.sonar.collector.ManagementService;
+import de.tum.in.sonar.collector.SensorConfiguration;
+import de.tum.in.sonar.collector.SensorType;
 
 public class ManagementTest {
+
+	private static ByteBuffer file() throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		FileInputStream in = new FileInputStream("D:/work/sonar/Collector/build/collector.jar");
+		byte[] buffer = new byte[256];
+		int len = 0;
+		while ((len = in.read(buffer)) > 0) {
+			out.write(buffer, 0, len);
+		}
+		return ByteBuffer.wrap(out.toByteArray());
+	}
 
 	public static void main(String arg[]) throws IOException {
 
 		TTransport transport;
 		try {
-			System.out.println("socket"); 
-			transport = new TSocket("131.159.41.171", 7931);
-			System.out.println("open"); 
+			transport = new TSocket("localhost", 7931);
 			transport.open();
-			
-			System.out.println("protocol"); 
 			TProtocol protocol = new TBinaryProtocol(transport);
-
 			ManagementService.Client client = new ManagementService.Client(protocol);
 
-			Set<String> hosts = client.getAllHosts();
-			for(String host : hosts) {
-				client.getLabels(host);
-				Set<String> sensors = client.getSensors(host);
-				for(String sensor : sensors) {
-					client.getBundledSensorConfiguration(sensor, host); 
-				}
-			}
-			client.getAllSensors(); 
-			
-			// Sensors
-			System.out.println("sensors"); 
-			Set<String> sensors = client.getSensors("target150");
-			System.out.println("done " + sensors.size()); 
-			for (String sensor : sensors) {
-				System.out.println("Sensor: " + sensor);
-			}
+			long id = System.currentTimeMillis();
+			String host = "Host" + id;
+			String sensor = "Sensor" + id;
+
+			client.addHost(host);
+			// client.addHostExtension(host, "Andreas");
+			// client.getHostExtension(host);
+			client.getAllHosts();
+
+			SensorConfiguration configuration = new SensorConfiguration();
+			client.setSensorConfiguration(sensor, configuration);
+
+			configuration.setSensorExtends("test");
+			configuration.setSensorType(SensorType.LOG);
+			configuration.setInterval(100);
+			client.updateSensorConfiguration(sensor, configuration, new HashSet<String>());
+
+			client.deploySensor(sensor, file());
+			client.fetchSensor(sensor);
+
+			configuration = client.getSensorConfiguration(sensor);
+			assert (configuration.getSensorExtends().equals("test"));
+			assert (configuration.getSensorType() == SensorType.LOG);
+			assert (configuration.getInterval() == 100);
+
+			String md5 = client.sensorHash(sensor);
+			assert (md5.length() > 5);
+
+			boolean binary = client.hasBinary(sensor);
+			assert (binary);
+
+			Set<String> names = client.getSensorNames();
+			assert (names.size() > 1);
+
+			Set<String> sensors = client.getAllSensors();
+			assert (sensors.size() > 1);
+
+			client.setSensor(host, sensor, true);
+			Set<String> assigned = client.getSensors(host);
+			assert (assigned.contains(sensor));
+
+			BundledSensorConfiguration bconfig = client.getBundledSensorConfiguration(sensor, host);
+			assert (bconfig.isActive());
+
+			client.setSensor(host, sensor, false);
+			assigned = client.getSensors(host);
+			assert (!assigned.contains(sensor));
+
+			bconfig = client.getBundledSensorConfiguration(sensor, host);
+			assert (!bconfig.isActive());
+
+			Set<String> pattern = client.getSensors("Super");
+			assert (pattern.size() > 0);
+
+			pattern = client.getSensors("target10");
+			assert (pattern.size() > 0);
+
+			// client.delHost(host);
+			// client.delSensor(sensor);
+
+			// Set<String> hosts = client.getAllHosts();
+			// for(String host : hosts) {
+			// client.getLabels(host);
+			// Set<String> sensors = client.getSensors(host);
+			// for(String sensor : sensors) {
+			// client.getBundledSensorConfiguration(sensor, host);
+			// }
+			// }
+			// client.getAllSensors();
+			//
+			// // Sensors
+			// System.out.println("sensors");
+			// Set<String> sensors = client.getSensors("target150");
+			// System.out.println("done " + sensors.size());
+			// for (String sensor : sensors) {
+			// System.out.println("Sensor: " + sensor);
+			// }
 
 			// client.getAllSensors();
 

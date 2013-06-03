@@ -320,7 +320,6 @@ function editHostIntern(event, editHost) {
 
                     $('#hostName').attr("value", host.hostname);
 
-                    console.log("labels: " + host.labels);
                     var labelsString = "";
                     for (var i = 0; i < host.labels.length; i++) {
                         if(host.labels[i] == '')
@@ -334,8 +333,8 @@ function editHostIntern(event, editHost) {
                     $('#hostLabels').attr("value", labelsString);
                     
                     getHostListExcludingCurrentHost(host.hostname, host.extendsHost);
-                    
-                    if(null == host.extendsHost){
+                    console.log("extends host is " + host.extendsHost);
+                    if(null == host.extendsHost || "-1" == host.extendsHost){
                         // need not populate the sensor list when the host extends another host
                         for (var s in host.sensor) {
 

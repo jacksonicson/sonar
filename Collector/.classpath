@@ -30,6 +30,9 @@
 	<classpathentry kind="lib" path="lib/apache-commons/commons-pool-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/thrift/libthrift-0.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/jedis/jedis-2.2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/c3p0-0.9.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/mchange-commons-java-0.2.3.4.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.25-bin.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

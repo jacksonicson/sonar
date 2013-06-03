@@ -19,7 +19,7 @@ public class ServerBootstrap {
 	private static final Logger logger = LoggerFactory.getLogger(ServerBootstrap.class);
 
 	private CollectServiceImpl collectServiceImpl;
-	private ManagementServiceImpl managementServiceImpl;
+	private ManagementService.Iface managementServiceImpl;
 	private NotificationServiceImpl notificationServiceImpl;
 
 	class NotificationServiceThread extends Thread {
@@ -151,7 +151,7 @@ public class ServerBootstrap {
 		this.collectServiceImpl = collectServiceImpl;
 	}
 
-	public void setManagementServiceImpl(ManagementServiceImpl managementServiceImpl) {
+	public void setManagementServiceImpl(ManagementService.Iface managementServiceImpl) {
 		this.managementServiceImpl = managementServiceImpl;
 	}
 

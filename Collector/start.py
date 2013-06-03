@@ -56,8 +56,8 @@ def runCollector(args):
     params = []
     params.append('java')
     
-    params.append('-Xms30m')
-    params.append('-Xmx100m')
+    params.append('-Xms90m')
+    params.append('-Xmx300m')
     
     params.append('-classpath')
     params.append(classpath)

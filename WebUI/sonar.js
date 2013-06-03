@@ -13,7 +13,7 @@ var url = require('url');
 
 var PORT = 8090;
 // var SERVER_HOST = 'localhost';
-var SERVER_HOST = 'localhost';
+var SERVER_HOST = 'monitor0';
 
 var thrift = require('thrift');
 var managementService = require('./ManagementService');
@@ -730,6 +730,8 @@ function sensorNamesHandler(req, resp){
                 }
                 sensorData.push(sensorInfo);
             }
+            console.log("# sensors: " + sensorData.length);
+
             var ss = JSON.stringify(sensorData);
             // console.log(ss);
             resp.end(ss);

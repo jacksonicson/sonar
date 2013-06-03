@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -33,7 +35,7 @@ import de.tum.in.sonar.collector.tsdb.QueryException;
 import de.tum.in.sonar.collector.tsdb.TableCreationException;
 import de.tum.in.sonar.collector.tsdb.UnresolvableException;
 
-public class LogDatabase {
+public class LogDatabase extends Thread {
 
 	private static Logger logger = LoggerFactory.getLogger(LogDatabase.class);
 
@@ -52,6 +54,8 @@ public class LogDatabase {
 		this.sensorResolver = new IdResolver("sensor");
 
 		this.tablePool = new HTablePool();
+
+		this.start();
 	}
 
 	public void setHbaseUtil(HBaseUtil hbaseUtil) {
@@ -87,35 +91,67 @@ public class LogDatabase {
 		return key;
 	}
 
+	class Job {
+		Identifier id;
+		LogMessage message;
+
+		public Job(Identifier id, LogMessage message) {
+			this.id = id;
+			this.message = message;
+		}
+	}
+
+	private BlockingQueue<Job> queue = new LinkedBlockingQueue<Job>();
+
+	public void run() {
+		while (true) {
+			try {
+				Job job = queue.take();
+
+				if(queue.size() > 300)
+					logger.warn("Log queue size is: " + queue.size());
+				
+				try {
+					byte[] key = buildKey(job.id);
+					HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
+
+					// Ensure that a timestamp is given
+					if (job.message.getTimestamp() == 0)
+						job.message.setTimestamp(job.id.getTimestamp());
+
+					TSerializer serializer = new TSerializer();
+
+					// Update internal message counter
+					if (internalCounter++ > Integer.MAX_VALUE)
+						internalCounter = 0;
+
+					// The hostname plus the internalCounter guarantee that the column name is unique
+					// even if multiple systems are writing to the same log sensor (should be impossible)
+					Put put = new Put(key);
+					put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(job.id.getHostname()
+							+ internalCounter), serializer.serialize(job.message));
+					table.put(put);
+
+				} catch (IOException e) {
+					logger.error("could not write tsdb to hbase", e);
+				} catch (UnresolvableException e) {
+					logger.error("could not create key for datapoint", e);
+				} catch (TException e) {
+					logger.error("could not serialize payload data", e);
+				} catch (InvalidLabelException e) {
+					logger.error("invalid label used", e);
+				}
+			} catch (InterruptedException e) {
+				logger.error("error while taking item from queue", e);
+			}
+		}
+	}
+
 	public void writeData(Identifier id, LogMessage message) {
 		try {
-			byte[] key = buildKey(id);
-			HTableInterface table = this.tablePool.getTable(LogConstants.TABLE_LOG);
-
-			// Ensure that a timestamp is given
-			if (message.getTimestamp() == 0)
-				message.setTimestamp(id.getTimestamp());
-
-			TSerializer serializer = new TSerializer();
-
-			// Update internal message counter
-			if (internalCounter++ > Integer.MAX_VALUE)
-				internalCounter = 0;
-
-			// The hostname plus the internalCounter guarantee that the column name is unique
-			// even if multiple systems are writing to the same log sensor (should be impossible)
-			Put put = new Put(key);
-			put.add(Bytes.toBytes(LogConstants.FAMILY_LOG_DATA), Bytes.toBytes(id.getHostname() + internalCounter), serializer.serialize(message));
-			table.put(put);
-
-		} catch (IOException e) {
-			logger.error("could not write tsdb to hbase", e);
-		} catch (UnresolvableException e) {
-			logger.error("could not create key for datapoint", e);
-		} catch (TException e) {
-			logger.error("could not serialize payload data", e);
-		} catch (InvalidLabelException e) {
-			logger.error("invalid label used", e);
+			this.queue.put(new Job(id, message));
+		} catch (InterruptedException e) {
+			logger.error("error while putting item in queue", e);
 		}
 	}
 
@@ -151,10 +187,10 @@ public class LogDatabase {
 
 			// Scanner on the table
 			ResultScanner scanner = table.getScanner(scan);
-			
+
 			// Results
 			logMessages = new ArrayList<LogMessage>();
-			
+
 			// Deserializer for the log data
 			TDeserializer deserializer = new TDeserializer();
 
@@ -177,7 +213,8 @@ public class LogDatabase {
 						deserializer.deserialize(logMsg, data);
 						if (logPriorityFlag) {
 							// if log priority is specified
-							if (logQuery.getLogStartRange() >= logMsg.getLogLevel() || logQuery.getLogEndRange() <= logMsg.getLogLevel()) {
+							if (logQuery.getLogStartRange() >= logMsg.getLogLevel()
+									|| logQuery.getLogEndRange() <= logMsg.getLogLevel()) {
 								// add only when the log message range matches
 								// that of the current log level
 								logMessages.add(logMsg);

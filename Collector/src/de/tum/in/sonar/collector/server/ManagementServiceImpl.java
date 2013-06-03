@@ -747,19 +747,27 @@ public class ManagementServiceImpl implements ManagementService.Iface {
 
 	private void clearSensorParameters(String sensorName) {
 		Jedis jedis = jedisPool.getResource();
-		String query = key("sensor", sensorName, "config", "properties");
-		Set<String> keys = jedis.keys(query + ":*");
-		for (String key : keys) {
-			logger.debug("removing property: " + key);
-			jedis.del(key);
+		try {
+			String query = key("sensor", sensorName, "config", "properties");
+			Set<String> keys = jedis.keys(query + ":*");
+			for (String key : keys) {
+				logger.debug("removing property: " + key);
+				jedis.del(key);
+			}
+			jedis.save();
+		} finally {
+			jedisPool.returnResource(jedis);
 		}
-		jedis.save();
 	}
 
 	private void clearSensorLabels(String sensorName) {
 		Jedis jedis = jedisPool.getResource();
-		String query = key("sensor", sensorName, "labels");
-		jedis.del(query);
-		jedis.save();
+		try {
+			String query = key("sensor", sensorName, "labels");
+			jedis.del(query);
+			jedis.save();
+		} finally {
+			jedisPool.returnResource(jedis);
+		}
 	}
 }
