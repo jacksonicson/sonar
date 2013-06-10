@@ -44,7 +44,7 @@ public class Connection {
 		}
 
 		try {
-			transport = new TSocket(subscription.getIp(), subscription.getPort(), 3000);
+			transport = new TSocket(subscription.getIp(), subscription.getPort(), 6000);
 			transport.open();
 			TProtocol protocol = new TBinaryProtocol(transport);
 			client = new NotificationClient.Client(protocol);
@@ -87,10 +87,10 @@ public class Connection {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(!(obj instanceof Connection))
-			return false; 
-		
-		Connection test = (Connection)obj; 
+		if (!(obj instanceof Connection))
+			return false;
+
+		Connection test = (Connection) obj;
 		return (test.subscription.equals(subscription));
 	}
 }
