@@ -18,10 +18,16 @@ public final class Subscription {
 		this.ip = ip;
 		this.port = port;
 		this.watchlist = watchlist;
+		updateSets(watchlist);
+	}
 
+	private void updateSets(Set<SensorToWatch> watchlist) {
 		for (SensorToWatch watch : watchlist) {
-			hosts.add(watch.hostname);
-			hostsensor.add(watch.hostname + "." + watch.sensor);
+			if (!hosts.contains(watch.hostname))
+				hosts.add(watch.hostname);
+			String sensor = watch.hostname + "." + watch.sensor;
+			if (!hostsensor.contains(sensor))
+				hostsensor.add(sensor);
 		}
 	}
 
@@ -35,6 +41,11 @@ public final class Subscription {
 
 	Set<SensorToWatch> getWatchlist() {
 		return watchlist;
+	}
+
+	public void extendWatchlist(Set<SensorToWatch> watchlist) {
+		this.watchlist.addAll(watchlist);
+		updateSets(watchlist);
 	}
 
 	boolean check(Notification notification) {
@@ -58,5 +69,13 @@ public final class Subscription {
 		equals &= test.getPort() == this.port;
 
 		return equals;
+	}
+
+	public String dump() {
+		String sensors = "";
+		for (SensorToWatch sensor : this.watchlist) {
+			sensors += sensor.sensor + ";";
+		}
+		return "ip: " + this.ip + " sensors " + sensors;
 	}
 }

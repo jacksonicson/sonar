@@ -187,7 +187,7 @@ public class TimeSeriesDatabase extends Thread {
 						puts.add(put);
 
 						// Check if there are enough elements for execution
-						if (puts.size() > 100) {
+						if (puts.size() > 250) {
 							long time = System.currentTimeMillis();
 							table.put(puts);
 							time = System.currentTimeMillis() - time;
@@ -374,8 +374,6 @@ public class TimeSeriesDatabase extends Thread {
 							}
 
 						} else { // Found a non compacted field
-							logger.debug("point");
-
 							long qualifier = Bytes.toLong(key);
 							long timestamp = rowTimestampHours + qualifier;
 							if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {

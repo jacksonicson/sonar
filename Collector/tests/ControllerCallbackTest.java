@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import de.tum.in.sonar.collector.Identifier;
 import de.tum.in.sonar.collector.MetricReading;
@@ -24,12 +26,14 @@ public class ControllerCallbackTest {
 
 		Notification not = new Notification("asdf", "asdf", new MetricPoint(data.id, data.reading));
 		try {
-			conection.send(not);
+			List<Notification> toSend = new ArrayList<Notification>(1);
+			toSend.add(not);
+			conection.sendNotifications(toSend);
 		} catch (DeadSubscriptionException e) {
 			e.printStackTrace();
 		}
-		
-		conection.close(); 
+
+		conection.close();
 
 	}
 

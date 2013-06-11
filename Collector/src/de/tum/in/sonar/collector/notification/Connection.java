@@ -44,7 +44,7 @@ public class Connection {
 		}
 
 		try {
-			transport = new TSocket(subscription.getIp(), subscription.getPort(), 6000);
+			transport = new TSocket(subscription.getIp(), subscription.getPort(), 60000);
 			transport.open();
 			TProtocol protocol = new TBinaryProtocol(transport);
 			client = new NotificationClient.Client(protocol);
@@ -57,25 +57,32 @@ public class Connection {
 	}
 
 	private void send(List<NotificationData> data) throws DeadSubscriptionException {
-		if (establish()) {
-			try {
-				client.receive(data);
-			} catch (TException e) {
-				logger.warn("Could not send data");
-				throw new DeadSubscriptionException(subscription);
+		// Retry three times
+		for (int i = 0; i < 3; i++) {
+			if (establish()) {
+				try {
+					client.receive(data);
+					return;
+				} catch (TException e) {
+					logger.error("Could not send data", e);
+				}
 			}
 		}
+
+		// All send retries failed, exit
+		throw new DeadSubscriptionException(subscription);
 	}
 
-	public void send(Notification notification) throws DeadSubscriptionException {
-		if (this.subscription.check(notification)) {
-			List<NotificationData> set = new ArrayList<NotificationData>(1);
+	public void sendNotifications(List<Notification> notifications) throws DeadSubscriptionException {
+		for (Notification notification : notifications) {
+			List<NotificationData> set = new ArrayList<NotificationData>(notifications.size());
+			if (this.subscription.check(notification)) {
+				NotificationData data = new NotificationData();
+				data.setId(notification.getReading().getIdentifier());
+				data.setReading(notification.getReading().getMetricReading());
+				set.add(data);
+			}
 
-			NotificationData data = new NotificationData();
-			data.setId(notification.getReading().getIdentifier());
-			data.setReading(notification.getReading().getMetricReading());
-
-			set.add(data);
 			send(set);
 		}
 	}

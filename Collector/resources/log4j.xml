@@ -20,6 +20,11 @@
 		<level value="info" />
 		<appender-ref ref="consoleAppender" />
 	</logger>
+	
+	<logger name="de.tum.in.sonar.collector.tsdb.TimeSeriesDatabase" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="consoleAppender" />
+	</logger>
 
 	<root>
 		<priority value="info" />

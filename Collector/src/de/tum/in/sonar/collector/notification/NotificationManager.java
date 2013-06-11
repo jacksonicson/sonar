@@ -26,38 +26,61 @@ public class NotificationManager extends Thread {
 	}
 
 	public void addSubscription(Subscription subscription) {
-		Connection connection = new Connection(subscription);
+		// Check if there is already a subscript for the IP address in the new subscription
 		synchronized (connections) {
+			for (Connection connection : connections) {
+				logger.info("checking: " + connection.subscription.getIp() + " vs. " + subscription.getIp());
+
+				if (connection.subscription.getIp().equals(subscription.getIp())) {
+					logger.info("Extending watchlist of existing subscription");
+					connection.subscription.extendWatchlist(subscription.getWatchlist());
+					return;
+				}
+			}
+
+			// Nothing found, so create a new connection for this subscription
+			Connection connection = new Connection(subscription);
 			connections.add(connection);
 		}
 	}
 
-	private void deliver(Notification notification) {
+	private void deliver(List<Notification> notification) {
 		synchronized (connections) {
 			ArrayList<Connection> deleteList = new ArrayList<Connection>();
 
 			for (Iterator<Connection> it = connections.iterator(); it.hasNext();) {
 				Connection connection = it.next();
 				try {
-					connection.send(notification);
+					connection.sendNotifications(notification);
 				} catch (DeadSubscriptionException e) {
-					logger.info("removing dead connection");
+					logger.info("removing dead connection " + connection.subscription.dump());
 					deleteList.add(connection);
 				}
 			}
 
+			// Remove all dead connections
 			for (Connection toDel : deleteList) {
 				boolean status = connections.remove(toDel);
 				logger.info("removing dead connection: " + status);
+			}
+
+			// Log number of remaining connections
+			if (deleteList.size() > 0) {
+				logger.info("remaining connections: " + connections.size());
 			}
 		}
 	}
 
 	public void run() {
+		List<Notification> buffer = new ArrayList<Notification>(20);
 		while (running) {
 			try {
 				Notification notification = queue.take();
-				deliver(notification);
+				buffer.add(notification);
+				if (buffer.size() > 10) {
+					deliver(buffer);
+					buffer.clear();
+				}
 			} catch (InterruptedException e) {
 				logger.error("Error while processing notifications", e);
 			}
