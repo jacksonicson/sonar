@@ -64,7 +64,7 @@ public class Connection {
 					client.receive(data);
 					return;
 				} catch (TException e) {
-					logger.error("Could not send data", e);
+					logger.info("Could not send data", e);
 				}
 			}
 		}
