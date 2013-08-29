@@ -34,7 +34,7 @@ import de.tum.in.sonar.collector.tsdb.gen.CompactTimeseries;
 public class TimeSeriesDatabase extends Thread {
 
 	private static Logger logger = LoggerFactory.getLogger(Collector.class);
-	
+
 	private HBaseUtil hbaseUtil;
 
 	private IdResolver labelResolver;
@@ -162,10 +162,10 @@ public class TimeSeriesDatabase extends Thread {
 
 	public void run() {
 		while (true) {
-			
-			if(queue.size() > 300)
+
+			if (queue.size() > 300)
 				logger.warn("Metric queue size is: " + queue.size());
-			
+
 			try {
 				MetricPoint dataPoint = queue.take();
 
@@ -333,7 +333,7 @@ public class TimeSeriesDatabase extends Thread {
 
 			// Over-Estimate the number of elements to fetch
 			// Calculation is based on a 3 second logging interval including the overflow hours
-			long estimatedElementCount = (stopTimestampHour - startTimestampHour + 2) * 60 * 60 / 3;
+			long estimatedElementCount = (stopTimestampHour - startTimestampHour + 2 * 60 * 60) / 3;
 			// Calculate for 5 fetch rounds
 			int fetchCount = Math.max(1, (int) (estimatedElementCount / 5));
 
