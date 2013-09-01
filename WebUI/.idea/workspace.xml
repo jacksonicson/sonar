@@ -226,8 +226,8 @@
       <method />
     </configuration>
     <list size="2">
-      <item index="0" class="java.lang.String" itemvalue="Node.js.sonar.js" />
-      <item index="1" class="java.lang.String" itemvalue="Node.js.Sonar" />
+      <item index="0" class="java.lang.String" itemvalue="Node.js.Sonar" />
+      <item index="1" class="java.lang.String" itemvalue="Node.js.sonar.js" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -280,7 +280,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1296" height="1000" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290993" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
