@@ -332,10 +332,10 @@ public class TimeSeriesDatabase extends Thread {
 			long stopTimestampHour = getHourSinceEpoch(query.getStopTime() + 1);
 
 			// Over-Estimate the number of elements to fetch
-			// Calculation is based on a 3 second logging interval including the overflow hours
-			long estimatedElementCount = (stopTimestampHour - startTimestampHour + 2 * 60 * 60) / 3;
+			// Based on compactions the maximum element count is the number of hours
+			long estimatedElementCount = (stopTimestampHour - startTimestampHour) / 60 / 60 + 1;
 			// Calculate for 5 fetch rounds
-			int fetchCount = Math.max(1, (int) (estimatedElementCount / 5));
+			int fetchCount = Math.max(1, (int) (estimatedElementCount));
 
 			Result[] batch;
 			while ((batch = scanner.next(fetchCount)).length > 0) {
@@ -351,18 +351,13 @@ public class TimeSeriesDatabase extends Thread {
 
 						// Found a compaction field
 						if (Bytes.toString(key).equals("data")) {
-							logger.debug("compaction field");
-
 							if (startTimestampHour <= rowTimestampHours && rowTimestampHours <= stopTimestampHour) {
-								logger.debug("segment");
 								fragment.addSegment(rowTimestampHours, familyMap.get(key));
 							} else {
-								logger.debug("partially");
 								TDeserializer deserializer = new TDeserializer();
 								CompactTimeseries ts = new CompactTimeseries();
 								deserializer.deserialize(ts, familyMap.get(key));
 
-								// TODO: Detect duplicated points!
 								for (CompactPoint point : ts.getPoints()) {
 									long timestamp = rowTimestampHours + point.getTimestamp();
 									if (timestamp >= query.getStartTime() && timestamp <= query.getStopTime()) {
