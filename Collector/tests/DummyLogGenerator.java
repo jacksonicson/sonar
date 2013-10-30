@@ -14,23 +14,25 @@ public class DummyLogGenerator {
 	public static void main(String[] args) {
 		TTransport transport;
 		try {
-			transport = new TSocket("localhost", 7921);
+			transport = new TSocket("monitor0.dfg", 7921);
 			transport.open();
 
 			TProtocol protocol = new TBinaryProtocol(transport);
 
 			CollectService.Client client = new CollectService.Client(protocol);
 
-			for (int i = 0; i < 10; i++) {
+			long time = System.currentTimeMillis() / 1000; 
+			for (int i = 0; i < 20; i++) {
 
 				Identifier id = new Identifier();
-				id.setTimestamp(System.currentTimeMillis() / 1000 + i );
+				// Use the same timestmpa
+				id.setTimestamp(time);
 				id.setSensor("TEST");
-				id.setHostname("jack");
+				id.setHostname("Andreas-PC");
 
 				LogMessage message = new LogMessage();
 				message.setLogLevel(5);
-				message.setLogMessage("Test Log Message " + i);
+				message.setLogMessage("Test Log Message 2 " + i);
 				message.setProgramName("DummyLoadGenerator");
 				client.logMessage(id, message);
 			}
