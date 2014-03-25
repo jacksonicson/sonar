@@ -710,33 +710,32 @@ function sensorConfigHandler(req, resp){
 }
 
 function sensorNamesHandler(req, resp){
+    var body = "";
+
+    req.on('data', function (data) {
+        body += data;
+    });
 
     req.on('end', function () {
-        console.log("Requesting all sensors");
-
         var connection = thrift.createConnection(SERVER_HOST, 7932);
         var client = thrift.createClient(managementService, connection);
-        var sensorData = []
+
         connection.on("error", function (err) {
             console.log("Could not connect with the Collector: " + err);
         });
 
-        // Execute the query
+        console.log("Established connection with Controller");
+
         client.getSensorNames(function (err, sensorNames) {
-
-            for(var count = 0; count < sensorNames.length; count++){
-                var sensorInfo = {
-                    name:sensorNames[count]
-                }
-                sensorData.push(sensorInfo);
+            if(err != null)
+            {
+              console.log(err);
+              resp.end(JSON.stringify([]))
+                return;
             }
-            console.log("# sensors: " + sensorData.length);
 
-            var ss = JSON.stringify(sensorData);
-            // console.log(ss);
+            var ss = JSON.stringify(sensorNames);
             resp.end(ss);
-
-            // connection.connection.emit('close');
         });
     });
 }
