@@ -11,6 +11,7 @@ $(function () {
     setupDatePickers();
     setupHandlers();
     setupCharts();
+
     getHostData(function(output){
         var hosts;
         hosts = new Array;
@@ -18,17 +19,17 @@ $(function () {
             hosts.push(item);
         });
 
+        console.log("Hostnames loaded: " + hosts.length);
+
         $('#hostname').typeahead({
             source: hosts
         });
     });
 
     getSensorData(function(output){
-        var sensors;
-        sensors = new Array;
-        $.each(output, function(index, item){
-            sensors.push(item.name);
-        });
+        var sensors = output;
+        console.log("Sensor names loaded: " + sensors.length);
+
         $('#sensor').typeahead({
             source: sensors
         });
@@ -42,9 +43,8 @@ function getSensors(){
         url:'/sensornames',
         dataType:'json',
         success: function (results) {
-           for(var count = 0 ; count < results.length ; count++){
-               sensors.push(results[count].name);
-           }
+           console.log("Sensornames loaded: " + results.length);
+           return results;
         },
         error: function(error){
             console.log('oops');
@@ -99,6 +99,7 @@ function setupCharts() {
         tooltip:{
             enabled:false
         },
+
         navigator:{
             buttonOptions:{
                 enabled:true
@@ -109,6 +110,7 @@ function setupCharts() {
             selected: 2,
             enabled:true,
             inputEnabled:false,
+
             buttons: [{
                 type: 'minute',
                 count: 5,
@@ -134,21 +136,25 @@ function setupCharts() {
         export: {
           enabled: true
         },
+
         chart:{
             renderTo:'container',
             animation:false,
             zoomType: 'x'
         },
+
         plotOptions:{
             series:{
                 animation:false
             }
         },
+
         title:{
         },
+
         series:[
             {
-                name:'EMPTY',
+                name:'NULL',
                 data:emptyData
             }
         ]
@@ -175,6 +181,8 @@ function addQueryHandler(event, noLabel) {
 
         success:function (list) {
             stopAlert();
+
+            console.log(list);
 
             // Ensure that the list contains at least one element
             if (list.length == 0)

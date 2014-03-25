@@ -46,9 +46,11 @@ function setupDatePickers() {
     getSensorData(function (output) {
         var sensors;
         sensors = new Array;
+
         $.each(output, function (index, item) {
             sensors.push(item.name);
         });
+
         $('#sensor').typeahead({
             source:sensors
         });
