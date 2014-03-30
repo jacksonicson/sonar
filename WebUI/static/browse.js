@@ -60,7 +60,7 @@ function setupFields()
         $('#enddate').val(getURLParameter("ed"));
 
     if(getURLParameter("et") != null)
-        $('#endtime').val(getURLParameter("et"));
+        $('#stoptime').val(getURLParameter("et"));
 }
 
 function getSensors(){
