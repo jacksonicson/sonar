@@ -34,7 +34,34 @@ $(function () {
             source: sensors
         });
     });
+
+    setupFields();
 });
+
+function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+}
+
+function setupFields()
+{
+    if(getURLParameter("host") != null)
+        $('#hostname').val(getURLParameter("host"));
+
+    if(getURLParameter("sensor") != null)
+        $('#sensor').val(getURLParameter("sensor"));
+
+    if(getURLParameter("sd") != null)
+        $('#startdate').val(getURLParameter("sd"));
+
+    if(getURLParameter("st") != null)
+        $('#starttime').val(getURLParameter("st"));
+
+    if(getURLParameter("ed") != null)
+        $('#enddate').val(getURLParameter("ed"));
+
+    if(getURLParameter("et") != null)
+        $('#endtime').val(getURLParameter("et"));
+}
 
 function getSensors(){
     var sensors = new Array;
@@ -212,6 +239,11 @@ function addQueryLabel() {
     var id = $("#hostname").val() + "$" + $("#sensor").val() + "$" + $("#startdate").val() + "$" + $("#starttime").val() 
         + "$" + $("#stopdate").val() + "$" + $("#stoptime").val();
 
+    var url = window.location.protocol + "//" + window.location.host + "/browse?host=" + encodeURIComponent($("#hostname").val()) +
+        "&sensor=" + encodeURIComponent($("#sensor").val()) + "&sd=" +encodeURIComponent( $("#startdate").val()) + "&st=" + encodeURIComponent($("#starttime").val())  +
+        "&ed=" +encodeURIComponent( $("#stopdate").val()) + "&et=" + encodeURIComponent($("#stoptime").val());
+    console.log(url);
+
     if($("#hostname").val() == '')
         return
     if($("#sensor").val() == '')
@@ -221,7 +253,9 @@ function addQueryLabel() {
 
     $("#labelContainer").append(
         $('<span>').addClass("label").addClass("label-inverse").append(
-            $('<a>').attr("id", id).addClass("labelLink").text(labelName).click(resubmitForm)
+            $('<a>')
+                .attr("id", id).addClass("labelLink").text(labelName).click(resubmitForm)
+                .attr("href", url)
         ),
         $('<span>').text('  ')
     );
